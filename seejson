@@ -1,0 +1,10 @@
+#! /usr/bin/python
+
+import sys
+import json
+
+assert not sys.stdin.isatty(), "stdin must be redirected"
+
+data = json.loads(sys.stdin.read())
+
+json.dump(data, sys.stdout, indent=2)
