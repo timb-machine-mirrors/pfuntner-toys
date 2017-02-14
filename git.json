@@ -1,0 +1,15 @@
+{
+  "verbs": [
+    "pull",
+    "push",
+    "submodule",
+    "fetch",
+    "clone"
+  ],
+  "repos": {
+    "github.ibm.com": {
+      "user": "pfuntner",
+      "token": "df7db5558a7667d643f6a85f7daec533adb63b2b"
+    }
+  }
+}
