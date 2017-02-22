@@ -1,0 +1,56 @@
+#!/usr/bin/python
+
+import subprocess
+
+# eth0      Link encap:Ethernet  HWaddr 00:50:56:b4:0f:2f  
+# inet addr:10.47.12.150  Bcast:10.47.12.255  Mask:255.255.255.0
+# inet6 addr: fe80::250:56ff:feb4:f2f/64 Scope:Link
+# UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+# RX packets:14092230 errors:0 dropped:50 overruns:0 frame:0
+# TX packets:7004773 errors:0 dropped:0 overruns:0 carrier:0
+# collisions:0 txqueuelen:1000 
+# RX bytes:14890862914 (14.8 GB)  TX bytes:6295065692 (6.2 GB)
+
+def packets(token):
+  ret = None
+  eyecatcher = "packets:"
+  if token.startswith(eyecatcher):
+    ret = int(token[len(eyecatcher):])
+  return ret
+
+p = subprocess.Popen(["ifconfig"], stdout=subprocess.PIPE)
+stdout = p.stdout.read()
+rc = p.wait()
+if rc != 0:
+   exit(rc)
+
+expectIF = True
+interface = None
+rx = None
+tx = None
+
+linenum = 0
+for line in stdout.strip('\n').split('\n'):
+   linenum += 1
+   words = line.split()
+   # print "%d: %s %s %s %s" % (linenum, words, interface, rx, tx)
+   if expectIF:
+     interface = words[0]
+     rx = None
+     tx = None
+     expectIF = False
+   elif len(words) == 0:
+     if interface and rx and tx:
+       print "%-8s RX:%10d TX:%10d" % (interface, rx, tx)
+     else:
+       # print "%s %s %s" % (interface, rx, tx)
+       pass
+     interface = None
+     rx = None
+     tx = None
+     expectIF = True
+   elif interface:
+     if words[0] == "RX" and "packets:" in line:
+       rx = packets(words[1])
+     elif words[0] == "TX" and "packets:" in line:
+       tx = packets(words[1])

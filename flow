@@ -1,0 +1,153 @@
+#! /usr/bin/python
+import sys
+import os
+import getopt
+import math
+
+from Decolorizer import *
+from BrunoUtils import *
+
+class Orient:
+  horizontal = 1
+  vertical = 2
+
+  def __init__(self, value):
+    self.value = value
+
+  def isHorizontal(self):
+    return self.value == self.horizontal
+
+  def isVertical(self):
+    return self.value == self.vertical
+
+def usage():
+  print >> sys.stderr, "Syntax: %s [-w num|--width=num] [-v|--vertical] [-h|--horizontal] [-x|--verbose] [-?|--help]" % sys.argv[0]
+
+def debug(msg):
+  global verbose, deferred_msgs
+  if verbose:
+    print str(msg)
+  else:
+    deferred_msgs.append(msg)
+
+verbose = False
+deferred_msgs = []
+orientation = Orient(Orient.horizontal)
+sepWidth = 1
+maxWidth = 1
+
+tput_cols=BrunoUtils.cols()
+
+if tput_cols:
+  width = tput_cols
+elif "COLUMNS" in os.environ:
+  width = int(os.environ["COLUMNS"])
+else:
+  width = 80
+
+def get(row, col):
+  global orientation, rows, cols, data, colsInLastRow
+  if orientation.isHorizontal():
+    pos = row*cols + col
+    if pos >= len(data):
+      return ""
+    else:
+      return data[pos]
+  else:
+    isLastRow = row+1 == rows
+    if isLastRow:
+      if (col>=colsInLastRow):
+        return ""
+      else:
+        return data[col*rows + row]
+    else:
+      if col < colsInLastRow:
+        return data[col*rows + row]
+      else:
+        return data[col*(rows-1) + row + colsInLastRow]
+
+try:
+  opts, args = getopt.getopt(sys.argv[1:], "hvxw:?", ["horizontal", "vertical", "verbose", "width=", "help"])
+except getopt.GetoptError as err:
+  print str(err)
+  usage()
+  sys.exit(2)
+
+for opt, arg in opts:
+  if opt in ["-x", "--verbose"]:
+    verbose = not verbose
+    if verbose and len(deferred_msgs) > 0:
+      for msg in deferred_msgs:
+        print msg
+  elif opt in ["-h", "--horizontal"]:
+    orientation = Orient(Orient.horizontal)
+  elif opt in ["-v", "--vertical"]:
+    orientation = Orient(Orient.vertical)
+  elif opt in ["-w", "--width"]:
+    try:
+      width = int(arg)
+    except Exception as e:
+      print >> sys.stderr, "Invalid width arg %s: %s" % (arg, str(e))
+      usage()
+      sys.exit(1)
+  elif opt in ["-?", "--help"]:
+    usage()
+    sys.exit()
+  else:
+    raise Exception("Unexpected option: %s" % o)
+
+# if len(args) != 0:
+#   usage()
+#   sys.exit(1)
+
+data = []
+
+if len(args) == 0:
+  if os.isatty(sys.stdin.fileno()):
+    print >> sys.stderr, "Cowardly refusing to read from the terminal!"
+    usage()
+    sys.exit(1)
+
+  # data comes from stdin
+  decolorizer = Decolorizer()
+  for line in sys.stdin:
+    line = decolorizer.process(line)
+    if line:
+      line = line.translate(None, "\n")
+      if len(line) > maxWidth:
+        maxWidth = len(line)
+      data.append(line)
+elif len(args) > 1:
+  data = args[1:]
+  for datum in data:
+    if len(datum) > maxWidth:
+      maxWidth = len(datum)
+
+debug("items: %d" % len(data))
+debug("width: %d" % width)
+debug("max width: %d" % maxWidth)
+
+curr = maxWidth
+cols = 1
+step = maxWidth + sepWidth
+debug("step: %d" % step)
+while (curr + step) < width and (cols < len(data)): 
+  curr += step
+  cols += 1
+  debug("%d columns take up %d bytes" % (cols, curr))
+
+colsInLastRow = len(data) % cols
+if colsInLastRow == 0:
+  colsInLastRow = cols
+debug("colsInLastRow: %d" % colsInLastRow)
+
+debug("columns: %d" % cols)
+rows = int(math.ceil((len(data) * 1.0) / cols))
+debug("rows: %d" % rows)
+
+for row in range(rows):
+  for col in range(cols):
+    if col > 0:
+      sys.stdout.write(" " * sepWidth)
+    sys.stdout.write("%-*s" % (maxWidth, get(row, col)))
+  sys.stdout.write("\n")
