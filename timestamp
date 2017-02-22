@@ -1,0 +1,22 @@
+#! /usr/bin/python
+
+# date '+%Y-%m-%dT%H:%M:%S.%N'
+
+import re
+import sys
+import datetime
+
+assert len(sys.argv) in [1,2], "Syntax: %s <secs since epoch>" % sys.argv[0]
+
+ts = datetime.datetime.now()
+if len(sys.argv) == 2:
+  if re.match("\d+\.?\d*$", sys.argv[1]):
+    ts = datetime.datetime.fromtimestamp(float(sys.argv[1]))
+  elif re.match("\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$", sys.argv[1]):
+    ts = datetime.datetime.strptime(sys.argv[1], "%Y-%m-%dT%H:%M:%S")
+  else:
+    sys.stderr.write("I don't know how to handle %s\n" % repr(sys.argv[1]))
+    exit(1)
+  
+print datetime.datetime.strftime(ts, "%Y-%m-%dT%H:%M:%S.%f")
+print (ts - datetime.datetime.utcfromtimestamp(0)).total_seconds()
