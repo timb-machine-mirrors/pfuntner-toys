@@ -1,0 +1,39 @@
+#! /usr/bin/python
+
+import os
+import os.path
+import sys
+import re
+
+if len(sys.argv) == 1:
+  sys.stderr.write("Syntax %s pat1 [pat2 ...]\n" % sys.argv[0])
+  exit(1)
+
+positivePats = []
+negativePats = []
+
+for pat in sys.argv[1:]:
+  if pat and (pat[0] == '!'):
+    negativePats.append(re.compile(pat[1:]))
+  else:
+    positivePats.append(re.compile(pat))
+
+dirs = os.environ["PATH"].split(':')
+for dir in dirs:
+  if os.path.isdir(dir):
+    files = os.listdir(dir)
+    for file in files:
+      path = os.path.join(dir, file)
+      if os.path.isfile(path) and os.access(path, os.X_OK):
+        candidate = False
+        for pat in positivePats:
+          if pat.search(file):
+            candidate = True
+            break
+        if candidate:
+          for pat in negativePats:
+            if pat.search(file):
+              candidate = False
+              break
+        if candidate:
+          print path
