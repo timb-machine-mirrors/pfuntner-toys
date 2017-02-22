@@ -5,6 +5,17 @@ import json
 
 assert not sys.stdin.isatty(), "stdin must be redirected"
 
-data = json.loads(sys.stdin.read())
-
-json.dump(data, sys.stdout, indent=2)
+rawdata = sys.stdin.read()
+try:
+  s# ys.stderr.write("Attempt 1 with entire buffer (%d bytes)\n" % len(rawdata))
+  data = json.loads(rawdata)
+  print json.dumps(data, indent=2)
+except Exception as e:
+  count = 0
+  for line in rawdata.strip('\n').split('\n'):
+    if count:
+      print ""
+    count += 1
+    # sys.stderr.write("Attempt %d with line %d (%d bytes)\n" % (count+1, count, len(line)))
+    data = json.loads(line)
+    print json.dumps(data, indent=2)
