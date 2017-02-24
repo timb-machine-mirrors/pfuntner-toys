@@ -1,0 +1,60 @@
+#! /usr/bin/python
+
+import re
+import sys
+import getopt
+
+ignoreCase = False
+negate = False
+numbers = False
+
+def process(filename=None):
+  if filename:
+    f = open(filename, "r")
+  else:
+    f = sys.stdin
+
+  lineno = 0
+  for line in f:
+    lineno += 1
+    line = line.strip('\n')
+    match = regexp.search(line)
+    if (match and (not negate)) or ((not match) and negate):
+      if filename:
+        sys.stdout.write(filename)
+        if numbers: sys.stdout.write(' ')
+      if numbers:
+        sys.stdout.write(lineno)
+      if filename or numbers:
+        sys.stdout.write(':')
+      sys.stdout.write("%s\n" % line)
+    
+  if filename:
+    f.close()
+
+(opts,args) = getopt.getopt(sys.argv[1:], "nvi", [])
+for (opt,arg) in opts:
+  if opt == "-v":
+    negate = not negate
+  elif opt == "-i":
+    ignoreCase = not ignoreCase
+  elif opt == "-n":
+    numbers = not numbers
+  else:
+    sys.stderr.write("Unhandled option: `%s`\n" % opt)
+    exit(1)
+
+if not args:
+  sys.stderr.write("Syntax: %0 [-ivn] regexp [file ...]\n")
+  exit(1)
+
+regexp = re.compile(args.pop(0), flags=re.IGNORECASE if ignoreCase else 0)
+
+if args:
+  for filename in args:
+    process(filename)
+elif sys.stdin.isatty():
+  sys.stderr.write("stdin must be redirected\n")
+  exit(1)
+else:
+  process()
