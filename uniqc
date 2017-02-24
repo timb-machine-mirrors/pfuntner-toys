@@ -1,0 +1,53 @@
+#! /usr/bin/python
+
+import sys
+import math
+
+def install(token):
+  global tokens
+  global total
+
+  if token not in tokens:
+    tokens[token] = 0
+  tokens[token] += 1
+  total += 1
+
+def process(f):
+  for line in f:
+    install(line.strip('\n').strip('\r'))
+
+tokens = {}
+total = 0
+
+if len(sys.argv) > 1:
+  for filename in sys.argv[1:]:
+    with open(filename, "r") as f:
+      process(f)
+elif sys.stdin.isatty():
+  sys.stderr.write("stdin must be redirected\n")
+  exit(1)
+else:
+  process(sys.stdin)
+
+print "%d total items" % total
+if total:
+  digits = math.log(total, 10)
+  if (digits % 1) == 0:
+    digits = int(digits+1)
+  else:
+    digits = int(math.ceil(digits))
+  
+  def comparator(token1, token2):
+    if tokens[token1] == tokens[token2]:
+      if token1 < token2:
+        return 1
+      elif token1 > token2:
+        return -1
+      else:
+        return 0
+    else:
+      return tokens[token1] - tokens[token2]
+    
+  # for token in sorted(tokens.keys(), key=lambda token: tokens[token], reverse=True):
+  for token in sorted(tokens.keys(), cmp=comparator, reverse=True):
+    print "%*d %6.2f%% %s" % (digits, tokens[token], (tokens[token]*100.0)/total, token)

@@ -1,0 +1,18 @@
+pgm=$(basename "$0")
+pgm=${pgm%.*}
+time=$(date "+%Y%m%d%H%M%S")
+
+for file in "$@"
+do
+  echo "fixing $file"
+  temp=${TMPDIR:-.}/$pgm.$time.temp
+  if tr -d '\r' < "$file" > $temp
+  then
+    if ! mv $temp "$file"
+    then
+      exit 1
+    fi
+  else
+    exit 1
+  fi
+done
