@@ -1,0 +1,22 @@
+#! /usr/bin/python
+
+import sys
+import os.path
+import datetime
+
+def process(filename):
+  if os.path.exists(filename):
+    if os.path.isfile(filename):
+        files[filename] = datetime.datetime.strftime(datetime.datetime.fromtimestamp(os.path.getmtime(filename)), "%Y/%m/%d %H:%M:%S.%f")
+    else:
+      sys.stderr.write("`%s` is not a regular file\n" % filename)
+  else:
+    sys.stderr.write("`%s` does not exist\n" % filename)
+
+
+files = {}
+for filename in sys.argv[1:]:
+  process(filename)
+
+for filename in sorted(files, key=lambda file: files[file], reverse=True):
+  print "%s %s" % (files[filename], filename)
