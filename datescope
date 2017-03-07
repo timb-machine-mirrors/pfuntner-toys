@@ -3,6 +3,7 @@
 import re
 import sys
 import datetime
+import getopt
 
 assert not sys.stdin.isatty(), "stdin is not redirected"
 
@@ -53,6 +54,20 @@ pats = [
          Pattern("(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6})", "%Y-%m-%d %H:%M:%S.%f"), # Python datetime.datetime default format: "2017-03-06 16:04:42.318470"
        ]
 
+after = None
+crossedThreshold = False
+
+(opts, args) = getopt.getopt(sys.argv[1:], "a:", ["after="])
+for (opt, arg) in opts:
+  if opt in ["-a", "--after"]:
+    for pat in pats:
+      after = pat.parse(arg)
+      if after:
+        break
+    if not after:
+      sys.stderr.write("`%s` did not match %s\n" % (arg, " or ".join([repr(pat.regexp.pattern) for pat in pats])))
+      exit(1)
+
 first = None
 last = None
 diffs = []
@@ -61,15 +76,23 @@ for line in sys.stdin:
   for pat in pats:
     timestamp = pat.parse(line)
     if timestamp:
-      if not first:
-        first = timestamp
+      if after:
+        if not crossedThreshold:
+          crossedThreshold = timestamp >= after
+      else:
+        if not first:
+          first = timestamp
+  
+        if last:
+         diffs.append(timestamp - last)      
+  
+        last = timestamp
 
-      if last:
-       diffs.append(timestamp - last)      
+  if after and crossedThreshold:
+    sys.stdout.write(line)
 
-      last = timestamp
-
-if len(diffs) == 1:
-  print "Two times, difference = %s" % human(diffs[0])
-elif len(diffs) > 1:
-  print "Over a period of %s and %d samples, the average difference in times was %s" % (human(last-first), len(diffs), human(sum([diff.total_seconds() for diff in diffs])/len(diffs)))
+if not after:
+  if len(diffs) == 1:
+    print "Two times, difference = %s" % human(diffs[0])
+  elif len(diffs) > 1:
+    print "Over a period of %s and %d samples, the average difference in times was %s" % (human(last-first), len(diffs), human(sum([diff.total_seconds() for diff in diffs])/len(diffs)))
