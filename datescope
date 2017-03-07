@@ -1,0 +1,75 @@
+#! /usr/bin/python
+
+import re
+import sys
+import datetime
+
+assert not sys.stdin.isatty(), "stdin is not redirected"
+
+class Pattern:
+  def __init__(self, regexp, pat):
+    self.regexp = re.compile(regexp)
+    self.pat = pat
+
+  def parse(self, line):   
+    ret = None
+    match = self.regexp.search(line)
+    if match:
+      try:
+        ret = datetime.datetime.strptime(match.group(1), self.pat)
+      except Exception as e:
+        print "Caught %s parsing %s with %s" % (repr(e), repr(match.group(1)), repr(self.pat))
+
+    return ret
+
+def div(a, b):
+  x = int(a/b)
+  return (x, a-(x*b))
+
+def human(diff):
+  ret = ""
+
+  if type(diff) == type(0.1):
+    secs = diff
+  else:
+    secs = diff.total_seconds()
+
+  (days, secs) = div(secs, 24*60*60)
+  (hours, secs) = div(secs, 60*60)
+  (mins, secs) = div(secs, 60)
+
+  if days > 0:
+    ret += "%dd" % days
+  if ret or (hours > 0):
+    ret += "%02dh" % hours
+  if ret or (mins > 0):
+    ret += "%02dm" % mins
+  ret += "%05.2fs" % secs
+
+  return ret
+
+pats = [
+         Pattern("([A-Z][a-z]{2} [A-Z][a-z]{2} [ 0-9]\d \d{2}:\d{2}:\d{2} \S+ \d{4})", "%a %b %d %H:%M:%S %Z %Y"), # Unix `date` style: "Thu Mar  2 07:45:42 EST 2017"
+         Pattern("(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6})", "%Y-%m-%d %H:%M:%S.%f"), # Python datetime.datetime default format: "2017-03-06 16:04:42.318470"
+       ]
+
+first = None
+last = None
+diffs = []
+
+for line in sys.stdin:
+  for pat in pats:
+    timestamp = pat.parse(line)
+    if timestamp:
+      if not first:
+        first = timestamp
+
+      if last:
+       diffs.append(timestamp - last)      
+
+      last = timestamp
+
+if len(diffs) == 1:
+  print "Two times, difference = %s" % human(diffs[0])
+elif len(diffs) > 1:
+  print "Over a period of %s and %d samples, the average difference in times was %s" % (human(last-first), len(diffs), human(sum([diff.total_seconds() for diff in diffs])/len(diffs)))
