@@ -1,0 +1,86 @@
+#! /usr/bin/env python
+
+import sys
+import string
+import re
+import getopt
+
+def syntax(msg = None):
+  if msg:
+    sys.stderr.write("%s\n\n" % msg)
+  sys.stderr.write("Syntax: %s [-s] [-F |] [--regexp pattern] field ...\n" % sys.argv[0])
+  exit(1)
+
+regexp = None
+delim = ' '
+pat = ' +'
+squeeze = False # squeeze consecutive fields together: treating them as one
+ignore = False # ignore lines that do not have the desired fields
+
+if sys.stdin.isatty():
+  syntax("stdin is not redirected")
+
+(opts,args) = getopt.getopt(sys.argv[1:], "isF:", ["regexp="])
+
+for (opt,arg) in opts:
+   if opt == "-F":
+     delim = arg
+   elif opt == "-s":
+     squeeze = not squeeze
+   elif opt == "-i":
+     ignore = not ignore
+   elif opt == "--regexp":
+     regexp = re.compile(arg)
+   else:
+     syntax("Unknown option `%s`" % opt)
+
+if not args:
+  syntax()
+
+if delim == "\\t":
+  delim = '\t'
+
+"""
+  expand ranges of fields
+"""
+rangeRegexp = re.compile("^(\d+)-(\d+)$")
+curr = 0
+while curr < len(args):
+  # print "args[curr]: %s, %s" % (repr(args[curr]), type(args[curr]))
+  match = rangeRegexp.search(args[curr])
+  if match:
+    # sys.stderr.write("Expanding %s from %s to " % (repr(args[curr]), str(args)))
+    low = int(match.group(1))
+    high = int(match.group(2))
+    args = args[:curr] + [str(low + inc) for inc in range(high-low+1)] + args[curr+1:]
+    # sys.stderr.write("%s\n" % str(args))
+  curr += 1
+
+desiredFields = []
+try:
+  for field in args:
+    field = int(field)
+    if field == 0:
+      raise Exception("Field cannot be zero")
+    if (field > 0) and (not regexp):
+      field -= 1
+    desiredFields += [field]
+except Exception as e:
+  syntax("Invalid field: `%s`" % str(e))
+
+for line in sys.stdin:
+  line = string.replace(string.replace(line, '\n', ''), '\r', '')
+  if squeeze:
+    line = re.sub(pat, delim, line.strip(delim))
+  output = []
+  if regexp:
+    match = regexp.search(line)
+    if match:
+      print delim.join([match.group(field) for field in desiredFields])
+  else:
+    tokens = line.split(delim)
+    for field in desiredFields:
+      if field < len(tokens):
+        output += [tokens[field]]
+    if (not ignore) or (len(output) > 0):
+      print delim.join(output)
