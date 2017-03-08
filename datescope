@@ -4,6 +4,7 @@ import re
 import sys
 import datetime
 import getopt
+import math
 
 assert not sys.stdin.isatty(), "stdin is not redirected"
 
@@ -22,6 +23,20 @@ class Pattern:
         print "Caught %s parsing %s with %s" % (repr(e), repr(match.group(1)), repr(self.pat))
 
     return ret
+
+def mean(lst):
+  """
+    returns the mean (average) of the list
+  """
+  return float(sum(lst)) / max(len(lst), 1)
+
+def stddev(lst):
+  """
+    returns the standard deviation of the list
+  """
+  mn = mean(lst)
+  variance = sum([(e-mn)**2 for e in lst]) / len(lst)
+  return math.sqrt(variance)
 
 def div(a, b):
   x = int(a/b)
@@ -120,3 +135,4 @@ if (not after) and (not before):
     print "Two times, difference = %s" % human(diffs[0])
   elif len(diffs) > 1:
     print "Over a period of %s and %d samples, the average difference in times was %s" % (human(last-first), len(diffs), human(sum([diff.total_seconds() for diff in diffs])/len(diffs)))
+    print "Max: %s, Min: %s, stddev: %s" % (human(max(diffs)), human(min(diffs)), human(stddev([diff.total_seconds() for diff in diffs])))
