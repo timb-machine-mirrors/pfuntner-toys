@@ -49,24 +49,43 @@ def human(diff):
 
   return ret
 
+def timestampParse(arg):
+  for pat in pats:
+    t = pat.parse(arg)
+    if t:
+      break
+  if not t:
+    sys.stderr.write("`%s` did not match %s\n" % (arg, " or ".join([repr(pat.regexp.pattern) for pat in pats])))
+    exit(1)
+
+  return t
+
 pats = [
          Pattern("([A-Z][a-z]{2} [A-Z][a-z]{2} [ 0-9]\d \d{2}:\d{2}:\d{2} \S+ \d{4})", "%a %b %d %H:%M:%S %Z %Y"), # Unix `date` style: "Thu Mar  2 07:45:42 EST 2017"
          Pattern("(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6})", "%Y-%m-%d %H:%M:%S.%f"), # Python datetime.datetime default format: "2017-03-06 16:04:42.318470"
        ]
 
+before = None
 after = None
-crossedThreshold = False
 
-(opts, args) = getopt.getopt(sys.argv[1:], "a:", ["after="])
+(opts, args) = getopt.getopt(sys.argv[1:], "a:b:", ["after=", "before="])
 for (opt, arg) in opts:
   if opt in ["-a", "--after"]:
-    for pat in pats:
-      after = pat.parse(arg)
-      if after:
-        break
-    if not after:
-      sys.stderr.write("`%s` did not match %s\n" % (arg, " or ".join([repr(pat.regexp.pattern) for pat in pats])))
-      exit(1)
+    after = timestampParse(arg)
+  elif opt in ["-b", "--before"]:
+    before = timestampParse(arg)
+  else:
+    sys.stderr.write("Don't know how to handle %s\n" % repr(opt))
+    exit(1)
+
+assert (not after) or (not before) or (after <= before), "%s > %s" % (str(after), str(before))
+
+if after and (not before):
+  emit = False
+elif (not after) and before:
+  emit = True
+else:
+  emit = False
 
 first = None
 last = None
@@ -76,9 +95,14 @@ for line in sys.stdin:
   for pat in pats:
     timestamp = pat.parse(line)
     if timestamp:
-      if after:
-        if not crossedThreshold:
-          crossedThreshold = timestamp >= after
+      if after and (not before):
+        if not emit:
+          emit = timestamp >= after
+      elif before and (not after):
+        if emit:
+          emit = timestamp <= before
+      elif before and after:
+        emit = (timestamp >= after) and (timestamp <= before)
       else:
         if not first:
           first = timestamp
@@ -88,10 +112,10 @@ for line in sys.stdin:
   
         last = timestamp
 
-  if after and crossedThreshold:
+  if (after or before) and emit:
     sys.stdout.write(line)
 
-if not after:
+if (not after) and (not before):
   if len(diffs) == 1:
     print "Two times, difference = %s" % human(diffs[0])
   elif len(diffs) > 1:
