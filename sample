@@ -1,0 +1,53 @@
+#! /usr/bin/python
+
+import re
+import sys
+import getopt
+
+assert not sys.stdin.isatty(), "stdin must be redirected"
+
+groups = 10
+zeros = True
+
+(opts,args) = getopt.getopt(sys.argv[1:], "g:z", ["groups=", "zeros"])
+for (opt,arg) in opts:
+  if opt in ["-g", "--groups"]:
+    groups = int(arg)
+  elif opt in ["-z", "--zeros"]:
+    zeros = not zeros
+  else:
+    raise Exception("Unexpected option %s" % repr(opt))
+
+assert groups > 0, "--groups must be a postive integer"
+
+regexp = re.compile("((\d+\.?\d*)|(\d*\.?\d+))")
+dot = re.compile("\.")
+
+nums = []
+floats = False
+for line in sys.stdin:
+  match = regexp.search(line)
+  # print "%s => %s%s" % (repr(line), "MATCH" if match else "NO-MATCH", "" if not match else (" " + str(match.groups())))
+  if match:
+    num = match.group(1)
+    if dot.search(num):
+      num = float(num)
+      floats = True
+    else:
+      num = int(num)
+    nums.append(num)
+
+size = (max(nums) - min(nums)) / (groups*1.0)
+for iteration in range(groups):
+  low = min(nums) + (size*iteration)
+  if (iteration+1) == groups:
+    high = max(nums)
+    count =  len([num for num in nums if (low <= num) and (num <= high)])
+    if zeros or count:
+      print "%6.2f <= x <= %6.2f: %8d" % (low, high, count)
+  else:
+    high = min(nums) + (size*(iteration+1))
+    count =  len([num for num in nums if (low <= num) and (num < high)])
+    if zeros or count:
+      print "%6.2f <= x <  %6.2f: %8d" % (low, high, count)
+
