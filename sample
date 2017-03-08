@@ -7,6 +7,9 @@ import math
 
 assert not sys.stdin.isatty(), "stdin must be redirected"
 
+def ratio(count, total):
+  return "%6.2f%%" % ((count*100.0) / total)
+  
 groups = 10
 zeros = True
 
@@ -52,17 +55,17 @@ for iteration in range(groups):
     count =  len([num for num in nums if (low <= num) and (num <= high)])
     if zeros or count:
       if floats:
-        print "%*.2f %*.2f %8d" % (maxwidth, low, maxwidth, high, count)
+        print "%*.2f %*.2f %8d %s" % (maxwidth, low, maxwidth, high, count, ratio(count, len(nums)))
       else:
-        print "%*d %*d %8d" % (maxwidth, low, maxwidth, high, count)
+        print "%*d %*d %8d %s" % (maxwidth, low, maxwidth, high, count, ratio(count, len(nums)))
   else:
     high = min(nums) + (size*(iteration+1))
     count =  len([num for num in nums if (low <= num) and (num < high)])
     if zeros or count:
       if floats:
-        print "%*.2f %*.2f %8d" % (maxwidth, low, maxwidth, high, count)
+        print "%*.2f %*.2f %8d %s" % (maxwidth, low, maxwidth, high, count, ratio(count, len(nums)))
       else:
-        print "%*d %*d %8d" % (maxwidth, low, maxwidth, high, count)
+        print "%*d %*d %8d %s" % (maxwidth, low, maxwidth, high, count, ratio(count, len(nums)))
 
   if (not floats) and (high > max(nums)):
     break
