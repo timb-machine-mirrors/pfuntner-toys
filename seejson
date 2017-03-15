@@ -6,8 +6,11 @@ import json
 assert not sys.stdin.isatty(), "stdin must be redirected"
 
 rawdata = sys.stdin.read()
+if "--eval" in sys.argv:
+  rawdata = eval(rawdata)
+
 try:
-  s# ys.stderr.write("Attempt 1 with entire buffer (%d bytes)\n" % len(rawdata))
+  # sys.stderr.write("Attempt 1 with entire buffer (%d bytes)\n" % len(rawdata))
   data = json.loads(rawdata)
   print json.dumps(data, indent=2)
 except Exception as e:

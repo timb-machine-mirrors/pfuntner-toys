@@ -3,17 +3,33 @@
 import re
 import sys
 import json
+import pdb
 
 assert not sys.stdin.isatty(), "sysin must be redirected"
 
-objs = json.load(sys.stdin)
 
 isInt = re.compile("^-?\d+$")
 
-for elem in sys.argv[1:]:
-  if isInt.search(elem):
-    objs = objs[int(elem)]
-  else:
-    objs = objs[elem]
+def visit(objs, elems):
+  for num in range(len(elems)):
+    elem = elems[num]
+    if elem == '*':
+      if type(objs) == list:
+        for child in objs:
+          visit(child, elems[num+1:])
+      elif type(objs) == dict:
+        for child in objs:
+          visit(objs[child], elems[num+1:])
+      else:
+        raise Exception("%s is not supported for element type %s" % (repr(elem), str(type(objs))))
+    elif isInt.search(elem):
+      objs = objs[int(elem)]
+    else:
+      try:
+        objs = objs[elem]
+      except Exception as e:
+        return
 
-print json.dumps(objs, indent=2)
+  print json.dumps(objs, indent=2)
+
+visit(json.load(sys.stdin), sys.argv[1:])

@@ -82,13 +82,16 @@ pats = [
 
 before = None
 after = None
+verbose = False
 
-(opts, args) = getopt.getopt(sys.argv[1:], "a:b:", ["after=", "before="])
+(opts, args) = getopt.getopt(sys.argv[1:], "va:b:", ["verbose", "after=", "before="])
 for (opt, arg) in opts:
   if opt in ["-a", "--after"]:
     after = timestampParse(arg)
   elif opt in ["-b", "--before"]:
     before = timestampParse(arg)
+  elif opt in ["-v", "--verbose"]:
+    verbose = not verbose
   else:
     sys.stderr.write("Don't know how to handle %s\n" % repr(opt))
     exit(1)
@@ -123,7 +126,10 @@ for line in sys.stdin:
           first = timestamp
   
         if last:
-         diffs.append(timestamp - last)      
+          diff = timestamp - last
+          diffs.append(diff)
+          if verbose:
+            print "%s %s %s" % (last, timestamp, diff)
   
         last = timestamp
 
