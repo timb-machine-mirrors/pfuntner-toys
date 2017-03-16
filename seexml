@@ -1,0 +1,66 @@
+#! /usr/bin/python
+
+import sys
+import re
+import getopt
+import xml.etree.ElementTree as ET
+
+def syntax():
+  sys.stderr.write("Syntax: %s [xml_file_name]\n" % sys.argv[0])
+  exit(1)
+
+simplifyingRegexp = re.compile("\{[^{}]+\}(.+)$")
+
+def simplify(s):
+  ret = s
+  if simple:
+    match = simplifyingRegexp.match(s)
+    if match:
+      s = match.group(1)
+  return s
+
+def unravel(attribs):
+  ret = ''
+  if attribs:
+    ret = " %s" % ' '.join(["%s=%s" % (key, repr(attribs[key])) for key in sorted(attribs.keys())])
+  return ret
+
+def visit(node, depth=0):
+  if node is not None:
+    sys.stdout.write("%s<%s%s>" % (' ' * (depth*2), simplify(node.tag), unravel(node.attrib)))
+
+    if len(node):
+      sys.stdout.write('\n')
+      for child in node:
+        visit(child, depth+1)
+    elif node.text == None:
+      sys.stdout.write('\n')
+
+    if node.text != None:
+      sys.stdout.write(node.text)
+    else:
+      sys.stdout.write("%s" % (' ' * (depth*2)))
+    sys.stdout.write("</%s>\n" % simplify(node.tag))
+
+def process(f):
+  visit(ET.fromstring(f.read()))
+
+simple = False
+(opts,args) = getopt.getopt(sys.argv[1:], "", ["simple"])
+for (opt,arg) in opts:
+  if opt == "--simple":
+    simple = not simple
+  else:
+    sys.stderr.write("I don't know how to handle `%s`" % opts)
+    syntax()
+
+if len(args) > 1:
+  syntax()
+elif len(args) == 1:
+  with open(args[0], "r") as f:
+    process(f)
+elif sys.stdin.isatty():
+  sys.stderr.write("%s does not read from the terminal\n" % sys.argv[0])
+  syntax()
+else:
+  process(sys.stdin)
