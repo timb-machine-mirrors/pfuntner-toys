@@ -1,0 +1,2 @@
+set -x
+curl --user kibana:changeme -XGET 'localhost:9200/_cat/indices?v&pretty'
