@@ -1,8 +1,48 @@
-set -x
-if [ "X$1" == X ]
-then
-  echo "Syntax: $0 index" >&2
-  exit 1
-fi
+#! /usr/bin/python
 
-curl --user kibana:changeme -d ' { "query": { "match_all": {} } } ' -XGET "localhost:9200/${1}/_search/"
+import re
+import sys
+import json
+import subprocess
+
+def syntax():
+  sys.stderr.write("Syntax: %s index-name [var=value ...]\n" % sys.argv[0])
+  exit(1)
+
+if len(sys.argv) < 2:
+  syntax()
+
+"""
+  This default query returns all elements
+"""
+query = {
+          "query": { 
+            "match_all": {
+            }
+          }
+        }
+
+"""
+{
+  "query": { 
+    "match": { 
+      "account_number": 20 
+    }
+  }
+}
+"""
+
+if len(sys.argv) > 2:
+  del query["query"]["match_all"]
+  query["query"]["match"] = {}
+  for curr in sys.argv[2:]:
+    match = re.match("([^=]+)=(.*)$", curr)
+    assert match, "Could not parse %s" % curr
+    query["query"]["match"][match.group(1)] = match.group(2)
+
+sys.stderr.write(json.dumps(query, indent=2) + '\n')
+
+p = subprocess.Popen(["curl", "-d", json.dumps(query), "-X", "GET", "localhost:9200/%s/_search/" % sys.argv[1]], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+(stdout, stderr) = p.communicate()
+rc = p.wait()
+sys.stdout.write(stdout)

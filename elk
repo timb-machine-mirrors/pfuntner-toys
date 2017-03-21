@@ -107,6 +107,7 @@ if (not kibana) and (action == "start"):
   say("Starting kibana")
   expose([1])
   kibana = client.containers.run("kibana", name="elk-kibana", links={"elk-elasticsearch": "elk-elasticsearch"}, ports={5601: 5601}, detach=True)
+  # kibana = client.containers.run("docker.elastic.co/kibana/kibana:5.2.2", name="elk-kibana", links={"elk-elasticsearch": "elk-elasticsearch"}, ports={5601: 5601}, detach=True)
   for loop in range(6):
     say("Waiting for kibana to initialize...")
     time.sleep(5)

@@ -6,25 +6,32 @@ import datetime
 import getopt
 import getopt
 
+def secondsSinceEpoch(s):
+  return datetime.datetime.fromtimestamp(float(s))
+
 class Pattern:
   def __init__(self, regexp, pat):
     self.regexp = re.compile(regexp)
     self.pat = pat
 
   def parse(self, line):   
-    ret = None
+    ret = (None, None)
     match = self.regexp.search(line)
     if match:
-      try:
-        ret = (match.group(1), datetime.datetime.strptime(match.group(1), self.pat))
-      except Exception as e:
-        print "Caught %s parsing %s with %s" % (repr(e), repr(match.group(1)), repr(self.pat))
+      if type(self.pat) == str:
+        try:
+          ret = (match.group(1), datetime.datetime.strptime(match.group(1), self.pat))
+        except Exception as e:
+          print "Caught %s parsing %s with %s" % (repr(e), repr(match.group(1)), repr(self.pat))
+      else:
+        ret = (match.group(1), self.pat(match.group(1)))
 
     return ret
 
 pats = [
          Pattern("([A-Z][a-z]{2} [A-Z][a-z]{2} [ 0-9]\d \d{2}:\d{2}:\d{2} \S+ \d{4})", "%a %b %d %H:%M:%S %Z %Y"), # Unix `date` style: "Thu Mar  2 07:45:42 EST 2017"
          Pattern("(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6})", "%Y-%m-%d %H:%M:%S.%f"), # Python datetime.datetime default format: "2017-03-06 16:04:42.318470"
+         Pattern("(\d+\.\d+)", secondsSinceEpoch), # Seconds since epoch: "1489689993.956153"
        ]
 
 def syntax():
