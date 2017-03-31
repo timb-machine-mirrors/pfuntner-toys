@@ -12,4 +12,19 @@ alias r='fc -s'
 alias more=less
 
 # Set up ~/bin/git as my `git` command rather than /usr/bin/git so it can auto-complete my user & token
-alias git=$HOME/bin/git
+if test -f "$HOME/bruno/bin/git"
+then
+  alias git=$HOME/bruno/bin/git
+if test -f "$HOME/bin/git"
+then
+  alias git=$HOME/bin/git
+fi
+
+# Set alias for vi using my .exrc:
+if test -f "$HOME/bruno/bin/misc/.exrc"
+then
+  alias vi="vi -u $HOME/bruno/bin/misc/.exrc"
+elif test -f "$HOME/bin/misc/.exrc"
+then
+  alias vi="vi -u $HOME/bin/misc/.exrc"
+fi
