@@ -15,8 +15,13 @@ def process(filename):
 
 
 files = {}
-for filename in sys.argv[1:]:
-  process(filename)
+if len(sys.argv) > 1:
+  for filename in sys.argv[1:]:
+    process(filename)
+else:
+  assert not sys.stdin.isatty(), "stdin must be redirected or you must specify files as arguments"
+  for filename in sys.stdin.read().strip('\n').split('\n'):
+    process(filename)
 
 for filename in sorted(files, key=lambda file: files[file], reverse=True):
   print "%s %s" % (files[filename], filename)
