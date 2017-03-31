@@ -15,7 +15,7 @@ alias more=less
 if test -f "$HOME/bruno/bin/git"
 then
   alias git=$HOME/bruno/bin/git
-if test -f "$HOME/bin/git"
+elif test -f "$HOME/bin/git"
 then
   alias git=$HOME/bin/git
 fi
