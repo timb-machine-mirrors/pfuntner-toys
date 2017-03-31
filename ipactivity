@@ -1,22 +1,30 @@
 #!/usr/bin/python
 
+import re
 import subprocess
 
-# eth0      Link encap:Ethernet  HWaddr 00:50:56:b4:0f:2f  
-# inet addr:10.47.12.150  Bcast:10.47.12.255  Mask:255.255.255.0
-# inet6 addr: fe80::250:56ff:feb4:f2f/64 Scope:Link
-# UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-# RX packets:14092230 errors:0 dropped:50 overruns:0 frame:0
-# TX packets:7004773 errors:0 dropped:0 overruns:0 carrier:0
-# collisions:0 txqueuelen:1000 
-# RX bytes:14890862914 (14.8 GB)  TX bytes:6295065692 (6.2 GB)
+"""
+ens192    Link encap:Ethernet  HWaddr 00:50:56:a0:e2:d1
+          inet addr:9.42.89.63  Bcast:9.42.89.255  Mask:255.255.255.0
+          inet6 addr: fe80::250:56ff:fea0:e2d1/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:38174561 errors:0 dropped:25825 overruns:0 frame:0
+          TX packets:26854487 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:32627598517 (32.6 GB)  TX bytes:3766956972 (3.7 GB)
+"""
 
-def packets(token):
-  ret = None
-  eyecatcher = "packets:"
-  if token.startswith(eyecatcher):
-    ret = int(token[len(eyecatcher):])
-  return ret
+def emit():
+  global interface, rx, tx
+
+  if interface and (rx != None) and (tx != None):
+    print "%-16s RX:%16d TX:%16d" % (interface, rx, tx)
+  interface = None
+  rx = None
+  tx = None
+
+ifPat = re.compile("(\S+)")
+bytesPat = re.compile("RX bytes:(\d+)\s.*TX bytes:(\d+)\s")
 
 p = subprocess.Popen(["ifconfig"], stdout=subprocess.PIPE)
 stdout = p.stdout.read()
@@ -24,33 +32,25 @@ rc = p.wait()
 if rc != 0:
    exit(rc)
 
-expectIF = True
 interface = None
 rx = None
 tx = None
 
 linenum = 0
 for line in stdout.strip('\n').split('\n'):
-   linenum += 1
-   words = line.split()
-   # print "%d: %s %s %s %s" % (linenum, words, interface, rx, tx)
-   if expectIF:
-     interface = words[0]
-     rx = None
-     tx = None
-     expectIF = False
-   elif len(words) == 0:
-     if interface and rx and tx:
-       print "%-8s RX:%10d TX:%10d" % (interface, rx, tx)
-     else:
-       # print "%s %s %s" % (interface, rx, tx)
-       pass
-     interface = None
-     rx = None
-     tx = None
-     expectIF = True
-   elif interface:
-     if words[0] == "RX" and "packets:" in line:
-       rx = packets(words[1])
-     elif words[0] == "TX" and "packets:" in line:
-       tx = packets(words[1])
+  match = None
+
+  if not interface:
+    match = ifPat.match(line)
+
+  if match:
+    interface = match.group(1)
+
+  elif interface:
+    match = bytesPat.search(line)
+    if match:
+      rx = int(match.group(1))
+      tx = int(match.group(2))
+      emit()
+
+emit()
