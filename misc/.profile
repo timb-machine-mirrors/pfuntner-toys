@@ -7,3 +7,14 @@
 
 export PAGER=less
 export EDITOR=vi
+
+# For shared systems, this is useful for automatically sourcing my personal setup script
+#
+# if [ "$($HOME/bruno/bin/incomingHost)" == "ibm750-r9rw756.raleigh.ibm.com" ]
+# then
+#   echo "$(hostname) welcomes Bruno"
+#   source $HOME/bruno/setup
+# fi
+
+true
+
