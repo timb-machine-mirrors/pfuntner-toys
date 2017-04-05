@@ -1,0 +1,10 @@
+#! /usr/bin/python
+
+import sys
+
+assert not sys.stdin.isatty(), "stdin must be redirected"
+
+pos = 0
+for c in sys.stdin.read():
+  print "%08d %02x %03o %s" % (pos, ord(c), ord(c), repr(c))
+  pos += 1
