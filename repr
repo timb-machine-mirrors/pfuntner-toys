@@ -1,0 +1,8 @@
+#! /usr/bin/python
+
+import sys
+
+assert not(sys.stdin.isatty()), "stdin must be redirected"
+
+for line in sys.stdin.read().strip('\n').split('\n'):
+  print repr(line.strip('\r'))[1:-1]
