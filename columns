@@ -4,6 +4,8 @@ import sys
 import string
 import re
 import getopt
+import csv
+import StringIO
 
 def syntax(msg = None):
   if msg:
@@ -14,13 +16,14 @@ def syntax(msg = None):
 regexp = None
 delim = ' '
 pat = ' +'
+csvInput = False
 squeeze = False # squeeze consecutive fields together: treating them as one
 ignore = False # ignore lines that do not have the desired fields
 
 if sys.stdin.isatty():
   syntax("stdin is not redirected")
 
-(opts,args) = getopt.getopt(sys.argv[1:], "isF:", ["regexp="])
+(opts,args) = getopt.getopt(sys.argv[1:], "isF:", ["regexp=", "csv"])
 
 for (opt,arg) in opts:
    if opt == "-F":
@@ -31,6 +34,8 @@ for (opt,arg) in opts:
      ignore = not ignore
    elif opt == "--regexp":
      regexp = re.compile(arg)
+   elif opt == "--csv":
+     csvInput = not csvInput
    else:
      syntax("Unknown option `%s`" % opt)
 
@@ -80,7 +85,11 @@ for line in sys.stdin:
     if match:
       print delim.join([match.group(field) for field in desiredFields])
   else:
-    tokens = line.split(delim)
+    if csvInput:
+      tokens = (csv.reader(StringIO.StringIO(line))).next()
+    else:
+      tokens = line.split(delim)
+
     for field in desiredFields:
       if field < len(tokens):
         output += [tokens[field]]
