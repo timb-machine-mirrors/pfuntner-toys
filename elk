@@ -69,6 +69,10 @@ if len(args) == 0:
   action = "check"
 elif len(args) == 1:
   action = args[0]
+  if action == "up":
+    action = "start"
+  elif action == "down":
+    action = "stop"
   assert action in ["status", "check", "start", "stop"], syntax()
 
 client = docker.from_env()
