@@ -84,7 +84,7 @@ if (not elasticsearch) and (action == "start"):
 
   say("Starting elasticsearch")
   expose([1])
-  elasticsearch = client.containers.run("docker.elastic.co/elasticsearch/elasticsearch:5.3.1", name="elk-elasticsearch", ports={9300:9300, 9200: 9200}, environment={"http.host": "0.0.0.0", "transport.host": "127.0.0.1"}, detach=True, volumes={ES_DIR: {"bind": "/usr/share/elasticsearch/data", "mode": "rw"}})
+  elasticsearch = client.containers.run("docker.elastic.co/elasticsearch/elasticsearch:5.4.0", name="elk-elasticsearch", ports={9300:9300, 9200: 9200}, environment={"http.host": "0.0.0.0", "transport.host": "127.0.0.1"}, detach=True, volumes={ES_DIR: {"bind": "/usr/share/elasticsearch/data", "mode": "rw"}})
   for loop in range(6):
     say("Waiting for elasticsearch to initialize...")
     time.sleep(5)
