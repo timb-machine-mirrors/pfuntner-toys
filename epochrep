@@ -1,0 +1,18 @@
+#! /usr/bin/python
+
+import re
+import sys
+import datetime
+
+assert not sys.stdin.isatty(), "stdin must be redirected"
+
+regexp = re.compile("(^|\D)(\d+\.\d+)(\D|$)")
+
+for line in sys.stdin:
+  match = regexp.search(line)
+  if match:
+    secs = float(match.group(2))
+    if secs >= 1000000000:
+      line = "%s%s%s\n" % (line[:match.end(1)], datetime.datetime.fromtimestamp(secs), line[match.start(3):])
+
+  sys.stdout.write(line)
