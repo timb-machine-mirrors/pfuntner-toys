@@ -12,7 +12,7 @@ for line in sys.stdin:
   match = regexp.search(line)
   if match:
     secs = float(match.group(2))
-    if secs >= 1000000000:
+    if (secs >= 1000000000) and (secs < 10000000000):
       line = "%s%s%s\n" % (line[:match.end(1)], datetime.datetime.fromtimestamp(secs), line[match.start(4):])
 
   sys.stdout.write(line)
