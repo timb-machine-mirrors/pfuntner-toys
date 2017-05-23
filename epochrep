@@ -6,11 +6,15 @@ import datetime
 
 assert not sys.stdin.isatty(), "stdin must be redirected"
 
-regexp = re.compile("(^|\D)(\d+(\.\d+)?)(\D|$)")
+verbose = "--verbose" in sys.argv
+
+regexp = re.compile("(^|\D)(\d{10}(\.\d+)?)(\D|$)")
 
 for line in sys.stdin:
   match = regexp.search(line)
   if match:
+    if verbose:
+      sys.stderr.write("matched on %s\n" % match.group(2))
     secs = float(match.group(2))
     if (secs >= 1000000000) and (secs < 10000000000):
       line = "%s%s%s\n" % (line[:match.end(1)], datetime.datetime.fromtimestamp(secs), line[match.start(4):])
