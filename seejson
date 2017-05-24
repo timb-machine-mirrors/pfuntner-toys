@@ -1,24 +1,58 @@
 #! /usr/bin/python
 
+import re
 import sys
 import json
 
+IS_DIGIT = re.compile("^[1-9][0-9]*$")
+
+def subset(root, path):
+  ret = root
+  # sys.stderr.write("subset(%s, %s)\n" % (root, '/'.join(path)))
+  if path:
+    comp = path[0]
+    if type(root) == list:
+      if IS_DIGIT.search(comp):
+        ret = subset(root[int(comp)], path[1:])
+      elif comp == '*':
+        ret = []
+        for comp in range(len(root)):
+          ret += [subset(root[comp], path[1:])]
+      else:
+        assert False, "Don't know what to do with %s to index a list" % repr(comp)
+    elif type(root) == dict:
+      if comp in root:
+        # sys.stderr.write("diving into `%s`\n" % comp)
+        ret = subset(root[comp], path[1:])
+      else:
+        assert False, "%s is not a component of a dictionary with keys %s" % (comp, ', '.join(root.keys()))
+    else:
+      assert False, "Don't know what to do with %s for %s" % ('/'.join(path), type(root))
+         
+  return ret
+  
 assert not sys.stdin.isatty(), "stdin must be redirected"
 
 rawdata = sys.stdin.read()
-if "--eval" in sys.argv:
-  rawdata = eval(rawdata)
 
 try:
   # sys.stderr.write("Attempt 1 with entire buffer (%d bytes)\n" % len(rawdata))
   data = json.loads(rawdata)
+
+  if len(sys.argv) > 1:
+    data = subset(data, sys.argv[1:])
+
   print json.dumps(data, indent=2)
 except Exception as e:
+  # sys.stderr.write("Caught %s" % e)
   count = 0
   for line in rawdata.strip('\n').split('\n'):
     if count:
       print ""
     count += 1
     # sys.stderr.write("Attempt %d with line %d (%d bytes)\n" % (count+1, count, len(line)))
-    data = json.loads(line)
-    print json.dumps(data, indent=2)
+    try:
+      data = json.loads(line)
+      print json.dumps(data, indent=2)
+    catch Exception as e:
+      print line
