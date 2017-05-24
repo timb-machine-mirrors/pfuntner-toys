@@ -54,5 +54,5 @@ except Exception as e:
     try:
       data = json.loads(line)
       print json.dumps(data, indent=2)
-    catch Exception as e:
+    except Exception as e:
       print line
