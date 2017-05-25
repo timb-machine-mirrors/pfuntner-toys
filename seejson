@@ -33,14 +33,21 @@ def subset(root, path):
   return ret
   
 rawdata = None
-(opts,args) = getopt.getopt(sys.argv[1:], "j:", ["json="])
+evalData = False
+
+(opts,args) = getopt.getopt(sys.argv[1:], "j:e", ["json=", "eval"])
 for (opt,arg) in opts:
   if opt in ["-j", "--json"]:
     rawdata = arg
+  elif opt in ["-e", "--eval"]:
+    evalData = not evalData
 
 if rawdata == None:
   assert not sys.stdin.isatty(), "stdin must be redirected"
   rawdata = sys.stdin.read()
+
+if evalData:
+  rawdata = eval(rawdata)
 
 try:
   # sys.stderr.write("Attempt 1 with entire buffer (%d bytes)\n" % len(rawdata))

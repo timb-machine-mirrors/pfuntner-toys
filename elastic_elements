@@ -16,6 +16,9 @@ if len(sys.argv) < 2:
   This default query returns all elements
 """
 query = {
+          "from": 0,
+          "size": 10000,
+
           "query": { 
             "match_all": {
             }
@@ -42,7 +45,43 @@ if len(sys.argv) > 2:
 
 sys.stderr.write(json.dumps(query, indent=2) + '\n')
 
-p = subprocess.Popen(["curl", "-d", json.dumps(query), "-X", "GET", "localhost:9200/%s/_search/" % sys.argv[1]], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+p = subprocess.Popen(["curl", "-d", json.dumps(query), "-X", "GET", "localhost:9200/%s/_search/?scroll=1m" % sys.argv[1]], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 (stdout, stderr) = p.communicate()
 rc = p.wait()
-sys.stdout.write(stdout)
+if rc != 0:
+  sys.stderr.write("rc: %d, stdout: %s, stderr: %s\n" % (rc, repr(stdout), repr(stderr)))
+  exit(1)
+
+resp = json.loads(stdout)
+assert "_scroll_id" in resp, "no `_scroll_id` in response:\n%s\n" % json.dumps(resp, indent=2)
+scrollID = resp["_scroll_id"]
+
+ret = None
+iteration = 0
+done = False
+while not done:
+  iteration += 1
+  if not resp:
+    p = subprocess.Popen(["curl", "-d", json.dumps({"scroll": "1m", "scroll_id": scrollID}), "-X", "GET", "localhost:9200/_search/scroll"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (stdout, stderr) = p.communicate()
+    rc = p.wait()
+    if rc == 0:
+      resp = json.loads(stdout)
+    else:
+      sys.stderr.write("iteration %d: rc: %d, stdout: %s, stderr: %s\n" % (iteration, rc, repr(stdout), repr(stderr)))
+      exit(1)
+
+  sys.stderr.write("iteration %d has %d elements\n" % (iteration, len(resp["hits"]["hits"])))
+  if not ret:
+    ret = resp
+    if len(resp["hits"]["hits"]) == 0:
+      done = True
+  else:
+    if len(resp["hits"]["hits"]) == 0:
+      done = True
+    else:
+      ret["hits"]["hits"] += resp["hits"]["hits"]
+
+  resp = None
+
+print json.dumps(ret)
