@@ -46,8 +46,8 @@ try:
   # sys.stderr.write("Attempt 1 with entire buffer (%d bytes)\n" % len(rawdata))
   data = json.loads(rawdata)
 
-  if len(sys.argv) > 1:
-    data = subset(data, sys.argv[1:])
+  if args:
+    data = subset(data, args)
 
   print json.dumps(data, indent=2)
 except Exception as e:
