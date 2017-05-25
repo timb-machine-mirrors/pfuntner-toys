@@ -3,6 +3,7 @@
 import re
 import sys
 import json
+import getopt
 
 IS_DIGIT = re.compile("^[1-9][0-9]*$")
 
@@ -31,9 +32,15 @@ def subset(root, path):
          
   return ret
   
-assert not sys.stdin.isatty(), "stdin must be redirected"
+rawdata = None
+(opts,args) = getopt.getopt(sys.argv[1:], "j:", ["json="])
+for (opt,arg) in opts:
+  if opt in ["-j", "--json"]:
+    rawdata = arg
 
-rawdata = sys.stdin.read()
+if rawdata == None:
+  assert not sys.stdin.isatty(), "stdin must be redirected"
+  rawdata = sys.stdin.read()
 
 try:
   # sys.stderr.write("Attempt 1 with entire buffer (%d bytes)\n" % len(rawdata))
