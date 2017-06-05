@@ -2,11 +2,18 @@
 
 import re
 import sys
+import getopt
+import importlib
+
+(opts,args) = getopt.getopt(sys.argv[1:], "i:", ["import="])
+for (opt,arg) in opts:
+  if opt in ["-i", "--import"]:
+    globals()[arg] = importlib.import_module(arg)
 
 assert not sys.stdin.isatty(), "stdin must be directed"
-assert len(sys.argv) == 3, "Syntax: %s regexp expression"
+assert len(args) == 2, "Syntax: %s [-i module1 -i module2 ... ] regexp expression"
 
-regexp = re.compile(sys.argv[1])
+regexp = re.compile(args[0])
 
 for line in sys.stdin:
   line = line.strip('\n')
@@ -15,5 +22,5 @@ for line in sys.stdin:
     # print "Groups: %s" % str(match.groups())
     pos = len(match.groups())-1
     hit = match.groups()[pos]
-    line = line[:match.start(pos)] + eval(sys.argv[2]) + line[match.end(pos):]
+    line = line[:match.start(pos)] + eval(args[1]) + line[match.end(pos):]
   print line
