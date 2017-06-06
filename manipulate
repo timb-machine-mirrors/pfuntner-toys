@@ -28,7 +28,7 @@ for (opt,arg) in opts:
     globals()[arg] = importlib.import_module(arg)
 
 assert not sys.stdin.isatty(), "stdin must be directed"
-assert len(args) == 2, "Syntax: %s [-i module1 -i module2 ... ] regexp expression"
+assert len(args) == 2, "Syntax: %s [-i module1 -i module2 ... ] regexp expression" % sys.argv[0]
 
 regexp = re.compile(args[0])
 
