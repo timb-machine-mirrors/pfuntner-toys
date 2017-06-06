@@ -2,13 +2,16 @@
 
 import getopt
 import sys
+import re
 
 assert not sys.stdin.isatty(), "stdin must be redirected"
 
 sum = False
 avg = False
 
-(opts,args) = getopt.getopt(sys.argv[1:], "", ["sum", "total", "avg"])
+fuzzy = False
+
+(opts,args) = getopt.getopt(sys.argv[1:], "", ["sum", "total", "avg", "fuzzy"])
 for (opt,arg) in opts:
   if opt in ["--sum", "--total"]:
     sum = not sum
@@ -18,10 +21,21 @@ for (opt,arg) in opts:
 assert (int(sum) + int(avg)) == 1, "Select --avg or --sum/--total"
 assert len(args) == 0, "Unexpected arguments: %s" % repr(args)
 
+digits = re.compile("(^|\D)((\d+.?\d*)|(\d*.\d+))(\D|$)")
+
 total = 0
 count = 0
 for line in sys.stdin:
-  total += float(line)
+  if fuzzy:
+    match = digits.search(line)
+    if match:
+      datum = float(match.group(1))
+    else:
+      continue
+  else:
+    datum = float(line)
+
+  total += datum
   count += 1
 
 if sum:
