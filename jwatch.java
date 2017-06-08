@@ -134,6 +134,9 @@ class jwatch extends Thread implements ActionListener {
             frame.setVisible(true);
           }
         }
+        else {
+          debug("paused...");
+        }
 
         sleep(5000);
       }
