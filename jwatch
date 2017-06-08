@@ -1,3 +1,5 @@
+#! /bin/bash
+
 if [ "X$javadir" != X ]
 then
   PATH="$PATH:$javadir"
