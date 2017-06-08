@@ -5,4 +5,14 @@ then
   PATH="$PATH:$javadir"
 fi
 
-java -cp $(dirname "$0") jwatch "$@"
+dir=$(dirname "$0")
+
+# If we're using Cygwin on Windows, we might have to turn a path like `/home/pfuntner/java`
+# (which Java doesn't understand) to `C:\cygwin64\home\pfuntner\java` (which Java DOES understand)
+
+if [ "X$(uname -o)" == "XCygwin" ]
+then
+  dir=$(cygpath -w "$dir")
+fi
+
+java -cp "$dir" jwatch "$@"
