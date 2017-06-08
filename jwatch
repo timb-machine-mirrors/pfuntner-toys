@@ -1,0 +1,6 @@
+if [ "X$javadir" != X ]
+then
+  PATH="$PATH:$javadir"
+fi
+
+java -cp $(dirname "$0") jwatch "$@"
