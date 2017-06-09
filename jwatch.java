@@ -152,9 +152,11 @@ class jwatch extends Thread implements ActionListener {
   public void actionPerformed(ActionEvent e) {
     if (paused) {
       button.setText("Pause");
+      button.setBackground(button.getParent().getBackground());
     }
     else {
       button.setText("Resume");
+      button.setBackground(Color.RED);
     }   
     paused = !paused;
   }
