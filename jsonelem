@@ -32,4 +32,8 @@ def visit(objs, elems):
 
   print json.dumps(objs, indent=2)
 
-visit(json.load(sys.stdin), sys.argv[1:])
+args = sys.argv[1:]
+if len(args) == 1:
+  args = args[0].split('/')
+
+visit(json.load(sys.stdin), args)
