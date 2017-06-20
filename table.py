@@ -62,13 +62,27 @@ class Table:
     return '\n'.join(ret)
 
 if __name__ == "__main__":
-  table = Table(["foobar", '*'*50])
-  table.add(["This is a", "test"])
-  table.add(["This", "isn't a test"])
-  table.add(["Integer", "42"])
-  table.add(["Float", "4.2"])
-  table.add(["Float", ".2"])
-  table.add(["Float", "4."])
-  table.add(["Data", "2017-05-09 14:12:46,619 [myid:3] - INFO"])
-  table.dump()
-  print str(table)
+  if sys.stdin.isatty():
+    table = Table(["foobar", '*'*50])
+    table.add(["This is a", "test"])
+    table.add(["This", "isn't a test"])
+    table.add(["Integer", "42"])
+    table.add(["Float", "4.2"])
+    table.add(["Float", ".2"])
+    table.add(["Float", "4."])
+    table.add(["Data", "2017-05-09 14:12:46,619 [myid:3] - INFO"])
+    table.dump()
+    print str(table)
+  else:
+    line = sys.stdin.readline()
+    if line:
+      table = Table(line.strip('\n').split())
+      done = False
+      while not done:
+        line = sys.stdin.readline()
+        if line:
+          table.add(line.strip('\n').split())
+        else:
+          done = True
+
+      print str(table)
