@@ -1,0 +1,22 @@
+#! /usr/bin/python -u
+
+import sys
+import datetime
+import time
+
+assert len(sys.argv) == 2, "Syntax: %s seconds" % sys.argv[0]
+
+closed = u"\u2612"
+open = u"\u2610"
+bar = u"\u20d2"
+
+secs = int(sys.argv[1])
+start = datetime.datetime.now()
+stop = start + datetime.timedelta(seconds=secs)
+while datetime.datetime.now() < stop:
+  now = datetime.datetime.now()
+  pcent = int(round(10 * ((now-start).total_seconds()/secs)))
+  sys.stdout.write("\r%s%s %s %.2f %.2f      " % (closed * pcent, open * (10-pcent), now, (now-start).total_seconds(), (stop-now).total_seconds()))
+  time.sleep(0.25)
+
+print ""
