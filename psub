@@ -7,4 +7,8 @@ assert len(sys.argv) == 3, "Syntax: %s regexp replacement-string" % sys.argv[0]
 
 assert not sys.stdin.isatty(), "stdin is not redirected"
 
-sys.stdout.write(re.sub(sys.argv[1], sys.argv[2], sys.stdin.read()))
+regexp = re.compile(sys.argv[1])
+
+lines = sys.stdin.read().strip('\n').strip('\r').split('\n')
+for line in lines:
+  print regexp.sub(sys.argv[2], line)
