@@ -1,0 +1,108 @@
+#! /usr/bin/python
+
+import sys
+import os
+import os.path
+
+assert len(sys.argv) > 1, "Syntax: %s file1 [...]" % sys.argv[0]
+
+class File:
+  def __init__(self, filename):
+    self.filename = filename
+    st = os.stat(filename)
+    self.dev = st.st_dev
+    self.inode = st.st_ino
+    self.hash = (self.dev * pow(2, 32)) + self.inode
+
+  def __eq__(self, other):
+    return (self.dev == other.dev) and (self.inode == other.inode)
+
+  def __hash__(self, other):
+    return self.hash
+
+  def __str__(self):
+    return self.filename
+
+class Dev:
+  def __init__(self, filename):
+    self.mountpoint = filename
+    self.st = os.stat(filename)
+    self.dev = os.statvfs(filename)
+
+    # what's `usable` is the total amount of space minus the reserve
+    self.usable = (self.dev.f_blocks - (self.dev.f_bfree - self.dev.f_bavail)) * self.dev.f_bsize
+
+  def __str__(self):
+    return "(%s, %s, %s, %d)" % (self.mountpoint, self.st, self.dev, self.usable)
+    
+class Stats:
+  def __init__(self):
+    self.size = 0
+    self.files = 0
+
+def dive(filename):
+  global devs
+  global files
+
+  try:
+    if os.path.exists(filename):
+      f = File(filename)
+      if f not in files:
+        files.append(f)
+        if os.path.isfile(filename):
+          if f.dev not in devs:
+            devs[f.dev] = Stats()
+          devs[f.dev].size += os.path.getsize(filename)
+          devs[f.dev].files += 1
+        elif os.path.isdir(filename):
+          for child in os.listdir(filename):
+            dive(os.path.join(filename, child))
+    else:
+      sys.stderr.write("Not found: %s\n" % filename)
+  except Exception as e:
+    sys.stderr.write("Caught: %s\n" % e)
+
+def bytes(value):
+  units = 'b'
+  if value > 1000:
+    value /= 1024.0
+    units = 'Kb'
+    if value > 1000:
+      value /= 1024.0
+      units = 'Mb'
+      if value > 1000:
+        value /= 1024.0
+        units = 'Gb'
+        if value > 1000:
+          value /= 1024.0
+          units = 'Tb'
+
+  if units == 'b':
+    return "%d%s" % (value, units)
+  else:
+    return "%6.2f%s" % (value, units)
+
+mounts = {}
+with open("/etc/mtab", 'r') as f:
+  for line in f:
+    tokens = line.split()
+    if (len(tokens) > 2) and (tokens[1] != "/var/lib/docker/aufs") and (('/' in tokens[0]) or (tokens[0] in ["tmpfs", "sysfs"])):
+      filename = tokens[1]
+      try:
+        mount = Dev(filename)
+        mounts[mount.st.st_dev] = mount
+      except Exception as e:
+        sys.stderr.write("Caught: %s\n" % e)
+        pass
+
+
+# for mount in mounts:
+#   print "%08x %s" % (mount, mounts[mount])
+
+os.statvfs(filename)
+for filename in sys.argv[1:]:
+  devs = {}
+  files = []
+  dive(filename)
+  # print "%s %s" % ([str(file) for file in files], ["%08x:%d" % (dev, devs[dev]) for dev in devs])
+  print "%s: %s" % (filename, '; '.join(["%s, %s, %.2f%%, %d files" % (mounts[dev].mountpoint, bytes(devs[dev].size), 100.0*devs[dev].size/mounts[dev].usable, devs[dev].files) for dev in devs]))
