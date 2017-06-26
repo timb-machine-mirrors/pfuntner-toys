@@ -16,7 +16,7 @@ stop = start + datetime.timedelta(seconds=secs)
 while datetime.datetime.now() < stop:
   now = datetime.datetime.now()
   pcent = int(round(10 * ((now-start).total_seconds()/secs)))
-  sys.stdout.write("\r%s%s %s %.2f %.2f      " % (closed * pcent, open * (10-pcent), now, (now-start).total_seconds(), (stop-now).total_seconds()))
+  sys.stdout.write("\r%s %s%s %6.2f%% %.2f %.2f      " % (now, closed * pcent, open * (10-pcent), (100.0 * (now-start).total_seconds()) / secs, (now-start).total_seconds(), (stop-now).total_seconds()))
   time.sleep(0.25)
 
 print ""

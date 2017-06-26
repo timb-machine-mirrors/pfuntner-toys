@@ -2,13 +2,16 @@
 
 import sys
 import re
+import getopt
 
 class Table:
   isNumeric = re.compile("^([-+]?(\d+\.?\d*)|(\d*\.?\d+))$")
   separators = ['|', '\t', ',', ' ']
 
-  def __init__(self, headings):
+  def __init__(self, headings, desiredSep=None):
     assert type(headings) in (type((None,)), type([])), "Headings must be a list or tuple"
+
+    self.desiredSep = desiredSep
     self.headings = headings
     self.maxLens = [len(heading) for heading in self.headings]
     self.rows = []
@@ -42,10 +45,13 @@ class Table:
 
   def __str__(self):
     separator = None
-    for curr in range(len(self.present)):
-      if not self.present[curr]:
-       separator = Table.separators[curr]
-       break
+    if self.desiredSep:
+      separator = self.desiredSep
+    else:
+      for curr in range(len(self.present)):
+        if not self.present[curr]:
+         separator = Table.separators[curr]
+         break
     assert separator, "No preferred separator found"
 
     ret = []
@@ -74,9 +80,15 @@ if __name__ == "__main__":
     table.dump()
     print str(table)
   else:
+    desiredSep = None
+    (opts,args) = getopt.getopt(sys.argv[1:], "F:", ["field="])
+    for (opt,arg) in opts:
+      if opt in ["-F", "--field"]:
+        desiredSep = arg
+
     line = sys.stdin.readline()
     if line:
-      table = Table(line.strip('\n').split())
+      table = Table(line.strip('\n').split(), desiredSep=desiredSep)
       done = False
       while not done:
         line = sys.stdin.readline()
