@@ -14,15 +14,24 @@ def toCenter(s, width):
 
 def process(lines):
   maxWidth = max([len(line) for line in lines])
-  print fillChar * (maxWidth+4)
+  print "%s%s%s" % (topLeftCorner, horizontal * (maxWidth+2), topRightCorner)
   for line in lines:
-    print "%s %s %s" % (fillChar, just(line, maxWidth), fillChar)
-  print fillChar * (maxWidth+4)
+    print "%s %s %s" % (vertical, just(line, maxWidth), vertical)
+  print "%s%s%s" % (bottomLeftCorner, horizontal * (maxWidth+2), bottomRightCorner)
+
+horizontal = unichr(9473)
+vertical = unichr(9475)
+
+topLeftCorner = unichr(9487)
+topRightCorner = unichr(9491)
+bottomLeftCorner = unichr(9495)
+bottomRightCorner = unichr(9499)
 
 just = toLeft
 fillChar = '#'
+box = False
 
-(opts, args) = getopt.getopt(sys.argv[1:], "c:", ["character=", "left", "center", "right"])
+(opts, args) = getopt.getopt(sys.argv[1:], "xc:", ["character=", "left", "center", "right", "box"])
 for (opt,arg) in opts:
   if opt == "--left":
     just = toLeft
@@ -32,6 +41,18 @@ for (opt,arg) in opts:
     just = toCenter
   elif opt in ["-c", "--character"]:
     fillChar = arg[0]
+    box = False
+  elif opt == "--box":
+    box = not box
+
+if not box:
+  horizontal = fillChar
+  vertical = fillChar
+
+  topLeftCorner = fillChar
+  topRightCorner = fillChar
+  bottomLeftCorner = fillChar
+  bottomRightCorner = fillChar
 
 assert args or (not sys.stdin.isatty()), "Syntax: banner [message]"
 
