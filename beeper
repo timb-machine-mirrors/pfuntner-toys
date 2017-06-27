@@ -1,0 +1,11 @@
+#! /usr/bin/python -u
+
+import sys
+import time
+
+bellChar = '\a'
+
+while True:
+  sys.stdout.write(bellChar)
+  # sys.stdout.flush()
+  time.sleep(1)
