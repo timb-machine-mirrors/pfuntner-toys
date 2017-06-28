@@ -27,9 +27,10 @@ topRightCorner = unichr(9491)
 bottomLeftCorner = unichr(9495)
 bottomRightCorner = unichr(9499)
 
+box = True
+
 just = toLeft
 fillChar = '#'
-box = False
 
 (opts, args) = getopt.getopt(sys.argv[1:], "xc:", ["character=", "left", "center", "right", "box"])
 for (opt,arg) in opts:
@@ -42,7 +43,7 @@ for (opt,arg) in opts:
   elif opt in ["-c", "--character"]:
     fillChar = arg[0]
     box = False
-  elif opt == "--box":
+  elif opt in ["-x", "--box"]:
     box = not box
 
 if not box:
