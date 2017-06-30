@@ -1,0 +1,25 @@
+#! /usr/bin/python
+
+"""
+  Takes a json object and dumps out all of the values (one per line)
+  with the absolute path of the keys to get to the value.  A key 
+  composed of an integer is likely an index into a list although you
+  could have a string that looks like an integer that's a key to a 
+  dictionary element.
+"""
+
+import sys
+import json
+
+assert not sys.stdin.isatty(), "stdin must be redirected"
+
+def process(root, path):
+  if type(root) == list:
+    for key in range(len(root)):
+      process(root[key], path + [str(key)])
+  elif type(root) == dict:
+    for key in root.keys():
+      process(root[key], path + [key])
+  else:
+    print "%s\t%s" % ('/'.join(path), str(root))
+process(json.load(sys.stdin), [""])
