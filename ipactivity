@@ -1,7 +1,11 @@
 #!/usr/bin/python
 
 import re
+import sys
+import getopt
 import subprocess
+import datetime
+import time
 
 """
 ens192    Link encap:Ethernet  HWaddr 00:50:56:a0:e2:d1
@@ -14,43 +18,109 @@ ens192    Link encap:Ethernet  HWaddr 00:50:56:a0:e2:d1
           RX bytes:32627598517 (32.6 GB)  TX bytes:3766956972 (3.7 GB)
 """
 
+def see(value):
+  ret = "%16d" % value
+  if human:
+    units = "b"
+    if value > 1000:
+      value /= 1024.0
+      units = "Kb"
+      if value > 1000:
+        value /= 1024.0
+        units = "Mb"
+        if value > 1000:
+          value /= 1024.0
+          units = "Gb"
+          if value > 1000:
+            value /= 1024.0
+            units = "Tb"
+    ret = "%7.3f%s" % (value, units)
+  return ret
+
 def emit():
   global interface, rx, tx
 
+  ret = None
+
   if interface and (rx != None) and (tx != None):
-    print "%-16s RX:%16d TX:%16d" % (interface, rx, tx)
+    ret = "%-16s RX:%s TX:%s" % (interface, see(rx), see(tx))
+
+    if firstTime:
+      secs = (datetime.datetime.now() - firstTime).total_seconds()
+      # print "rx: %s" % rx
+      # print "tx: %s" % tx
+      # print "firstRx: %s" % firstRx
+      # print "firstTx: %s" % firstTx
+      ret += " (%s/sec, %s/sec)" % (see((rx-firstRx) / secs), see((tx-firstTx) / secs)) 
+
   interface = None
   rx = None
   tx = None
 
+  return ret
+
+human = False
+continuous = False
+
+(opts,args) = getopt.getopt(sys.argv[1:], "hc", ["human", "continuous"])
+for (opt,arg) in opts:
+  if opt in ["-h", "--human"]:
+    human = not human
+  elif opt in ["-c", "--continuous"]:
+    continuous = not continuous
+
 ifPat = re.compile("(\S+)")
 bytesPat = re.compile("RX bytes:(\d+)\s.*TX bytes:(\d+)\s")
 
-p = subprocess.Popen(["ifconfig"], stdout=subprocess.PIPE)
-stdout = p.stdout.read()
-rc = p.wait()
-if rc != 0:
-   exit(rc)
+iterations = 0
+firstTime = None
+firstRx = None
+firstTx = None
 
-interface = None
-rx = None
-tx = None
-
-linenum = 0
-for line in stdout.strip('\n').split('\n'):
-  match = None
-
-  if not interface:
-    match = ifPat.match(line)
-
-  if match:
-    interface = match.group(1)
-
-  elif interface:
-    match = bytesPat.search(line)
-    if match:
-      rx = int(match.group(1))
-      tx = int(match.group(2))
-      emit()
-
-emit()
+while continuous or (iterations == 0):
+  iterations += 1
+  p = subprocess.Popen(["ifconfig"], stdout=subprocess.PIPE)
+  stdout = p.stdout.read()
+  rc = p.wait()
+  if rc != 0:
+     exit(rc)
+  
+  interface = None
+  rx = None
+  tx = None
+  
+  linenum = 0
+  for line in stdout.strip('\n').split('\n'):
+    match = None
+  
+    if not interface:
+      match = ifPat.match(line)
+  
+      if match:
+        interface = match.group(1)
+        if args:
+          found = False
+          for arg in args:
+            if re.search(arg, interface):
+              found = True
+              break
+          if not found:
+            interface = None
+    else:
+      match = bytesPat.search(line)
+      if match:
+        rx = int(match.group(1))
+        tx = int(match.group(2))
+        if continuous:
+          ret = emit()
+          now = datetime.datetime.now()
+          print "%s: %s" % (now, ret)
+          if not firstTime:
+            firstTime = now
+            firstRx = int(match.group(1))
+            firstTx = int(match.group(2))
+          time.sleep(5)
+        else:
+          print emit()
+  
+  # emit()

@@ -5,6 +5,6 @@ assert not sys.stdin.isatty(), "stdin must be directed"
 
 lines = sys.stdin.read().strip('\n').split('\n')
 curr = len(lines)-1
-while curr > 0:
+while curr >= 0:
   print lines[curr]
   curr -= 1

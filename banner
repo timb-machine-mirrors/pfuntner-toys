@@ -16,6 +16,8 @@ def process(lines):
   maxWidth = max([len(line) for line in lines])
   print "%s%s%s" % (topLeftCorner, horizontal * (maxWidth+2), topRightCorner)
   for line in lines:
+    if verbose:
+      print ["%s:%d" % (c, ord(c)) for c in line]
     print "%s %s %s" % (vertical, just(line, maxWidth), vertical)
   print "%s%s%s" % (bottomLeftCorner, horizontal * (maxWidth+2), bottomRightCorner)
 
@@ -32,7 +34,9 @@ box = True
 just = toLeft
 fillChar = '#'
 
-(opts, args) = getopt.getopt(sys.argv[1:], "xc:", ["character=", "left", "center", "right", "box"])
+verbose = False
+
+(opts, args) = getopt.getopt(sys.argv[1:], "vxc:", ["character=", "left", "center", "right", "box"])
 for (opt,arg) in opts:
   if opt == "--left":
     just = toLeft
@@ -45,6 +49,8 @@ for (opt,arg) in opts:
     box = False
   elif opt in ["-x", "--box"]:
     box = not box
+  elif opt == "-v":
+    verbose = not verbose
 
 if not box:
   horizontal = fillChar
