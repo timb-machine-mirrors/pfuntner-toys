@@ -56,7 +56,7 @@ try:
   if args:
     data = subset(data, args)
 
-  print json.dumps(data, indent=2)
+  print json.dumps(data, indent=2, sort_keys=True)
 except Exception as e:
   # sys.stderr.write("Caught %s" % e)
   count = 0
@@ -67,6 +67,6 @@ except Exception as e:
     # sys.stderr.write("Attempt %d with line %d (%d bytes)\n" % (count+1, count, len(line)))
     try:
       data = json.loads(line)
-      print json.dumps(data, indent=2)
+      print json.dumps(data, indent=2, sort_keys=True)
     except Exception as e:
       print line
