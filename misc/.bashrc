@@ -7,7 +7,7 @@ do
 done
 
 set -o vi
-alias br='vi -R'
+# alias br='vi -R'
 alias r='fc -s'
 alias more=less
 

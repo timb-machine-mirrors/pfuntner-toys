@@ -17,7 +17,12 @@ def cleanup(signum=None, frame=None):
     os.remove(name)
   exit(0)
 
-assert not sys.stdin.isatty(), "stdin must be redirected"
+if sys.stdin.isatty():
+  """
+    If stdin has not be redirected, we'll act like the old `br` script and just invoke `vi -R argv[1] ...`
+  """
+  os.execvp("vi", ["vi"] + sys.argv[1:])
+  assert False, "os.execvp() of `vi` returned control to us!"
 
 name = None
 
