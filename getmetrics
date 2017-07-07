@@ -81,7 +81,7 @@ def timestampParse(arg):
 parsers = [TimeOnly, DateAndTime, Relative]
 
 dateFormatter = "%H:%M%Y%m%d"
-now = datetime.datetime.now()
+now = datetime.datetime.utcnow()
 
 host = "localhost"
 port = 80

@@ -33,4 +33,4 @@ for metric in metrics:
     print ""
   print metric["target"]
   for datum in metric["datapoints"]:
-    print "%s|%s" % (datum[0], datetime.datetime.fromtimestamp(float(datum[1])))
+    print "%s|%s" % (datum[0], datetime.datetime.utcfromtimestamp(float(datum[1])))
