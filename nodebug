@@ -1,5 +1,10 @@
 #! /usr/bin/python
 
+"""
+  Runs a command and disposes of "shell debugging messages".  These
+  are lines that begin with a plus sign (+).
+"""
+
 import subprocess
 import re
 import threading
