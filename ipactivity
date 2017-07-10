@@ -8,14 +8,25 @@ import datetime
 import time
 
 """
-ens192    Link encap:Ethernet  HWaddr 00:50:56:a0:e2:d1
-          inet addr:9.42.89.63  Bcast:9.42.89.255  Mask:255.255.255.0
-          inet6 addr: fe80::250:56ff:fea0:e2d1/64 Scope:Link
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:38174561 errors:0 dropped:25825 overruns:0 frame:0
-          TX packets:26854487 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000
-          RX bytes:32627598517 (32.6 GB)  TX bytes:3766956972 (3.7 GB)
+style 1:
+  ens192    Link encap:Ethernet  HWaddr 00:50:56:a0:e2:d1
+            inet addr:9.42.89.63  Bcast:9.42.89.255  Mask:255.255.255.0
+            inet6 addr: fe80::250:56ff:fea0:e2d1/64 Scope:Link
+            UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+            RX packets:38174561 errors:0 dropped:25825 overruns:0 frame:0
+            TX packets:26854487 errors:0 dropped:0 overruns:0 carrier:0
+            collisions:0 txqueuelen:1000
+            RX bytes:32627598517 (32.6 GB)  TX bytes:3766956972 (3.7 GB)
+
+style 1:
+  enccw0.0.b900: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+          inet 9.47.152.120  netmask 255.255.254.0  broadcast 9.47.153.255
+          inet6 fe80::ff:fe36:53de  prefixlen 64  scopeid 0x20<link>
+          ether 02:00:00:36:53:de  txqueuelen 1000  (Ethernet)
+          RX packets 5850210  bytes 5665462382 (5.2 GiB)
+          RX errors 0  dropped 0  overruns 0  frame 0
+          TX packets 2088311  bytes 173898158 (165.8 MiB)
+          TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
 """
 
 def see(value):
@@ -71,6 +82,7 @@ for (opt,arg) in opts:
 
 ifPat = re.compile("(\S+)")
 bytesPat = re.compile("RX bytes:(\d+)\s.*TX bytes:(\d+)\s")
+bytes2Pat = re.compile("^(RX|TX) packets \d+  bytes (\d+) (5.2 GiB)")
 
 iterations = 0
 firstTime = None
@@ -122,5 +134,25 @@ while continuous or (iterations == 0):
           time.sleep(5)
         else:
           print emit()
+      else:
+        match = bytes2Pat.search(line)
+        if match:
+          if match.group(1) == "RX":
+            rx = int(match.group(2))
+          elif match.group(1) == "TX":
+            tx = int(match.group(2))
+
+          if (rx != None) and (tx != None):
+            if continuous:
+              ret = emit()
+              now = datetime.datetime.now()
+              print "%s: %s" % (now, ret)
+              if not firstTime:
+                firstTime = now
+                firstRx = int(match.group(1))
+                firstTx = int(match.group(2))
+              time.sleep(5)
+            else:
+              print emit()
   
   # emit()
