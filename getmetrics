@@ -100,10 +100,12 @@ bluemix["BLUEMIX_SPACE"] = None
 
 metric = None
 
+format = "json"
+
 (opts, args) = ([], [])
 
 try:
-  (opts,args) = getopt.getopt(sys.argv[1:], "h:p:f:u:nvU:P:O:S:", ["host=", "port=", "from=", "until=", "nulls", "verbose", "user=", "password=", "org=", "space="])
+  (opts,args) = getopt.getopt(sys.argv[1:], "h:p:f:u:nvU:P:O:S:", ["host=", "port=", "from=", "until=", "nulls", "verbose", "user=", "password=", "org=", "space=", "format="])
 except Exception as e:
   sys.stderr.write("Caught: %s\n" % repr(e))
   syntax()
@@ -129,6 +131,9 @@ for (opt,arg) in opts:
     bluemix["BLUEMIX_ORG"] = arg
   elif opt in ["-S", "--space"]:
     bluemix["BLUEMIX_SPACE"] = arg
+  elif opt in ["--format"]:
+    format = arg
+    assert format in ["json", "raw"], "Unknown format type %s" % repr(format)
   else:
     sys.stderr.write("Don't know how to handle %s\n" % repr(opt))
     syntax()
@@ -226,30 +231,34 @@ p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 (stdout, stderr) = p.communicate()
 rc = p.wait()
 try:
-  metrics = json.loads(stdout)
+  if format == "json":
+    metrics = json.loads(stdout)
 except Exception as e:
   sys.stderr.write("Caught %s, rc: %d, stdout: %s, stderr: %s\n" % (repr(e), rc, repr(stdout), repr(stderr)))
   exit(1)
 
-if not nulls:
-  """
-    Remove null metric values.  An example of the path to a metric value is: "/0/datapoints/0/0"
-  """
-  total = 0
-  removed = 0
-
-  for actual in metrics:
-    curr = 0
-    while curr < len(actual["datapoints"]):
-      datum = actual["datapoints"][curr]
-      total += 1
-      if datum[0] == None:
-        removed += 1
-        del actual["datapoints"][curr]
-      else:
-        curr += 1
-
-  if verbose:
-    sys.stderr.write("Null removal has disposed of %d out of %d total data points\n" % (removed, total))
-   
-print json.dumps(metrics, indent=2)
+if format == "json":
+  if not nulls:
+    """
+      Remove null metric values.  An example of the path to a metric value is: "/0/datapoints/0/0"
+    """
+    total = 0
+    removed = 0
+  
+    for actual in metrics:
+      curr = 0
+      while curr < len(actual["datapoints"]):
+        datum = actual["datapoints"][curr]
+        total += 1
+        if datum[0] == None:
+          removed += 1
+          del actual["datapoints"][curr]
+        else:
+          curr += 1
+  
+    if verbose:
+      sys.stderr.write("Null removal has disposed of %d out of %d total data points\n" % (removed, total))
+     
+  print json.dumps(metrics, indent=2)
+elif format == "raw":
+  sys.stdout.write(json.dumps(json.loads(stdout), indent=2))

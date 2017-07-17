@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/python -u
 
 import re
 import sys
@@ -7,8 +7,9 @@ import datetime
 assert not sys.stdin.isatty(), "stdin must be redirected"
 
 verbose = "--verbose" in sys.argv
+millis = "--millis" in sys.argv
 
-regexp = re.compile("(^|\D)(\d{10}(\.\d+)?)(\D|$)")
+regexp = re.compile("(^|\D)(\d{%d}(\.\d+)?)(\D|$)" % (13 if millis else 10))
 
 for line in sys.stdin:
   match = True
@@ -17,7 +18,7 @@ for line in sys.stdin:
     if match:
       if verbose:
         sys.stderr.write("matched on %s\n" % match.group(2))
-      secs = float(match.group(2))
+      secs = float(match.group(2)) / (1000.0 if millis else 1)
       line = "%s%s%s" % (line[:match.end(1)], datetime.datetime.fromtimestamp(secs), line[match.start(4):])
 
   sys.stdout.write(line)

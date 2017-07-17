@@ -21,7 +21,7 @@ if sys.stdin.isatty():
   """
     If stdin has not be redirected, we'll act like the old `br` script and just invoke `vi -R argv[1] ...`
   """
-  os.execvp("vi", ["vi"] + sys.argv[1:])
+  os.execvp("vi", ["vi", "-R"] + sys.argv[1:])
   assert False, "os.execvp() of `vi` returned control to us!"
 
 name = None
