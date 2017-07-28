@@ -2,10 +2,30 @@
 
 import sys
 import time
+import datetime
+import signal
+
+def handleCntlC(signum, stack):
+  global done
+  done = True
+
+def banner(s):
+  print '*' * (len(s) + 4)
+  print "* %s *" % s
+  print '*' * (len(s) + 4)
 
 bellChar = '\a'
 
-while True:
+signal.signal(signal.SIGINT, handleCntlC)
+
+banner("%s: Beeping started" % datetime.datetime.now())
+
+done = False
+
+while not done:
   sys.stdout.write(bellChar)
   # sys.stdout.flush()
   time.sleep(1)
+
+print ""
+banner("%s: Beeping ended" % datetime.datetime.now())
