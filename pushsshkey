@@ -91,7 +91,7 @@ for i in range(optind, len(sys.argv)):
       if status == 0:
         print "Key is already in place for %s" % target
       else:
-        cmd = "cat %s | ssh %s mkdir .ssh \; chmod 700 .ssh \; cat \>\> %s \; chmod 600 %s" % (publicKey, target, authKeys, authKeys)
+        cmd = "cat %s | ssh %s mkdir -pv .ssh \; chmod -v 700 .ssh \; cat \>\> %s \; chmod -v 600 %s" % (publicKey, target, authKeys, authKeys)
         print cmd
         (status, output) = commands.getstatusoutput(cmd)
         if status == 0:
