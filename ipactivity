@@ -18,7 +18,7 @@ style 1:
             collisions:0 txqueuelen:1000
             RX bytes:32627598517 (32.6 GB)  TX bytes:3766956972 (3.7 GB)
 
-style 1:
+style 2:
   enccw0.0.b900: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
           inet 9.47.152.120  netmask 255.255.254.0  broadcast 9.47.153.255
           inet6 fe80::ff:fe36:53de  prefixlen 64  scopeid 0x20<link>
@@ -27,6 +27,17 @@ style 1:
           RX errors 0  dropped 0  overruns 0  frame 0
           TX packets 2088311  bytes 173898158 (165.8 MiB)
           TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+style 3 (Ubuntu 17.04 - Meerkat):
+  eno1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+          inet 192.168.2.5  netmask 255.255.255.0  broadcast 192.168.2.255
+          inet6 fe80::3bf4:564:ed63:d8c  prefixlen 64  scopeid 0x20<link>
+          ether f4:4d:30:6f:93:53  txqueuelen 1000  (Ethernet)
+          RX packets 38046743  bytes 57404929919 (57.4 GB)
+          RX errors 0  dropped 0  overruns 0  frame 0
+          TX packets 16564280  bytes 1293197591 (1.2 GB)
+          TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+          device interrupt 16  memory 0xdc200000-dc220000  
 """
 
 def see(value):
@@ -70,19 +81,26 @@ def emit():
 
   return ret
 
+def debug(msg, lvl=1):
+  if lvl<=verbose:
+    sys.stderr.write("%s\n" % msg)
+
 human = False
 continuous = False
+verbose = 0
 
-(opts,args) = getopt.getopt(sys.argv[1:], "hc", ["human", "continuous"])
+(opts,args) = getopt.getopt(sys.argv[1:], "vhc", ["verbose", "human", "continuous"])
 for (opt,arg) in opts:
   if opt in ["-h", "--human"]:
     human = not human
   elif opt in ["-c", "--continuous"]:
     continuous = not continuous
+  elif opt in ["-v", "--verbose"]:
+    verbose += 1
 
 ifPat = re.compile("(\S+)")
 bytesPat = re.compile("RX bytes:(\d+)\s.*TX bytes:(\d+)\s")
-bytes2Pat = re.compile("^(RX|TX) packets \d+  bytes (\d+) (5.2 GiB)")
+bytes2Pat = re.compile("(RX|TX)\s+packets\s+\d+\s+bytes\s+(\d+)\s+")
 
 iterations = 0
 firstTime = None
@@ -110,6 +128,7 @@ while continuous or (iterations == 0):
   
       if match:
         interface = match.group(1)
+        debug("got interface %s from %s" % (repr(interface), repr(line)))
         if args:
           found = False
           for arg in args:
@@ -121,6 +140,7 @@ while continuous or (iterations == 0):
     else:
       match = bytesPat.search(line)
       if match:
+        debug("%s matched %s" % (repr(line), repr(bytesPat.pattern)), 2)
         rx = int(match.group(1))
         tx = int(match.group(2))
         if continuous:
@@ -137,6 +157,7 @@ while continuous or (iterations == 0):
       else:
         match = bytes2Pat.search(line)
         if match:
+          debug("%s matched %s" % (repr(line), repr(bytes2Pat.pattern)), 2)
           if match.group(1) == "RX":
             rx = int(match.group(2))
           elif match.group(1) == "TX":
@@ -154,5 +175,7 @@ while continuous or (iterations == 0):
               time.sleep(5)
             else:
               print emit()
+        else:
+          debug("%s failed matched %s and %s" % (repr(line), repr(bytesPat.pattern), repr(bytes2Pat.pattern)), 2)
   
   # emit()
