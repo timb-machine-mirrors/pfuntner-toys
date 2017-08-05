@@ -41,7 +41,7 @@ $</pre></td></tr>
 <p>The script is not perfect!  There are some instances where <tt>git</tt> wants to do something interactively with me and the script just hangs because it doesn't expect such a prompt.  Often, there isn't even any warning before the hang.  If I get the sense that the script is hanging, I have to cancel it, get my token, and re-issue the command with an absolute path to <tt>/usr/bin/git</tt> to see what it was really doing.</td><td>There isn't much to show.  Just use the script as a substitute for <tt>git</tt>.</td></tr>
 <tr><td><a href="https://github.ibm.com/pfuntner/toys/blob/master/seejson">seejson</a></td><td>A ridiculously simple Python script that takes JSON written in an arbitrary way and prints it out in a pretty from.  I say it's simple because it's just using the Python JSON module to do most of the work.  The result is great!</td><td>
 <pre>
-$ echo '{"one": 1, "two": [2] }' \| seejson
+$ echo '{"one": 1, "two": [2] }' | seejson
 {
   "two": [
     2
