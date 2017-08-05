@@ -1,4 +1,4 @@
-# Bruno's Toys
+<h1>Bruno's Toys</h1>
 
 <p>These are scripts that I've found useful that I thought I would share with other folks.</p>
 <p>I must admit that there are some tools in here I don't really expect others to make much use of.  Some are in here that are useful to me and I like to have them in the repo so I have a central place where I can store them in and where I can deploy them from easily.</p>
@@ -19,9 +19,9 @@ $ (echo "The time is"; date) | banner --center -c '*'
 $
 </pre></td></tr>
 
-<tr><td><a href="https://github.ibm.com/pfuntner/toys/blob/master/bashprofiles">bashprofiles</a></td><td>Most people know that `bash` supports a user profile but some people don't know that `bash` supports various file names and uses the first one that it finds in a defined order.  Personally, I can never remember all the file names exactly, don't remember the order they're used, and often can't remember the file used for a particular system.
+<tr><td><a href="https://github.ibm.com/pfuntner/toys/blob/master/bashprofiles">bashprofiles</a></td><td>Most people know that <tt>bash</tt> supports a user profile but some people don't know that <tt>bash</tt> supports various file names and uses the first one that it finds in a defined order.  Personally, I can never remember all the file names exactly, don't remember the order they're used, and often can't remember the file used for a particular system.
 <br/>
-I've tried to simply the problem with this script.  By default, it will just tell you the profile `bash` will use for you, even if you have two or more to choose from.  One of my favorite ways to use the default behavior is to edit my profile file.  I don't care what the name is - just edit it!
+I've tried to simply the problem with this script.  By default, it will just tell you the profile <tt>bash</tt> will use for you, even if you have two or more to choose from.  One of my favorite ways to use the default behavior is to edit my profile file.  I don't care what the name is - just edit it!
 <pre>
 $ vi $(bashprofiles)
 </pre>
@@ -35,7 +35,7 @@ You do not have /home/ibmadmin/.bash_login
 You have /home/ibmadmin/.profile
 $</pre></td></tr>
 
-<tr><td><a href="https://github.ibm.com/pfuntner/toys/blob/master/br">br</a></td><td>This is a script that you kind of have to use to appreciate.  It reads from stdin, stashes the data verbatim in a temporary file, launches `vi` on the file, and then removes the file when you're done.  So it's a little bit like `more` but I think it's much more flexible and you have a full editor to play with.
+<tr><td><a href="https://github.ibm.com/pfuntner/toys/blob/master/br">br</a></td><td>This is a script that you kind of have to use to appreciate.  It reads from stdin, stashes the data verbatim in a temporary file, launches <tt>vi</tt> on the file, and then removes the file when you're done.  So it's a little bit like <tt>more</tt> but I think it's much more flexible and you have a full editor to play with.
 <br/>Alternatively, if you run it without redirecting stdin and give it one or more filenames, it launches <tt>vi</tt> in read-only mode.  I used to have a script for years that would only do <i>read-only</i> editing but I finally combined them together.</td><td>It's too interactive to give a good example.  Just try it out.</td></tr>
 
 <tr><td><a href="https://github.ibm.com/pfuntner/toys/blob/master/git">git</a></td><td><p>No, I didn't re-write <tt>git</tt>!!  This is a front-end to <tt>/usr/bin/git</tt> which supplies my github user & token for prompts.  I created this because of I got sick of having to enter the token myself.  Also, I have to have the presence of mine to <b>get</b> my token every time!  I have it stored in a file in my home directory but I had to cat it every time I wanted to use a <tt>git</tt> command!  This solves the problem <b>for the most part</b>  I usually have a copy of the script and the associated JSON file in my bin directory.  Instead of putting <tt>$HOME/bin</tt> early in my <tt>$PATH</tt>, I usually just create a shell alias for <tt>git</tt> which leads to my script.</p>
