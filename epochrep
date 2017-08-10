@@ -20,14 +20,15 @@ for line in sys.stdin:
     match = regexp.search(line)
     if not match:
       break
+    groups = match.groups()
     if verbose:
-      sys.stderr.write("matched on %s\n" % match.group(2))
-    secs = float(match.group(2))
+      sys.stderr.write("matched on %s\n" % groups[1])
+    secs = float(groups[1])
     if int(math.log10(secs)+1) == 13:
       """
         If milliseconds have been expressed as an integer, convert it to seconds
       """
       secs /= 1000.0
-    line = regexp.sub(str(datetime.datetime.fromtimestamp(secs)), line, count=1)
+    line = groups[0] + str(datetime.datetime.fromtimestamp(secs)) + groups[-1]
 
   print line
