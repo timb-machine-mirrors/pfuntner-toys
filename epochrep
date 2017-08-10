@@ -2,23 +2,32 @@
 
 import re
 import sys
+import math
 import datetime
 
 assert not sys.stdin.isatty(), "stdin must be redirected"
 
 verbose = "--verbose" in sys.argv
-millis = "--millis" in sys.argv
 
-regexp = re.compile("(^|\D)(\d{%d}(\.\d+)?)(\D|$)" % (13 if millis else 10))
+"""
+  Match for seconds or milliseconds (as an integer)
+"""
+regexp = re.compile("^(|.*\D)((\d{10}|\d{13})(\.\d+)?)([^0-9.].*|)$")
 
 for line in sys.stdin:
-  match = True
-  while match:
+  line = line.strip('\n')
+  while True:
     match = regexp.search(line)
-    if match:
-      if verbose:
-        sys.stderr.write("matched on %s\n" % match.group(2))
-      secs = float(match.group(2)) / (1000.0 if millis else 1)
-      line = "%s%s%s" % (line[:match.end(1)], datetime.datetime.fromtimestamp(secs), line[match.start(4):])
+    if not match:
+      break
+    if verbose:
+      sys.stderr.write("matched on %s\n" % match.group(2))
+    secs = float(match.group(2))
+    if int(math.log10(secs)+1) == 13:
+      """
+        If milliseconds have been expressed as an integer, convert it to seconds
+      """
+      secs /= 1000.0
+    line = regexp.sub(str(datetime.datetime.fromtimestamp(secs)), line, count=1)
 
-  sys.stdout.write(line)
+  print line
