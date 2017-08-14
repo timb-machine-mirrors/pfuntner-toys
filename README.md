@@ -88,7 +88,14 @@ $
 <li>a single integer, the first column is <tt>1</tt></li>
 <li>two integers separated by a hyphen - <tt>1-3</tt> is synonymous with <tt>1 2 3</tt></li>
 <li>a single negative integer counts columns backwards - <tt>-1</tt> is the last column</tt></li>
-</ul></td><td><pre>
+</ul>Be aware that if the first column you specify is negative, you'll likely have to use a <em>trick</em> to make it so that the script will not think that <tt>-1</tt> is not supposed to be an option:
+
+<pre>
+$ columns -- -1
+</pre>
+
+This is a common technique when invoking Unix commands so it's handy to remember!
+</td><td><pre>
 $ ls -l
 total 0
 -rw-rw-r-- 1 bruno bruno 0 Aug 14 12:44 1
