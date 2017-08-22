@@ -16,6 +16,7 @@ class SecureKeyValues:
   def __init__(self, filename, key=None):
     self.simpleFilename = filename
     self.store = {}
+    self.exists = False
 
     done = False
     while not done:
@@ -41,10 +42,18 @@ class SecureKeyValues:
         with open(self.filename, 'r') as f: 
           try:
             self.store = json.loads(self.fernet.decrypt(f.read()))
+            self.exists = True
             done = True
           except Exception as e:
             sys.stderr.write("Exception: %s ... try again\n" % repr(e))
             key = None
+      else:
+        """
+          The lack of a store file is not a problem.  It will get created once
+          the write() method is used on the object.  We have a key and will
+          use it if and when we write.
+        """
+        done = True
 
   def get(self, key):
     if key in self.store:
@@ -106,8 +115,10 @@ if __name__ == "__main__":
   else:
     store = SecureKeyValues(storeName, key)
     if operation == "read":
+      if not store.exists:
+        sys.stderr.write("Note: %s does not exist\n" % repr(store.filename))
       for key in store.keys():
-          print "%s: %s" % (key, store.get(key))
+        print "%s: %s" % (key, store.get(key))
     elif operation == "set":
       regexp = re.compile("^([^=]+)=(.*)$")
       if not args and sys.stdin.isatty():
