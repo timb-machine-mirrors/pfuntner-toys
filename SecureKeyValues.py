@@ -20,7 +20,7 @@ class SecureKeyValues:
     if key:
       self.simpleKey = key
     else:
-      self.simpleKey = getpass.getpass("Key: ")
+      self.simpleKey = getpass.getpass("Key for %s: " % repr(self.simpleFilename))
 
     hash = hashlib.md5()
     hash.update(self.simpleKey)
