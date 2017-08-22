@@ -17,27 +17,34 @@ class SecureKeyValues:
     self.simpleFilename = filename
     self.store = {}
 
-    if key:
-      self.simpleKey = key
-    else:
-      self.simpleKey = getpass.getpass("Key for %s: " % repr(self.simpleFilename))
-
-    hash = hashlib.md5()
-    hash.update(self.simpleKey)
-    self.key = base64.b64encode(hash.hexdigest())
-    self.fernet = Fernet(self.key)
-
-    if '/' in filename:
-      if filename[0] == '/':
-        self.filename = filename
+    done = False
+    while not done:
+      if key:
+        self.simpleKey = key
       else:
-        self.filename = os.path.join(os.getcwd(), filename)
-    else:
-      self.filename = os.path.join("%(HOME)s/.private" % os.environ, filename)
+        self.simpleKey = getpass.getpass("Key for %s: " % repr(self.simpleFilename))
 
-    if os.path.isfile(self.filename):
-      with open(self.filename, 'r') as f: 
-        self.store = json.loads(self.fernet.decrypt(f.read()))
+      hash = hashlib.md5()
+      hash.update(self.simpleKey)
+      self.key = base64.b64encode(hash.hexdigest())
+      self.fernet = Fernet(self.key)
+
+      if '/' in filename:
+        if filename[0] == '/':
+          self.filename = filename
+        else:
+          self.filename = os.path.join(os.getcwd(), filename)
+      else:
+        self.filename = os.path.join("%(HOME)s/.private" % os.environ, filename)
+
+      if os.path.isfile(self.filename):
+        with open(self.filename, 'r') as f: 
+          try:
+            self.store = json.loads(self.fernet.decrypt(f.read()))
+            done = True
+          except Exception as e:
+            sys.stderr.write("Exception: %s ... try again\n" % repr(e))
+            key = None
 
   def get(self, key):
     if key in self.store:
