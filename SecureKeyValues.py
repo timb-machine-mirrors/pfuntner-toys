@@ -75,6 +75,8 @@ if __name__ == "__main__":
   key = None
   storeName = None
 
+  staticStringRegexp = re.compile("^['\"](.+)['\"]$")
+
   (opts,args) = getopt.getopt(sys.argv[1:], "k:o:s:", ["key=", "operation=", "store="])
   for (opt,arg) in opts:
     if opt in ["-o", "--operation"]:
@@ -84,7 +86,7 @@ if __name__ == "__main__":
     elif opt in ["-s", "--store"]:
       storeName = arg
 
-  assert (operation == "test") or (storeName and (operation in ["read", "set", "remove"])), "Syntax: %s --store STORE --key KEY --operation test|read|set|remove <args>" % sys.argv[0]
+  assert (operation == "test") or (storeName and (operation in ["read", "get", "set", "remove"])), "Syntax: %s --store STORE --key KEY --operation test|read|set|remove <args>" % sys.argv[0]
 
   if operation == "test":
     store = SecureKeyValues("test", "this is a test")
@@ -119,5 +121,12 @@ if __name__ == "__main__":
       for arg in args:
         store.remove(arg)
       store.write()
+    elif operation == "get":
+      for arg in args:
+        match = staticStringRegexp.search(arg)
+        if match:
+          print match.group(1)
+        else:
+          print store.get(arg)
     else:
       sys.stderr.write("Don't know how to handle operation %s\n" % repr(operation))
