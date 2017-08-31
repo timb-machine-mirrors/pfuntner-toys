@@ -76,8 +76,12 @@ def timestampParse(arg):
   return t
 
 pats = [
-         Pattern("([A-Z][a-z]{2} [A-Z][a-z]{2} [ 0-9]\d \d{2}:\d{2}:\d{2} \S+ \d{4})", "%a %b %d %H:%M:%S %Z %Y"), # Unix `date` style: "Thu Mar  2 07:45:42 EST 2017"
-         Pattern("(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6})", "%Y-%m-%d %H:%M:%S.%f"), # Python datetime.datetime default format: "2017-03-06 16:04:42.318470"
+         Pattern("([A-Z][a-z]{2} [A-Z][a-z]{2} [ 0-9]\d \d{2}:\d{2}:\d{2} \S+ \d{4})", "%a %b %d %H:%M:%S %Z %Y"), # Unix `date` style: "Thu Mar  2 07:45:42 EST 2017",
+         Pattern("(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6})", "%Y-%m-%d %H:%M:%S.%f"), # Python datetime.datetime default format: "2017-03-06 16:04:42.318470",
+#                                                                  000000000111111111
+#                                                                  123456789012345678
+#                                                               mmmddyyyyhhmmssmmmmmm
+         Pattern("([A-Z][a-z]{2}\d{17})", "%b%d%Y%H%M%S%f"), # `Aug112017150247961262` - note one digit is dropped
        ]
 
 before = None

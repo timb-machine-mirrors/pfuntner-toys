@@ -18,7 +18,10 @@ def process(filename=None):
   for line in f:
     lineno += 1
     line = line.strip('\n')
-    match = regexp.search(line)
+    tmp = line
+    for exclude in excludes:
+      tmp = exclude.sub("", tmp)
+    match = regexp.search(tmp)
     if (match and (not negate)) or ((not match) and negate):
       if filename:
         sys.stdout.write(filename)
@@ -32,7 +35,9 @@ def process(filename=None):
   if filename:
     f.close()
 
-(opts,args) = getopt.getopt(sys.argv[1:], "nvi", [])
+excludes = []
+
+(opts,args) = getopt.getopt(sys.argv[1:], "x:nvi", [])
 for (opt,arg) in opts:
   if opt == "-v":
     negate = not negate
@@ -40,6 +45,8 @@ for (opt,arg) in opts:
     ignoreCase = not ignoreCase
   elif opt == "-n":
     numbers = not numbers
+  elif opt == "-x":
+    excludes.append(re.compile(arg, flags=re.IGNORECASE if ignoreCase else 0))
   else:
     sys.stderr.write("Unhandled option: `%s`\n" % opt)
     exit(1)
