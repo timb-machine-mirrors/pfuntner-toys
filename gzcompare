@@ -1,0 +1,93 @@
+#! /usr/bin/python
+
+import re
+import sys
+import gzip
+import getopt
+import os.path
+import StringIO
+
+import pdb
+
+def match(s):
+  ret = False
+  for regexp in regexps:
+    ret = regexp.search(s)
+    if ret:
+      break
+  return ret
+
+def see(value):
+  units = 'b'
+  if value > 1000:
+    value = value / 1024.0
+    units = 'K'
+    if value > 1000:
+      value = value / 1024.0
+      units = 'M'
+      if value > 1000:
+        value = value / 1024.0
+        units = 'G'
+        if value > 1000:
+          value = value / 1024.0
+          units = 'T'
+    return "%.2f%s" % (value, units)
+  else:
+    return "%d%s" % (value, units)
+
+def process(filename):
+
+  if tracing:
+    pdb.set_trace()
+
+  isCompressed = False
+
+  compressedSize = None
+  uncompressedSize = None
+
+  sys.stdout.write("%s: " % filename)
+  if os.path.isfile(filename):
+    if match(filename):
+      isCompressed = True
+      compressedSize = os.path.getsize(filename) 
+      try:
+        with gzip.open(filename, 'r') as inFile:
+          uncompressedSize = len(inFile.read())
+      except Exception as e:
+        sys.stdout.write("Cannot uncompress: %s" % e)
+    else:
+      uncompressedSize = os.path.getsize(filename) 
+      try:
+        buf = StringIO.StringIO()
+        with open(filename, 'r') as inFile:
+          with gzip.GzipFile(fileobj=buf, mode="wb") as outFile:
+            outFile.write(inFile.read())
+            outFile.flush()
+            compressedSize = len(buf.getvalue())
+      except Exception as e:
+        sys.stdout.write("Cannot compress: %s" % e)
+    if (compressedSize != None) and (uncompressedSize != None):
+      sys.stdout.write("%s %s %6.2f%%" % (see(uncompressedSize), see(compressedSize), (compressedSize*100.0)/uncompressedSize))
+  else:
+    if os.path.exists(filename):
+      sys.stdout.write("Not a file")
+    else:
+      sys.stdout.write("Does not exist")
+  sys.stdout.write("\n")
+ 
+tracing = False
+
+regexps = [
+            re.compile(".\.gz$"),
+            re.compile(".\.tgz$"),
+          ]
+
+(opts, args) = getopt.getopt(sys.argv[1:], "t", ["trace"])
+for (opt,arg) in opts:
+  if opt in ["-t", "--trace"]:
+    tracing = not tracing
+  else:
+    assert (not opt), "don't know what to with %s" % repr(opt)
+
+for filename in args:
+  process(filename)
