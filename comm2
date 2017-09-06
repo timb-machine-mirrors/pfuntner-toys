@@ -4,6 +4,18 @@
   A better `comm` that doesn't expect the files to be sorted.
 """
 
+import sys
+import json
+import getopt
+
+COMMON = 0
+UNIQUE_TO_1 = 1
+UNIQUE_TO_2 = 2
+
+def debug(msg):
+  if verbose:
+    sys.stderr.write("%s\n" % msg)
+
 def readFile(filename):
   with open(filename, 'r') as f:
     data = f.read()
@@ -11,14 +23,32 @@ def readFile(filename):
       data = data[:-1]
     return data.split('\n')
 
-import sys
-import getopt
-
+def report(line, status):
+  if (status == COMMON) and (not skipCommon):
+    if jsonOutput:
+      output.append({"line": line, "status": "common", "pos1": pos1+1, "pos2": pos2+1})
+    else:
+      print line
+  elif (status == UNIQUE_TO_1) and (not skipUnique1):
+    if jsonOutput:
+      output.append({"line": line, "status": "unique to file 1", "pos1": pos1+1})
+    else:
+      print '\t' + line
+  elif (status == UNIQUE_TO_2) and (not skipUnique2):
+    if jsonOutput:
+      output.append({"line": line, "status": "unique to file 2", "pos2": pos2+1})
+    else:
+      print '\t\t' + line
+  
+output = []
+jsonOutput = False
 skipUnique1 = False
 skipUnique2 = False
 skipCommon = False
 
-(opts,args) = getopt.getopt(sys.argv[1:], "123", [])
+verbose = False
+
+(opts,args) = getopt.getopt(sys.argv[1:], "vj123", ["verbose", "json"])
 
 for (opt,arg) in opts:
   if opt == '-1':
@@ -27,6 +57,10 @@ for (opt,arg) in opts:
     skipUnique2 = not skipUnique2
   elif opt == '-3':
     skipCommon = not skipCommon
+  elif opt in ["-j", "--json"]:
+    jsonOutput = not jsonOutput
+  elif opt in ["-v", "--verbose"]:
+    verbose = not verbose
   else:
     raise Exception("Don't know how to handle %s" % repr(opt))
 
@@ -40,17 +74,14 @@ pos2 = 0
 
 while (pos1 < len(file1)) or (pos2 < len(file2)):
   if (pos1 < len(file1)) and (pos2 < len(file2)) and (file1[pos1] == file2[pos2]):
-    if not skipCommon:
-      print file1[pos1]
+    report(file1[pos1], COMMON)
     pos1 += 1
     pos2 += 1
   elif pos1 >= len(file1):
-    if not skipUnique2:
-      print '\t\t' + file2[pos2]
+    report(file2[pos2], UNIQUE_TO_2)
     pos2 += 1
   elif pos2 >= len(file2):
-    if not skipUnique1:
-      print '\t' + file1[pos1]
+    report(file1[pos1], UNIQUE_TO_1)
     pos1 += 1
   else:
     next1 = None
@@ -70,27 +101,25 @@ while (pos1 < len(file1)) or (pos2 < len(file2)):
       else:
         tmp += 1
 
-    if (not next1) and (not next2):
-      if not skipUnique1:
-        print '\t' + file1[pos1]
+    debug("(%d %s) (%d %s) %s %s" % (pos1, file1[pos1] if pos1 < len(file1) else None, pos2, file2[pos2] if pos2 < len(file2) else None, next1, next2))
+    if (next1 == None) and (next2 == None):
+      report(file1[pos1], UNIQUE_TO_1)
       pos1 += 1
-      if not skipUnique2:
-        print '\t\t' + file2[pos2]
+      report(file2[pos2], UNIQUE_TO_2)
       pos2 += 1
-    elif not next1:
-      if not skipUnique1:
-        print '\t' + file1[pos1]
+    elif next1 == None:
+      report(file2[pos2], UNIQUE_TO_2)
+      pos2 += 1
+    elif next2 == None:
+      report(file1[pos1], UNIQUE_TO_1)
       pos1 += 1
-    elif not next2:
-      if not skipUnique2:
-        print '\t\t' + file2[pos2]
-      pos2 += 1
     else:
-      if next1 < next2:
-        if not skipUnique1:
-          print '\t' + file1[pos1]
+      if next1 > next2:
+        report(file1[pos1], UNIQUE_TO_1)
         pos1 += 1
       else:
-        if not skipUnique2:
-          print '\t\t' + file2[pos2]
+        report(file2[pos2], UNIQUE_TO_2)
         pos2 += 1
+
+if output:
+  print json.dumps(output, indent=2, sort_keys=True)
