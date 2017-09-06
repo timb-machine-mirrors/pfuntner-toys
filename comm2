@@ -16,6 +16,9 @@ def debug(msg):
   if verbose:
     sys.stderr.write("%s\n" % msg)
 
+def status(msg=""):
+  debug("(%d %s) (%d %s)%s" % (pos1, repr(file1[pos1]) if pos1 < len(file1) else None, pos2, repr(file2[pos2]) if pos2 < len(file2) else None, (' ' + msg) if msg else ""))
+
 def readFile(filename):
   with open(filename, 'r') as f:
     data = f.read()
@@ -73,6 +76,7 @@ pos1 = 0
 pos2 = 0
 
 while (pos1 < len(file1)) or (pos2 < len(file2)):
+  status()
   if (pos1 < len(file1)) and (pos2 < len(file2)) and (file1[pos1] == file2[pos2]):
     report(file1[pos1], COMMON)
     pos1 += 1
@@ -101,7 +105,6 @@ while (pos1 < len(file1)) or (pos2 < len(file2)):
       else:
         tmp += 1
 
-    debug("(%d %s) (%d %s) %s %s" % (pos1, file1[pos1] if pos1 < len(file1) else None, pos2, file2[pos2] if pos2 < len(file2) else None, next1, next2))
     if (next1 == None) and (next2 == None):
       report(file1[pos1], UNIQUE_TO_1)
       pos1 += 1
