@@ -12,48 +12,67 @@ import getpass
 import datetime
 from cryptography.fernet import Fernet
 
+def berate(s):
+  if jsonOutput:
+    if not ("errors" in output):
+      output["errors"] = [s]
+    else:
+      output["errors"].append(s)
+  else:
+    sys.stderr.write("%s\n" % s)
+
+def announce(name, value, whisperName=False):
+  if jsonOutput:
+    output["pairs"][name] = value
+  else:
+    if whisperName:
+      print value
+    else:
+      print "%s: %s" % (name, value)
+
 class SecureKeyValues:
-  def __init__(self, filename, key=None):
+  def __init__(self, filename, key=None, keyPromptForMissingFile=True):
     self.simpleFilename = filename
     self.store = {}
     self.exists = False
 
-    done = False
-    while not done:
-      if key:
-        self.simpleKey = key
+    if '/' in filename:
+      if filename[0] == '/':
+        self.filename = filename
       else:
-        self.simpleKey = getpass.getpass("Key for %s: " % repr(self.simpleFilename))
+        self.filename = os.path.join(os.getcwd(), filename)
+    else:
+      self.filename = os.path.join("%(HOME)s/.private" % os.environ, filename)
 
-      hash = hashlib.md5()
-      hash.update(self.simpleKey)
-      self.key = base64.b64encode(hash.hexdigest())
-      self.fernet = Fernet(self.key)
-
-      if '/' in filename:
-        if filename[0] == '/':
-          self.filename = filename
+    if keyPromptForMissingFile or os.path.exists(self.filename):
+      done = False
+      while not done:
+        if key:
+          self.simpleKey = key
         else:
-          self.filename = os.path.join(os.getcwd(), filename)
-      else:
-        self.filename = os.path.join("%(HOME)s/.private" % os.environ, filename)
-
-      if os.path.isfile(self.filename):
-        with open(self.filename, 'r') as f: 
-          try:
-            self.store = json.loads(self.fernet.decrypt(f.read()))
-            self.exists = True
-            done = True
-          except Exception as e:
-            sys.stderr.write("Exception: %s ... try again\n" % repr(e))
-            key = None
-      else:
-        """
-          The lack of a store file is not a problem.  It will get created once
-          the write() method is used on the object.  We have a key and will
-          use it if and when we write.
-        """
-        done = True
+          self.simpleKey = getpass.getpass("Key for %s: " % repr(self.simpleFilename))
+  
+        hash = hashlib.md5()
+        hash.update(self.simpleKey)
+        self.key = base64.b64encode(hash.hexdigest())
+        self.fernet = Fernet(self.key)
+  
+        if os.path.isfile(self.filename):
+          with open(self.filename, 'r') as f: 
+            try:
+              self.store = json.loads(self.fernet.decrypt(f.read()))
+              self.exists = True
+              done = True
+            except Exception as e:
+              sys.stderr.write("Exception: %s ... try again\n" % repr(e))
+              key = None
+        else:
+          """
+            The lack of a store file is not a problem.  It will get created once
+            the write() method is used on the object.  We have a key and will
+            use it if and when we write.
+          """
+          done = True
 
   def get(self, key):
     if key in self.store:
@@ -80,13 +99,16 @@ class SecureKeyValues:
       f.write(self.fernet.encrypt(json.dumps(self.store)))
 
 if __name__ == "__main__":
+  output = {"pairs": {}}
+
   operation = None
   key = None
   storeName = None
+  jsonOutput = False
 
   staticStringRegexp = re.compile("^['\"](.+)['\"]$")
 
-  (opts,args) = getopt.getopt(sys.argv[1:], "k:o:s:", ["key=", "operation=", "store="])
+  (opts,args) = getopt.getopt(sys.argv[1:], "k:o:s:j", ["key=", "operation=", "store=", "json"])
   for (opt,arg) in opts:
     if opt in ["-o", "--operation"]:
       operation = arg
@@ -94,6 +116,10 @@ if __name__ == "__main__":
       key = arg
     elif opt in ["-s", "--store"]:
       storeName = arg
+    elif opt in ["-j", "--json"]:
+      jsonOutput = not jsonOutput
+    else:
+      raise Exception("Don't know how to handle option %s" % repr(opt))
 
   assert (operation == "test") or (storeName and (operation in ["read", "get", "set", "remove"])), "Syntax: %s --store STORE --key KEY --operation test|read|set|remove <args>" % sys.argv[0]
 
@@ -113,12 +139,12 @@ if __name__ == "__main__":
       store.put("runs", [])
     store.write()
   else:
-    store = SecureKeyValues(storeName, key)
+    store = SecureKeyValues(storeName, key, keyPromptForMissingFile=(operation != "read"))
     if operation == "read":
       if not store.exists:
-        sys.stderr.write("Note: %s does not exist\n" % repr(store.filename))
+        berate("Note: %s does not exist" % repr(store.filename))
       for key in store.keys():
-        print "%s: %s" % (key, store.get(key))
+        announce(key, store.get(key))
     elif operation == "set":
       regexp = re.compile("^([^=]+)=(.*)$")
       if not args and sys.stdin.isatty():
@@ -136,8 +162,12 @@ if __name__ == "__main__":
       for arg in args:
         match = staticStringRegexp.search(arg)
         if match:
-          print match.group(1)
+          if (not jsonOutput):
+            print match.group(1)
         else:
-          print store.get(arg)
+          announce(arg, store.get(arg), whisperName=True)
     else:
-      sys.stderr.write("Don't know how to handle operation %s\n" % repr(operation))
+      berate("Don't know how to handle operation %s\n" % repr(operation))
+
+if jsonOutput:
+  print json.dumps(output, indent=2, sort_keys=True)
