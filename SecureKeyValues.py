@@ -169,5 +169,5 @@ if __name__ == "__main__":
     else:
       berate("Don't know how to handle operation %s\n" % repr(operation))
 
-if jsonOutput:
-  print json.dumps(output, indent=2, sort_keys=True)
+  if jsonOutput:
+    print json.dumps(output, indent=2, sort_keys=True)
