@@ -35,4 +35,4 @@ if encrypt:
 else:
   result = fernet.decrypt(data)
 
-sys.stdin.write(result)
+sys.stdout.write(result)
