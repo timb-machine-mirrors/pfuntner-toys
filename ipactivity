@@ -67,13 +67,13 @@ def emit():
   if interface and (rx != None) and (tx != None):
     ret = "%-16s RX:%s TX:%s" % (interface, see(rx), see(tx))
 
-    if firstTime:
-      secs = (datetime.datetime.now() - firstTime).total_seconds()
+    if lastTime:
+      secs = (datetime.datetime.now() - lastTime).total_seconds()
       # print "rx: %s" % rx
       # print "tx: %s" % tx
-      # print "firstRx: %s" % firstRx
-      # print "firstTx: %s" % firstTx
-      ret += " (%s/sec, %s/sec)" % (see((rx-firstRx) / secs), see((tx-firstTx) / secs)) 
+      # print "lastRx: %s" % lastRx
+      # print "lastTx: %s" % lastTx
+      ret += " (%s/sec, %s/sec)" % (see((rx-lastRx) / secs), see((tx-lastTx) / secs)) 
 
   interface = None
   rx = None
@@ -103,9 +103,9 @@ bytesPat = re.compile("RX bytes:(\d+)\s.*TX bytes:(\d+)\s")
 bytes2Pat = re.compile("(RX|TX)\s+packets\s+\d+\s+bytes\s+(\d+)\s+")
 
 iterations = 0
-firstTime = None
-firstRx = None
-firstTx = None
+lastTime = None
+lastRx = None
+lastTx = None
 
 while continuous or (iterations == 0):
   iterations += 1
@@ -147,10 +147,9 @@ while continuous or (iterations == 0):
           ret = emit()
           now = datetime.datetime.now()
           print "%s: %s" % (now, ret)
-          if not firstTime:
-            firstTime = now
-            firstRx = int(match.group(1))
-            firstTx = int(match.group(2))
+          lastTime = now
+          lastRx = int(match.group(1))
+          lastTx = int(match.group(2))
           time.sleep(5)
         else:
           print emit()
@@ -168,10 +167,9 @@ while continuous or (iterations == 0):
               ret = emit()
               now = datetime.datetime.now()
               print "%s: %s" % (now, ret)
-              if not firstTime:
-                firstTime = now
-                firstRx = int(match.group(1))
-                firstTx = int(match.group(2))
+              lastTime = now
+              lastRx = int(match.group(1))
+              lastTx = int(match.group(2))
               time.sleep(5)
             else:
               print emit()
