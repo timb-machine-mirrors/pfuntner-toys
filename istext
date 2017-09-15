@@ -20,6 +20,7 @@ def process(file, name):
     else:
       done = True
 
+  orig = data
   isEmpty = len(data) == 0
   data = data.translate(string.maketrans('',''), string.printable) # remove printables and whitespace
   if isEmpty:
@@ -32,10 +33,10 @@ def process(file, name):
     desired = True
 
     if details:
-      for pos in range(len(data)):
-        c = data[pos]
+      for pos in range(len(orig)):
+        c = orig[pos]
         if c not in string.printable:
-          print "%8d %s" % (pos, repr(data[pos]))
+          print "%8d %s" % (pos, repr(c))
   elif wantText and (status == "text"):
     print name
     desired = True
