@@ -8,9 +8,10 @@ class Table:
   isNumeric = re.compile("^([-+]?(\d+\.?\d*)|(\d*\.?\d+))$")
   separators = ['|', '\t', ',', ' ']
 
-  def __init__(self, headings, desiredSep=None):
+  def __init__(self, headings, desiredSep=None, respectBlanks=False):
     assert type(headings) in (type((None,)), type([])), "Headings must be a list or tuple"
 
+    self.respectBlanks = respectBlanks
     self.desiredSep = desiredSep
     self.headings = headings
     self.maxLens = [len(heading) for heading in self.headings]
@@ -31,7 +32,10 @@ class Table:
 
     self.rows.append([])
     for col in row:
-      self.rows[-1].append(col.strip('\n').strip(' '))
+      data = col.strip('\n')
+      if not self.respectBlanks:
+        data = data.strip(' ')
+      self.rows[-1].append(data)
 
     for col in row:
       for separator in range(len(Table.separators)):

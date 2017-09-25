@@ -3,6 +3,7 @@
 import sys
 import os
 import string
+import getopt
 
 def process(file, name):
   global verbose, wantText, wantBinary
@@ -19,6 +20,7 @@ def process(file, name):
     else:
       done = True
 
+  orig = data
   isEmpty = len(data) == 0
   data = data.translate(string.maketrans('',''), string.printable) # remove printables and whitespace
   if isEmpty:
@@ -29,6 +31,12 @@ def process(file, name):
   if verbose:
     print "%s: %s" % (name, status)
     desired = True
+
+    if details:
+      for pos in range(len(orig)):
+        c = orig[pos]
+        if c not in string.printable:
+          print "%8d %s" % (pos, repr(c))
   elif wantText and (status == "text"):
     print name
     desired = True
@@ -50,19 +58,21 @@ elif pgm.startswith("isbin"):
   wantBinary = True
 
 verbose = not (wantText or wantBinary)
+details = False
 
-argStart = 1
-if (len(sys.argv) >= 2) and (sys.argv[1] == "-v" or sys.argv[1] == "--verbose"):
-  verbose = True
-  argStart += 1
+(opts,args) = getopt.getopt(sys.argv[1:], "vd", ["verbose", "details"])
+for (opt,arg) in opts:
+  if opt in ["-v", "--verbose"]:
+    verbose = True
+  elif opt in ["-d", "--details"]:
+    details = not details
 
-if argStart+1 > len(sys.argv):
-  if os.isatty(0):
-    raise Exception("stdin is not redirected")
+if not args:
+  assert not sys.stdin.isatty(), "stdin is not redirected"
   verbose = True
   exceptions += process(sys.stdin, "<stdin>")
 else:
-  for filename in sys.argv[argStart:]:
+  for filename in args:
     try:
       file = open(filename)
       exceptions += process(file, filename)
