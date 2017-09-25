@@ -1,0 +1,13 @@
+#! /usr/bin/python
+
+import sys
+import getopt
+
+(opts,args) = getopt.getopt(sys.argv[1:], "i:", ["import="])
+for (opt,arg) in opts:
+  if opt in ["-i", "--import"]:
+    exec "import %s" % arg
+
+assert args, "Syntax: [-i MODULE ... ] %s EXPR" % sys.argv[0]
+
+print eval(' '.join(args))
