@@ -90,7 +90,8 @@ with open("/etc/mtab", 'r') as f:
       filename = tokens[1]
       try:
         mount = Dev(filename)
-        mounts[mount.st.st_dev] = mount
+        if mount.st.st_dev not in mounts:
+          mounts[mount.st.st_dev] = mount
       except Exception as e:
         sys.stderr.write("Caught: %s\n" % e)
         pass
