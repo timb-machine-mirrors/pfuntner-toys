@@ -94,7 +94,7 @@ if len(args) != 3:
 
 now = datetime.datetime.now()
 
-if args[0] == "now":
+if args[0] in ["now", "today"]:
   timestamp1 = now
 else:
   timestamp1 = getDatetime(args[0])
