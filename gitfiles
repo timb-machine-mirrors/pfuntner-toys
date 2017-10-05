@@ -1,0 +1,120 @@
+#! /usr/bin/python
+
+import re
+import sys
+import getopt
+import datetime
+import subprocess
+
+from table import Table
+
+"""
+commit c2bcf77c55ac334999d1b3bdb7706d40580590eb
+Author: John Pfuntner <pfuntner@us.ibm.com>
+Date:   Wed Oct 4 15:49:37 2017 -0400
+
+    Latest changes
+
+    I am displaying the announcements pretty well.  I've added
+    an "update" button to just do an alert() and that's appearing!
+    I'll work on more tomorrow.
+
+public/css/admin_monitor.css
+public/js/admin-ui-events.js
+public/js/admin.js
+"""
+
+def limit(s, desiredLen):
+  assert desiredLen > 5
+
+  if len(s) > desiredLen:
+    ret = s[:int((desiredLen-4)/2)+1] + "..."
+    ret = ret + s[-(desiredLen-len(ret)):]
+  else:
+    ret = s
+  return ret
+
+def match(regexp, line):
+  result = regexp.search(line)
+  if result:
+    result = result.group(1)
+  return result
+
+def debug(s):
+  if verbose and s:
+    sys.stderr.write("%s: %s%s" % (datetime.datetime.now(), s, '' if s[-1] == '\n' else '\n'))
+
+def report():
+  if commit:
+    assert date and text, "At line %d, previous commit (%s) was not closed" % (lineno, commit)
+    print '\t'.join([commit, str(date), repr(limit(text.strip('\n'), 50)), str(files)])
+
+verbose = False
+(opts,args) = ([], [])
+try:
+  (opts,args) = getopt.getopt(sys.argv[1:], "v", ["verbose"])
+except Exception as e:
+  sys.stderr.write("Caught: %s\n" % repr(e))
+  exit(1)
+
+for (opt,arg) in opts:
+  if opt in ["-v", "--verbose"]:
+    verbose = not verbose
+
+cmd = "git log --name-only".split()
+p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+(stdout, stderr) = p.communicate()
+rc = p.wait()
+if (rc != 0) or stderr or verbose:
+  sys.stderr.write("%s returned %d, %s, %s\n" % (cmd, rc, repr(limit(stdout, 25)), repr(stderr)))
+
+assert (rc == 0) and (not stderr), "%s failed"
+
+commitRegexp = re.compile("^commit (\S+)$")
+
+"""
+  I tried "%z" 5 parse the timezone offset component but was getting "ValueError: 'z' is a bad directive in format"
+"""
+dateRegexp = re.compile("^Date:\s+(\S{3} \S{3} \d{1,2} \d{2}:\d{2}:\d{2} \d{4})")
+
+textRegexp = re.compile("^\s+(\S.*)$")
+fileRegexp = re.compile("^(\S.*)$")
+
+commit = None
+date = None
+text = ""
+files = []
+
+lineno = 0
+
+for line in stdout.split('\n'):
+  lineno += 1
+  token = match(commitRegexp, line)
+  if token: 
+    report()
+
+    commit = token
+    debug("saw commit %s" % commit)
+    date = None
+    text = ""
+    files = []
+  elif commit:
+    if not date:
+      token = match(dateRegexp, line)
+      if token:
+        assert not date, "At line %d, found %s when date was already read as %s" % (lineno, token, date)
+        date = datetime.datetime.strptime(token, "%a %b %d %H:%M:%S %Y")
+    else:
+      token = match(fileRegexp, line)
+      debug("checking %s for file -> %s" % (repr(line), True if token else False))
+      if token:
+        files.append(token) 
+        debug("%d files now" % len(files))
+      elif not files:
+        token = match(textRegexp, line)
+        if token:
+          text += "%s%s" % ('\n' if text else '', token)
+        elif text:
+          text += "\n"
+
+report()
