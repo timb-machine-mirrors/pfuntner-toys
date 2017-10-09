@@ -44,15 +44,20 @@ def debug(s):
   if verbose and s:
     sys.stderr.write("%s: %s%s" % (datetime.datetime.now(), s, '' if s[-1] == '\n' else '\n'))
 
-def report():
-  if commit:
+def report(brief=False):
+  if commit and (summary or brief):
     assert date and text, "At line %d, previous commit (%s) was not closed" % (lineno, commit)
-    print '\t'.join([commit, str(date), repr(limit(text.strip('\n'), 50)), str(files)])
+    if (summary and not brief):
+      print '\t'.join([commit, str(date), repr(limit(text.strip('\n'), 50)), str(files)])
+    elif (brief and not summary):
+      print '\t'.join([commit, str(date), repr(limit(text.strip('\n'), 50)), files[-1]])
 
 verbose = False
+summary = False
+
 (opts,args) = ([], [])
 try:
-  (opts,args) = getopt.getopt(sys.argv[1:], "v", ["verbose"])
+  (opts,args) = getopt.getopt(sys.argv[1:], "vs", ["verbose", "summary"])
 except Exception as e:
   sys.stderr.write("Caught: %s\n" % repr(e))
   exit(1)
@@ -60,6 +65,8 @@ except Exception as e:
 for (opt,arg) in opts:
   if opt in ["-v", "--verbose"]:
     verbose = not verbose
+  elif opt in ["-s", "--summary"]:
+    summary = not summary
 
 cmd = "git log --name-only".split()
 p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -110,6 +117,7 @@ for line in stdout.split('\n'):
       if token:
         files.append(token) 
         debug("%d files now" % len(files))
+        report(brief=True)
       elif not files:
         token = match(textRegexp, line)
         if token:
