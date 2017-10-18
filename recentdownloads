@@ -1,0 +1,33 @@
+#! /usr/bin/python
+
+import sys
+import os
+import os.path
+import getopt
+import subprocess
+
+def findDir(templates):
+  for template in templates:
+     try:
+       dir = (template % os.environ).replace('\\', '/')
+       if os.path.isdir(dir):
+         return dir
+     except Exception as e:
+       pass
+
+  assert False, "Could not find a directory from: %s" % templates
+  
+mtime = -1.0/24 # one hour
+(opts,args) = getopt.getopt(sys.argv[1:], "m:", ["mtime="])
+for (opt,arg) in opts:
+  if opt in ["-m", "--mtime"]:
+    mtime = float(arg)
+  else:
+    assert False, "Could not handle option %s" % repr(opt)
+
+dir = findDir(["%(USERPROFILE)s/downloads", "%(HOME)s/downloads"])
+
+cmd = ["find", dir, "-maxdepth", "1", "!", "-name", "*.swp", "-type", "f", "-mtime", str(mtime)]
+sys.stderr.write("%s\n" % cmd)
+p = subprocess.Popen(cmd)
+exit(p.wait())
