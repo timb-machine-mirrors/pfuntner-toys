@@ -30,6 +30,22 @@ def announce(name, value, whisperName=False):
     else:
       print "%s: %s" % (name, value)
 
+def tryHome(name):
+  ret = None
+  if (name in os.environ) and os.path.isdir(os.environ[name]):
+    ret = os.environ[name]
+  return ret
+
+def getHome():
+  ret = None
+
+  ret = tryHome("HOME")
+  if not ret:
+    ret = tryHome("USERPROFILE")
+
+  assert ret, "Cannot determine your home directory"
+  return ret
+
 class SecureKeyValues:
   def __init__(self, filename, key=None, keyPromptForMissingFile=True):
     self.simpleFilename = filename
@@ -42,7 +58,7 @@ class SecureKeyValues:
       else:
         self.filename = os.path.join(os.getcwd(), filename)
     else:
-      self.filename = os.path.join("%(HOME)s/.private" % os.environ, filename)
+      self.filename = os.path.join("%s/.private" % getHome(), filename)
 
     if keyPromptForMissingFile or os.path.exists(self.filename):
       done = False
@@ -94,7 +110,10 @@ class SecureKeyValues:
 
   def write(self):
     if os.path.isfile(self.filename):
-      os.rename(self.filename, self.filename + "D" + datetime.datetime.now().isoformat())
+      os.rename(self.filename, self.filename + "D" + datetime.datetime.now().isoformat().replace(':', ''))
+    dir = os.path.dirname(self.filename)
+    if not os.path.isdir(dir):
+      os.mkdir(dir, 0700)
     with open(self.filename, 'w') as f: 
       f.write(self.fernet.encrypt(json.dumps(self.store)))
 
