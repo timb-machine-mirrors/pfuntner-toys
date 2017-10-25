@@ -14,12 +14,12 @@ def toCenter(s, width):
 
 def process(lines):
   maxWidth = max([len(line) for line in lines])
-  print "%s%s%s" % (topLeftCorner, horizontal * (maxWidth+2), topRightCorner)
+  print ("%s%s%s" % (topLeftCorner, horizontal * (maxWidth+2), topRightCorner)).encode('utf-8')
   for line in lines:
     if verbose:
       print ["%s:%d" % (c, ord(c)) for c in line]
-    print "%s %s %s" % (vertical, just(line, maxWidth), vertical)
-  print "%s%s%s" % (bottomLeftCorner, horizontal * (maxWidth+2), bottomRightCorner)
+    print ("%s %s %s" % (vertical, just(line, maxWidth), vertical)).encode('utf-8')
+  print ("%s%s%s" % (bottomLeftCorner, horizontal * (maxWidth+2), bottomRightCorner)).encode('utf-8')
 
 horizontal = unichr(9473)
 vertical = unichr(9475)
