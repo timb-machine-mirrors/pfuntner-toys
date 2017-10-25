@@ -90,14 +90,31 @@ class SecureKeyValues:
           """
           done = True
 
-  def get(self, key):
-    if key in self.store:
-      return self.store[key]
+  def get(self, key, root=None):
+    if root == None:
+      root = self.store
+
+    if type(key) != list:
+      key = key.split("/")
+
+    if key[0] in root:
+      return root[key[0]] if len(key) == 1 else self.get(key[1:], root[key[0]])
     else:
       return None
 
-  def put(self, key, value):
-    self.store[key] = value
+  def put(self, key, value, root=None):
+    if root == None:
+      root = self.store
+
+    if type(key) != list:
+      key = key.split("/")
+
+    if len(key) > 1:
+      if key[0] not in root:
+        root[key[0]] = {}
+        self.put(key[1:], value, root[key[0]])
+    else:
+      root[key[0]] = value
 
   def keys(self):
     return self.store.keys()
@@ -125,6 +142,18 @@ if __name__ == "__main__":
   storeName = None
   jsonOutput = False
 
+  """
+    `staticStringRegexp` is a regular expression that let's us
+    identify when an argument is a "static string".  That is,
+    the caller wants the string included in the result as-is
+    and the store is not used.  This can be used to build
+    calls like this:
+
+      $ echo $(SecureKeyValues --store foobar --get \"-u\" user \"-p\" password)
+      Key for 'ctc':
+      -u fooar -p bar
+      $
+  """
   staticStringRegexp = re.compile("^['\"](.+)['\"]$")
 
   (opts,args) = getopt.getopt(sys.argv[1:], "k:o:s:j", ["key=", "operation=", "store=", "json"])
