@@ -1,0 +1,92 @@
+#! /usr/bin/python -u
+
+import sys
+import json
+import getopt
+import os.path
+import subprocess
+
+def syntax():
+  if isSSH:
+    sys.stderr.write("Syntax: %s [-q|--quiet] [-v|--verbose] cmd [arg ...]\n")
+  elif isSCP:
+    sys.stderr.write("Syntax: %s [-q|--quiet] [-v|--verbose] src1 [src2 ...] dest\n")
+  else:
+    sys.stderr.write("WTF!  %s is not an ssh or scp command?  What are you doing, dude???\n")
+  exit(1)
+
+verbose = False
+quiet = False
+(opts,args) = getopt.getopt(sys.argv[1:], "vq", ["verbose", "quiet"])
+
+for (opt, arg) in opts:
+  if opt in ["-q", "--quiet"]:
+    quiet = not quiet
+  elif opt in ["-v", "--verbose"]:
+    verbose = not verbose
+  else:
+    sys.stderr.write("Unexpected argument: `%s`\n" % opt)
+    syntax()
+
+isSSH = False
+isSCP = False
+
+if "ssh" in sys.argv[0]:
+  isSSH = True
+elif "scp" in sys.argv[0]:
+  isSCP = True
+else:
+  syntax()
+
+hosts = None
+
+pgm = sys.argv[0]
+if pgm[-3:] == ".py":
+  pgm = pgm[:-3]
+
+jsonFile = pgm + ".json"
+if verbose:
+  print "opening %s" % jsonFile
+
+with open(jsonFile, 'r') as f:
+  hosts = json.load(f)
+
+if verbose:
+  print "Hosts: %s" % hosts
+
+if len(args) < 1 if isSSH else 2:
+  syntax()
+
+for host in hosts:
+
+  if isSSH:
+    if not quiet:
+      print "%s" % (host["name"])
+    cmd = args
+
+  else:
+    for src in args[:-1]:
+      if not quiet:
+        print "%s @ %s" % (src, host["name"])
+
+        cmd = [src, "%s@%s:%s" % (host["user"], host["host"], args[-1])]
+
+  if isSSH:
+    cmd = ["%s@%s" % (host["user"], host["host"])] + cmd
+
+  if "key" in host:
+    cmd = ["-i", host["key"]] + cmd
+
+  cmd = ["ssh" if isSSH else "scp"] + cmd
+
+  if verbose:
+    print cmd
+
+  p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  (stdout, stderr) = p.communicate()
+  rc = p.wait()
+  if stderr or (rc != 0):
+    sys.stdout.write(stdout)
+    sys.stderr.write(stderr)
+  elif verbose:
+    sys.stderr.write("rc=%d, `%s`, `%s`\n" % (rc, repr(stdout.strip('\n')), repr(stderr.strip('\n'))))
