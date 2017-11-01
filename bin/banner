@@ -21,6 +21,13 @@ def process(lines):
     print ("%s %s %s" % (vertical, just(line, maxWidth), vertical)).encode('utf-8')
   print ("%s%s%s" % (bottomLeftCorner, horizontal * (maxWidth+2), bottomRightCorner)).encode('utf-8')
 
+def syntax(msg=None):
+  if msg:
+    sys.stderr.write(msg + "\n")
+
+  sys.stderr.write("Syntax: %s [--character C] [--box] [--left] [--center] [--middle] [--right] [text ...]\n" % sys.argv[0])
+  exit(1)
+
 horizontal = unichr(9473)
 vertical = unichr(9475)
 
@@ -36,7 +43,12 @@ fillChar = '#'
 
 verbose = False
 
-(opts, args) = getopt.getopt(sys.argv[1:], "vxc:", ["character=", "left", "center", "right", "box"])
+(opts, args) = ([], [])
+try:
+  (opts, args) = getopt.getopt(sys.argv[1:], "hvxc:", ["help", "character=", "left", "center", "right", "box"])
+except Exception as e:
+  syntax("Caught: %s" % e)
+
 for (opt,arg) in opts:
   if opt == "--left":
     just = toLeft
@@ -49,6 +61,8 @@ for (opt,arg) in opts:
     box = False
   elif opt in ["-x", "--box"]:
     box = not box
+  elif opt in ["-h", "--help"]:
+    syntax()
   elif opt == "-v":
     verbose = not verbose
 
@@ -61,7 +75,8 @@ if not box:
   bottomLeftCorner = fillChar
   bottomRightCorner = fillChar
 
-assert args or (not sys.stdin.isatty()), "Syntax: banner [message]"
+if (not args) and sys.stdin.isatty():
+  syntax("Text must be on the command line or redirected through stdin")
 
 if args:
   process([' '.join(args)])
