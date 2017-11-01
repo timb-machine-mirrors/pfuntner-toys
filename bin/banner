@@ -25,7 +25,7 @@ def syntax(msg=None):
   if msg:
     sys.stderr.write(msg + "\n")
 
-  sys.stderr.write("Syntax: %s [--character C] [--box] [--left] [--center] [--middle] [--right] [text ...]\n" % sys.argv[0])
+  sys.stderr.write("Syntax: %s [--character C] [--box] [--left] [--center] [--right] [text ...]\n" % sys.argv[0])
   exit(1)
 
 horizontal = unichr(9473)
