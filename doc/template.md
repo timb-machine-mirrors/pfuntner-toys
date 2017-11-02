@@ -15,7 +15,7 @@ Syntax: template [-verbose] arg ...
 
 ## Example
 
-```bash
+```
 $ template
 This is a template.  Please fill in the details and rock on.
 $ 
