@@ -23,7 +23,7 @@ Syntax: bashprofiles [--all]
 
 ## Example
 
-```bash
+```
 $ bashprofiles
 /home/mrbruno/.profile
 $ bashprofiles --all
