@@ -4,7 +4,7 @@ import os
 import sys
 import os.path
 
-verbose = False
+all = False
 hits = 0
 
 def process(path):
@@ -14,20 +14,24 @@ def process(path):
 
   path = path % os.environ
   if os.path.isfile(path):
-    if verbose:
+    if all:
       print "You%s have %s" % (" also" if hits else "", path)
     else:
       print path
       ret = True
     hits += 1
-  elif verbose:
+  elif all:
     print "You do not have %s" % path
 
   return ret
 
 #  ~/.bash_profile, ~/.bash_login, and ~/.profile,
 
-verbose = ("-v" in sys.argv) or ("--verbose" in sys.argv)
+if ("-h" in sys.argv) or ("-?" in sys.argv) or ("--help" in sys.argv):
+  sys.stderr.write("Syntax: %s [--all]\n" % sys.argv[0])
+  exit(1)
+
+all = ("-a" in sys.argv) or ("--all" in sys.argv)
 
 if not process("%(HOME)s/.bash_profile"):
   if not process("%(HOME)s/.bash_login"):
