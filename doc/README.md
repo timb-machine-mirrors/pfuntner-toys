@@ -7,3 +7,4 @@ Select a toy to learn more about it.  I use _Bruno's Favorite_ to indicate that 
 | [`banner`](banner.md) | Yes | Prints text in a _banner_ |
 | [`bashprofiles`](bashprofiles.md) | | Prints profile script(s) `bash` will use |
 | [`beeper`](beeper.md) | | Beeps over and over. |
+| [`bingrep`](bingrep.md) | | Searches for a regular expression in arbitrary data from stdin |
