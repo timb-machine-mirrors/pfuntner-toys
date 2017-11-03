@@ -13,7 +13,7 @@ There are no options or arguments
 
 ## Example
 
-```bash
+```
 $ date; sleep 5; date; beeper
 Mon Aug 14 12:31:36 EDT 2017
 Mon Aug 14 12:31:41 EDT 2017

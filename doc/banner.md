@@ -22,7 +22,7 @@ Syntax: banner [--character C] [--box] [--left] [--center] [--middle] [--right] 
 
 ## Example
 
-```bash
+```
 $ banner hello
 ┏━━━━━━━┓
 ┃ hello ┃
