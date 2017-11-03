@@ -16,7 +16,7 @@ Syntax: columns [-F CHAR] [--regexp REGEXP] [col] [-col1] [col1-col2]
 <td><tt>-F</tt></td><td>Specifies the character by which to break up tokens</td><td>The default is to parse tokens by spaces</td>
 </tr>
 <tr>
-<td><tt>--regexp</tt></td><td>Specifies a regular expression by which to break up tokens</td><td>The default is to parse tokens by white space characters</td>
+<td><tt>--regexp</tt></td><td>Specifies a regular expression by which to break up tokens</td><td>The default is to parse tokens by spaces</td>
 </tr>
 </table>
 <p>
