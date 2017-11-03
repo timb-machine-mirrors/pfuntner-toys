@@ -12,7 +12,7 @@ Syntax: git ...
 The are no special options or arguments introduced by the script but a plethora of them are supported by the real `git` utility.
 
 ## Example
-There isn't much to show. Just use the script instead of `git` directly.
+There isn't much to show. Just use the script instead of `git` directly.  You might notice that `git` prompts for your user and password for some operations and they are provided automatically.
 
 ## Notes
 - Instead of putting `$HOME/bin` early in my `$PATH`, I usually just create a shell alias for `git` which leads to my script.
