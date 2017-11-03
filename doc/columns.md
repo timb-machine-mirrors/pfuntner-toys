@@ -1,4 +1,4 @@
-<h1><tt>template</tt><h1>
+<h1><tt>columns</tt><h1>
 
 <h2>Purpose</h2>
 <p>I love this script so much! I must use this at least an average of once a day! The basic idea is that you tell it the positional columns you want to print and it prints them out.</p>
