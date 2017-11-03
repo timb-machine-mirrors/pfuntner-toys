@@ -1,4 +1,4 @@
-<h1><tt>template</tt>h1>
+<h1><tt>template</tt><h1>
 
 <h2>Purpose</h2>
 <p>I love this script so much! I must use this at least an average of once a day! The basic idea is that you tell it the positional columns you want to print and it prints them out.</p>
@@ -13,7 +13,7 @@ Syntax: columns [-F CHAR] [--regexp REGEXP] [col] [-col1] [col1-col2]
 <th>Option</th><th>Description</th><th>Default</th>
 </tr>
 <tr>
-<td><tt>-F</tt></td></td>Specifies the character by which to break up tokens</td></td>The default is to parse tokens by spaces</td>
+<td><tt>-F</tt></td><td>Specifies the character by which to break up tokens</td><td>The default is to parse tokens by spaces</td>
 </tr>
 <tr>
 <td><tt>--regexp</tt></td><td>Specifies a regular expression by which to break up tokens</td><td>The default is to parse tokens by white space characters</td>
