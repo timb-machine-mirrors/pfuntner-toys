@@ -3,8 +3,17 @@
 import re
 import sys
 
-assert not sys.stdin.isatty(), "stdin must be directed"
-assert len(sys.argv) == 2, "Syntax: %s regexp" % sys.argv[0]
+def syntax(msg=None):
+  if msg:
+    sys.stderr.write(msg + "\n")
+  sys.stderr.write("Syntax: %s regexp\n" % sys.argv[0])
+  exit(1)
+
+if (len(sys.argv) != 2) or ("-?" in sys.argv) or ("-h" in sys.argv) or ("--help" in sys.argv):
+  syntax()
+
+if sys.stdin.isatty():
+  syntax("stdin must be directed")
 
 regexp = re.compile(sys.argv[1])
 data = sys.stdin.read()
