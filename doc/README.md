@@ -6,3 +6,4 @@ Select a toy to learn more about it.  I use _Bruno's Favorite_ to indicate that 
 | ---- | ----------------- | ----------------- |
 | [`banner`](banner.md) | Yes | Prints text in a _banner_ |
 | [`bashprofiles`](bashprofiles.md) | | Prints profile script(s) `bash` will use |
+| [`beeper`](beeper.md) | | Beeps over and over. |
