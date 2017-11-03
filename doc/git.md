@@ -1,7 +1,7 @@
 # `git`
 
 ## Purpose
-No, I didn't re-write `git`!! This is a front-end to `/usr/bin/git` which supplies my github user & token for prompts. I created this because of I got sick of having to enter the token myself. Also, I have to have the presence of mine to get my token every time! I have it stored in a file in my home directory but I had to cat it every time I wanted to use a `git` command! This solves the problem for the most part I usually have a copy of the script and the associated JSON file in my bin directory.
+No, I didn't re-write `git`!! This is a front-end to `/usr/bin/git` which supplies my github user & token for prompts. I created this because of I got sick of having to enter the token myself. Also, I have to have the presence of mine to get my token every time! I have it stored in a file in my home directory but I had to cat it every time I wanted to use a `git` command! This solves the problem for the most part.
 
 ## Syntax
 ```
