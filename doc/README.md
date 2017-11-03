@@ -10,3 +10,4 @@ Select a toy to learn more about it.  I use _Bruno's Favorite_ to indicate that 
 | [`bingrep`](bingrep.md) | | Searches for a regular expression in arbitrary data from stdin |
 | [`br`](br.md) | Yes | Browse a file.  Sounds simple?  Maybe, but give it a try. |
 | [`columns`](columns.md) | Yes | Prints _columns_ of stdin where columns are separated by a character or regular expression. |
+| [`git`](git.md) | Yes | Frontend to the `git` utility which provides credentials to the git server |
