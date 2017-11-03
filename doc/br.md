@@ -1,7 +1,7 @@
 # `br`
 
 ## Purpose
-This is a script that you kind of have to use to appreciate. It reads from stdin, stashes the data verbatim in a temporary file, launches vi on the file, and then removes the file when you're done. So it's a little bit like more but I think it's much more flexible and you have a full editor to play with. 
+`br` stands for _browse_.  This is a script that you kind of have to use to appreciate. It reads from stdin, stashes the data verbatim in a temporary file, launches vi on the file, and then removes the file when you're done. So it's a little bit like more but I think it's much more flexible and you have a full editor to play with. 
 
 Alternatively, if you run it without redirecting stdin and give it one or more filenames, it launches vi in read-only mode. I used to have an alias for years that would only do read-only editing but I finally combined them together and the script has proven very useful.
 
