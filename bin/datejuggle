@@ -4,7 +4,6 @@ import re
 import sys
 import datetime
 import getopt
-import getopt
 
 def secondsSinceEpoch(s):
   return datetime.datetime.fromtimestamp(float(s))
