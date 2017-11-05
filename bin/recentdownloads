@@ -27,7 +27,7 @@ for (opt,arg) in opts:
 
 dir = findDir(["%(USERPROFILE)s/downloads", "%(HOME)s/downloads"])
 
-cmd = ["find", dir, "-maxdepth", "1", "!", "-name", "*.swp", "-type", "f", "-mtime", str(mtime)]
+cmd = ["find", dir, "-maxdepth", "1", "-follow", "!", "-name", "*.swp", "-type", "f", "-mtime", str(mtime)]
 sys.stderr.write("%s\n" % cmd)
 p = subprocess.Popen(cmd)
 exit(p.wait())
