@@ -27,7 +27,7 @@ You can can specify columns in a few ways:
 <li>a single negative integer counts columns backwards - <tt>-1</tt> is the last column
 </p>
 <p>
-Be aware that if the first column you specify is negative, you'll likely have to use a trick to make it so that the script will not think that <tt>-1</tt> is not supposed to be an option:
+Be aware that if the first column you specify is negative, you'll likely have to use a trick to make it so that the script will not think that <tt>-1</tt> is an option:
 <pre>
 $ columns -- -1
 </pre>
