@@ -1,0 +1,44 @@
+#! /usr/bin/python -u
+
+import sys
+import json
+import datetime
+
+class Timer:
+  def __init__(self):
+    self.startTimestamp = datetime.datetime.now()
+    self.stopTimestamp  = None
+
+  def stop(self):
+    self.stopTimestamp = datetime.datetime.now()
+
+  def elapsed(self):
+    if not self.stopTimestamp:
+      self.stop()
+    return self.stopTimestamp - self.startTimestamp
+
+def debug(s):
+  if "--verbose" in sys.argv:
+    sys.stderr.write("%s: %s\n" % (datetime.datetime.now(), s))
+
+assert not sys.stdin.isatty(), "stdin must be redirected"
+
+objs = []
+readTimer = Timer()
+for line in sys.stdin:
+  try:
+    objs.append(json.loads(line))
+  except Exception as e:
+    # raise Exception("Caught %s with line %d: %s" % (e, len(objs)+1, repr(line)))
+    pass
+debug("%d elements read in %s" % (len(objs), readTimer.elapsed()))
+
+if all(["timestamp" in datum for datum in objs]):
+  sortTimer = Timer()
+  objs = sorted(objs, key=lambda datum: datum["timestamp"])
+  sortTimer.stop()
+  debug("sorted in %s" % sortTimer.elapsed())
+
+printTimer = Timer()
+print json.dumps(objs, indent=2, sort_keys=True)
+debug("printed in %s" % printTimer.elapsed())

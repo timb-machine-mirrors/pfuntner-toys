@@ -16,21 +16,38 @@ def formatTime(secs=None):
     secs = now()
   return time.strftime("%Y-%m-%d %H:%M:%S.%s", time.localtime(secs))
 
+def debug(msg):
+  if debugging:
+    sys.stderr.write(msg + "\n")
+
+def syntax(msg=None):
+  if msg:
+    sys.stderr.write(msg + "\n")
+  sys.stderr.write("Syntax: %s [-v] [--ignorerc] string cmd ...\n" % sys.argv[0])
+  exit(1)
+
 arg = 1
 
 negate = False
 ignoreRC = False
-(opts, args) = getopt.getopt(sys.argv[1:], "v", ["negate", "ignorerc"])
+debugging = False
+
+(opts, args) = ([], [])
+try:
+  (opts, args) = getopt.getopt(sys.argv[1:], "v", ["negate", "ignorerc", "debug"])
+except Exception as e:
+  syntax("Caught %s" % repr(e))
 
 for (opt,arg) in opts:
   if opt in ["-v", "--negate"]:
     negate = not negate
   elif opt == "--ignorerc":
-    ignoreRc = not ignoreRC
+    ignoreRC = not ignoreRC
+  elif opt == "--debug":
+    debugging = not debugging
 
 if len(args) < 2:
-  sys.stderr.write("Syntax: %s -v string cmd ...\n" % sys.argv[0])
-  exit(1)
+  syntax()
 
 string = args[0]
 done = False
@@ -44,10 +61,13 @@ while not done:
   sys.stderr.write(stderr)
   print
   if (not ignoreRC) and (rc != 0):
+    debug("Stopping due to rc=%d" % rc)
     done = True
   elif (not negate) and (string not in stdout) and (string not in stderr):
+    debug("Stopping due to %s being in output" % repr(string))
     done = True
   elif negate and (string in stdout or string in stderr):
+    debug("Stopping due to %s not being in output" % repr(string))
     done = True
   else:
     time.sleep(15)
