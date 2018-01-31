@@ -21,6 +21,7 @@ import getopt
 # ibmadmin@z-watchman:~/zwatchman-github$
 
 verbose=False
+ipOk=False
 
 def syntax():
   sys.stderr.write("Syntax: %s [-v|--verbose]\n" % sys.argv[0])
@@ -36,10 +37,12 @@ def run(cmd):
     sys.stderr.write("rc=%d, stdout=%s, sterr=%s\n" % (rc, repr(stdout), repr(stderr)))
   return stdout
 
-(args,opts) = getopt.getopt(sys.argv[1:], "v", ["verbose"])
+(args,opts) = getopt.getopt(sys.argv[1:], "vih", ["ip-ok", "verbose", "help"])
 for (arg,opt) in args:
   if arg in ["-v", "--verbose"]:
     verbose = not verbose
+  elif arg in ["-i", "--ip-ok"]:
+    ipOk = True
   else:
     syntax()
 
@@ -93,10 +96,14 @@ else:
 if verbose:
   if incomingHost:
     sys.stderr.write("incoming host is `%s`\n" % incomingHost)
+  elif incomingIP and ipOk:
+    sys.stderr.write("incoming IP is %s\n" % incomingIP)
   else:
     sys.stderr.write("Could not determine incoming host\n")
     exit(1)
 elif incomingHost:
   print incomingHost
+elif incomingIP and ipOk:
+  print incomingIP
 else:
   exit(1)
