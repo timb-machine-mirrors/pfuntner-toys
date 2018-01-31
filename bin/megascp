@@ -6,11 +6,13 @@ import getopt
 import os.path
 import subprocess
 
-def syntax():
+def syntax(s=None):
+  if s:
+    sys.stderr.write("%s\n" % s)
   if isSSH:
-    sys.stderr.write("Syntax: %s [-q|--quiet] [-v|--verbose] cmd [arg ...]\n")
+    sys.stderr.write("Syntax: %s [-q|--quiet] [-v|--verbose] cmd [arg ...]\n" % sys.argv[0])
   elif isSCP:
-    sys.stderr.write("Syntax: %s [-q|--quiet] [-v|--verbose] src1 [src2 ...] dest\n")
+    sys.stderr.write("Syntax: %s [-q|--quiet] [-v|--verbose] src1 [src2 ...] dest\n" % sys.argv[0])
   else:
     sys.stderr.write("WTF!  %s is not an ssh or scp command?  What are you doing, dude???\n")
   exit(1)
@@ -54,8 +56,8 @@ with open(jsonFile, 'r') as f:
 if verbose:
   print "Hosts: %s" % hosts
 
-if len(args) < 1 if isSSH else 2:
-  syntax()
+if len(args) < (1 if isSSH else 2):
+  syntax("Only %d arguments" % len(args))
 
 for host in hosts:
 
@@ -77,6 +79,8 @@ for host in hosts:
   if "key" in host:
     cmd = ["-i", host["key"]] + cmd
 
+  cmd = ["-o", "LogLevel=quiet"] + cmd
+
   cmd = ["ssh" if isSSH else "scp"] + cmd
 
   if verbose:
@@ -90,3 +94,5 @@ for host in hosts:
     sys.stderr.write(stderr)
   elif verbose:
     sys.stderr.write("rc=%d, `%s`, `%s`\n" % (rc, repr(stdout.strip('\n')), repr(stderr.strip('\n'))))
+  else:
+    sys.stdout.write(stdout)
