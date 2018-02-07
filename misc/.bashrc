@@ -11,14 +11,17 @@ set -o vi
 alias r='fc -s'
 alias more=less
 
-# Set up ~/bin/git as my `git` command rather than /usr/bin/git so it can auto-complete my user & token
-if test -f "$HOME/bruno/bin/git"
-then
-  alias git=$HOME/bruno/bin/git
-elif test -f "$HOME/bin/git"
-then
-  alias git=$HOME/bin/git
-fi
+# My git frontend is not needed if you authenticate with an sshkey and use the ssh-style URL
+# for the repo such as git@github.com:USER/REPO.git
+#
+# # Set up ~/bin/git as my `git` command rather than /usr/bin/git so it can auto-complete my user & token
+# if test -f "$HOME/bruno/bin/git"
+# then
+#   alias git=$HOME/bruno/bin/git
+# elif test -f "$HOME/bin/git"
+# then
+#   alias git=$HOME/bin/git
+# fi
 
 # Set alias for vi using my .exrc:
 if test -f "$HOME/bruno/bin/misc/.exrc"
