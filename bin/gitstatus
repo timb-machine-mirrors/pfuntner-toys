@@ -65,6 +65,6 @@ for line in stdout.split('\n'):
         if inSection["changes"]:
           match = re.search("modified:\s+(\S*)", line)
           if match:
-            print match.group(1).strip()
+            print match.group(1).strip(' \r')
         else:
-          print line.strip()
+          print line.strip(' \r')
