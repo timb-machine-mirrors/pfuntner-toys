@@ -1,0 +1,25 @@
+set -e
+
+if [ "X$SHELL" = X ]
+then
+  echo "\$SHELL is not set!" >&2
+  false
+fi
+
+echo -e "Your shell is $SHELL\n"
+$SHELL --version
+echo ""
+
+version="$($SHELL --version)"
+if expr match "$version" '.*bash' >/dev/null 2>&1
+then
+  if expr match "$version" '.*cygwin' >/dev/null 2>&1
+  then
+    echo "Your shell appears to Cygwin bash"
+  else
+    echo "Your shell is not from Cygwin"
+    echo "Your shell might be git bash?"
+  fi
+else
+  echo "Your shell is not bash?"
+fi
