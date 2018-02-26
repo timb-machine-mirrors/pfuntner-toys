@@ -3,6 +3,10 @@ This is a collection of Unix tools command line that make my life easier.  I thi
 
 I will admit that the documentation is rather poor for some of the tools and many of them have little or more comments.  This is a work in progress - I'm constantly creating new tools and improving documentation.  In November 2017, I did a major overhaul of the documentation because I was disatisfed with having a huge table.  I'm liking the results so far.
 
+### Unix platforms
+
+I consider myself to be a Unix agnostic.  I owe no allegiance to any single platform and consider them all pretty much equal as long as they behave similarly.  My tools have mostly been used on true Linux systems (Ubuntu, Redhat, SUSE, etc) but all of my laptops are Windows.  I couldn't survive without CYGWIN on Windows so I've often used the tools there.  I've even used them a little bit with Git bash because some Windows-based development is easiest there.  I have seen some issues using my tools (and other commands!) from Git bash but in general if I find a platform where one of my tools doesn't work well, I will try to fix it!
+
 ## Documentation for each important tool
 
 Select a tool below to learn more about it.  I use _Bruno's Favorite_ to indicate that a tool is:
