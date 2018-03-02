@@ -158,7 +158,7 @@ def process(filename):
   elif count == 2:
     print "%d timestamps over %s" % (count, Timestamp.see(Timestamp.diff(first, last)))
   elif count > 2:
-    print "%d timestamps over %s, average duration %s" % (count, Timestamp.see(Timestamp.diff(first, last)), Timestamp.see(total / (count-1)))
+    print "%d timestamps over %s, average duration %s, %.3f/minute" % (count, Timestamp.see(Timestamp.diff(first, last)), Timestamp.see(total / (count-1)), 60/(total / (count-1)))
 
   if filename:
     f.close()
