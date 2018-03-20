@@ -46,8 +46,8 @@ def debug(s):
 
 def report():
   if commit:
-    assert date and text, "At line %d, previous commit (%s) was not closed" % (lineno, commit)
-    table.add([commit, str(date), repr(text.strip('\n')[:50])])
+    assert date and author and text, "At line %d, previous commit (%s) was not closed" % (lineno, commit)
+    table.add([commit, author, str(date), repr(text.strip('\n')[:50])])
 
 verbose = False
 
@@ -77,17 +77,19 @@ commitRegexp = re.compile("^commit (\S+)$")
   I tried "%z" 5 parse the timezone offset component but was getting "ValueError: 'z' is a bad directive in format"
 """
 dateRegexp = re.compile("^Date:\s+(\S{3} \S{3} \d{1,2} \d{2}:\d{2}:\d{2} \d{4})")
+authorRegexp = re.compile("^Author:.*<([^>]+)>")
 
 textRegexp = re.compile("^\s+(\S.*)$")
 fileRegexp = re.compile("^(\S.*)$")
 
 commit = None
+author = None
 date = None
 text = ""
 files = []
 
 lineno = 0
-table = Table(["Commit", "Date", "Comments"])
+table = Table(["Commit", "Author", "Date", "Comments"])
 
 for line in stdout.split('\n'):
   lineno += 1
@@ -97,14 +99,19 @@ for line in stdout.split('\n'):
 
     commit = token
     debug("saw commit %s" % commit)
+    author = None
     date = None
     text = ""
     files = []
   elif commit:
-    if not date:
+    if not author:
+      token = match(authorRegexp, line)
+      if token:
+        author = token
+    elif not date:
       token = match(dateRegexp, line)
       if token:
-        assert not date, "At line %d, found %s when date was already read as %s" % (lineno, token, date)
+        # assert not date, "At line %d, found %s when date was already read as %s" % (lineno, token, date)
         date = datetime.datetime.strptime(token, "%a %b %d %H:%M:%S %Y")
     else:
       token = match(fileRegexp, line)
