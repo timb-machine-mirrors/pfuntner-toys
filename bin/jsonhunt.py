@@ -40,11 +40,12 @@ class Jsonhunt(object):
                 keyMatch = True if self.key.search(curr) else False
                 valueMatch = True if not self.value else ((type(currValue) in [str, unicode]) and self.value.search(currValue))
 
-                if self.negate:
-                    if self.value:
-                        matched = keyMatch and (not valueMatch)
-                else:
-                    matched = keyMatch and valueMatch
+                if not matched:
+                    if self.negate:
+                        if self.value:
+                            matched = keyMatch and (not valueMatch)
+                    else:
+                        matched = keyMatch and valueMatch
 
                 ret += self.hunt(root[curr], path + [str(curr)])
 
