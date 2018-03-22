@@ -130,6 +130,26 @@ class JsonhuntTest(TestCase):
             },
         ]
         expected = [
+            {
+                'path': '/0',
+                'tree': {'foo': 'bar'},
+            },
+            {
+                'path': '/1',
+                'tree': {'foo': None},
+            },
+            {
+                'path': '/2',
+                'tree': {'foo': 1, 'numbers': '<3 element list>'},
+            },
+            {
+                'path': '/3/0/0/0/0/0',
+                'tree': {'Foolish': 'baaaaaaaaaaart'},
+            },
+            {
+                'path': '/5',
+                'tree': {'afoot': 'bar', 'foooooo': 'blah'},
+            },
         ]
         self.assertEqual(expected, hunter.hunt(root))
 
@@ -139,9 +159,9 @@ class JsonhuntTest(TestCase):
         hunter.negate = True
         expected = [
             {
-                "path": "/1",
+                "path": "/4",
                 "tree": {
-                    "foo": "car",
+                    "afoot": "bar",
                 },
             },
         ]
