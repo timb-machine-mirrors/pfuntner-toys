@@ -75,7 +75,7 @@ class Jsonhunt(object):
 
         return ret
 
-if __name__ == "__main":
+if __name__ == "__main__":
     negate = False
     filename = None
 
