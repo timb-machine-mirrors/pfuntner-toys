@@ -128,7 +128,7 @@ except Exception as e:
     syntax("Could not parse %s: %s" % (repr(shorten(data)), str(e)))
 
 if len(args) == 1:
-    args = args.split('/')
+    args = args[0].strip('/').split('/')
 
 root = process(root, args)
 

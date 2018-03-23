@@ -12,6 +12,12 @@ import getpass
 import datetime
 from cryptography.fernet import Fernet
 
+def syntax(msg=None):
+  if msg:
+    sys.stderr.write(msg + "\n")
+  sys.stderr.write("Syntax: %s --store STORE --key KEY --operation test|read|set|remove <args>\n" % sys.argv[0])
+  exit(1)
+
 def berate(s):
   if jsonOutput:
     if not ("errors" in output):
@@ -156,7 +162,12 @@ if __name__ == "__main__":
   """
   staticStringRegexp = re.compile("^['\"](.+)['\"]$")
 
-  (opts,args) = getopt.getopt(sys.argv[1:], "k:o:s:j", ["key=", "operation=", "store=", "json"])
+  (opts,args) = ([], [])
+  try:
+    (opts,args) = getopt.getopt(sys.argv[1:], "h?k:o:s:j", ["help", "key=", "operation=", "store=", "json"])
+  except Exception as e:
+    syntax(str(e))
+
   for (opt,arg) in opts:
     if opt in ["-o", "--operation"]:
       operation = arg
@@ -166,10 +177,13 @@ if __name__ == "__main__":
       storeName = arg
     elif opt in ["-j", "--json"]:
       jsonOutput = not jsonOutput
+    elif opt in ["-?", "--help"]:
+      syntax()
     else:
       raise Exception("Don't know how to handle option %s" % repr(opt))
 
-  assert (operation == "test") or (storeName and (operation in ["read", "get", "set", "remove"])), "Syntax: %s --store STORE --key KEY --operation test|read|set|remove <args>" % sys.argv[0]
+  if not((operation == "test") or (storeName and (operation in ["read", "get", "set", "remove"]))):
+    syntax()
 
   if operation == "test":
     store = SecureKeyValues("test", "this is a test")

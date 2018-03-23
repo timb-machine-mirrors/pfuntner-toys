@@ -8,7 +8,7 @@ import getopt
 def syntax(msg=None):
     if msg:
         sys.stderr.write(msg + "\n")
-    sys.stderr.write("Syntax: %s [--verbose] [--file FILENAME] [--not] REGEXP[=REGEXP]\n")
+    sys.stderr.write("Syntax: %s [--file FILENAME] [--not] REGEXP[=REGEXP]\n")
     exit(1)
 
 def regexpCompile(pattern, optional=False):
@@ -38,7 +38,21 @@ class Jsonhunt(object):
                 currValue = root[curr]
 
                 keyMatch = True if self.key.search(curr) else False
-                valueMatch = True if not self.value else ((type(currValue) in [str, unicode]) and self.value.search(currValue))
+                valueMatch = False
+                if not self.value:
+                    valueMatch = True
+                else:
+                    """
+                      Try to turn a native type (int, float, boolean, simple list, 
+                      simple dictionary, etc.) into a string that might pass regular 
+                      expression checking.
+                    """
+                    try:
+                        currValue = str(currValue)
+                    except Exception as e:
+                        pass
+                    else:
+                        valueMatch = self.value.search(currValue)
 
                 if not matched:
                     if self.negate:
@@ -88,7 +102,7 @@ if __name__ == "__main__":
     for (opt,arg) in opts:
         if opt in ["-v", "--negate"]:
             negate = not negate
-        if opt in ["-F", "--file"]:
+        elif opt in ["-F", "--file"]:
             filename = arg
         else:
             syntax("Don't know how to handle %s" % repr(opt))
