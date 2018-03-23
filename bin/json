@@ -46,6 +46,7 @@ def process(root, path):
                 else:
                     if curr >= len(root):
                         sys.stderr.write("Addressing index %d but there are only %d items\n" % (repr(curr), len(root)))
+                        exit(1)
                     else:
                         ret = process(root[curr], path)
         elif type(root) == dict:
@@ -55,8 +56,10 @@ def process(root, path):
                 ret = process(root[curr], path)
             else:
                 sys.stderr.write("Addressing non-existent index %s\n" % repr(curr))
+                exit(1)
         else:
             sys.stderr.write("At %s, expected a list of dictionary but got a %s\n" % (repr(curr), type(root)))
+            exit(1)
     return ret
 
 def describeWriter(root):
