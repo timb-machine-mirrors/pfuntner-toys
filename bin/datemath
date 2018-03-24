@@ -15,12 +15,13 @@ def syntax(msg=None):
 def parseTimestamp(s):
   ret = None
   for format in timestampFormats:
-    ret = datetime.datetime.strptime(s, format)
-    if ret:
+    try:
+      ret = datetime.datetime.strptime(s, format)
+    except Exception as e:
       break
 
   if not ret:
-    syntax("%s does not match %s" % repr(s, ", ".join(timestampFormats)))
+    syntax("%s does not match %s" % (repr(s), ", ".join(timestampFormats)))
 
   return ret
 
