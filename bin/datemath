@@ -18,6 +18,8 @@ def parseTimestamp(s):
     try:
       ret = datetime.datetime.strptime(s, format)
     except Exception as e:
+      pass
+    else:
       break
 
   if not ret:
