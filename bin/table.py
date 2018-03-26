@@ -41,6 +41,20 @@ class Table:
       for separator in range(len(Table.separators)):
         self.present[separator] = self.present[separator] or (Table.separators[separator] in col)
 
+  def sort(self, key):
+    if type(key) == str:
+      try:
+        key = self.headings.index(key)
+      except Exception as e:
+        sys.stderr.write("Cannot sort by %s" % repr(key))
+        return
+
+    if not (0 <= key < len(self.headings)):
+      sys.stderr.write("Cannot sort by %s with only %d headings" % (repr(key), len(self.headings)))
+      return
+
+    self.rows = sorted(self.rows, key=lambda datum: datum[key])
+
   def dump(self, stream=sys.stderr):
     stream.write(str(self.maxLens) + '\n')
     stream.write(str(self.headings) + '\n')
