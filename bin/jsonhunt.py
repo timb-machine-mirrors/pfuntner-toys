@@ -95,12 +95,12 @@ if __name__ == "__main__":
 
     (opts, args) = ([], [])
     try:
-        (opts, args) = getopt.getopt(sys.argv[1:], "vf:", ["negate", "file="])
+        (opts, args) = getopt.getopt(sys.argv[1:], "vf:", ["not", "file="])
     except Exception as e:
         syntax(str(e))
 
     for (opt,arg) in opts:
-        if opt in ["-v", "--negate"]:
+        if opt in ["-v", "--not"]:
             negate = not negate
         elif opt in ["-F", "--file"]:
             filename = arg

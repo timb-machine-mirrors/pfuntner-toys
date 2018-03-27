@@ -8,7 +8,7 @@ import itertools
 def syntax(msg):
     if msg:
         sys.stderr.write(msg + "\n")
-    sys.stderr.write("Syntax: %s [--verbose] [--flatten] [--describe] [--file FILENAME] [--depth DEPTH] [path ...]\n" % sys.argv[0])
+    sys.stderr.write("Syntax: %s [--verbose] [--flatten] [--describe] [--file FILENAME] [--depth DEPTH] [--forgive] [path ...]\n" % sys.argv[0])
     exit(1)
 
 def shorten(s, maxLen=80):
@@ -31,13 +31,19 @@ def flatWriter(root, path=[]):
 def jsonWriter(root):
     print json.dumps(root, indent=2, sort_keys=True)
 
+def stripNulls(items):
+    items = list(items)
+    if forgive:
+        items = [item for item in items if item != None]
+    return items
+
 def process(root, path):
     ret = root
     if path:
-        curr = path.pop(0)
+        curr = path[0]
         if type(root) == list:
             if curr == "*":
-                ret = itertools.imap(process, root, itertools.repeat(path))
+                ret = stripNulls(itertools.imap(process, iter(root), itertools.repeat(path[1:])))
             else:
                 try:
                     curr = int(curr)
@@ -46,17 +52,23 @@ def process(root, path):
                 else:
                     if curr >= len(root):
                         sys.stderr.write("Addressing index %d but there are only %d items\n" % (repr(curr), len(root)))
-                        exit(1)
+                        if forgive:
+                            ret = None
+                        else:
+                            exit(1)
                     else:
-                        ret = process(root[curr], path)
+                        ret = process(root[curr], path[1:])
         elif type(root) == dict:
             if curr == "*":
-                ret = itertools.imap(process, root.values(), itertools.repeat(path))
+                ret = stripNulls(itertools.imap(process, iter(root.values()), itertools.repeat(path[1:])))
             elif curr in root:
-                ret = process(root[curr], path)
+                ret = process(root[curr], path[1:])
             else:
                 sys.stderr.write("Addressing non-existent index %s\n" % repr(curr))
-                exit(1)
+                if forgive:
+                    ret = None
+                else:
+                    exit(1)
         else:
             sys.stderr.write("At %s, expected a list of dictionary but got a %s\n" % (repr(curr), type(root)))
             exit(1)
@@ -90,10 +102,11 @@ describe = False
 writer = jsonWriter
 filename = None
 depth = None
+forgive = False
 
 (opts, args) = ([], [])
 try:
-    (opts,args) = getopt.getopt(sys.argv[1:], "v", ["verbose", "flat", "flatten", "describe", "file=", "depth="])
+    (opts,args) = getopt.getopt(sys.argv[1:], "v", ["verbose", "flat", "flatten", "describe", "file=", "depth=", "forgive"])
 except Exception as e:
     syntax(str(e))
 
@@ -111,6 +124,8 @@ for (opt,arg) in opts:
             depth = int(arg)
         except Exception as e:
             syntax("Could not parse `%s %s`: %s" % (opt, arg, e))
+    elif opt == "--forgive":
+       forgive = not forgive
     else:
         syntax("Don't know how to handle %s" % repr(opt))
 
