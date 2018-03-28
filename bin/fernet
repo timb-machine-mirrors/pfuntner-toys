@@ -8,7 +8,11 @@ import hashlib
 import getpass
 from cryptography.fernet import Fernet
 
-assert not sys.stdin.isatty(), "stdin must be redirected"
+def syntax(msg):
+  if msg:
+    sys.stderr.write(msg + "\n")
+  sys.stderr.write("Syntax: %s [--decrypt|-d]\n" % sys.argv[0])
+  exit(1)
 
 encrypt = True
 
@@ -16,13 +20,15 @@ encrypt = True
 try:
   (opts,args) = getopt.getopt(sys.argv[1:], "d", ["decrypt"])
 except Exception as e:
-  sys.stderr.write("Caught: %s\n" % e)
+  syntax("Caught: %s" % e)
   exit(1)
 
 for (opt,arg) in opts:
   if opt in ["-d", "--decrypt"]:
     encrypt = not encrypt
   
+assert not sys.stdin.isatty(), "stdin must be redirected"
+
 secret = getpass.getpass("Encryption key: ")
 
 hash = hashlib.md5()
