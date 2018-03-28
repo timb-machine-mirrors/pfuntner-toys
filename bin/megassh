@@ -17,6 +17,16 @@ def syntax(s=None):
     sys.stderr.write("WTF!  %s is not an ssh or scp command?  What are you doing, dude???\n")
   exit(1)
 
+isSSH = False
+isSCP = False
+
+if "ssh" in sys.argv[0]:
+  isSSH = True
+elif "scp" in sys.argv[0]:
+  isSCP = True
+else:
+  syntax()
+
 verbose = False
 quiet = False
 (opts,args) = ([], [])
@@ -43,16 +53,6 @@ for (opt, arg) in opts:
 
 if onlyList and notList:
   syntax("--only and --not are mutually exclusive")
-
-isSSH = False
-isSCP = False
-
-if "ssh" in sys.argv[0]:
-  isSSH = True
-elif "scp" in sys.argv[0]:
-  isSCP = True
-else:
-  syntax()
 
 hosts = None
 
