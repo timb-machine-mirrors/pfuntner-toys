@@ -9,7 +9,7 @@ def process(filename):
   basename = os.path.basename(filename)
   if basename not in [".", ".."]:
     tokens = basename.split('.')
-  print "%s|%s" % (filename, "" if len(tokens) <= 1 else tokens[-1])
+  print "%s|%s" % (filename, "" if ((len(tokens) <= 1) or ((len(tokens) == 2) and (not tokens[0]))) else tokens[-1])
 
 if len(sys.argv) == 1:
   if sys.stdin.isatty():
