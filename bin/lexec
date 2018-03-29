@@ -5,14 +5,25 @@ import os.path
 import sys
 import re
 
-if len(sys.argv) == 1:
+def debug(msg):
+  if verbose:
+    sys.stderr.write(msg + "\n")
+
+verbose = False
+args = sys.argv[1:]
+
+if args and (args[0] == "--debug"):
+  verbose = not verbose
+  args.pop(0)
+
+if not args:
   sys.stderr.write("Syntax %s pat1 [pat2 ...]\n" % sys.argv[0])
   exit(1)
 
 positivePats = []
 negativePats = []
 
-for pat in sys.argv[1:]:
+for pat in args:
   if pat and (pat[0] == '!'):
     negativePats.append(re.compile(pat[1:]))
   else:
@@ -24,6 +35,7 @@ for dir in dirs:
     files = os.listdir(dir)
     for file in files:
       path = os.path.join(dir, file)
+      debug("? %s" % path)
       if os.path.isfile(path) and os.access(path, os.X_OK):
         candidate = False
         for pat in positivePats:
