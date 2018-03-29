@@ -21,7 +21,7 @@ class Orient:
     return self.value == self.vertical
 
 def usage():
-  print >> sys.stderr, "Syntax: %s [-w num|--width=num] [-v|--vertical] [-h|--horizontal] [-x|--verbose] [-?|--help]" % sys.argv[0]
+  print >> sys.stderr, "Syntax: %s [-w num|--width=num] [-v|--vertical] [-h|--horizontal] [-x|--verbose] [--sep CHAR] [-?|--help]" % sys.argv[0]
 
 def debug(msg):
   global verbose, deferred_msgs
@@ -33,7 +33,8 @@ def debug(msg):
 verbose = False
 deferred_msgs = []
 orientation = Orient(Orient.horizontal)
-sepWidth = 1
+separator = ' '
+sepWidth = len(separator)
 maxWidth = 1
 
 tput_cols=BrunoUtils.cols()
@@ -67,7 +68,7 @@ def get(row, col):
         return data[col*(rows-1) + row + colsInLastRow]
 
 try:
-  opts, args = getopt.getopt(sys.argv[1:], "hvxw:?", ["horizontal", "vertical", "verbose", "width=", "help"])
+  opts, args = getopt.getopt(sys.argv[1:], "s:hvxw:?", ["separator=", "horizontal", "vertical", "verbose", "width=", "help"])
 except getopt.GetoptError as err:
   print str(err)
   usage()
@@ -90,6 +91,8 @@ for opt, arg in opts:
       print >> sys.stderr, "Invalid width arg %s: %s" % (arg, str(e))
       usage()
       sys.exit(1)
+  elif opt in ["-s", "--separator"]:
+    separator = arg
   elif opt in ["-?", "--help"]:
     usage()
     sys.exit()
@@ -148,6 +151,6 @@ debug("rows: %d" % rows)
 for row in range(rows):
   for col in range(cols):
     if col > 0:
-      sys.stdout.write(" " * sepWidth)
+      sys.stdout.write(separator)
     sys.stdout.write("%-*s" % (maxWidth, get(row, col)))
   sys.stdout.write("\n")
