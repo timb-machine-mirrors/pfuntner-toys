@@ -82,7 +82,7 @@ class Table:
         if not Table.isNumeric.match(row[col]):
           width = -width
         line += "%*s" % (width, row[col])
-      ret.append(line)
+      ret.append(line.strip())
     return '\n'.join(ret)
 
 if __name__ == "__main__":
