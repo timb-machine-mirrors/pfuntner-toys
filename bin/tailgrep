@@ -15,6 +15,7 @@
 import sys
 import os
 import re
+import getopt
 
 def reversed(items):
   """
@@ -30,17 +31,39 @@ def lastIndex(items, item):
   """
   return len(items) - reversed(items).index(item) - 1
 
+def syntax(msg=None):
+  if msg:
+    sys.stderr.write(msg + "\n")
+  sys.stderr.write("Syntax: %s [-v|--negate] REGEXP\n" % sys.argv[0])
+  exit(1)
+ 
 base = os.path.basename(sys.argv[0])
 expectedBases = ["headgrep", "tailgrep"]
-assert os.path.basename(base) in expectedBases, "%s is not %s" % (repr(base), " or ".join([repr(expectedBase) for expectedBase in expectedBases]))
+if not os.path.basename(base) in expectedBases:
+ syntax("%s is not %s" % (repr(base), " or ".join([repr(expectedBase) for expectedBase in expectedBases])))
 
 assert not sys.stdin.isatty(), "stdin must be redirected"
 
-assert len(sys.argv) == 2, "Syntax: %s REGEXP" % sys.argv[0]
-regexp = re.compile(sys.argv[1])
+negate = False
+(opts,args) = ([],[])
+try:
+  (opts,args) = getopt.getopt(sys.argv[1:], "v", ["negate"])
+except Exception as e:
+  syntax(str(e))
+
+for (opt,arg) in opts:
+  if opt in ["-v", "--negate"]:
+    negate = not negate
+  else:
+    syntax("Don't know how to handle %s" % repr(opt))
+
+if len(args) != 1:
+  syntax("Exactly one regular expression is required")
+
+regexp = re.compile(args[0])
 
 lines = sys.stdin.read().splitlines()
-matches = [bool(match) for match in map(regexp.search, lines)]
+matches = [(bool(match) != negate) for match in map(regexp.search, lines)]
 
 assert any(matches), "No matches for %s" % repr(regexp.pattern)
 
