@@ -1,0 +1,52 @@
+#! /usr/bin/python -u
+
+"""
+  Do a `head` or `tail` based on a regular expression
+  rather than a number of lines.
+
+  Expectations:
+    There is exactly one regular expression specified
+    Data is read from stdin
+    `headgrep` and `tailgrep` should be links to the same script.  No other names are expected.
+    `headgrep` prints the data from the FIRST line up to and including the first line that matches the regular expression
+    `tailgrep` prints the data from the LAST line that matches the regular expression through the last line
+"""
+
+import sys
+import os
+import re
+
+def reversed(items):
+  """
+    Reverse a list without the side effect of reversing the original list
+  """
+  return items[-1::-1]
+
+def lastIndex(items, item):
+  """
+    Find the last index of `item` in the `items` list.  This is
+    similar to list.index() which works left to right but this works
+    right to left.
+  """
+  return len(items) - reversed(items).index(item) - 1
+
+base = os.path.basename(sys.argv[0])
+expectedBases = ["headgrep", "tailgrep"]
+assert os.path.basename(base) in expectedBases, "%s is not %s" % (repr(base), " or ".join([repr(expectedBase) for expectedBase in expectedBases]))
+
+assert not sys.stdin.isatty(), "stdin must be redirected"
+
+assert len(sys.argv) == 2, "Syntax: %s REGEXP" % sys.argv[0]
+regexp = re.compile(sys.argv[1])
+
+lines = sys.stdin.read().splitlines()
+matches = [bool(match) for match in map(regexp.search, lines)]
+
+assert any(matches), "No matches for %s" % repr(regexp.pattern)
+
+if base == "headgrep":
+  lines = lines[:matches.index(True)+1]
+else:
+  lines = lines[lastIndex(matches,True):]
+
+print '\n'.join(lines)
