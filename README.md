@@ -23,4 +23,5 @@ Select a tool below to learn more about it.  I use _Bruno's Favorite_ to indicat
 | [`columns`](doc/columns.md) | Yes | Prints _columns_ of stdin where columns are separated by a character or regular expression. |
 | [`comm2`](doc/comm2.md) | | Alternate version of `comm` that does not expect the data to be sorted. |
 | [`cores`](doc/cores.md) | | Prints CPU core information in a simple way |
+| [`unixdate`](doc/unixdate.md) | | Invokes `date` with Unix-style format on Windoze. |
 
