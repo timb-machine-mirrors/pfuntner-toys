@@ -8,8 +8,8 @@ def syntax(msg=None):
   if msg:
     sys.stderr.write(msg + "\n")
   sys.stderr.write("Syntax:\n")
-  sys.stderr.write("  %s DATE|now +|- DELTA\n")
-  sys.stderr.write("  %s DATE|now - DATE\n")
+  sys.stderr.write("  %s DATE|now +|- DELTA\n" % sys.argv[0])
+  sys.stderr.write("  %s DATE|now - DATE\n" % sys.argv[0])
   exit(1)
 
 def parseTimestamp(s):
