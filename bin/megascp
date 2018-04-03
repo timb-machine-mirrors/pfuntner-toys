@@ -13,7 +13,7 @@ def syntax(s=None):
   if isSSH:
     sys.stderr.write("Syntax: %s [-q|--quiet] [-v|--verbose] [--only name,name,...] [--not name,name,...] cmd [arg ...]\n" % sys.argv[0])
   elif isSCP:
-    sys.stderr.write("Syntax: %s [-q|--quiet] [-v|--verbose] [--only name,name,...] [--not name,name,...] src1 [src2 ...] dest\n" % sys.argv[0])
+    sys.stderr.write("Syntax: %s [-q|--quiet] [-v|--verbose] [--only name,name,...] [--not name,name,...] [-r] src1 [src2 ...] dest\n" % sys.argv[0])
   else:
     sys.stderr.write("WTF!  %s is not an ssh or scp command?  What are you doing, dude???\n")
   exit(1)
@@ -30,9 +30,16 @@ else:
 
 verbose = False
 quiet = False
+recursive = False
+
 (opts,args) = ([], [])
+shortOptions = "vqo:n:"
+if isSCP:
+  shortOptions += "r"
+longOptions = ["verbose", "quiet", "only=", "not="]
+
 try:
-  (opts,args) = getopt.getopt(sys.argv[1:], "vqo:n:", ["verbose", "quiet", "only=", "not="])
+  (opts,args) = getopt.getopt(sys.argv[1:], shortOptions, longOptions)
 except Exception as e:
   syntax(str(e))
 
@@ -48,6 +55,8 @@ for (opt, arg) in opts:
     onlyList = arg.split(",")
   elif opt in ["-n", "--not"]:
     notList = arg.split(",")
+  elif opt == "-r":
+    recursive = not recursive
   else:
     sys.stderr.write("Unexpected argument: `%s`\n" % opt)
     syntax()
@@ -119,6 +128,9 @@ for system in systems:
   
     cmd = ["-o", "LogLevel=quiet"] + cmd
   
+    if recursive:
+      cmd.insert(0, "-r") # -r should only be able to be specified if we're "megascp"
+
     cmd = ["ssh" if isSSH else "scp"] + cmd
   
     if verbose:
