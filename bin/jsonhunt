@@ -8,7 +8,7 @@ import getopt
 def syntax(msg=None):
     if msg:
         sys.stderr.write(msg + "\n")
-    sys.stderr.write("Syntax: %s [--file FILENAME] [--not] REGEXP[=REGEXP]\n")
+    sys.stderr.write("Syntax: %s [--file FILENAME] [--not] REGEXP[=REGEXP]\n" % sys.argv[0])
     exit(1)
 
 def regexpCompile(pattern, optional=False):
