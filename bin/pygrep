@@ -52,7 +52,7 @@ for (opt,arg) in opts:
     exit(1)
 
 if not args:
-  sys.stderr.write("Syntax: %0 [-ivn] regexp [file ...]\n")
+  sys.stderr.write("Syntax: %s [-ivn] regexp [file ...]\n" % sys.argv[0])
   exit(1)
 
 regexp = re.compile(args.pop(0), flags=re.IGNORECASE if ignoreCase else 0)
