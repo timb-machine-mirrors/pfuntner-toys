@@ -1,11 +1,20 @@
 #! /usr/bin/python
 
+import re
 import sys
 import subprocess
 
+regexps = [
+            re.compile("^\\+"),
+            re.compile("^-I"),
+            re.compile("^-R"),
+            re.compile("^--iso-8601"),
+            re.compile("^--rfc-2822"),
+            re.compile("^--rfc-3339"),
+          ]
 cmd = sys.argv[1:]
 
-if not any(word.startswith("+") for word in cmd):
+if not any(regexp.search(word) for regexp in regexps for word in cmd):
   cmd.insert(0, "+%a %b %e %H:%M:%S %Z %Y")
 
 cmd.insert(0, "date")
