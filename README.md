@@ -5,7 +5,7 @@ I will admit that the documentation is rather poor for some of the tools and man
 
 ### Unix platforms
 
-I consider myself to be a Unix agnostic.  Over the years, I've used Redhat, Suse, Solaris, HP/UX, AIX, Z/OS, Cygwin, Git bash, etc.  I owe no allegiance to any single platform and consider them all pretty much equal as long as they behave similarly.  I have seen some issues using my tools (and other commands!) from Git bash on Windoze and sometimes a tool was only designed to work on specific platforms - hopefully, I'll document that stuff on in the doc page for the tool.  In general if I find a platform where one of my tools doesn't work well, I will try to fix it!
+I consider myself to be a Unix agnostic.  Over the years, I've used Redhat, Suse, Solaris, HP/UX, AIX, Z/OS, Cygwin, Git bash, etc.  I owe no allegiance to any single platform and consider them all pretty much equal as long as they behave similarly.  I have seen some issues using my tools (and other commands!) from Git bash on Windoze and sometimes a tool was only designed to work on specific platforms - I'll try to put such stuff on the doc page for the tool.  In general if I find a platform where one of my tools doesn't work well, I will try to fix it!
 
 ## The much-heralded TOOLS
 
