@@ -5,9 +5,9 @@ I will admit that the documentation is rather poor for some of the tools and man
 
 ### Unix platforms
 
-I consider myself to be a Unix agnostic.  I owe no allegiance to any single platform and consider them all pretty much equal as long as they behave similarly.  My tools have mostly been used on true Linux systems (Ubuntu, Redhat, SUSE, etc) but all of my laptops are Windows.  I couldn't survive without CYGWIN on Windows so I've often used the tools there.  I've even used them a little bit with Git bash because some Windows-based development is easiest there.  I have seen some issues using my tools (and other commands!) from Git bash but in general if I find a platform where one of my tools doesn't work well, I will try to fix it!
+I consider myself to be a Unix agnostic.  Over the years, I've used Redhat, Suse, Solaris, HP/UX, AIX, Z/OS, Cygwin, Git bash, etc.  I owe no allegiance to any single platform and consider them all pretty much equal as long as they behave similarly.  I have seen some issues using my tools (and other commands!) from Git bash on Windoze and sometimes a tool was only designed to work on specific platforms - hopefully, I'll document that stuff on in the doc page for the tool.  In general if I find a platform where one of my tools doesn't work well, I will try to fix it!
 
-## Documentation for each important tool
+## The much-heralded TOOLS
 
 Select a tool below to learn more about it.  I use _Bruno's Favorite_ to indicate that a tool is:
 - very useful and practical
