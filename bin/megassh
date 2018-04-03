@@ -1,5 +1,6 @@
 #! /usr/bin/python -u
 
+import os
 import sys
 import json
 import getopt
@@ -54,7 +55,7 @@ for (opt, arg) in opts:
 if onlyList and notList:
   syntax("--only and --not are mutually exclusive")
 
-hosts = None
+systems = None
 
 pgm = sys.argv[0]
 if pgm[-3:] == ".py":
@@ -65,34 +66,56 @@ if verbose:
   print "opening %s" % jsonFile
 
 with open(jsonFile, 'r') as f:
-  hosts = json.load(f)
+  systems = json.load(f)
 
 if verbose:
-  print "Hosts: %s" % hosts
+  print "Hosts: %s" % systems
 
 if len(args) < (1 if isSSH else 2):
   syntax("Only %d arguments" % len(args))
 
-for host in hosts:
+for system in systems:
 
-  if ((not onlyList) and (not notList)) or (onlyList and (host["name"] in onlyList)) or (notList and (host["name"] not in notList)):
+  if ((not onlyList) and (not notList)) or (onlyList and (system["name"] in onlyList)) or (notList and (system["name"] not in notList)):
     if isSSH:
       if not quiet:
-        print "%s" % (host["name"])
+        print "%s" % (system["name"])
       cmd = args
   
     else:
-      for src in args[:-1]:
-        if not quiet:
-          print "%s @ %s" % (src, host["name"])
-  
-          cmd = [src, "%s@%s:%s" % (host["user"], host["host"], args[-1])]
+      # for src in args[:-1]:
+      #   if not quiet:
+      #     print "%s @ %s" % (src, system["name"])
+      #
+      #     cmd = [src, "%s@%s:%s" % (system["user"], system["host"], args[-1])]
+
+      push = None
+      cmd = []
+      host = system["host"]
+      user = system["user"]
+      remote = "{user}@{host}".format(**locals())
+
+      for filename in args[:-1]:
+        src = filename.format(remote=remote)
+        pushing = not src.startswith(remote + ":")
+        if (push != None) and (pushing != push):
+          sys.stderr.write("Cannot change scp direction with %s" % repr(filename))
+          exit(1)
+        push = pushing
+        cmd.append(src)
+
+      dst = args[-1].format(remote=remote, host=host, user=user)
+      if (dst == args[-1]) and pushing:
+        dst = "{remote}:{dst}".format(**locals())
+      cmd.append(dst)
+
+      print "%s: %s" % (host, ' '.join(cmd))
   
     if isSSH:
-      cmd = ["%s@%s" % (host["user"], host["host"])] + cmd
+      cmd = ["%s@%s" % (system["user"], system["host"])] + cmd
   
-    if "key" in host:
-      cmd = ["-i", host["key"]] + cmd
+    if "key" in system:
+      cmd = ["-i", system["key"]] + cmd
   
     cmd = ["-o", "LogLevel=quiet"] + cmd
   
