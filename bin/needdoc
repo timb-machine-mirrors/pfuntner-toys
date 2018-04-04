@@ -1,0 +1,15 @@
+#! /usr/bin/python
+
+import re
+import os
+
+ignoreFileRegexp = re.compile("(^\.)|(~$)|(^__init__\.py$)")
+mdRegexp = re.compile("\.md$")
+
+def notIgnoreFileRegexp(filename):
+  return not ignoreFileRegexp.search(filename)
+
+bin = filter(notIgnoreFileRegexp, os.listdir("{HOME}/toys/bin".format(**os.environ)))
+doc = filter(mdRegexp.search, os.listdir("{HOME}/toys/doc".format(**os.environ)))
+
+print '\n'.join(sorted([filename for filename in bin if (filename + ".md") not in doc]))
