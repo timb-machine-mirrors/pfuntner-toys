@@ -19,10 +19,11 @@ Select a tool below to learn more about it.  I use _Bruno's Favorite_ to indicat
 | [`bashprofiles`](doc/bashprofiles.md) | | Prints profile script(s) `bash` will use |
 | [`beeper`](doc/beeper.md) | | Beeps over and over. |
 | [`bingrep`](doc/bingrep.md) | | Searches for a regular expression in arbitrary data from stdin |
-| [`br`](doc/br.md) | Yes | Browse a file.  Sounds simple?  Maybe, but give it a try. |
+| [`br`](doc/br.md) | Yes | Browse a file.  Sounds simple?  Maybe, but give it a try |
 | [`columns`](doc/columns.md) | Yes | Prints _columns_ of stdin where columns are separated by a character or regular expression. |
 | [`comm2`](doc/comm2.md) | | Alternate version of `comm` that does not expect the data to be sorted. |
 | [`cores`](doc/cores.md) | | Prints CPU core information in a simple way |
 | [`datemath`](doc/datemath.md) | | Perform arithmetic on date(s) |
-| [`unixdate`](doc/unixdate.md) | | Invokes `date` with Unix-style format on Windoze. |
+| [`dowhile`](doc/dowhile.md) | | Perform a command repeatedly until output is seen in the output |
+| [`unixdate`](doc/unixdate.md) | | Invokes `date` with Unix-style format on Windoze |
 
