@@ -12,4 +12,4 @@ def notIgnoreFileRegexp(filename):
 bin = filter(notIgnoreFileRegexp, os.listdir("{HOME}/toys/bin".format(**os.environ)))
 doc = filter(mdRegexp.search, os.listdir("{HOME}/toys/doc".format(**os.environ)))
 
-print '\n'.join([filename for filename in bin if (filename + ".md") not in doc])
+print '\n'.join(sorted([filename for filename in bin if (filename + ".md") not in doc]))
