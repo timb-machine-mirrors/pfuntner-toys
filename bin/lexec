@@ -29,26 +29,30 @@ for pat in args:
   else:
     positivePats.append(re.compile(pat))
 
+history = set()
+
 # Real Unix and CYGWIN separate paths in a list with a colon but Git bash uses a semicolon
 dirs = re.split('[;:]', os.environ["PATH"])
 for dir in dirs:
   debug("raw dir {dir}".format(**locals()))
-  if os.path.isdir(dir):
-    debug("good dir {dir}".format(**locals()))
-    files = os.listdir(dir)
-    for file in files:
-      path = os.path.join(dir, file)
-      debug("testing {path}".format(**locals()))
-      if os.path.isfile(path) and os.access(path, os.X_OK):
-        candidate = False
-        for pat in positivePats:
-          if pat.search(file):
-            candidate = True
-            break
-        if candidate:
-          for pat in negativePats:
+  if dir not in history:
+    history.add(dir)
+    if os.path.isdir(dir):
+      debug("good dir {dir}".format(**locals()))
+      files = os.listdir(dir)
+      for file in files:
+        path = os.path.join(dir, file)
+        debug("testing {path}".format(**locals()))
+        if os.path.isfile(path) and os.access(path, os.X_OK):
+          candidate = False
+          for pat in positivePats:
             if pat.search(file):
-              candidate = False
+              candidate = True
               break
-        if candidate:
-          print path
+          if candidate:
+            for pat in negativePats:
+              if pat.search(file):
+                candidate = False
+                break
+          if candidate:
+            print path
