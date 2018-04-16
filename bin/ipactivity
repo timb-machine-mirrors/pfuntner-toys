@@ -109,7 +109,7 @@ lastTx = None
 
 while continuous or (iterations == 0):
   iterations += 1
-  p = subprocess.Popen(["ifconfig"], stdout=subprocess.PIPE)
+  p = subprocess.Popen(["/sbin/ifconfig"], stdout=subprocess.PIPE)
   stdout = p.stdout.read()
   rc = p.wait()
   if rc != 0:
