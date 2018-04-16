@@ -17,13 +17,13 @@ See options and arguments for `date` such this on this [man page](http://linuxco
 $ unixdate                       # simplest form of the command
 Tue Apr  3 08:22:23 EDT 2018
 
-$ unixdate -u                    # specify -u along with the format that will be added
+$ unixdate -u                    # specify -u along and Unix format will still be added
 Tue Apr  3 12:22:29 UTC 2018
 
-$ unixdate +%Y%m%d%H%M%S         # specify a specific format
+$ unixdate +%Y%m%d%H%M%S         # specify a specific format, Unix format is avoided
 20180403082255
 
-$ /usr/bin/date                  # you can still get the "normal Windoze output"
+$ /usr/bin/date                  # you can still get the "normal Windoze output" since you're not using the frontend at all
 Tue, Apr  3, 2018  8:26:13 AM
 
 $ alias date=unixdate            # override /usr/bin/date with an alias
@@ -39,14 +39,14 @@ $
 - If you don't specify your own format string, the script will supply a format string to print the date and time in the style you would see on a Unix system.
 - You might want to set up an alias to this script so that any time you type `date` in a Windoze shell, you'll run this script instead.  I would encourage you add such an alias from your `~/.bashrc` but it's up to you.
 ## Known Bugs
-- I take a fairly simple approach to seeing if a format is specified which can case the frontend.  For instance, you specify `-u` (UTC time) and `-R` (synonymous with `--rfc-2822`) without an intervening blank, the frontend isn't aware that you want an alternate format:
+- I take a fairly simple approach to seeing if a format is specified which can case the frontend.  For instance, you specify `-u` (UTC time) and `-R` (synonymous with `--rfc-2822`) without an intervening blank, the frontend isn't aware that you want an alternate format.  It tries to specify the Unix format which conflicts with `--rfc-2822` and an error is raised:
 
   ```
-$ date -uR
-date: multiple output formats specified
-$ date -u -R
-Mon, 16 Apr 2018 19:13:20 +0000
-$
+  $ date -uR
+  date: multiple output formats specified
+  $ date -u -R
+  Mon, 16 Apr 2018 19:13:20 +0000
+  $
   ```
-  
+
   Obviously, an easy to solve this is to separate the options.
