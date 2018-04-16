@@ -35,6 +35,18 @@ $
 
 ## Notes
 
-- This script was created specifically with Windoze shells in mind (Cygwin and Git bash) that print the date in style inconsistent with a regular Unix shell.  There's nothing that stops you from using this script on a real Unix system but there's no purpose because the `date` command works as you might expect.
+- This script was created specifically with Windoze shells in mind (Cygwin and Git bash) that print the date in a style inconsistent with a regular Unix shell.  There's nothing that stops you from using this script on a real Unix system but there's no purpose because the `date` command works as you might expect.
 - If you don't specify your own format string, the script will supply a format string to print the date and time in the style you would see on a Unix system.
 - You might want to set up an alias to this script so that any time you type `date` in a Windoze shell, you'll run this script instead.  I would encourage you add such an alias from your `~/.bashrc` but it's up to you.
+## Known Bugs
+- I take a fairly simple approach to seeing if a format is specified which can case the frontend.  For instance, you specify `-u` (UTC time) and `-R` (synonymous with `--rfc-2822`) without an intervening blank, the frontend isn't aware that you want an alternate format:
+
+  ```
+$ date -uR
+date: multiple output formats specified
+$ date -u -R
+Mon, 16 Apr 2018 19:13:20 +0000
+$
+  ```
+  
+  Obviously, an easy to solve this is to separate the options.
