@@ -29,13 +29,16 @@ for pat in args:
   else:
     positivePats.append(re.compile(pat))
 
-dirs = os.environ["PATH"].split(':')
+# Real Unix and CYGWIN separate paths in a list with a colon but Git bash uses a semicolon
+dirs = re.split('[;:]', os.environ["PATH"])
 for dir in dirs:
+  debug("raw dir {dir}".format(**locals()))
   if os.path.isdir(dir):
+    debug("good dir {dir}".format(**locals()))
     files = os.listdir(dir)
     for file in files:
       path = os.path.join(dir, file)
-      debug("? %s" % path)
+      debug("testing {path}".format(**locals()))
       if os.path.isfile(path) and os.access(path, os.X_OK):
         candidate = False
         for pat in positivePats:
