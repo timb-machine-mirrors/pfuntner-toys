@@ -19,9 +19,9 @@ Syntax: headtail [-SIZE] [file ...]
 
 ```
 $ ls -A
-.bash_history  .cache  .gitconfig  .minttyrc  .ssh      .viminfo       c                 GapAnalysisApplication  pisces_sca   python          spark  Vagrantfile
-.bash_profile  .exrc   .inputrc    .private   .vagrant  BasicDatabase  DatabaseProject1  git                     psirt_com    RestInterfaces  tmp
-.bashrc        .gem    .lesshst    .profile   .vim      bin            django            moin                    pyinstaller  share           toys
+.bash_history  .cache  .gitconfig  .minttyrc  .ssh      .viminfo       c                 git          python          spark  Vagrantfile
+.bash_profile  .exrc   .inputrc    .private   .vagrant  BasicDatabase  DatabaseProject1  moin         RestInterfaces  tmp
+.bashrc        .gem    .lesshst    .profile   .vim      bin            django            pyinstaller  share           toys
 $ ls -A | headtail
        1 .bash_history
        2 .bash_profile
@@ -31,19 +31,19 @@ $ ls -A | headtail
          .
          .
          .
-      30 share
-      31 spark
-      32 tmp
-      33 toys
-      34 Vagrantfile
+      27 share
+      28 spark
+      29 tmp
+      30 toys
+      31 Vagrantfile
 $ ls -A | headtail -4
        1 .bash_history
        2 .bash_profile
          .
          .
          .
-      33 toys
-      34 Vagrantfile
+      30 toys
+      31 Vagrantfile
 $
 ```
 
