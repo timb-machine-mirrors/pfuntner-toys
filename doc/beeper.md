@@ -1,7 +1,7 @@
 # `beeper`
 
 ## Purpose
-This is a script that simply beeps forever - or at least until you kill it. The way I use it is I combine it with another command that I expect to run for several seconds, it not several minutes. beeper will let me know when the other command finishes.
+This is a script that simply beeps forever - or at least until you kill it... or the system is rebooted, or the user is killed, or aliens invade, etc. The way I use it is I combine it with another command that I expect to run for several seconds, if not several minutes. beeper will let me know when the other command finishes.
 
 ## Syntax
 ```
