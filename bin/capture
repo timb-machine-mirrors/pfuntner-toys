@@ -186,7 +186,7 @@ stdoutCapture = Capture(sys.stdout, captureFile)
 stderrCapture = Capture(sys.stderr, captureFile)
 
 start = datetime.datetime.now()
-p = subprocess.Popen(sys.argv[1:], stdout=stdoutCapture, stderr=stderrCapture)
+p = subprocess.Popen(args, stdout=stdoutCapture, stderr=stderrCapture)
 (pid, status, stats) = os.wait3(0)
 stop = datetime.datetime.now()
 
