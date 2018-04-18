@@ -18,7 +18,7 @@ Syntax: capture [-o | --output FILENAME] command [OPTIONS ...] [ARGUMENTS ...]
 ### Options and arguments
 | Option | Description | Default |
 | ------ | ----------- | ------- |
-|  `-o` `--output`  | Specify output file name | `{commandBaseName}-%Y%m%d%H%M%S%f.out` |
+|  `-o` or `--output`  | Specify output file name | `{commandBaseName}-%Y%m%d%H%M%S%f.out` |
 
 ## Example
 
