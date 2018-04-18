@@ -21,9 +21,9 @@ rc = p.wait()
 if (rc != 0) and (not stdout) and nastygram.search(stderr):
   match = suggestion.search(stderr)
   if match:
-    print "No upstream branch detected, trying to push with git's suggestion:"
+    print "Trying to push with git's suggestion..."
     cmd = match.group(1)
-    print "  " + cmd
+    # print "  " + cmd
     p = subprocess.Popen(cmd.split())
     exit(p.wait())
   else:
