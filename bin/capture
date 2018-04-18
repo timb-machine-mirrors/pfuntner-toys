@@ -1,0 +1,204 @@
+#! /usr/bin/env python
+
+"""
+  Runs a shell command, capturing stdout and stderr to a file; reporting on start time, stop time, and duration; reporting on exit status; reporting on CPU time
+"""
+
+import os
+import sys
+import getopt
+import datetime
+import threading
+import subprocess
+from collections import defaultdict
+
+sigDict = defaultdict(lambda: "n/a", {
+  1: "SIGHUP",
+  2: "SIGINT",
+  3: "SIGQUIT",
+  4: "SIGILL",
+  5: "SIGTRAP",
+  6: "SIGABRT",
+  7: "SIGBUS",
+  8: "SIGFPE",
+  9: "SIGKILL",
+  10: "SIGUSR1",
+  11: "SIGSEGV",
+  12: "SIGUSR2",
+  13: "SIGPIPE",
+  14: "SIGALRM",
+  15: "SIGTERM",
+  16: "SIGSTKFLT",
+  17: "SIGCHLD",
+  18: "SIGCONT",
+  19: "SIGSTOP",
+  20: "SIGTSTP",
+  21: "SIGTTIN",
+  22: "SIGTTOU",
+  23: "SIGURG",
+  24: "SIGXCPU",
+  25: "SIGXFSZ",
+  26: "SIGVTALRM",
+  27: "SIGPROF",
+  28: "SIGWINCH",
+  29: "SIGIO",
+  29: "SIGLOST",
+  30: "SIGPWR",
+  31: "SIGSYS",
+  32: "SIGRTMIN",
+  8192: "SIGSTKSZ",
+})
+
+def syntax(s):
+  if s:
+    sys.stderr.write(s + "\n")
+  sys.stderr.write("Syntax: %s [-o|--output OUTPUTFILE] cmd [options ...] [arguments ...]\n" % sys.argv[0])
+  exit(1)
+
+def run(parent):
+  done = False
+  buffer = ""
+  while not done:
+    c = os.read(parent.readFd, 1)
+    if c:
+      parent.lock.acquire()
+      buffer += c
+      if c == "\n":
+        parent.standardStream.write(buffer)
+        parent.captureStream.write(buffer)
+        buffer = ""
+      parent.lock.release()
+    else:
+      parent.captureStream.write(buffer)
+      done = True
+
+class Capture(file):
+  def __init__(self, standardStream, captureStream):
+    self.standardStream = standardStream
+    self.captureStream = captureStream
+    self.pipe = os.pipe()
+    self.readFd = self.pipe[0]
+    self.writeFd = self.pipe[1]
+    self.bytes = 0
+    self.__closed = False
+    self.lock = threading.Lock()
+
+    self.thread = threading.Thread(target=run, args=(self,))
+    self.thread.start()
+
+    # self.closed = False
+    # self.encoding = None
+    # self.errors = None
+    # self.mode = "w"
+    # self.name = None
+    # self.newlines = None
+    # self.softspace = None
+
+  @property
+  def closed(self):
+    return self.__closed
+
+  @property
+  def encoding(self):
+    raise Exception("Not implemented")
+
+  @property
+  def errors(self):
+    return None
+
+  @property
+  def mode(self):
+    return "w"
+
+  @property
+  def name(self):
+    raise Exception("Not implemented")
+
+  @property
+  def newlines(self):
+    raise Exception("Not implemented")
+
+  @property
+  def softspace(self):
+    raise Exception("Not implemented")
+
+  def close(self):
+    if not self.__closed:
+      os.close(self.writeFd)
+    self.__closed = True
+
+  def flush(self):
+    pass
+
+  def fileno(self):
+    return self.writeFd
+
+  def isatty(self):
+    return False
+
+  def next(self):
+    raise Exception("Not implemented")
+
+  def read(self, size=None):
+    raise Exception("Not implemented")
+
+  def readlines(self, sizehint=None):
+    raise Exception("Not implemented")
+
+  def seek(self, offset, whence=None):
+    raise Exception("Not implemented")
+
+  def tell(self, offset, whence=None):
+    return self.bytes
+
+  def truncate(self, size=None):
+    raise Exception("Not implemented")
+
+  def write(self, s):
+    os.write(self.writeFd, s)
+
+  def writelines(self, s):
+    raise Exception("Not implemented")
+
+(opts,args) = ([],[])
+try:
+  (opts,args) = getopt.getopt(sys.argv[1:], "o:", ["output="])
+except Exception as e:
+  syntax(str(e))
+
+captureFilename = None
+for (opt,arg) in opts:
+  if opt in ["-o", "--output"]:
+    captureFilename = arg
+  else:
+    syntax("Don't know how to handle %s" % repr(opt))
+
+if not args:
+  syntax("No arguments present")
+
+if not captureFilename:
+  captureFilename = "{base}-{now:%Y%m%d%H%M%S%f}.out".format(base=os.path.basename(sys.argv[0]), now=datetime.datetime.now())
+
+captureFile = open(captureFilename, "w")
+print "Writing to %s" % repr(captureFilename)
+
+stdoutCapture = Capture(sys.stdout, captureFile)
+stderrCapture = Capture(sys.stderr, captureFile)
+
+start = datetime.datetime.now()
+p = subprocess.Popen(sys.argv[1:], stdout=stdoutCapture, stderr=stderrCapture)
+(pid, status, stats) = os.wait3(0)
+stop = datetime.datetime.now()
+
+stdoutCapture.write("\nStart: {start}\nStop: {stop}\nDuration: {duration}\n".format(start=start.isoformat(), stop=stop.isoformat(), duration=stop-start))
+stdoutCapture.write("Status: {status:04x}, rc={rc}".format(status=status, rc=status/256))
+signum = status%256
+if signum:
+  stdoutCapture.write(", signal={signame} ({signum})".format(signum=signum, signame=sigDict[signum]))
+stdoutCapture.write("\n")
+stdoutCapture.write("User: {user:.2f}s, System: {system:.2f}s\n".format(user=stats.ru_utime, system=stats.ru_stime))
+
+stdoutCapture.close()
+stderrCapture.close()
+
+exit(status/256)
