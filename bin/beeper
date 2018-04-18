@@ -18,7 +18,8 @@ bellChar = '\a'
 
 signal.signal(signal.SIGINT, handleCntlC)
 
-banner("%s: Beeping started" % datetime.datetime.now())
+start = datetime.datetime.now()
+banner("%s: Beeping started" % start)
 
 done = False
 
@@ -28,4 +29,5 @@ while not done:
   time.sleep(1)
 
 print ""
-banner("%s: Beeping ended" % datetime.datetime.now())
+stop = datetime.datetime.now()
+banner("%s: Beeping ended, %s" % (stop, stop-start))

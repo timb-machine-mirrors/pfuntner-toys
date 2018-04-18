@@ -15,18 +15,19 @@ There are no options or arguments
 
 ```
 $ date; sleep 5; date; beeper
-Mon Aug 14 12:31:36 EDT 2017
-Mon Aug 14 12:31:41 EDT 2017
+Wed Apr 18 10:53:13 EDT 2018
+Wed Apr 18 10:53:18 EDT 2018
 ***********************************************
-* 2017-08-14 12:31:41.396286: Beeping started *
+* 2018-04-18 10:53:18.981124: Beeping started *
 ***********************************************
-^C
-*********************************************
-* 2017-08-14 12:31:46.812411: Beeping ended *
-*********************************************
-$ 
+
+*************************************************************
+* 2018-04-18 10:53:23.738956: Beeping ended, 0:00:04.757832 *
+*************************************************************
+$
 ```
 
 ## Notes
 
 - In the example, `^C` stands for me entering ctrl-C to kill the script... otherwise it keeps running and beeping.
+- The message indicating that beeping has ended includes the duration.  In the example above, 4.78 seconds.
