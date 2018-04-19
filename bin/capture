@@ -12,42 +12,7 @@ import threading
 import subprocess
 from collections import defaultdict
 
-sigDict = defaultdict(lambda: "n/a", {
-  1: "SIGHUP",
-  2: "SIGINT",
-  3: "SIGQUIT",
-  4: "SIGILL",
-  5: "SIGTRAP",
-  6: "SIGABRT",
-  7: "SIGBUS",
-  8: "SIGFPE",
-  9: "SIGKILL",
-  10: "SIGUSR1",
-  11: "SIGSEGV",
-  12: "SIGUSR2",
-  13: "SIGPIPE",
-  14: "SIGALRM",
-  15: "SIGTERM",
-  16: "SIGSTKFLT",
-  17: "SIGCHLD",
-  18: "SIGCONT",
-  19: "SIGSTOP",
-  20: "SIGTSTP",
-  21: "SIGTTIN",
-  22: "SIGTTOU",
-  23: "SIGURG",
-  24: "SIGXCPU",
-  25: "SIGXFSZ",
-  26: "SIGVTALRM",
-  27: "SIGPROF",
-  28: "SIGWINCH",
-  29: "SIGIO",
-  29: "SIGLOST",
-  30: "SIGPWR",
-  31: "SIGSYS",
-  32: "SIGRTMIN",
-  8192: "SIGSTKSZ",
-})
+sigDict = defaultdict(lambda: "n/a", { 1: "SIGHUP", 2: "SIGINT", 3: "SIGQUIT", 4: "SIGILL", 5: "SIGTRAP", 6: "SIGABRT", 7: "SIGBUS", 8: "SIGFPE", 9: "SIGKILL", 10: "SIGUSR1", 11: "SIGSEGV", 12: "SIGUSR2", 13: "SIGPIPE", 14: "SIGALRM", 15: "SIGTERM", 16: "SIGSTKFLT", 17: "SIGCHLD", 18: "SIGCONT", 19: "SIGSTOP", 20: "SIGTSTP", 21: "SIGTTIN", 22: "SIGTTOU", 23: "SIGURG", 24: "SIGXCPU", 25: "SIGXFSZ", 26: "SIGVTALRM", 27: "SIGPROF", 28: "SIGWINCH", 29: "SIGIO", 29: "SIGLOST", 30: "SIGPWR", 31: "SIGSYS", 32: "SIGRTMIN", 8192: "SIGSTKSZ", })
 
 def syntax(s):
   if s:
@@ -167,9 +132,14 @@ except Exception as e:
   syntax(str(e))
 
 captureFilename = None
+captureDir = "."
+
 for (opt,arg) in opts:
   if opt in ["-o", "--output"]:
-    captureFilename = arg
+    if os.path.isfile(arg):
+      captureFilename = arg
+    else:
+      captureDir = arg
   else:
     syntax("Don't know how to handle %s" % repr(opt))
 
@@ -177,7 +147,7 @@ if not args:
   syntax("No arguments present")
 
 if not captureFilename:
-  captureFilename = "{base}-{now:%Y%m%d%H%M%S%f}.out".format(base=os.path.basename(sys.argv[0]), now=datetime.datetime.now())
+  captureFilename = os.path.join(captureDir, "{base}-{now:%Y%m%d%H%M%S%f}.out".format(base=os.path.basename(sys.argv[0]), now=datetime.datetime.now()))
 
 captureFile = open(captureFilename, "w")
 print "Writing to %s" % repr(captureFilename)
@@ -200,5 +170,7 @@ stdoutCapture.write("User: {user:.2f}s, System: {system:.2f}s\n".format(user=sta
 
 stdoutCapture.close()
 stderrCapture.close()
+
+print "Wrote to %s" % repr(captureFilename)
 
 exit(status/256)
