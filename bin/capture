@@ -149,11 +149,13 @@ if not args:
 if not captureFilename:
   captureFilename = os.path.join(captureDir, "{base}-{now:%Y%m%d%H%M%S%f}.out".format(base=os.path.basename(sys.argv[0]), now=datetime.datetime.now()))
 
-captureFile = open(captureFilename, "w")
+captureFile = open(captureFilename, "w", 0)
 print "Writing to %s" % repr(captureFilename)
 
 stdoutCapture = Capture(sys.stdout, captureFile)
 stderrCapture = Capture(sys.stderr, captureFile)
+
+stdoutCapture.write("Running: {cmd}\n".format(cmd=str(args)))
 
 start = datetime.datetime.now()
 p = subprocess.Popen(args, stdout=stdoutCapture, stderr=stderrCapture)
