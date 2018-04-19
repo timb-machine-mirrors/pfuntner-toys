@@ -18,7 +18,7 @@ Syntax: capture [-o | --output FILENAME] command [OPTIONS ...] [ARGUMENTS ...]
 ### Options and arguments
 | Option | Description | Default |
 | ------ | ----------- | ------- |
-|  `-o` or `--output`  | Specify output file name | `{commandBaseName}-%Y%m%d%H%M%S%f.out` |
+|  `-o` or `--output`  | Specify output file nameor directory | `./{commandBaseName}-%Y%m%d%H%M%S%f.out` |
 
 ## Example
 
@@ -62,3 +62,4 @@ $
 ## Notes
 
 - If the command is a script (Bash, Python, awk, etc.), you will likely have to invoke the interpreter and give it the script file name.
+- If you just specify a directory for `-o` and don't specify a file name, the default file name will be created in the specified directory
