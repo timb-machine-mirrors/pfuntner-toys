@@ -6,13 +6,16 @@
 
 import os
 import sys
+import pdb
+import time
 import getopt
+import signal
 import datetime
 import threading
 import subprocess
 from collections import defaultdict
 
-sigDict = defaultdict(lambda: "n/a", { 1: "SIGHUP", 2: "SIGINT", 3: "SIGQUIT", 4: "SIGILL", 5: "SIGTRAP", 6: "SIGABRT", 7: "SIGBUS", 8: "SIGFPE", 9: "SIGKILL", 10: "SIGUSR1", 11: "SIGSEGV", 12: "SIGUSR2", 13: "SIGPIPE", 14: "SIGALRM", 15: "SIGTERM", 16: "SIGSTKFLT", 17: "SIGCHLD", 18: "SIGCONT", 19: "SIGSTOP", 20: "SIGTSTP", 21: "SIGTTIN", 22: "SIGTTOU", 23: "SIGURG", 24: "SIGXCPU", 25: "SIGXFSZ", 26: "SIGVTALRM", 27: "SIGPROF", 28: "SIGWINCH", 29: "SIGIO", 29: "SIGLOST", 30: "SIGPWR", 31: "SIGSYS", 32: "SIGRTMIN", 8192: "SIGSTKSZ", })
+sigDict = defaultdict(lambda: "n/a", {getattr(signal, key): key for key in vars(signal) if key.startswith("SIG")})
 
 def syntax(s):
   if s:
@@ -125,14 +128,29 @@ class Capture(file):
   def writelines(self, s):
     raise Exception("Not implemented")
 
+def signalHandler(signum, stack):
+  global p
+  sys.stderr.write("Caught {signame} ({signum})\n".format(signame=sigDict[signum], **locals()))
+
+  if p:
+    sys.stderr.write("Sending signal to child\n")
+    p.send_signal(signum)
+    # p.kill()
+    time.sleep(1)
+
+  print "Goodbye, cruel world"
+  os._exit(1)
+
 (opts,args) = ([],[])
 try:
-  (opts,args) = getopt.getopt(sys.argv[1:], "o:", ["output="])
+  (opts,args) = getopt.getopt(sys.argv[1:], "do:", ["debug", "output="])
 except Exception as e:
   syntax(str(e))
 
 captureFilename = None
 captureDir = "."
+p = None
+debug = False
 
 for (opt,arg) in opts:
   if opt in ["-o", "--output"]:
@@ -140,8 +158,13 @@ for (opt,arg) in opts:
       captureDir = arg
     else:
       captureFilename = arg
+  elif opt in ["-d", "--debug"]:
+    debug = not debug
   else:
     syntax("Don't know how to handle %s" % repr(opt))
+
+if debug:
+  pdb.set_trace()
 
 if not args:
   syntax("No arguments present")
@@ -157,6 +180,8 @@ stderrCapture = Capture(sys.stderr, captureFile)
 
 stdoutCapture.write("Running: {cmd}\n".format(cmd=str(args)))
 
+signal.signal(signal.SIGINT, signalHandler)
+
 start = datetime.datetime.now()
 p = subprocess.Popen(args, stdout=stdoutCapture, stderr=stderrCapture)
 (pid, status, stats) = os.wait3(0)
@@ -166,7 +191,7 @@ stdoutCapture.write("\nStart: {start}\nStop: {stop}\nDuration: {duration}\n".for
 stdoutCapture.write("Status: {status:04x}, rc={rc}".format(status=status, rc=status/256))
 signum = status%256
 if signum:
-  stdoutCapture.write(", signal={signame} ({signum})".format(signum=signum, signame=sigDict[signum]))
+  stdoutCapture.write(", signal={signame} ({signum})".format(signame=sigDict[signum], **locals()))
 stdoutCapture.write("\n")
 stdoutCapture.write("User: {user:.2f}s, System: {system:.2f}s\n".format(user=stats.ru_utime, system=stats.ru_stime))
 
