@@ -4,21 +4,36 @@ import os
 import os.path
 import sys
 import re
+import getopt
 
 def debug(msg):
   if verbose:
     sys.stderr.write(msg + "\n")
 
-verbose = False
-args = sys.argv[1:]
+def syntax(s):
+  if s:
+    sys.stderr.write(s + "\n")
+  sys.stderr.write("Syntax %s [-d|--debug] [-l|--local] pat1 [pat2 ...]\n" % sys.argv[0])
+  exit(1)
 
-if args and (args[0] == "--debug"):
-  verbose = not verbose
-  args.pop(0)
+(opts,args) = ([], [])
+try:
+  (opts,args) = getopt.getopt(sys.argv[1:], "dl", ["debug", "local"])
+except Exception as e:
+  syntax(str(e))
+
+verbose = False
+localOnly = False
+for (opt,arg) in opts:
+  if opt in ["-d", "--debug"]:
+    verbose = not verbose
+  elif opt in ["-l", "--local"]:
+    localOnly = not localOnly
+  else:
+    syntax("Don't know how to handle {opt}".format(opt=repr(opt)))
 
 if not args:
-  sys.stderr.write("Syntax %s pat1 [pat2 ...]\n" % sys.argv[0])
-  exit(1)
+  syntax()
 
 positivePats = []
 negativePats = []
@@ -31,11 +46,13 @@ for pat in args:
 
 history = set()
 
+notLocal = re.compile("/c/WINDOWS|/c/Program Files", re.IGNORECASE)
+
 # Real Unix and CYGWIN separate paths in a list with a colon but Git bash uses a semicolon
 dirs = re.split('[;:]', os.environ["PATH"])
 for dir in dirs:
   debug("raw dir {dir}".format(**locals()))
-  if dir not in history:
+  if (dir not in history) and ((not localOnly) or (not notLocal.search(dir))):
     history.add(dir)
     if os.path.isdir(dir):
       debug("good dir {dir}".format(**locals()))
@@ -56,3 +73,5 @@ for dir in dirs:
                 break
           if candidate:
             print path
+  else:
+    debug("Skipping {dir}".format(**locals()))
