@@ -26,6 +26,7 @@ Select a tool below to learn more about it.  I use _Bruno's Favorite_ to indicat
 | [`cores`](doc/cores.md) | | Prints CPU core information in a simple way |
 | [`datemath`](doc/datemath.md) | | Perform arithmetic on date(s) |
 | [`dowhile`](doc/dowhile.md) | | Perform a command repeatedly until output is seen in the output |
+| [`drop`](doc/drop.md) | | Drop the first or last `n` lines, similar to `head`/`tail` |
 | [`headtail`](doc/headtail.md) | | Print out the top and bottom of stdin or one or more files |
 | [`unixdate`](doc/unixdate.md) | | Invokes `date` with Unix-style format on Windoze |
 
