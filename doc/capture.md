@@ -63,3 +63,4 @@ $
 
 - If the command is a script (Bash, Python, awk, etc.), you will likely have to invoke the interpreter and give it the script file name.
 - If you just specify a directory for `-o` and don't specify a file name, the default file name will be created in the specified directory
+- The script doesn't work well when prompting interactively for input.  If if prints a prompt without a terminating newline, the prompt will not show up on the console.  I'm trying to fix that but haven't got it yet.
