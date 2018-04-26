@@ -30,19 +30,26 @@ This is a rather complicated pipeline that involves another of my tools: <a href
 ### Report on the file extensions
 
 ```
-$ find . -type f -print0 | xargs -0 extensions | columns -F\| 2 | uniqc
-17 total items
- 4  23.53% txt
- 3  17.65% gz
- 3  17.65% out
- 3  17.65% py
- 1   5.88% 
- 1   5.88% json
- 1   5.88% tgz
- 1   5.88% zip
-$
+$ find . -type f -print0 | xargs -0 extensions | columns -F \| 2 | uniqc
+273 total items
+ 97  35.53% 
+ 84  30.77% gz
+ 40  14.65% jpg
+ 32  11.72% out
+  4   1.47% pdf
+  4   1.47% py
+  4   1.47% txt
+  1   0.37% base64
+  1   0.37% deb
+  1   0.37% java
+  1   0.37% json-sample
+  1   0.37% md
+  1   0.37% odt
+  1   0.37% png
+  1   0.37% xls
+$ 
 ```
-This is another non-trivial pipeline (do you see a running theme?) that involves the use of the <a href="extensions.md">`extensions`</a> utility.  You can see the current working directory has four `*.txt` files, three `*.gz` files, etc.  One of the files also lacks an extension so that's why you see one that appears to be blank.
+This is another non-trivial pipeline (do you see a running theme?) that involves the use of the <a href="extensions.md">`extensions`</a> utility.  You can see the current working directory has eighty-four `*.gz` files, forty `*.jpg` files, etc.  Many of the files also lack an extension so that's why you see ninety-seven appear to be blank.
 
 ## Notes
 

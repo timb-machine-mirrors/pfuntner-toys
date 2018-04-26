@@ -5,8 +5,8 @@ import string
 import os.path
 
 def process(filename):
-  tokens = [filename]
   basename = os.path.basename(filename)
+  tokens = [basename]
   if basename not in [".", ".."]:
     tokens = basename.split('.')
   print "%s|%s" % (filename, "" if ((len(tokens) <= 1) or ((len(tokens) == 2) and (not tokens[0]))) else tokens[-1])
