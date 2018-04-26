@@ -13,17 +13,24 @@ def syntax(msg = None):
   sys.stderr.write("Syntax: %s [-s] [-F |] [--regexp pattern] field ...\n" % sys.argv[0])
   exit(1)
 
+def debug(msg):
+  if verbose:
+    sys.stderr.write(msg + "\n")
+
 regexp = None
 delim = ' '
 pat = ' +'
 csvInput = False
-squeeze = True # squeeze consecutive fields together: treating them as one
+# squeeze = True # squeeze consecutive fields together: treating them as one
+squeeze = False # squeeze consecutive fields together: treating them as one
 ignore = False # ignore lines that do not have the desired fields
+
+verbose = False
 
 if sys.stdin.isatty():
   syntax("stdin is not redirected")
 
-(opts,args) = getopt.getopt(sys.argv[1:], "isF:", ["regexp=", "csv"])
+(opts,args) = getopt.getopt(sys.argv[1:], "visF:", ["verbose", "regexp=", "csv"])
 
 for (opt,arg) in opts:
    if opt == "-F":
@@ -36,6 +43,8 @@ for (opt,arg) in opts:
      regexp = re.compile(arg)
    elif opt == "--csv":
      csvInput = not csvInput
+   elif opt in ["-v", "--verbose"]:
+     verbose = not verbose
    else:
      syntax("Unknown option `%s`" % opt)
 
@@ -101,6 +110,7 @@ for line in sys.stdin:
     else:
       tokens = line.split(delim)
 
+    debug("{line}: {tokens}".format(line=repr(line), tokens=tokens))
     skip = False
     for curr in range(len(values)):
       value = values[curr]
