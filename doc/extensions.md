@@ -18,10 +18,23 @@ There are no options.  One or more file names must be specified as arguments.
 ## Example
 
 ```
-$ template
-This is a template.  Please fill in the details and rock on.
+$ find . -type f | extensions | headtail
+       1 ./pinger-20180215.out.gz|gz
+       2 ./pinger-20180325.out.gz|gz
+       3 ./pinger-20180304.out.gz|gz
+       4 ./pinger-20180302.out.gz|gz
+       5 ./pingbeep|
+         .
+         .
+         .
+     269 ./pinger-20180109.out.gz|gz
+     270 ./pinger-20180419.out|out
+     271 ./pinger-20180130.out.gz|gz
+     272 ./pinger-20180201.out.gz|gz
+     273 ./pingplot|
 $ 
 ```
+Note that this example makes use of the [`headtail`](headtail.md) tool.
 
 ## Notes
 
