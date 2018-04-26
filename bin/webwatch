@@ -48,6 +48,7 @@ try:
     data = json.load(stream)
 except Exception as e:
   sys.stderr.write("Error loading {jsonFilename}: {e}\n".format(**locals()))
+  exit(1)
 
 watches = data["watches"]
 
