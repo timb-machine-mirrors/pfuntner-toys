@@ -34,7 +34,7 @@ $ find . -type f | extensions | headtail
      273 ./pingplot|
 $ 
 ```
-Note that this example makes use of the [`headtail`](headtail.md) tool.
+Note that this example makes use of the [`headtail`](headtail.md) tool.  See one of the examples for [`uniqc`](uniqc.md) for a comprehensive breakdown of the extensions for the same files.
 
 ## Notes
 
