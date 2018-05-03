@@ -8,7 +8,7 @@ import itertools
 def syntax(msg):
     if msg:
         sys.stderr.write(msg + "\n")
-    sys.stderr.write("Syntax: %s [--verbose] [--flatten] [--describe] [--file FILENAME] [--depth DEPTH] [--forgive] [path ...]\n" % sys.argv[0])
+    sys.stderr.write("Syntax: %s [--verbose] [--nearpretty] [--flatten] [--describe] [--file FILENAME] [--depth DEPTH] [--forgive] [path ...]\n" % sys.argv[0])
     exit(1)
 
 def shorten(s, maxLen=80):
@@ -82,6 +82,10 @@ def describeWriter(root):
     else:
         print "A %s" % type(root)
 
+def nearPrettyWriter(root):
+  for obj in root:
+    print json.dumps(obj, sort_keys=True)
+
 def lop(root, depth):
     if depth <= 0:
         if type(root) == list:
@@ -106,7 +110,7 @@ forgive = False
 
 (opts, args) = ([], [])
 try:
-    (opts,args) = getopt.getopt(sys.argv[1:], "v", ["verbose", "flat", "flatten", "describe", "file=", "depth=", "forgive"])
+    (opts,args) = getopt.getopt(sys.argv[1:], "v", ["verbose", "nearpretty", "flat", "flatten", "describe", "file=", "depth=", "forgive"])
 except Exception as e:
     syntax(str(e))
 
@@ -117,6 +121,8 @@ for (opt,arg) in opts:
         writer = flatWriter
     elif opt == "--describe":
         writer = describeWriter
+    elif opt == "--nearpretty":
+        writer = nearPrettyWriter
     elif opt == "--file":
         filename = arg
     elif opt == "--depth":
