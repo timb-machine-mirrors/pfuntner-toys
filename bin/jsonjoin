@@ -1,7 +1,10 @@
 #! /usr/bin/python -u
 
+import pdb
+
 import sys
 import json
+import getopt
 import datetime
 
 class Timer:
@@ -18,19 +21,49 @@ class Timer:
     return self.stopTimestamp - self.startTimestamp
 
 def debug(s):
-  if "--verbose" in sys.argv:
+  if verbose:
     sys.stderr.write("%s: %s\n" % (datetime.datetime.now(), s))
 
-assert not sys.stdin.isatty(), "stdin must be redirected"
+def syntax(msg=None):
+  if msg:
+    sys.stderr.write(msg + "\n")
+  sys.stderr.write("Syntax: %s [-v|--verbose] [-d|--debug] [-f=FILE|--file=FILE]\n")
+  exit(1)
+  
+verbose = False
+stream = None
+(opts,args) = ([], [])
+try:
+  (opts,args) = getopt.getopt(sys.argv[1:], "vdf:", ["verbose", "debug", "file="])
+except Exception as e:
+  syntax(str(e))
+
+for (opt,arg) in opts:
+  if opt in ["-d", "--debug"]:
+    pdb.set_trace()
+  elif opt in ["-v", "--verbose"]:
+    verbose = not verbose
+  elif opt in ["-f", "--file"]:
+    stream = open(arg)
+
+if not stream:
+  if sys.stdin.isatty():
+    syntax("stdin must be redirected if -f/--file is not specified")
+  stream = sys.stdin
 
 objs = []
 readTimer = Timer()
-for line in sys.stdin:
+lines = ""
+for line in stream:
+  lines += line
   try:
-    objs.append(json.loads(line))
+    objs.append(json.loads(lines))
   except Exception as e:
     # raise Exception("Caught %s with line %d: %s" % (e, len(objs)+1, repr(line)))
     pass
+  else:
+    lines = ""
+
 debug("%d elements read in %s" % (len(objs), readTimer.elapsed()))
 
 if all(["timestamp" in datum for datum in objs]):
