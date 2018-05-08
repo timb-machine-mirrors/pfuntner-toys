@@ -10,6 +10,8 @@ sep = '|'
 for (opt,arg) in opts:
   if opt == "-F":
     sep = arg
+    if sep == '\\t':
+      sep = '\t'
 
 print "<table>"
 first = True
