@@ -7,7 +7,7 @@ If you have questions, problems, etc, you can reach me at <img src="images/email
 
 ### Unix platforms
 
-Over the years, I've used man different _Unix_ platforms: Redhat, Suse, Solaris, HP/UX, AIX, Z/OS, Cygwin, Git bash, etc.  I owe no allegiance to any single platform and consider them all pretty much equal as long as they behave similarly.  I have seen some issues using my tools (and other commands!) from Git bash on Windoze and sometimes a tool was only designed to work on specific platforms - I'll try to put such stuff on the doc page for the tool.  In general if I find a platform where one of my tools doesn't work well, I will try to fix it!
+Over the years, I've used many different _Unix_ platforms: Redhat, Suse, Solaris, HP/UX, AIX, Z/OS, Cygwin, Git bash, etc.  I owe no allegiance to any single platform and consider them all pretty much equal as long as they behave similarly.  I have seen some issues using my tools (and other commands!) from Git bash on Windoze and sometimes a tool was only designed to work on specific platforms - I'll try to put such stuff on the doc page for the tool.  In general if I find a platform where one of my tools doesn't work well, I will try to fix it!
 
 ## The much-heralded TOOLS
 
