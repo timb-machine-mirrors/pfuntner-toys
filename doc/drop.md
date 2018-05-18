@@ -67,5 +67,5 @@ $
 
 ## Notes
 
-- If no files are specified, the command reads from stdin if it is redirected.  Is is an error to not specify a filename and not redirect stdin.
+- If no files are specified, the command reads from stdin if it is redirected.  It is an error to not specify a filename and not redirect stdin.
 - This can be very useful when you wish to discard the header of output (see the `ls` example above).
