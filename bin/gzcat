@@ -19,16 +19,21 @@ def process(filename=None):
       zippedStream = open(filename, 'r')
 
   if zippedStream:
+    stringStream = StringIO.StringIO(zippedStream.read())
     try:
-      stringStream = StringIO.StringIO(zippedStream.read())
       with gzip.GzipFile(fileobj=stringStream) as stream:
         sys.stdout.write(stream.read())
-      stringStream.close()
     except Exception as e:
-      sys.stderr.write("Problem uncompressing %s: %s\n" % (repr(filename) if filename else "stdin", e))
-      # traceback.print_stack()
-      ex_type, ex, tb = sys.exc_info()
-      traceback.print_tb(tb)
+      if e.message == "Not a gzipped file":
+        zippedStream.seek(0)
+        sys.stdout.write(zippedStream.read())
+      else:
+        sys.stderr.write("Problem uncompressing %s: %s\n" % (repr(filename) if filename else "stdin", e))
+        # traceback.print_stack()
+        ex_type, ex, tb = sys.exc_info()
+        traceback.print_tb(tb)
+
+    stringStream.close()
 
     if filename:
       zippedStream.close()
