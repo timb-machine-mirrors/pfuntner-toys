@@ -6,11 +6,12 @@ import re
 import getopt
 import csv
 import StringIO
+import pdb
 
 def syntax(msg = None):
   if msg:
     sys.stderr.write("%s\n\n" % msg)
-  sys.stderr.write("Syntax: %s [-s] [-F |] [--regexp pattern] field ...\n" % sys.argv[0])
+  sys.stderr.write("Syntax: %s [-v|--verbose] [-d|--debug] [-s] [-F |] [--regexp pattern] [--file FILE] field ...\n" % sys.argv[0])
   exit(1)
 
 def debug(msg):
@@ -24,13 +25,11 @@ csvInput = False
 # squeeze = True # squeeze consecutive fields together: treating them as one
 squeeze = False # squeeze consecutive fields together: treating them as one
 ignore = False # ignore lines that do not have the desired fields
+filename = None
 
 verbose = False
 
-if sys.stdin.isatty():
-  syntax("stdin is not redirected")
-
-(opts,args) = getopt.getopt(sys.argv[1:], "visF:", ["verbose", "regexp=", "csv"])
+(opts,args) = getopt.getopt(sys.argv[1:], "visF:d", ["verbose", "regexp=", "csv", "file=", "debug"])
 
 for (opt,arg) in opts:
    if opt == "-F":
@@ -45,11 +44,22 @@ for (opt,arg) in opts:
      csvInput = not csvInput
    elif opt in ["-v", "--verbose"]:
      verbose = not verbose
+   elif opt in ["-d", "--debug"]:
+     pdb.set_trace()
+   elif opt == "--file":
+     filename = arg
    else:
      syntax("Unknown option `%s`" % opt)
 
+if filename:
+  stream = open(filename)
+else:
+  if sys.stdin.isatty():
+    syntax("stdin is not redirected and --file FILENAME is not specified")
+  stream = sys.stdin
+
 if not args:
-  syntax()
+  syntax("No columns specified")
 
 if delim == "\\t":
   delim = '\t'
@@ -95,7 +105,7 @@ try:
 except Exception as e:
   syntax("Invalid field: `%s`" % str(e))
 
-for line in sys.stdin:
+for line in stream:
   line = string.replace(string.replace(line, '\n', ''), '\r', '')
   if squeeze:
     line = re.sub(pat, delim, line.strip(delim))
