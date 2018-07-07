@@ -9,16 +9,20 @@ Check out the examples and try it out yourself!
 
 ## Syntax
 ```
-Syntax: json [--verbose] [--flatten] [--describe] [--file FILENAME] [--depth DEPTH] [--forgive] [--linear] [path ...]
+Syntax: json [--verbose] [--flatten] [--describe] [--file FILENAME] [--depth DEPTH] [--forgive] [--linear] [--string] [path ...]
 ```
 
 ### Options and arguments
+
+The default _printer_ uses `json.dumps(indent=2, sort_keys=True)` to print the structure in a beautiful way with newlines.
+
 | Option | Description | Default |
 | ------ | ----------- | ------- |
 |  `-v` or `--verbose`  | Enable verbose debugging | Debugging is not enabled and probably not recommended for average users |
-| `--flat` or `--flatten` | Enables the _flatten_ printer.  I love using this when I'm writing code to deal with JSON and need to understand how to get to a particular element - the path to traverse through the structure | The default is to print in `json.dumps(indent=2, sort_keys=True)` style |
-| `--linear` | Enables the _linear_ printer - each element of a list or dictionary is printed on a separate line.  If the root is not a list or dictionary, the output shouldn't change.  The output of a list or dictionary is probably no longer in JSON structure if there are multiple elements but maybe that's what you want to do | The default is to print in `json.dumps(indent=2, sort_keys=True)` style |
-| `--describe` | Describes the top level of the JSON input.  This can be thought of as yet another printer | This is disabled by default |
+| `--flat` or `--flatten` | Enables the _flatten_ printer.  I love using this when I'm writing code to deal with JSON and need to understand how to get to a particular element - the path to traverse through the structure | The default printer is used |
+| `--linear` | Enables the _linear_ printer - each element of a list or dictionary is printed on a separate line.  If the root is not a list or dictionary, the output shouldn't change.  The output of a list or dictionary is probably no longer in JSON structure if there are multiple elements but maybe that's what you want to do | The default printer is used |
+| `--string` | Enables the _string_ printer with `json.dumps(sort_keys=True)` that prints an entire JSON structure in one long string | The default printer is used |
+| `--describe` | Describes the top level of the JSON input.  This can be thought of as yet another printer | The default printer is used |
 | `--forgive` | Give errors in processing.  For example, if you specify a key in the path that doesn't exist, you can have the script forgive that error and continue processing. | The default is not to forgive errors |
 | `--depth DEPTH` | Specifies the depth to which the tool will dive into the JSON | The default is to dive through the entire JSON, visiting all nodes |
 | `--file FILENAME` | Specifies a filename to read as source | By default if no filename is specified, the script tries to read from stdin |

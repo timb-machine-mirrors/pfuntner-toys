@@ -8,7 +8,7 @@ import itertools
 def syntax(msg):
     if msg:
         sys.stderr.write(msg + "\n")
-    sys.stderr.write("Syntax: %s [--verbose] [--flatten] [--describe] [--file FILENAME] [--depth DEPTH] [--forgive] [--linear] [path ...]\n" % sys.argv[0])
+    sys.stderr.write("Syntax: %s [--verbose] [--flatten] [--describe] [--file FILENAME] [--depth DEPTH] [--forgive] [--linear] [--string] [path ...]\n" % sys.argv[0])
     exit(1)
 
 def shorten(s, maxLen=80):
@@ -30,6 +30,9 @@ def flatWriter(root, path=[]):
 
 def jsonWriter(root):
     print json.dumps(root, indent=2, sort_keys=True)
+
+def stringWriter(root):
+  print json.dumps(root, sort_keys=True)
 
 def linearWriter(root):
     if isinstance(root, list):
@@ -116,7 +119,7 @@ forgive = False
 
 (opts, args) = ([], [])
 try:
-    (opts,args) = getopt.getopt(sys.argv[1:], "v", ["verbose", "flat", "flatten", "describe", "file=", "depth=", "forgive", 'linear'])
+    (opts,args) = getopt.getopt(sys.argv[1:], "v", ["verbose", "flat", "flatten", "describe", "file=", "depth=", "forgive", 'linear', 'string'])
 except Exception as e:
     syntax(str(e))
 
@@ -129,6 +132,8 @@ for (opt,arg) in opts:
         writer = describeWriter
     elif opt == "--linear":
         writer = linearWriter
+    elif opt == "--string":
+        writer = stringWriter
     elif opt == "--file":
         filename = arg
     elif opt == "--depth":
