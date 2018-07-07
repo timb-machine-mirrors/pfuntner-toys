@@ -28,6 +28,8 @@ Syntax: json [--verbose] [--flatten] [--describe] [--file FILENAME] [--depth DEP
 
 
 ### Setup and default behavior
+
+Note that this example makes use of my [`Data.py`](Data.py.md) tool.
 ```
 $ Data.py > data.json
 $ json < data.json
