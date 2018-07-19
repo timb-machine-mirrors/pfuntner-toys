@@ -18,8 +18,13 @@ def debug(msg):
   if verbose:
     sys.stderr.write(msg + "\n")
 
+def delimOrBlank():
+  global delim
+
+  return delim if delim else ' '
+
 regexp = None
-delim = ' '
+delim = None # default to whitespace
 pat = ' +'
 csvInput = False
 # squeeze = True # squeeze consecutive fields together: treating them as one
@@ -105,20 +110,24 @@ try:
 except Exception as e:
   syntax("Invalid field: `%s`" % str(e))
 
+splitArgs = []
+if delim:
+  splitArgs.append(delim)
+
 for line in stream:
   line = string.replace(string.replace(line, '\n', ''), '\r', '')
   if squeeze:
-    line = re.sub(pat, delim, line.strip(delim))
+    line = re.sub(pat, delimOrBlank(), line.strip(delim))
   output = []
   if regexp:
     match = regexp.search(line)
     if match:
-      print delim.join([match.group(field) for field in desiredFields])
+      print delimOrBlank().join([match.group(field) for field in desiredFields])
   else:
     if csvInput:
       tokens = (csv.reader(StringIO.StringIO(line))).next()
     else:
-      tokens = line.split(delim)
+      tokens = line.split(*splitArgs)
 
     debug("{line}: {tokens}".format(line=repr(line), tokens=tokens))
     skip = False
@@ -133,4 +142,4 @@ for line in stream:
         if field < len(tokens):
           output += [tokens[field]]
       if (not ignore) or (len(output) > 0):
-        print delim.join(output)
+        print delimOrBlank().join(output)
