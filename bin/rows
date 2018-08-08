@@ -10,13 +10,42 @@
 """
 
 import sys
+import re
 
 assert not sys.stdin.isatty(), 'stdin must be redirected'
 
-assert len(sys.argv) > 1, 'Syntax: {pgm} NUM ...'.format(pgm=sys.argv[0])
+assert len(sys.argv) > 1, 'Syntax: {pgm} NUM|(NUM)-(NUM)|(NUM):(NUM) ...'.format(pgm=sys.argv[0])
+
+regexp = re.compile('^(\d+)?([-:])(\d+)?$')
 
 lines = sys.stdin.read().splitlines()
 
-for arg in [int(arg) for arg in sys.argv[1:]]:
-  assert 0 <= arg < len(lines), '`{arg}` is out of range - stdin has {lines} lines'.format(arg=arg, lines=len(lines))
-  print lines[arg]
+for arg in sys.argv[1:]:
+  match = regexp.search(arg)
+  if match:
+    if match.group(1) is not None:
+      start = int(match.group(1))
+    else:
+      start = 0
+
+    if match.group(2) == '-':
+      if match.group(3) is not None:
+        stop = int(match.group(3))
+      else:
+        stop = len(lines)-1
+      assert stop >= start, '{start} > {stop}'.format(**locals())
+    else:
+      if match.group(3) is not None:
+        stop = start + int(match.group(3)) - 1
+      else:
+        stop = len(lines)-1
+
+    assert (start >= 0) and (stop < len(lines)), '{arg!r} is out of range - stdin has {lines} lines'.format(arg=arg, lines=len(lines))
+
+    for num in range(start, stop+1):
+      print lines[num]
+
+  else:
+    arg = int(arg)
+    assert 0 <= arg < len(lines), '`{arg}` is out of range - stdin has {lines} lines'.format(arg=arg, lines=len(lines))
+    print lines[arg]
