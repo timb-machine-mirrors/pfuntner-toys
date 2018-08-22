@@ -60,6 +60,7 @@ in_struct = False
 objs = []
 readTimer = Timer()
 lines = ""
+linenum = 0
 for line in stream:
   if junk and (not in_struct):
     match = junk_regexp.search(line)
@@ -77,6 +78,9 @@ for line in stream:
     else:
       lines = ""
       in_struct = False
+
+  linenum += 1
+  debug('{linenum:0>8} {items:0>8}'.format(linenum=linenum, items=len(objs)))
 
 debug("%d elements read in %s" % (len(objs), readTimer.elapsed()))
 
