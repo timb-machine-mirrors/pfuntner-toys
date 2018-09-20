@@ -12,7 +12,7 @@ Syntax: banner [--character C] [--box] [--left] [--center] [--middle] [--right] 
 | Option | Description | Default |
 | ------ | ----------- | ------- |
 |  `--character C`  | Use `C` as the border character | The default is to use use a _box-style_ border.  See `--box`. |
-|  `--box`  | Toggles use of the _box-style_ border: corner characters, vertical bars on the sides, and horizontal bars on the top and bottom. If box-style borders are disabled and an alternate character is not specified, an _hash_ character is used instead. | The default is to use use a _box-style_ border.  |
+|  `--box`  | Toggles use of the _box-style_ border: corner characters, vertical bars on the sides, and horizontal bars on the top and bottom. If box-style borders are disabled and an alternate character is not specified, a _hash_ character is used instead. | The default is to use use a _box-style_ border.  |
 |  `--left`  | Text is left-justified, assuming there are multiple lines of text. | This is the default |
 |  `--center`  | Text is centered, assuming there are multiple lines of text. | The default is to left-justified text |
 |  `--right`  | Text is right-justified, assuming there are multiple lines of text. | The default is to left-justified text |
