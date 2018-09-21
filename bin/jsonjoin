@@ -80,7 +80,7 @@ for line in stream:
       in_struct = False
 
   linenum += 1
-  debug('{linenum:0>8} {items:0>8}'.format(linenum=linenum, items=len(objs)))
+  debug('{linenum:0>8} {items:0>8} {line!r}'.format(linenum=linenum, items=len(objs), line=line))
 
 debug("%d elements read in %s" % (len(objs), readTimer.elapsed()))
 
