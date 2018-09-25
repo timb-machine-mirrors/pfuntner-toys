@@ -50,11 +50,13 @@ $
 ## Notes
 
 - The expected result for each file is one of the following:
-  result | description
-  ------ | -----------
-  `match` | The files are identical
-  `md5sum-mismatch` | The files have different checksums and their content is presumably different
-  `type-mismatch` | The files are no the same type
-  `missing` | One tree has a file that the other tree does not.  Either the first file is `None` or the second one is
+
+  | result | description |
+  | ------ | ----------- |
+  | `match` | The files are identical |
+  | `md5sum-mismatch` | The files have different checksums and their content is presumably different |
+  | `type-mismatch` | The files are no the same type |
+  | `missing` | One tree has a file that the other tree does not.  Either the first file is `None` or the second one is |
+
 - The script makes sure files of the same name are both regular files or both redirectories.  If each file is another type of file (such as a _character special_ file like `/dev/null`), the script raises an exception.  I could only find an easy way to compare file types of files in Python if they were regular files or directories.  I could probably do an `ls` under the covers but don't want to do that.
 - Admittedly, `diff -r` could do a lot of this but I wanted to do it in my own tool and control the processing using regular expressions to exclude various files
