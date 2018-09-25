@@ -33,5 +33,6 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`drop`](doc/drop.md) | Yes | Drop the first or last `n` lines, similar to `head`/`tail` |
 | [`headtail`](doc/headtail.md) | Yes | Print out the top and bottom of stdin or one or more files |
 | [`json`](doc/json.md) | Yes | JSON magic - it's a disservice to try to summarize this tool in a single string. |
+| [`megadiff`](doc/megadiff.md) | | Compare two directories trees |
 | [`uniqc`](doc/uniqc.md) | Yes | Counts unique instances of input |
 | [`unixdate`](doc/unixdate.md) | | Invokes `date` with Unix-style format on Windoze |
