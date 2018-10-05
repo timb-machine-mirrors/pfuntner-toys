@@ -1,0 +1,73 @@
+#! /usr/bin/env python
+
+"""
+   Ideally, this will be a script that can take one or more tar or jar files and unwind them.
+   Initially, I'm just implementing the --describe option which simply does a table of contents
+   on the archive files.
+
+   Future work:
+     - allow for a verbose option that equates to the -tvf options for jar/tar
+     - unwind the archive files in some reasonable manner
+"""
+
+import re
+import sys
+import getopt
+import subprocess
+
+def syntax(msg=None):
+  if msg:
+    sys.stderr.write('{msg}\n'.format(**locals()))
+  sys.stderr.write('Syntax: {pgm} [--describe|-d] [file ...]\n'.format(pgm=sys.argv[0]))
+  exit(1)
+
+def run(cmd):
+  p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  (stdout, stderr) = p.communicate()
+  return (p.wait(), stdout, stderr)
+
+def process(path):
+  if jarRegexp.search(path):
+    if describe:
+      (rc, stdout, stderr) = run(['jar', '-tf', path])
+      if (rc == 0) and (not stderr):
+        for line in stdout.splitlines():
+          print '{path}:{line}'.format(**locals())
+      else:
+        sys.stderr.write('Error processing {path}:\n{stderr}'.format(**locals()))
+  elif tarRegexp.search(path):
+    if describe:
+      (rc, stdout, stderr) = run(['tar', '-tf', path])
+      if (rc == 0) and (not stderr):
+        for line in stdout.splitlines():
+          print '{path}:{line}'.format(**locals())
+      else:
+        sys.stderr.write('Error processing {path}:\n{stderr}'.format(**locals()))
+  else:
+    if describe:
+      print path
+  
+jarRegexp = re.compile('\.jar$')
+tarRegexp = re.compile('\.(tar|tar.gz|tgz)$')
+
+(opts,args) = ([], [])
+try:
+  (opts,args) = getopt.getopt(sys.argv[1:], '-d', ['describe'])
+except Exception as e:
+  syntax(str(e))
+
+describe = True
+for (opt,arg) in opts:
+  if opt in ['-d', '--describe']:
+    describe = not describe
+  else:
+    syntax('Unexpected option {opt!r}'.format(**locals()))
+
+assert describe, 'Only --describe is supported so far'
+
+if not args:
+  assert not sys.stdin.isatty(), 'stdin must be redirected'
+  args = sys.stdin.read().splitlines()
+
+for path in args:
+  process(path)
