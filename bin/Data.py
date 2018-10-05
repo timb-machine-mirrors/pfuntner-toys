@@ -80,7 +80,7 @@ if __name__ == "__main__":
       try:
         pos = data.values.index(sys.argv[1])
       except:
-        sys.stderr.write("{arg!r} is not one of the valid methods: {valid}".format(
+        sys.stderr.write("{arg!r} is not one of the valid methods: {valid}, getListOfDicts\n".format(
           arg=sys.argv[1],
           valid=', '.join(data.values)
         ))
