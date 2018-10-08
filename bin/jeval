@@ -18,16 +18,19 @@ def syntax(msg=None):
   sys.stderr.write('Syntax: {pgm} [-i|--import IMPORT] PRINT-EXPRESSION [...]\n'.format(pgm=sys.argv[0]))
   exit(1)
  
-def run(cmd, debugStdout=False):
-  debug('> {cmd}\n'.format(**locals()))
+def run(cmd, printStdout=True):
+  debug('> {cmd}\n'.format(**locals()), noNewline=True)
   p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   (stdout, stderr) = p.communicate()
-  if debugStdout:
-    debug(stdout, noNewline=True)
-  else:
+  rc = p.wait()
+
+  if printStdout or verbose:
     sys.stdout.write(stdout)
-  debug(stderr, noNewline=True)
-  return p.wait()
+
+  if (rc != 0) or (not stdout) or stderr or verbose:
+    sys.stderr.write(stderr)
+
+  return rc
   
 (opts,args) = ([], [])
 try:
@@ -64,4 +67,4 @@ tmpfile.close()
 
 run('javac -d /tmp /tmp/{classname}.java'.format(**locals()))
 run('java -cp /tmp {classname}'.format(**locals()))
-run('rm -fv /tmp/{classname}.java /tmp/{classname}.class'.format(**locals()), debugStdout=True)
+run('rm -fv /tmp/{classname}.java /tmp/{classname}.class'.format(**locals()), printStdout=False)

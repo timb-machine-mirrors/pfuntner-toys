@@ -2,7 +2,7 @@
 
 """
    Ideally, this will be a script that can take one or more tar or jar files and unwind them.
-   Initially, I'm just implementing the --describe option which simply does a table of contents
+   Initially, I'm just implementing the --list option which simply does a table of contents
    on the archive files.
 
    Future work:
@@ -11,6 +11,7 @@
 """
 
 import re
+import os
 import sys
 import getopt
 import subprocess
@@ -18,7 +19,7 @@ import subprocess
 def syntax(msg=None):
   if msg:
     sys.stderr.write('{msg}\n'.format(**locals()))
-  sys.stderr.write('Syntax: {pgm} [--describe|-d] [file ...]\n'.format(pgm=sys.argv[0]))
+  sys.stderr.write('Syntax: {pgm} [--list|-l] [--extract|-x] [file ...]\n'.format(pgm=sys.argv[0]))
   exit(1)
 
 def run(cmd):
@@ -26,48 +27,96 @@ def run(cmd):
   (stdout, stderr) = p.communicate()
   return (p.wait(), stdout, stderr)
 
+def qualify(path):
+  """
+     If the path is not fully qualified, prepend the original current working directory to the path
+  """
+  if not absoluteRegexp.search(path):
+    path = os.path.join(cwd, path)
+  return path
+
+def indent(data):
+  data = '\n'.join(['  {line}'.format(**locals()) for line in data.splitlines()])
+  if data:
+    data += '\n'
+  return data
+
+def joinDicts(*dicts):
+  ret = {}
+  for curr in dicts:
+    ret.update(curr)
+  return ret
+
 def process(path):
-  if jarRegexp.search(path):
-    if describe:
-      (rc, stdout, stderr) = run(['jar', '-tf', path])
+  cmd = None
+  base = os.path.basename(path)
+  for regexp in regexps:
+    match = regexp[1].search(base)
+    if match:
+      cmd = regexp[0]
+      base = match.group(1)
+
+  if cmd:
+    if list:
+      (rc, stdout, stderr) = run([cmd, '-tf', path])
       if (rc == 0) and (not stderr):
         for line in stdout.splitlines():
           print '{path}:{line}'.format(**locals())
       else:
         sys.stderr.write('Error processing {path}:\n{stderr}'.format(**locals()))
-  elif tarRegexp.search(path):
-    if describe:
-      (rc, stdout, stderr) = run(['tar', '-tf', path])
+    else: # --extract
+      try:
+        os.mkdir(base)
+      except Exception as e:
+        sys.stderr.write('Cannot create {base!r}: {e}\n'.format(**locals()))
+        return
+      os.chdir(base)
+      (rc, stdout, stderr) = run([cmd, '-xvf', qualify(path)])
       if (rc == 0) and (not stderr):
-        for line in stdout.splitlines():
-          print '{path}:{line}'.format(**locals())
+        stdout = indent(stdout)
+        sys.stdout.write('Unwound {path} to {cwd}/{base}:\n{stdout}'.format(**joinDicts(globals(), locals())))
       else:
-        sys.stderr.write('Error processing {path}:\n{stderr}'.format(**locals()))
+        stdout = indent(stdout)
+        stderr = indent(stderr)
+        sys.stderr.write('Error unwinding {path} to {cwd}/{base}:\n{stdout}{stderr}'.format(**joinDicts(globals(), locals())))
+      os.chdir(cwd)
   else:
-    if describe:
+    if list:
       print path
-  
-jarRegexp = re.compile('\.jar$')
-tarRegexp = re.compile('\.(tar|tar.gz|tgz)$')
+    else: # --extract
+      sys.stderr.write('--extract is meaningless for {path}\n'.format(locals()))
+
+absoluteRegexp = re.compile('^/')
+
+regexps = [
+  ('jar', re.compile('^(.*)\.jar$')),
+  ('tar', re.compile('^(.*)\.(tar|tar\.gz|tgz)$')),
+]
 
 (opts,args) = ([], [])
 try:
-  (opts,args) = getopt.getopt(sys.argv[1:], '-d', ['describe'])
+  (opts,args) = getopt.getopt(sys.argv[1:], 'lx', ['list', 'extract'])
 except Exception as e:
   syntax(str(e))
 
-describe = True
+list = False
+extract = False
 for (opt,arg) in opts:
-  if opt in ['-d', '--describe']:
-    describe = not describe
+  if opt in ['-l', '--list']:
+    list = not list
+  elif opt in ['-x', '--extract']:
+    extract = not extract
   else:
     syntax('Unexpected option {opt!r}'.format(**locals()))
 
-assert describe, 'Only --describe is supported so far'
+if len([opt for opt in [list, extract] if opt]) != 1:
+  syntax('Specify either --list or --extract but not both')
 
 if not args:
   assert not sys.stdin.isatty(), 'stdin must be redirected'
   args = sys.stdin.read().splitlines()
+
+cwd = os.getcwd()
 
 for path in args:
   process(path)
