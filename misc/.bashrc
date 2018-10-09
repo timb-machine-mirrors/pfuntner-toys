@@ -10,6 +10,7 @@ set -o vi
 # alias br='vi -R'
 alias r='fc -s'
 alias more=less
+alias width='tput cols'
 
 # My git frontend is not needed if you authenticate with an sshkey and use the ssh-style URL
 # for the repo such as git@github.com:USER/REPO.git
