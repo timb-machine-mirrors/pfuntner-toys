@@ -1,0 +1,92 @@
+#! /usr/bin/env python
+
+"""
+   Extract all git commits of a file
+"""
+
+import re
+import os
+import sys
+import getopt
+import datetime
+import subprocess
+
+def debug(msg):
+  if verbose:
+    sys.stderr.write('{msg}\n'.format(**locals()))
+
+def run(cmd, checkRc=True, checkStderr=True):
+  if isinstance(cmd, basestring):
+    cmd = cmd.split()
+  debug('cmd: {cmd!r}'.format(**locals()))
+  p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  (stdout, stderr) = p.communicate()
+  rc = p.wait()
+  if (checkRc and (rc != 0)) or (checkStderr and stderr):
+    sys.stderr.write('{cmd!r} failed: {rc}, {stdout!r}, {stderr!r}\n'.format(**locals()))
+    exit(1)
+  return stdout
+
+def syntax(msg=None):
+  if msg:
+    sys.stderr.write('{msg}\n'.format(**locals()))
+  sys.stderr.write('Syntax: {pgm} path\n'.format(pgm=sys.argv[0]))
+  exit(1)
+
+def secsSinceEpoch(timestamp):
+  return (timestamp - epoch).total_seconds()
+
+epoch = datetime.datetime.utcfromtimestamp(0)
+
+(opts,args) = ([], [])
+try:
+  (opts,args) = getopt.getopt(sys.argv[1:], 'v', ['verbose'])
+except Exception as e:
+  syntax(str(e))
+
+verbose = False
+for (opt,arg) in opts:
+  if opt in ['-v', '--verbose']:
+    verbose = not verbose
+  else:
+    syntax('Unexpected option: {opt!r}'.format(**locals()))
+
+debug('args: {args!r}'.format(**locals()))
+if len(args) != 1:
+  syntax('Specify a single path')
+
+path = args[0]
+if not os.path.isfile(path):
+  syntax('{path!r} must be a regular file'.format(**locals()))
+
+stdout = run('git log {path}'.format(**locals()))
+
+matches = list(re.finditer('commit ([0-9a-f]{40})\nAuthor:[^\n]+\nDate:\s+([^\n-]+) -\d{4}\n', stdout))
+if not matches:
+  sys.stderr.write('Could not determine commits and timestamps from:\n{stdout}'.format(**locals()))
+  exit(1)
+
+basename = os.path.basename(path)
+
+baseExtractDir = '{HOME}/git-extracts'.format(**os.environ)
+if not os.path.isdir(baseExtractDir):
+  os.mkdir(baseExtractDir)
+
+baseExtractDir += '/{base}'.format(base=basename)
+run(['rm', '-rf', '{baseExtractDir}/*'.format(**locals())])
+if not os.path.isdir(baseExtractDir):
+  os.mkdir(baseExtractDir)
+
+print 'Extracting to: {baseExtractDir}'.format(**locals())
+
+for match in matches:
+  (commit, timestamp) = (match.group(1), secsSinceEpoch(datetime.datetime.strptime(match.group(2), '%a %b %d %H:%M:%S %Y'))) # ex: 'Wed Nov 1 16:07:15 2017' - timezone is eliminated
+  print '{commit} {timestamp}'.format(**locals())
+  run('git checkout {commit} {path}'.format(**locals()))
+  dest = '{baseExtractDir}/{commit}'.format(**locals())
+  run('cp {path} {dest}'.format(**locals()))
+  os.utime(dest, (timestamp, timestamp))
+
+# check out most recent version
+(commit, timestamp) = (matches[0].group(1), secsSinceEpoch(datetime.datetime.strptime(matches[0].group(2), '%a %b %d %H:%M:%S %Y'))) # ex: 'Wed Nov 1 16:07:15 2017' - timezone is eliminated
+run('git checkout {commit} {path}'.format(**locals()))
