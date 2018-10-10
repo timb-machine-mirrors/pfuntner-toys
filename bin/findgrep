@@ -47,11 +47,11 @@ regexp = args.pop()
 if not args:
   args = ['.']
 
-cmd = 'find {dirs} \\( {findOpts} \\) -print0 | xargs -0 grep {grepOpts} {regexp}'.format(
+cmd = 'find {dirs} \\( {findOpts} \\) -print0 | xargs -0 grep {grepOpts} "{regexp}"'.format(
   dirs=' '.join(args),
   findOpts=findOpts,
   grepOpts=' '.join(grepOpts),
-  regexp=regexp,
+  regexp=protect(regexp),
 )
 sys.stderr.write('{cmd}\n'.format(**locals()))
 p = subprocess.Popen(cmd, shell=True)
