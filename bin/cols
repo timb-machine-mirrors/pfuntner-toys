@@ -50,11 +50,11 @@ else:
     match = re.search('\d+\s+(\d+)', stdout)
     if stdout:
       cols = int(match.group(1))
-      debug('cols={cols}, `tput cols` returned {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
+      debug('cols={cols}, `stty size` returned {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
     else:
-      debug('defaulting to cols={cols} because `tput cols` could not be parsed: {stdout!r}\n'.format(**locals()), loud=True)
+      debug('defaulting to cols={cols} because `stty size` could not be parsed: {stdout!r}\n'.format(**locals()), loud=True)
   elif not all:
-    debug('defaulting to cols={cols} because `tput cols` returned {rc}, {stdout!r}, {stderr!r}\n'.format(**locals()), loud=True)
+    debug('defaulting to cols={cols} because `stty size` returned {rc}, {stdout!r}, {stderr!r}\n'.format(**locals()), loud=True)
 
 digits = math.log10(cols)
 debug('cols={cols}, digits={digits}, int(digits)={int_digits}'.format(int_digits=int(digits), **locals()))
