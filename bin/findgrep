@@ -14,21 +14,21 @@ def protect(s):
 def syntax(msg=None):
   if msg:
     sys.stderr.write('{msg}\n'.format(**locals()))
-  sys.stderr.write('Syntax: {pgm} [--file FILE] [--notfile FILE] [--path PATH] [--notpath PATH] [--grepopt OPT ...] [DIR ...] REGEXP\n'.format(pgm=sys.argv[0]))
+  sys.stderr.write('Syntax: {pgm} [--file|--name FILE] [--notfile|--notname FILE] [--path PATH] [--notpath PATH] [--grepopt OPT ...] [DIR ...] REGEXP\n'.format(pgm=sys.argv[0]))
   exit(1)
 
 (opts,args) = ([], [])
 try:
-  (opts,args) = getopt.getopt(sys.argv[1:], '', ['file=', 'notfile=', 'path=', 'notpath=', 'grepopt=', ])
+  (opts,args) = getopt.getopt(sys.argv[1:], '', ['file=', 'name=', 'notfile=', 'notname=', 'path=', 'notpath=', 'grepopt=', ])
 except Exception as e:
   syntax(str(e))
 
 findOpts = '-type f'
 grepOpts = []
 for (opt,arg) in opts:
-  if opt == '--file':
+  if opt in ['--file', '--name']:
     findOpts += ' -name "{file}"'.format(file=protect(arg))
-  elif opt == '--notfile':
+  elif opt == ['--notfile', '--notname']:
     findOpts += ' ! -name "{file}"'.format(file=protect(arg))
   elif opt == '--path':
     findOpts += ' -path "{path}"'.format(path=protect(arg))
