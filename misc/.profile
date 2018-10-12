@@ -7,6 +7,7 @@
 
 export PAGER=less
 export EDITOR=vi
+export PYTHONUNBUFFERED=true
 
 # For shared systems, this is useful for automatically sourcing my personal setup script
 #
@@ -16,5 +17,5 @@ export EDITOR=vi
 #   source $HOME/bruno/setup
 # fi
 
+# This `true` statement must be last and will make sure that the this script returns with success regardless of what the previous command was.
 true
-
