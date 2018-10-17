@@ -1,0 +1,68 @@
+#! /usr/bin/env python
+
+"""
+   Reports `wc` and `md5sum` information on files together on the same line
+"""
+
+import sys
+import string
+import hashlib
+import os.path
+
+def process(filename):
+  stream = None
+  if filename is not None:
+    if not os.path.isdir(filename):
+      try:
+        stream = open(filename)
+      except Exception as e:
+        sys.stderr.write('Cannot open {filename!r}: {e}'.format(**locals()))
+    else:
+      sys.stderr.write('{filename!r} is a directory\n'.format(**locals()))
+  else:
+    stream = sys.stdin
+
+  if stream:
+    inWord = False
+    chars = 0
+    words = 0
+    lines = 0
+    md5 = hashlib.md5()
+
+    eof = False
+    last = None
+    while not eof:
+      c = stream.read(1)
+      if c:
+        chars += 1
+        if inWord and (c in string.whitespace):
+          inWord = False
+        elif (not inWord) and (c not in string.whitespace):
+          inWord = True
+          words += 1
+      else:
+        eof = True
+
+      md5.update(c)
+      if c == '\n':
+        lines += 1
+      last = c
+
+    if last == '\n':
+      lines += 1
+
+    print '{lines:6} {words:8} {chars:8} {digest} {filename}'.format(
+      chars=chars,
+      words=words,
+      lines=lines,
+      digest=md5.hexdigest(),
+      filename=filename if filename is not None else '-'
+    )
+    if filename is not None:
+      stream.close()
+
+args = sys.argv[1:]
+if args:
+  map(process, sys.argv[1:])
+else:
+  map(process, [None])
