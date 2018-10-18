@@ -28,7 +28,7 @@ grepOpts = []
 for (opt,arg) in opts:
   if opt in ['--file', '--name']:
     findOpts += ' -name "{file}"'.format(file=protect(arg))
-  elif opt == ['--notfile', '--notname']:
+  elif opt in ['--notfile', '--notname']:
     findOpts += ' ! -name "{file}"'.format(file=protect(arg))
   elif opt == '--path':
     findOpts += ' -path "{path}"'.format(path=protect(arg))
