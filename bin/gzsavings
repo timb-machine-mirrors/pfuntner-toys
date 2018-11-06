@@ -9,6 +9,12 @@ import StringIO
 
 import pdb
 
+verbose = False
+
+def debug(msg):
+  if verbose:
+    sys.stderr.write('{msg}\n'.format(**locals()))
+
 def match(s):
   ret = False
   for regexp in regexps:
@@ -40,34 +46,49 @@ def process(filename):
   if tracing:
     pdb.set_trace()
 
-  isCompressed = False
-
   compressedSize = None
   uncompressedSize = None
 
-  sys.stdout.write("%s: " % filename)
-  if os.path.isfile(filename):
-    if match(filename):
-      isCompressed = True
-      compressedSize = os.path.getsize(filename) 
-      try:
-        with gzip.open(filename, 'r') as inFile:
-          uncompressedSize = len(inFile.read())
-      except Exception as e:
-        sys.stdout.write("Cannot uncompress: %s" % e)
+  if filename:
+    sys.stdout.write("%s: " % filename)
+    if os.path.isfile(filename):
+      if ((filename == None) and (not decompress)) or match(filename):
+        compressedSize = os.path.getsize(filename) 
+        try:
+          with gzip.open(filename, 'r') as inFile:
+            uncompressedSize = len(inFile.read())
+        except Exception as e:
+          sys.stdout.write("Cannot uncompress: %s" % e)
+      else:
+        uncompressedSize = os.path.getsize(filename) 
+        try:
+          buf = StringIO.StringIO()
+          with open(filename, 'r') as inFile:
+            with gzip.GzipFile(fileobj=buf, mode="wb") as outFile:
+              outFile.write(inFile.read())
+              outFile.flush()
+              compressedSize = len(buf.getvalue())
+        except Exception as e:
+          sys.stdout.write("Cannot compress: %s" % e)
+  else: # process stdin
+    sys.stdout.write("<stdin>: ")
+    data = sys.stdin.read()
+    if decompress:
+      compressedSize = len(data)
+      buf = StringIO.StringIO(data)
+      with gzip.GzipFile(fileobj=buf, mode="rb") as uncompressor:
+        uncompressedSize = len(uncompressor.read())
     else:
-      uncompressedSize = os.path.getsize(filename) 
-      try:
-        buf = StringIO.StringIO()
-        with open(filename, 'r') as inFile:
-          with gzip.GzipFile(fileobj=buf, mode="wb") as outFile:
-            outFile.write(inFile.read())
-            outFile.flush()
-            compressedSize = len(buf.getvalue())
-      except Exception as e:
-        sys.stdout.write("Cannot compress: %s" % e)
-    if (compressedSize != None) and (uncompressedSize != None):
-      sys.stdout.write("%s %s %6.2f%%" % (see(uncompressedSize), see(compressedSize), (compressedSize*100.0)/uncompressedSize))
+      uncompressedSize = len(data)
+      buf = StringIO.StringIO()
+      with gzip.GzipFile(fileobj=buf, mode="wb") as compressor:
+        compressor.write(data)
+        compressedSize = len(buf.getvalue())
+
+  debug('compressedSize: {compressedSize}, uncompressedSize: {uncompressedSize}'.format(**locals()))
+
+  if (compressedSize != None) and (uncompressedSize != None):
+    sys.stdout.write("%s %s %6.2f%%" % (see(uncompressedSize), see(compressedSize), (compressedSize*100.0)/uncompressedSize))
   else:
     if os.path.exists(filename):
       sys.stdout.write("Not a file")
@@ -82,12 +103,23 @@ regexps = [
             re.compile(".\.tgz$"),
           ]
 
-(opts, args) = getopt.getopt(sys.argv[1:], "t", ["trace"])
+decompress = False
+
+(opts, args) = getopt.getopt(sys.argv[1:], "vtd", ["trace", "decompress", "verbose"])
 for (opt,arg) in opts:
   if opt in ["-t", "--trace"]:
     tracing = not tracing
+  elif opt in ["-d", "--decompress"]:
+    assert (not args) and (not sys.stdin.isatty()), '--decompress is inappropriate if file arguments are specified or stdin is not redirected'
+    decompress = not decompress
+  elif opt in ["-v", "--verbose"]:
+    verbose = not verbose
   else:
     assert (not opt), "don't know what to with %s" % repr(opt)
 
-for filename in args:
-  process(filename)
+if args:
+  for filename in args:
+    process(filename)
+else:
+  assert not sys.stdin.isatty(), 'stdin must be redirected if no file arguments are present'
+  process(None)
