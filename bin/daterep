@@ -1,0 +1,54 @@
+#! /usr/bin/env python
+
+"""
+   Replace a timestamp expressed as seconds second the epoch with a more meaningful string of 
+   the format "YYYY-mm-dd HH:MM:SS".  Fractional seconds are not handled implicitly.  If they
+   follow the full seconds, they will appear in the resulting string as well.
+
+   The script assumes that the number of seconds is expressed in 10 decimal digits.  This is
+   sufficient to handle "2001-09-08 21:46:40" <= date <= "2286-11-20 12:46:39".  The upper bound
+   shouldn't be a problem but the lower bound could be a little more problematic.  Typically, the
+   script will be used on log files since they love to express dates in seconds and this may not
+   prove to be an issue.
+"""
+
+import re
+import sys
+import getopt
+import datetime
+
+assert not sys.stdin.isatty(), 'stdin must be directed'
+
+"""
+1541419453.686956
+"""
+
+def syntax(msg=None):
+  if msg:
+    sys.stderr.write('{msg}\n'.format(**locals()))
+  sys.stderr.write('Syntax: {pgm} [-s|--single]\n'.format(pgm=sys.argv[0]))
+  exit(1)
+
+single = False
+(opts, args) = ([], [])
+try:
+  (opts, args) = getopt.getopt(sys.argv[1:], 's', ['single'])
+except Exception as e:
+  syntax('Caught `{e!s}`'.format(**locals()))
+
+for (opt, arg) in opts:
+  if opt in ['-s', '--single']:
+    single = not single
+  else:
+    syntax('Unexpected option: {opts!r}'.format(**locals()))
+
+regexp = re.compile('(^|[^0-9])(\d{10})($|[^0-9])')
+
+for line in sys.stdin.read().splitlines():
+  hits = list(regexp.finditer(line))
+  if single:
+    hits = hits[0:1]
+  for hit in hits[-1::-1]:
+    timestamp = datetime.datetime.fromtimestamp(int(hit.group(2)))
+    line = line[:hit.start(2)] + str(timestamp) + line[hit.end(2):]
+  print line
