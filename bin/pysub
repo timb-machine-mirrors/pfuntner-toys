@@ -1,9 +1,36 @@
 #! /usr/bin/python
 
+import re
 import sys
+import getopt
 
-assert not sys.stdin.isatty(), "stdin must be redirected"
+def syntax(msg=None):
+  if msg:
+    sys.stderr.write('{msg}\n'.format(**locals()))
+  sys.stderr.write('Syntax: %s \'from\' \'to\'\n' % sys.argv[0])
+  exit(1)
 
-assert len(sys.argv) == 3, "Syntax: %s 'from' 'to'" % sys.argv[0]
+def process(s):
+  if regexp:
+    return re.sub(eval(args[0]), eval(args[1]), s)
+  else:
+    return s.replace(eval(args[0]), eval(args[1]))
 
-sys.stdout.write(sys.stdin.read().replace(eval(sys.argv[1]), eval(sys.argv[2])))
+if sys.stdin.isatty():
+  syntax("stdin must be redirected")
+
+(opts, args) = ([], [])
+try:
+  (opts, args) = getopt.getopt(sys.argv[1:], 'r', ['re', 'regexp'])
+except Exception as e:
+  syntax('Caught `{e!s}`'.format(**locals()))
+
+regexp = False
+for (opt,arg) in opts:
+  if opt in ['-r', '--re', '--regexp']:
+    regexp = not regexp
+
+if len(args) != 2:
+  syntax()
+
+sys.stdout.write(process(sys.stdin.read()))
