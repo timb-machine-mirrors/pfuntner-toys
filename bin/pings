@@ -3,17 +3,42 @@
 import os
 import sys
 import time
+import getopt
 import datetime
 import subprocess
 
-if len(sys.argv) != 2:
+verbose = False
+def debug(msg):
+  if verbose:
+    sys.stderr.write('{msg}\n'.format(**locals()))
+
+def syntax(msg=None):
+  if msg:
+    sys.stderr.write('{msg}\n'.format(**locals()))
   sys.stderr.write('Syntax: {pgm} IP|HOST\n'.format(pgm=sys.argv[0]))
   exit(1)
 
+(opts, args) = ([], [])
+try:
+  (opts, args) = getopt.getopt(sys.argv[1:], 'v', ['verbose'])
+except Exception as e:
+  syntax('Caught `{e!s}`'.format(**locals()))
+
+for (opt, arg) in opts:
+  if opt in ['-v', '--verbose']:
+    verbose = not verbose
+  else:
+    syntax('Unexpected option: {opt!r}')
+
+if len(args) != 1:
+  syntax('Specify a host or IP address')
+  exit(1)
+
+host = args[0]
+cmd = ['ping', '-w', '5', '-n' if 'win' in sys.platform else '-c', '1', host]
+
 last_time = None
 last_state = None
-host = sys.argv[1]
-cmd = ['ping', '-w5', '-c1', host]
 
 # force stdout to unbuffered output since newlines could be few and far between
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
@@ -23,6 +48,7 @@ while True:
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   (stdout, stderr) = p.communicate()
   rc = p.wait()
+  debug('\n{cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
   state = 'UP' if rc == 0 else 'DOWN'
   if state != last_state:
     if last_state is not None:
