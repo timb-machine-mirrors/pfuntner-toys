@@ -12,7 +12,7 @@ def syntax(msg=None):
 
 def process(s):
   if regexp:
-    return re.sub(eval(args[0]), eval(args[1]), s)
+    return re.sub(eval(args[0]), eval(args[1]), s, flags=re.MULTILINE)
   else:
     return s.replace(eval(args[0]), eval(args[1]))
 
