@@ -22,14 +22,38 @@ no changes added to commit (use "git add" and/or "git commit -a")
 def syntax(msg=None):
   if msg:
     sys.stderr.write('{msg}\n'.format(**locals()))
-  sys.stderr.write('{pgm} [file ...]\n'.format(pgm=sys.argv[0]))
+  sys.stderr.write('{pgm} [-c|--changes|--changed|--modified] [-u|--untracked] [FILE|DIR ...]\n'.format(pgm=sys.argv[0]))
   exit(1)
+
+def see(expression):
+  if verbose:
+    sys.stderr.write('>>> {expression}: {value}\n'.format(expression=expression, value=eval(expression)))
 
 (opts, args) = ([], [])
 try:
-  (opts, args) = getopt.getopt(sys.argv[1:], '', [])
+  (opts, args) = getopt.getopt(sys.argv[1:], 'cmuv', ['changes', 'changed', 'modified', 'untracked', '--verbose'])
 except Exception as e:
   syntax(str(e))
+
+modified = False
+untracked = False
+verbose = False
+
+for (opt,arg) in opts:
+  if opt in ['-c', '--changes', '--changed', '--modified']:
+    modified = not modified
+  elif opt in ['-u', '--untracked']:
+    untracked = not untracked
+  elif opt in ['-v', '--verbose']:
+    verbose = not verbose
+  else:
+    syntax('Unexpected option: {opt!r}'.format(**locals()))
+
+see('modified')
+see('untracked')
+
+if not any([modified, untracked]):
+  modified = True # default to modified only
 
 cmd = ['git', 'status'] + args
 p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -39,8 +63,28 @@ if (rc != 0) or stderr:
   syntax('{cmd} failed: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
 
 modified_regex = re.compile('^\s+modified:\s+(.*)$')
+untracked_header_start_regexp = re.compile('^Untracked files:')
+untracked_file_regexp = re.compile('^\t([^( ].*)$')
+untracked_header_end_regexp = re.compile('^S')
+
+inUntracked = False
 
 for line in stdout.splitlines():
-  match = modified_regex.search(line)
-  if match:
-    print match.group(1)
+  see('(line, inUntracked)')
+  if modified:
+    match = modified_regex.search(line)
+    if match:
+      print match.group(1)
+  if untracked:
+    if inUntracked:
+      match = untracked_header_end_regexp.search(line)
+      if match:
+        inUntracked = False
+      else:
+        match = untracked_file_regexp.search(line)
+        if match:
+          print match.group(1)
+    else:
+      match = untracked_header_start_regexp.search(line)
+      if match:
+        inUntracked = True
