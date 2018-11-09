@@ -9,7 +9,10 @@ pgm = sys.argv[0]
 def syntax(msg=None):
   if msg:
     sys.stderr.write('{msg}\n'.format(**locals()))
-  sys.stderr.write('Syntax: {pgm} [-a|--all]\n'.format(**globals()))
+  sys.stderr.write('Syntax:\n'.format(**globals()))
+  sys.stderr.write('\t{pgm} [-c|--chars|-b|--bytes]\n')
+  sys.stderr.write('\t{pgm} [-w|--words]\n')
+  sys.stderr.write('\t{pgm} [-l|--lines]\n')
   exit(1)
 
 if sys.stdin.isatty():
@@ -17,23 +20,35 @@ if sys.stdin.isatty():
 
 (opts, args) = ([], [])
 try:
-  (opts, args) = getopt.getopt(sys.argv[1:], 'a', ['all'])
+  (opts, args) = getopt.getopt(sys.argv[1:], 'cbwl', ['chars', 'bytes', 'words', 'lines'])
 except Exception as e:
   syntax('Caught: `{e!s}`'.format(**locals()))
 
-do_all = False
+chars = False
+words = False
+lines = False
 for (opt,arg) in opts:
-  if opt in ['-a', '--all']:
-    do_all = not do_all
+  if opt in ['-c', '--chars', '-b', '--bytes']:
+    chars = not chars
+  elif opt in ['-w', '--words']:
+    words = not words
+  elif opt in ['-l', '--lines']:
+    lines = not lines
   else:
     syntax('Unexpected option: {opt!r}'.format(**locals()))
 
+if len([opt for opt in [chars, words, lines] if opt]) != 1:
+  syntax('Process by chars, words, or lines')
+
 data = sys.stdin.read()
-if do_all:
+if chars:
   if data and (data[-1] == '\n'):
     # move trailing newline to the start of the file
     data = data[-1] + data[:-1]
   sys.stdout.write(data[-1::-1])
 else:
   for line in data.splitlines():
-    sys.stdout.write(line[-1::-1] + '\n')
+    if lines:
+      sys.stdout.write(line[-1::-1] + '\n')
+    else:
+      sys.stdout.write((' '.join(line.split()[-1::-1])) + '\n')
