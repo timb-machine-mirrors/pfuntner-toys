@@ -16,13 +16,20 @@ import sys
 import getopt
 import subprocess
 
+verbose = False
+
+def debug(msg):
+  if verbose:
+    sys.stderr.write('{msg}\n'.format(**locals()))
+
 def syntax(msg=None):
   if msg:
     sys.stderr.write('{msg}\n'.format(**locals()))
-  sys.stderr.write('Syntax: {pgm} [--list|-l] [--extract|-x] [file ...]\n'.format(pgm=sys.argv[0]))
+  sys.stderr.write('Syntax: {pgm} [--verbose|-v] [--list|-l] [--extract|-x] [file ...]\n'.format(pgm=sys.argv[0]))
   exit(1)
 
 def run(cmd):
+  debug(cmd)
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   (stdout, stderr) = p.communicate()
   return (p.wait(), stdout, stderr)
@@ -58,7 +65,7 @@ def process(path):
 
   if cmd:
     if list:
-      (rc, stdout, stderr) = run([cmd, '-tf', path])
+      (rc, stdout, stderr) = run([cmd, '-l' if cmd == 'unzip' else '-tf', path])
       if (rc == 0) and (not stderr):
         for line in stdout.splitlines():
           print '{path}:{line}'.format(**locals())
@@ -71,7 +78,11 @@ def process(path):
         sys.stderr.write('Cannot create {base!r}: {e}\n'.format(**locals()))
         return
       os.chdir(base)
-      (rc, stdout, stderr) = run([cmd, '-xvf', qualify(path)])
+      extractor = [cmd]
+      if cmd != 'unzip':
+        extractor += ['-xvf']
+      extractor += [qualify(path)]
+      (rc, stdout, stderr) = run(extractor)
       if (rc == 0) and (not stderr):
         stdout = indent(stdout)
         sys.stdout.write('Unwound {path} to {cwd}/{base}:\n{stdout}'.format(**joinDicts(globals(), locals())))
@@ -84,18 +95,19 @@ def process(path):
     if list:
       print path
     else: # --extract
-      sys.stderr.write('--extract is meaningless for {path}\n'.format(locals()))
+      sys.stderr.write('--extract is meaningless for {path}\n'.format(**locals()))
 
 absoluteRegexp = re.compile('^/')
 
 regexps = [
   ('jar', re.compile('^(.*)\.jar$')),
   ('tar', re.compile('^(.*)\.(tar|tar\.gz|tgz)$')),
+  ('unzip', re.compile('^(.*)\.zip$')),
 ]
 
 (opts,args) = ([], [])
 try:
-  (opts,args) = getopt.getopt(sys.argv[1:], 'lx', ['list', 'extract'])
+  (opts,args) = getopt.getopt(sys.argv[1:], 'vlx', ['verbose', 'list', 'extract'])
 except Exception as e:
   syntax(str(e))
 
@@ -106,6 +118,8 @@ for (opt,arg) in opts:
     list = not list
   elif opt in ['-x', '--extract']:
     extract = not extract
+  elif opt in ['-v', '--verbose']:
+    verbose = not verbose
   else:
     syntax('Unexpected option {opt!r}'.format(**locals()))
 
