@@ -17,7 +17,7 @@ Syntax: gitstatus [-c|-m|--changes|--changed|modified] [-u|--untracked] [FILE|DI
 |  `-u`, et al  | Untracked files | Report on untracked files. |
 
 #### Arguments
-Zero or more arguments may follow any options (if there are any).  These are passed directly to `git status`.
+Zero or more arguments may follow any options (if there are any).  These are passed directly to `git status` to change the scope of files being considered.
 
 ## Examples
 
