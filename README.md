@@ -32,6 +32,7 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`extensions`](doc/extensions.md) | | Show extensions used by files |
 | [`drop`](doc/drop.md) | Yes | Drop the first or last `n` lines, similar to `head`/`tail` |
 | [`flow`](doc/flow.md) | Yes | Flow lines from stdin into columnar form |
+| [`gitstatus`](doc/gitstatus.md) | | Show files in a local git repo that have been changed, etc. |
 | [`headtail`](doc/headtail.md) | Yes | Print out the top and bottom of stdin or one or more files |
 | [`json`](doc/json.md) | Yes | JSON magic - it's a disservice to try to summarize this tool in a single string. |
 | [`megadiff`](doc/megadiff.md) | | Compare two directories trees |
