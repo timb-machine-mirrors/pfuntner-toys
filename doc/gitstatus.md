@@ -38,16 +38,6 @@ whochat
 ~/toys/bin$ gitstatus
 ../.gitignore
 ../README.md
-~/toys/bin$ gitstatus -u
-bruno-service-control
-move
-needsdoc
-perline
-unhex
-whochat
-../doc/gitstatus.md
-~/toys/bin$ gitstatus -u ../doc
-../doc/gitstatus.md
 ~/toys/bin$ git add -v $(gitstatus) $(gitstatus -u ../doc)
 add '.gitignore'
 add 'README.md'
