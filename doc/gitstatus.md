@@ -13,8 +13,8 @@ Syntax: gitstatus [-c|-m|--changes|--changed|modified] [-u|--untracked] [FILE|DI
 ### Options and arguments
 | Option | Description | Default |
 | ------ | ----------- | ------- |
-|  `-c`, et al  | Changed files | Reporting on changed files is the default.  There are several synonymous options because I don't like having to remember a single option. |
-|  `-u`, et al  | Untracked files | Report on untracked files. |
+|  `-c`, et al  | Report on changed files.  There are several synonymous options because I don't like having to remember a single option | This is the default |
+|  `-u`, et al  | Report on untracked files | Reporting on changed files is the default |
 
 #### Arguments
 Zero or more arguments may follow any options (if there are any).  These are passed directly to `git status` to change the scope of files being considered.

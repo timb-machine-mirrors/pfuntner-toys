@@ -22,7 +22,7 @@ no changes added to commit (use "git add" and/or "git commit -a")
 def syntax(msg=None):
   if msg:
     sys.stderr.write('{msg}\n'.format(**locals()))
-  sys.stderr.write('{pgm} [-c|--changes|--changed|--modified] [-u|--untracked] [FILE|DIR ...]\n'.format(pgm=sys.argv[0]))
+  sys.stderr.write('{pgm} [-c|--changes|--changed|--modified] [-u|--untracked] [--unmerged] [FILE|DIR ...]\n'.format(pgm=sys.argv[0]))
   exit(1)
 
 def see(expression):
@@ -31,29 +31,46 @@ def see(expression):
 
 (opts, args) = ([], [])
 try:
-  (opts, args) = getopt.getopt(sys.argv[1:], 'cmuv', ['changes', 'changed', 'modified', 'untracked', '--verbose'])
+  (opts, args) = getopt.getopt(sys.argv[1:], 'cmuv', ['changes', 'changed', 'modified', 'untracked', 'unmerged', 'verbose'])
 except Exception as e:
   syntax(str(e))
 
-modified = False
-untracked = False
 verbose = False
+
+section_regexps = {
+  'modified': {
+     'header': re.compile('^Changes not staged for commit:'),
+     'file': re.compile('^\s+modified:\s+(.*)$'),
+     'requested': False,
+  },
+  'unmerged': {
+     'header': re.compile('^Unmerged paths:'),
+     'file': re.compile('^\s+both modified:\s+(.*)$'),
+     'requested': False,
+  },
+  'untracked': {
+     'header': re.compile('^Untracked files:'),
+     'file': re.compile('^\t([^( ].*)$'),
+     'requested': False,
+  },
+}
 
 for (opt,arg) in opts:
   if opt in ['-c', '--changes', '--changed', '--modified']:
-    modified = not modified
+    section_regexps['modified']['requested'] = not section_regexps['modified']['requested']
   elif opt in ['-u', '--untracked']:
-    untracked = not untracked
+    section_regexps['untracked']['requested'] = not section_regexps['untracked']['requested']
+  elif opt in ['--unmerged']:
+    section_regexps['unmerged']['requested'] = not section_regexps['unmerged']['requested']
   elif opt in ['-v', '--verbose']:
     verbose = not verbose
   else:
     syntax('Unexpected option: {opt!r}'.format(**locals()))
 
-see('modified')
-see('untracked')
+if not any([section_regexps[section]['requested'] for section in section_regexps.keys()]):
+  section_regexps['modified']['requested'] = True # default to modified only
 
-if not any([modified, untracked]):
-  modified = True # default to modified only
+see('section_regexps')
 
 cmd = ['git', 'status'] + args
 p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -62,29 +79,30 @@ rc = p.wait()
 if (rc != 0) or stderr:
   syntax('{cmd} failed: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
 
-modified_regex = re.compile('^\s+modified:\s+(.*)$')
-untracked_header_start_regexp = re.compile('^Untracked files:')
-untracked_file_regexp = re.compile('^\t([^( ].*)$')
-untracked_header_end_regexp = re.compile('^S')
+section_end_regexp = re.compile('^\S')
 
-inUntracked = False
+inside = None
 
 for line in stdout.splitlines():
-  see('(line, inUntracked)')
-  if modified:
-    match = modified_regex.search(line)
+  if section_end_regexp.search(line):
+    inside = None
+    for section in section_regexps.keys():
+      if section_regexps[section]['header'].search(line):
+        inside = section
+
+  see('(line, inside)')
+
+  if section_regexps['modified']['requested'] and (inside == 'modified'):
+    match = section_regexps['modified']['file'].search(line)
     if match:
       print match.group(1)
-  if untracked:
-    if inUntracked:
-      match = untracked_header_end_regexp.search(line)
-      if match:
-        inUntracked = False
-      else:
-        match = untracked_file_regexp.search(line)
-        if match:
-          print match.group(1)
-    else:
-      match = untracked_header_start_regexp.search(line)
-      if match:
-        inUntracked = True
+
+  if section_regexps['untracked']['requested'] and (inside == 'untracked'):
+    match = section_regexps['untracked']['file'].search(line)
+    if match:
+      print match.group(1)
+
+  if section_regexps['unmerged']['requested'] and (inside == 'unmerged'):
+    match = section_regexps['unmerged']['file'].search(line)
+    if match:
+      print match.group(1)
