@@ -75,7 +75,7 @@ for (opt, arg) in opts:
   else:
     syntax('Unexpected option: {opts!r}'.format(**locals()))
 
-regexp = re.compile('(^|[^0-9])(\d{10}([.-]\d{,6})?)($|[^0-9])')
+regexp = re.compile('(?=(^|[^0-9])(\d{10}([.-]\d{,6})?)($|[^0-9]))')
 
 for line in sys.stdin.read().splitlines():
   debug('Processing {line!r}'.format(**locals()))
