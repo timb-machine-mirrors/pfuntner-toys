@@ -2,8 +2,7 @@
 
 """
    Replace a timestamp expressed as seconds second the epoch with a more meaningful string of 
-   the format "YYYY-mm-dd HH:MM:SS".  Fractional seconds are not handled implicitly.  If they
-   follow the full seconds, they will appear in the resulting string as well.
+   the format "YYYY-mm-dd HH:MM:SS".
 
    The script assumes that the number of seconds is expressed in 10 decimal digits.  This is
    sufficient to handle "2001-09-08 21:46:40" <= date <= "2286-11-20 12:46:39".  The upper bound
@@ -23,32 +22,68 @@ assert not sys.stdin.isatty(), 'stdin must be directed'
 1541419453.686956
 """
 
+def debug(msg=None):
+  if verbose:
+    sys.stderr.write('{msg}\n'.format(**locals()))
+
 def syntax(msg=None):
   if msg:
     sys.stderr.write('{msg}\n'.format(**locals()))
   sys.stderr.write('Syntax: {pgm} [-s|--single]\n'.format(pgm=sys.argv[0]))
   exit(1)
 
+def replacement(old_string, timestamp):
+  """
+     Return a replacement string for `old_string` based on the `timestamp`
+  """
+  if short:
+    ret = datetime.datetime.strftime(timestamp, '%Y/%m/%d %H:%M:%S')
+  elif timeonly:
+    ret = datetime.datetime.strftime(timestamp, '%H:%M:%S')
+  else:
+    ret = str(timestamp)
+
+  if match:
+    ret = ret.ljust(len(old_string))
+
+  return ret
+
 single = False
+timeonly = False
+short = False
+match = False
+verbose = False
 (opts, args) = ([], [])
 try:
-  (opts, args) = getopt.getopt(sys.argv[1:], 's', ['single'])
+  (opts, args) = getopt.getopt(sys.argv[1:], 'stmv', ['single', 'short', 'timeonly', 'match', 'verbose'])
 except Exception as e:
   syntax('Caught `{e!s}`'.format(**locals()))
 
 for (opt, arg) in opts:
   if opt in ['-s', '--single']:
     single = not single
+  elif opt == '--short':
+    short = True
+    timeonly = False
+  elif opt in ['-t', '--timeonly']:
+    timeonly = True
+    short = False
+  elif opt in ['-m', '--match']:
+    match = not match
+  elif opt in ['-v', '--verbose']:
+    verbose = not verbose
   else:
     syntax('Unexpected option: {opts!r}'.format(**locals()))
 
-regexp = re.compile('(^|[^0-9])(\d{10})($|[^0-9])')
+regexp = re.compile('(^|[^0-9])(\d{10}([.-]\d{,6})?)($|[^0-9])')
 
 for line in sys.stdin.read().splitlines():
+  debug('Processing {line!r}'.format(**locals()))
   hits = list(regexp.finditer(line))
   if single:
     hits = hits[0:1]
+  debug('single: {single}, {num} hits: {hits}'.format(num=len(hits), single=single, hits=[hit.group(2) for hit in hits]))
   for hit in hits[-1::-1]:
-    timestamp = datetime.datetime.fromtimestamp(int(hit.group(2)))
-    line = line[:hit.start(2)] + str(timestamp) + line[hit.end(2):]
+    timestamp = datetime.datetime.fromtimestamp(float(hit.group(2).replace('-', '.')))
+    line = line[:hit.start(2)] + replacement(hit.group(2), timestamp) + line[hit.end(2):]
   print line
