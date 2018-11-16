@@ -11,17 +11,19 @@
 
 import sys
 import re
+import getopt
 
 assert not sys.stdin.isatty(), 'stdin must be redirected'
 
-assert len(sys.argv) > 1, 'Syntax: {pgm} NUM|(NUM)-(NUM)|(NUM):(NUM) ...'.format(pgm=sys.argv[0])
+assert len(sys.argv) > 1, 'Syntax: {pgm} NUM|(NUM)-(NUM)|(NUM):(NUM)|re=REGEXP ...'.format(pgm=sys.argv[0])
 
-regexp = re.compile('^(\d+)?([-:])(\d+)?$')
+numeric_regexp = re.compile('^(\d+)?([-:])(\d+)?$')
+re_regexp = re.compile('^re=(.+)$')
 
 lines = sys.stdin.read().splitlines()
 
 for arg in sys.argv[1:]:
-  match = regexp.search(arg)
+  match = numeric_regexp.search(arg)
   if match:
     if match.group(1) is not None:
       start = int(match.group(1))
@@ -46,6 +48,13 @@ for arg in sys.argv[1:]:
       print lines[num]
 
   else:
-    arg = int(arg)
-    assert 0 <= arg < len(lines), '`{arg}` is out of range - stdin has {lines} lines'.format(arg=arg, lines=len(lines))
-    print lines[arg]
+    match = re_regexp.search(arg)
+    if match:
+      regexp = re.compile(match.group(1))
+      for line in lines:
+        if regexp.search(line):
+          print line
+    else:
+      arg = int(arg)
+      assert 0 <= arg < len(lines), '`{arg}` is out of range - stdin has {lines} lines'.format(arg=arg, lines=len(lines))
+      print lines[arg]
