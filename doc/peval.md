@@ -24,3 +24,4 @@ $
 ## Notes
 
 - A lot of times, I'll open an interactive Python window to try things out but if I just want to look at a simple expression, this can save time.
+- I don't consider it the best example but in [issue 23](https://github.com/pfuntner/toys/issues/23) I used `peval` to describe undesriable behavior with another tool
