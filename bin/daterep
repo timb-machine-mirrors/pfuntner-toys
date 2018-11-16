@@ -16,8 +16,6 @@ import sys
 import getopt
 import datetime
 
-assert not sys.stdin.isatty(), 'stdin must be directed'
-
 """
 1541419453.686956
 """
@@ -29,7 +27,7 @@ def debug(msg=None):
 def syntax(msg=None):
   if msg:
     sys.stderr.write('{msg}\n'.format(**locals()))
-  sys.stderr.write('Syntax: {pgm} [-s|--single]\n'.format(pgm=sys.argv[0]))
+  sys.stderr.write('Syntax: {pgm} [-s|--single] [ TEXT ... ]\n'.format(pgm=sys.argv[0]))
   exit(1)
 
 def replacement(old_string, timestamp):
@@ -75,9 +73,16 @@ for (opt, arg) in opts:
   else:
     syntax('Unexpected option: {opts!r}'.format(**locals()))
 
+if args:
+  lines = [' '.join(args)]
+else:
+  if sys.stdin.isatty():
+    syntax('stdin must be directed when no text is provided')
+  lines = sys.stdin.read().splitlines()
+
 regexp = re.compile('(?=(^|[^0-9])(\d{10}([.-]\d{,6})?)($|[^0-9]))')
 
-for line in sys.stdin.read().splitlines():
+for line in lines:
   debug('Processing {line!r}'.format(**locals()))
   hits = list(regexp.finditer(line))
   if single:
