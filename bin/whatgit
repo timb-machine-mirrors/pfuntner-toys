@@ -1,0 +1,43 @@
+#! /usr/bin/python
+
+"""
+   Find location of the nearest `.git` file in the file structure - this will tell us the root directory of this local git repository.
+"""
+
+import os
+import sys
+
+def process(path):
+  orig_path = path
+  git_path = None
+
+  # resolve any symlinks to true directories
+  path = os.path.realpath(path)
+
+  if path and (path[0] != '/'):
+    path = os.path.join(os.getcwd(), path)
+
+  if os.path.isfile(path):
+    path = os.path.dirname(path)
+
+  while True:
+    old_path = path
+    path = os.path.dirname(path)
+    if path == old_path:
+      break
+
+    # sys.stderr.write('Testing {path}\n'.format(**locals()))
+    if not os.path.isdir(path):
+      sys.stderr.write('{path!r} is not a directory\n'.format(**locals()))
+      break
+
+    if os.path.exists(os.path.join(path, '.git')):
+      git_path = path
+      break
+
+  print '{orig_path}\t{git_path}'.format(**locals())
+
+if len(sys.argv) > 1:
+  map(process, sys.argv[1:])
+else:
+  process(os.getcwd())
