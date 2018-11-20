@@ -2,13 +2,25 @@
 
 import sys
 import string
+import datetime
 
 from BrunoUtils import *
+
+verbose = False
+def debug(msg):
+  if verbose:
+    now = datetime.datetime.now()
+    sys.stderr.write('{now}: {msg}\n'.format(**locals()))
 
 def process(file):
   global width, beginning, ending, middle, ellipses
 
-  for line in file:
+  while True:
+    line = file.readline()
+    if not line:
+      break
+
+    debug('read {line!r}'.format(**locals()))
     line = string.replace(string.replace(line, '\r', ''), '\n', '')
     if len(line) <= width:
       print line
