@@ -1,0 +1,22 @@
+#! /usr/bin/python
+
+import sys
+import socket
+
+if len(sys.argv) != 3:
+  sys.stderr.write('Syntax: {pgm} host port\n'.format(pgm=sys.argv[0]))
+  exit(1)
+
+try:
+  s = socket.socket()
+except Exception as e:
+  sys.stderr.write('socket.socket() threw: {e!s}\n'.format(**locals()))
+  exit(1)
+else:
+  try:
+    s.connect((sys.argv[1], int(sys.argv[2])))
+  except Exception as e:
+    sys.stderr.write('socket.connect() threw: {e!s}\n'.format(**locals()))
+    exit(1)
+  else:
+    print "got socket"
