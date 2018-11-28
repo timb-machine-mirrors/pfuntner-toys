@@ -14,7 +14,7 @@ import getopt
 def syntax(msg=None):
   if msg:
     sys.stderr.write('{msg}\n'.format(**locals()))
-  sys.stderr.write('Syntax: {pgm} [-r REGEXP] [--regexp REGEXP] [-c CHAR] [--characters CHAR] [-b|--box] [-d|--debug] [-v|--verbose] [file ...]\n'.format(pgm=sys.argv[0]))
+  sys.stderr.write('Syntax: {pgm} [-r REGEXP] [--regexp REGEXP] [-m MAXCOLS] [--maxcols MAXCOLS] [-c CHAR] [--characters CHAR] [-b|--box] [-d|--debug] [-v|--verbose] [file ...]\n'.format(pgm=sys.argv[0]))
   exit(1)
 
 def debug(msg):
@@ -34,7 +34,20 @@ def process(stream):
   data = []
   for line in stream.read().splitlines():
     show('line')
-    data.append(regexp.split(line))
+
+    if maxcols:
+      data.append([])
+      while (len(data[-1])+1) < maxcols:
+        match = regexp.search(line)
+        if match:
+          data[-1].append(line[:match.start()])
+          line = line[match.end():]
+        else:
+          break
+      data[-1].append(line)
+    else:
+      data.append(regexp.split(line))
+
     show('data[-1]')
     for (pos, token) in enumerate(data[-1]):
       if len(widths) == pos:
@@ -56,7 +69,7 @@ def process(stream):
 
 (opts, args) = ([], [])
 try:
-  (opts, args) = getopt.getopt(sys.argv[1:], 'r:bc:vd', ['regexp=', 'character=', 'box', 'verbose', 'debug'])
+  (opts, args) = getopt.getopt(sys.argv[1:], 'r:bc:vdm:', ['regexp=', 'character=', 'box', 'verbose', 'debug', 'maxcols='])
 except Exception as e:
   syntax('Caught: %s' % e)
 
@@ -72,6 +85,7 @@ bottomTee = unichr(9531)
 
 verbose = False
 regexp = re.compile('\s+')
+maxcols = 0
 
 for (opt, arg) in opts:
   if opt in ['-r', '--regexp']:
@@ -100,9 +114,11 @@ for (opt, arg) in opts:
     verbose = not verbose
   elif opt in ['-d', '--debug']:
     pdb.set_trace()
+  elif opt in ['-m', '--maxcols']:
+    maxcols = int(arg)
   else:
     syntax('Unexpected option: {opt!r}'.format(**locals()))
-  
+
 if not args:
   if sys.stdin.isatty():
     syntax('stdin must be redirected if no files are specified')
