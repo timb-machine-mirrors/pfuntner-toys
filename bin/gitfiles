@@ -67,10 +67,11 @@ verbose = False
 summary = False
 filesOnly = False
 jsonReport = False
+ignoreError = False
 
 (opts,args) = ([], [])
 try:
-  (opts,args) = getopt.getopt(sys.argv[1:], "vsfj", ["verbose", "summary", "files-only", "json"])
+  (opts,args) = getopt.getopt(sys.argv[1:], "vsfj", ["verbose", "summary", "files-only", "json", "ignore-error"])
 except Exception as e:
   sys.stderr.write("Caught: %s\n" % repr(e))
   exit(1)
@@ -84,6 +85,8 @@ for (opt,arg) in opts:
     filesOnly = not filesOnly
   elif opt in ['-j', '--json']:
     jsonReport = not jsonReport
+  elif opt in ['--ignore-error']:
+    ignoreError = not ignoreError
 
 cmd = "git log --name-only".split()
 p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -92,7 +95,7 @@ rc = p.wait()
 if (rc != 0) or stderr or verbose:
   sys.stderr.write("%s returned %d, %s, %s\n" % (cmd, rc, repr(limit(stdout, 25)), repr(stderr)))
 
-assert (rc == 0) and (not stderr), "%s failed"
+assert ((rc == 0) and (not stderr)) or ignoreError, "%s failed"
 
 commitRegexp = re.compile("^commit (\S+)$")
 authorRegexp = re.compile("^Author:\s+([^<]+)\s+<")
