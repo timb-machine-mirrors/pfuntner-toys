@@ -18,9 +18,12 @@ def syntax(msg=None):
   sys.stderr.write('Syntax: {pgm} IP|HOST\n'.format(pgm=sys.argv[0]))
   exit(1)
 
-def exitGracefullyForCtrlC():
+def exitGracefullyForCtrlC(rc=None):
   import signal
-  signal.signal(signal.SIGINT, lambda signum, stack: exit(0))
+  if rc is None:
+    signal.signal(signal.SIGINT, lambda signum, stack: exitGracefullyForCtrlC(0))
+  else:
+    exit(rc)
 
 (opts, args) = ([], [])
 try:
