@@ -18,6 +18,10 @@ def syntax(msg=None):
   sys.stderr.write('Syntax: {pgm} IP|HOST\n'.format(pgm=sys.argv[0]))
   exit(1)
 
+def exitGracefullyForCtrlC():
+  import signal
+  signal.signal(signal.SIGINT, lambda signum, stack: exit(0))
+
 (opts, args) = ([], [])
 try:
   (opts, args) = getopt.getopt(sys.argv[1:], 'v', ['verbose'])
@@ -42,6 +46,8 @@ last_state = None
 
 # force stdout to unbuffered output since newlines could be few and far between
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
+
+exitGracefullyForCtrlC()
 
 while True:
   now = datetime.datetime.now()
