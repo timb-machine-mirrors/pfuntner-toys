@@ -23,6 +23,7 @@ def exitGracefullyForCtrlC(rc=None):
   if rc is None:
     signal.signal(signal.SIGINT, lambda signum, stack: exitGracefullyForCtrlC(0))
   else:
+    print '' # force a newline so the shell prompt starts on a new line
     exit(rc)
 
 (opts, args) = ([], [])
