@@ -1,0 +1,14 @@
+#! /usr/bin/env python
+
+import sys
+import socket
+
+assert len(sys.argv) == 3, 'Syntax: {pgm} HOST PORT\n'.format(pgm=sys.argv[0])
+
+sock = socket.socket()
+try:
+  con = sock.connect((sys.argv[1], int(sys.argv[2])))
+except Exception as e:
+  sys.stderr.write('Caught `{e!s}`\n'.format(**locals()))
+else:
+  print 'Done'

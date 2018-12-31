@@ -15,6 +15,9 @@ def syntax(msg=None):
   sys.stderr.write("        %s TIMESTAMP - TIMESTAMP\n" % sys.argv[0])
   sys.stderr.write("        %s TIMESTAMP + TIMEDELTA\n" % sys.argv[0])
   sys.stderr.write("        %s TIMESTAMP - TIMEDELTA\n" % sys.argv[0])
+  sys.stderr.write('\n')
+  sys.stderr.write('TIMESTAMP: {patterns}\n'.format(patterns=' or '.join(['\'{pattern}\''.format(**locals()) for pattern in datetimeFormats])))
+  sys.stderr.write('TIMEDELTA: [[[DAYS:]HOURS:]MINUTES:]SECONDS[.MILLISECONDS]\n')
 
   exit(1)
 
@@ -99,7 +102,7 @@ if args[0] in ["now", "today"]:
 else:
   timestamp1 = getDatetime(args[0])
   if not timestamp1:
-    syntax("%s could not be parsed with %s" % (repr(args[0]), datetimeFormats))
+    syntax("%s could not be parsed" % repr(args[0]))
 
 operation = args[1]
 if operation not in ['+', '-']:

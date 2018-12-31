@@ -25,7 +25,7 @@ def debug(msg):
 def syntax(msg=None):
   if msg:
     sys.stderr.write('{msg}\n'.format(**locals()))
-  sys.stderr.write('Syntax: {pgm} [--verbose|-v] [--list|-l] [--extract|-x] [file ...]\n'.format(pgm=sys.argv[0]))
+  sys.stderr.write('Syntax: {pgm} [--verbose|-v] [--list|-l] [--extract|-x] [--count|-c] [file ...]\n'.format(pgm=sys.argv[0]))
   exit(1)
 
 def run(cmd):
@@ -71,6 +71,18 @@ def process(path):
           print '{path}:{line}'.format(**locals())
       else:
         sys.stderr.write('Error processing {path}:\n{stderr}'.format(**locals()))
+    elif count:
+      (rc, stdout, stderr) = run([cmd, '-l' if cmd == 'unzip' else '-tf', path])
+      if (rc == 0) and (not stderr):
+        files = 0
+        # sample stdout: "      0  10-04-2018 08:30   toys-master/"
+        regexp = re.compile('^\s*\d+\s+\d{2}-\d{2}-\d{4}\s+\d{2}:\d{2}\s+\S')
+        for line in stdout.splitlines():
+          if (cmd != 'unzip') or regexp.search(line):
+            files += 1
+        print '{files:>8} {path}'.format(**locals())
+      else:
+        sys.stderr.write('Error processing {path}:\n{stderr}'.format(**locals()))
     else: # --extract
       try:
         os.mkdir(base)
@@ -107,24 +119,27 @@ regexps = [
 
 (opts,args) = ([], [])
 try:
-  (opts,args) = getopt.getopt(sys.argv[1:], 'vlx', ['verbose', 'list', 'extract'])
+  (opts,args) = getopt.getopt(sys.argv[1:], 'vlxc', ['verbose', 'list', 'extract', 'count'])
 except Exception as e:
   syntax(str(e))
 
 list = False
 extract = False
+count = False
 for (opt,arg) in opts:
   if opt in ['-l', '--list']:
     list = not list
   elif opt in ['-x', '--extract']:
     extract = not extract
+  elif opt in ['-c', '--count']:
+    count = not count
   elif opt in ['-v', '--verbose']:
     verbose = not verbose
   else:
     syntax('Unexpected option {opt!r}'.format(**locals()))
 
-if len([opt for opt in [list, extract] if opt]) != 1:
-  syntax('Specify either --list or --extract but not both')
+if len([opt for opt in [list, extract, count] if opt]) != 1:
+  syntax('Specify either --list, --extract, or --count but only one')
 
 if not args:
   assert not sys.stdin.isatty(), 'stdin must be redirected'
