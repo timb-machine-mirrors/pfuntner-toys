@@ -40,13 +40,13 @@ def process(stream):
       while (len(data[-1])+1) < maxcols:
         match = regexp.search(line)
         if match:
-          data[-1].append(line[:match.start()])
+          data[-1].append(line[:match.start()].strip())
           line = line[match.end():]
         else:
           break
-      data[-1].append(line)
+      data[-1].append(line.strip())
     else:
-      data.append(regexp.split(line))
+      data.append([token.strip() for token in regexp.split(line)])
 
     show('data[-1]')
     for (pos, token) in enumerate(data[-1]):
