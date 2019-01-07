@@ -55,9 +55,9 @@ $ nova list | undupe
 $
 ```
 
-This is a little more managable and easier to read.  Sure, there are advantages to the table too but if you grep out the lines with very long data that's making the table so wide to begin with, the remaining rows still have a lot of useless and unnecessary padding.
+This is a little more managable and easier to read.  Sure, there are advantages to the table too but if you grep out the lines with very long data that's making the table so wide to begin with, the remaining rows in the original output still have a lot of useless and unnecessary padding.  This script addresses that.
 
 ## Notes
 
 - The script only reads from stdin.
-- White space (except for newlines) are treated the same.  So if you have `' \t '` (space, tab, space), that will be replaced with a single space.
+- White space (except for newlines) are treated the same.  So if you have `' \t '` (space, tab, space), that will be replaced with a single space.  This is the only exception - each punctuation character is treated sepearately.
