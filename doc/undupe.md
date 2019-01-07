@@ -35,7 +35,7 @@ $
 ```
 
 An _after_ example using the same command with this script used as a filter:
-
+```
 $ nova list | undupe
 +-+-+-+-+-+-+
 | ID | Name | Status | Task State | Power State | Networks |
