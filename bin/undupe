@@ -1,0 +1,37 @@
+#! /usr/bin/env python
+
+"""
+   Replace duplicate "non-essential" characters with a single
+   occurrence.  For instance:
+
+     "  \tbruno--123 ----- x" => "bruno-123 x"
+
+   This can be useful to reduce a large table with blanks or other padding characters to align the columns.
+"""
+
+import re
+import sys
+import string
+
+re_metas = '.^$*+?{}[]\\|()'
+replacements = [
+  (re.compile(r'\s{2,}'), ' ')
+]
+
+assert not sys.stdin.isatty(), 'stdin must be redirected'
+
+def fix(s):
+  for replacement in replacements:
+    # print replacement
+    s = re.sub(replacement[0], replacement[1], s)
+  return s.strip()
+
+for c in string.punctuation:
+  pattern = '{escape}{c}{{2,}}'.format(
+    escape='\\' if c in re_metas else '',
+    c=c)
+  # print pattern
+  replacements.append((pattern, '{escape}{c}'.format(escape='\\' if c == '\\' else '', c=c)))
+
+for line in sys.stdin.read().splitlines():
+  print fix(line)

@@ -1,3 +1,5 @@
 .*
 pinger.json
 **.pyc
+bin/gitpulls
+bin/stager
