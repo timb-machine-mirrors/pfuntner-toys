@@ -1,0 +1,42 @@
+#! /usr/bin/env python
+
+import re
+import sys
+import getopt
+import string
+
+def syntax(msg=None):
+  if msg:
+    sys.stderr.write('{msg}\n'.format(**locals()))
+  sys.stderr.write('Syntax: {pgm} [-a|--all]\n'.format(pgm=sys.argv[0]))
+  exit(1)
+
+if sys.stdin.isatty():
+  syntax('stdin must be redirected')
+
+(opts, args) = ([], [])
+try:
+  (opts, args) = getopt.getopt(sys.argv[1:], 'a', ['all'])
+except Exception as e:
+  syntax('Caught `{e!s}`'.format(**locals()))
+
+do_all = False
+
+for (opt, arg) in opts:
+  if opt in ['-a', '--all']:
+    do_all = not do_all
+  else:
+    syntax('Unexpected option: {opt!r}'.format(**locals()))
+
+data = sys.stdin.read()
+if do_all:
+  # change alphanumerics
+  data = re.sub('\w+', '?', data)
+else:
+  # change digits only
+  data = re.sub('\d+', '#', data)
+
+# change whitespace excluding newlines
+data = re.sub('[{chars}]+'.format(chars=''.join(set(string.whitespace) - set('\n'))), ' ', data)
+
+sys.stdout.write(data)
