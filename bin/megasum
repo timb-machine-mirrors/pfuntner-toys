@@ -39,7 +39,7 @@ def process(filename):
     (data, stderr) = p.communicate()
     rc = p.wait()
     if rc != 0:
-      sys.stderr.write('Cannot read {filename}: {stderr!r}'.format(**locals()))
+      sys.stderr.write('Cannot read {filename}: {stderr!r}\n'.format(**locals()))
       return
   hash = hashlib.md5()
   hash.update(data)
