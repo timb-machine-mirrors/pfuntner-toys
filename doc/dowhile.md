@@ -40,7 +40,9 @@ $
 
 - There are 15 seconds between each iteration
 - Each iteration is preceded by the current timestamp
-- Simple string comparison is done.  The string argument is **not** a regular expression.  I might improve it if I have a need to do so.
+- Simple string comparison is done.  The string argument is **not** a regular expression.  I might improve it if I have a need to do so
 - You may need to wrap the command around `bash -c "..."` in order to run complicated commands or have the shell interpret a `#!` line:
   ```
+  dowhile jan bash -c 'date | tr "[A-Z]" "[a-z]"'
   ```
+- You may wish to search for the empty string (`''`) if you don't care what the output contains - unless `-ignorerc` is used, the command will run until it exits with a non-zero status
