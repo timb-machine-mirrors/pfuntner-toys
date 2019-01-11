@@ -42,11 +42,26 @@ re_regexp = re.compile('^re=(.+)$')
 
 lines = sys.stdin.read().splitlines()
 
+def parse(arg, lines):
+  pos = int(arg)
+  if pos < 0:
+    pos = lines + pos
+  if pos >= lines:
+    syntax('{arg!r} is an invalid position, there are only {lines} lines'.format(**locals()))
+  return pos
+
 choices = [negate] * len(lines)
 for arg in args:
   match = range_regexp.search(arg)
   if match:
-    pass
+    start = parse(match.group(1), len(lines))
+    if match.group(2):
+      stop = parse(match.group(3), len(lines))
+    else:
+      stop = start
+
+    for pos in range(start, stop+1):
+      choices[pos] = not negate
   else:
     match = re_regexp.search(arg)
     if match:
@@ -54,10 +69,8 @@ for arg in args:
       for (pos, line) in enumerate(lines):
         match = regexp.search(line)
         # print regexp.pattern, line, match
-        if match and (not choices[pos]):
-          choices[pos] = True
-        elif (not match) and choices[pos]:
-          choices[pos] = False
+        if match:
+          choices[pos] = not negate
     else:
       syntax('{arg!r} is not recognized')
 
