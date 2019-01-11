@@ -11,10 +11,18 @@ import sys
 import re
 import getopt
 
+def debug(msg):
+  if verbose:
+    sys.stderr.write('{msg}\n'.format(**locals()))
+
+def see(expr):
+  value = eval(expr)
+  debug('{expr}: {value}'.format(**locals()))
+
 def syntax(msg=None):
   if msg:
     sys.stderr.write('{msg}\n'.format(**locals()))
-  sys.stderr.write('Syntax: {pgm} [-v|--negate] [-i|--immediate] [NUM[:NUM]] [re=REGEXP] ... \n'.format(pgm=sys.argv[0]))
+  sys.stderr.write('Syntax: {pgm} [-v|--negate] [-i|--immediate] [-d|--debug] [NUM[:NUM]] [re=REGEXP] ... \n'.format(pgm=sys.argv[0]))
   exit(1)
 
 if sys.stdin.isatty():
@@ -22,10 +30,11 @@ if sys.stdin.isatty():
 
 negate = False
 immediate = False
+verbose = False
 
 (opts, args) = ([], [])
 try:
-  (opts, args) = getopt.getopt(sys.argv[1:], 'vi', ['negate', 'immediate'])
+  (opts, args) = getopt.getopt(sys.argv[1:], 'vid', ['negate', 'immediate', 'debug'])
 except Exception as e:
   syntax('Caught `{e!s}`'.format(**locals()))
 
@@ -34,6 +43,8 @@ for (opt, arg) in opts:
     negate = not negate
   elif opt in ['-i', '--immediate']:
     immediate = not immediate
+  elif opt in ['-d', '--debug']:
+    verbose = not verbose
   else:
     syntax('Unexpected option {opt!r}'.format(**locals()))
 
@@ -69,7 +80,8 @@ for arg in args:
 
     if immediate:
       for pos in range(count):
-        if (start <= pos < stop) != negate:
+        see('pos, lines[pos], start <= pos <= stop, negate')
+        if (start <= pos <= stop) != negate:
           print lines[pos]
     else:
       for pos in range(start, stop+1):
@@ -82,6 +94,7 @@ for arg in args:
         match = regexp.search(line)
         # print regexp.pattern, line, match
         if immediate:
+          see('pos, line, match, negate')
           if bool(match) != negate:
             print lines[pos]
         else:
