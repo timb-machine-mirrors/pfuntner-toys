@@ -14,23 +14,26 @@ import getopt
 def syntax(msg=None):
   if msg:
     sys.stderr.write('{msg}\n'.format(**locals()))
-  sys.stderr.write('Syntax: {pgm} [-v|--negate] [NUM[:NUM]] [re=REGEXP] ... \n'.format(pgm=sys.argv[0]))
+  sys.stderr.write('Syntax: {pgm} [-v|--negate] [-i|--immediate] [NUM[:NUM]] [re=REGEXP] ... \n'.format(pgm=sys.argv[0]))
   exit(1)
 
 if sys.stdin.isatty():
   syntax('stdin must be redirected')
 
 negate = False
+immediate = False
 
 (opts, args) = ([], [])
 try:
-  (opts, args) = getopt.getopt(sys.argv[1:], 'v', ['negate'])
+  (opts, args) = getopt.getopt(sys.argv[1:], 'vi', ['negate', 'immediate'])
 except Exception as e:
   syntax('Caught `{e!s}`'.format(**locals()))
 
 for (opt, arg) in opts:
   if opt in ['-v', '--negate']:
     negate = not negate
+  elif opt in ['-i', '--immediate']:
+    immediate = not immediate
   else:
     syntax('Unexpected option {opt!r}'.format(**locals()))
 
@@ -41,27 +44,36 @@ range_regexp = re.compile('^(-?\d+)(:(-?\d+))?$')
 re_regexp = re.compile('^re=(.+)$')
 
 lines = sys.stdin.read().splitlines()
+count = len(lines)
 
-def parse(arg, lines):
+def parse(arg):
   pos = int(arg)
   if pos < 0:
-    pos = lines + pos
-  if pos >= lines:
-    syntax('{arg!r} is an invalid position, there are only {lines} lines'.format(**locals()))
+    pos = count + pos
+  if (pos < 0) or (pos >= count):
+    syntax('{arg!r} is an invalid position, there are only {count} lines'.format(count=count, **locals()))
   return pos
 
-choices = [negate] * len(lines)
+choices = [negate] * count
 for arg in args:
   match = range_regexp.search(arg)
   if match:
-    start = parse(match.group(1), len(lines))
+    start = parse(match.group(1))
     if match.group(2):
-      stop = parse(match.group(3), len(lines))
+      stop = parse(match.group(3))
     else:
       stop = start
 
-    for pos in range(start, stop+1):
-      choices[pos] = not negate
+    if stop < start:
+      syntax('{arg!r} doesn\'t make sense with {count} lines'.format(**locals()))
+
+    if immediate:
+      for pos in range(count):
+        if (start <= pos < stop) != negate:
+          print lines[pos]
+    else:
+      for pos in range(start, stop+1):
+        choices[pos] = not negate
   else:
     match = re_regexp.search(arg)
     if match:
@@ -69,11 +81,16 @@ for arg in args:
       for (pos, line) in enumerate(lines):
         match = regexp.search(line)
         # print regexp.pattern, line, match
-        if match:
-          choices[pos] = not negate
+        if immediate:
+          if bool(match) != negate:
+            print lines[pos]
+        else:
+          if match:
+            choices[pos] = not negate
     else:
       syntax('{arg!r} is not recognized')
 
-for (pos, chosen) in enumerate(choices):
-  if chosen:
-    print lines[pos]
+if not immediate:
+  for (pos, chosen) in enumerate(choices):
+    if chosen:
+      print lines[pos]
