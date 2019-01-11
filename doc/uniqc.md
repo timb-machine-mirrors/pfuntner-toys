@@ -54,4 +54,4 @@ This is another non-trivial pipeline (do you see a running theme?) that involves
 ## Notes
 
 - If no file names are specified on the command line, standard input will be read.  It will be an error if standard input is not redirected.
-- Pipelines are your friend!  I don't think I've ever really use this outside of a pipeline.
+- Pipelines are your friend!  As [Tommy Flanagan](https://www.wikiwand.com/en/Recurring_Saturday_Night_Live_characters_and_sketches_introduced_1985%E2%80%931986#/Tommy_Flanagan,_the_Pathological_Liar) might say: **_Get to know them!_** I don't think I've ever really use this outside of a pipeline.
