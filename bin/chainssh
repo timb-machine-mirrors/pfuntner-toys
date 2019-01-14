@@ -96,7 +96,7 @@ def process(hosts):
   if hosts == ['localhost']:
     banner('localhost')
     debug(args[1:])
-    p = subprocess.Popen(args[1:])
+    p = subprocess.Popen(['bash', '-c', ' '.join(args[1:])])
   else:
     chain = []
     cmd = args[1:]
