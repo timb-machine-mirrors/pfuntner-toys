@@ -33,4 +33,4 @@ cwd = os.getcwd()
 regexp = re.compile("/")
 
 for filename in sys.argv[1:]:
-  print "%s@%s:%s" % (user, node, filename if regexp.match(filename) else os.path.join(cwd, filename))
+  print "%s@%s:%s" % (user, node, filename if regexp.match(filename) else os.path.abspath(os.path.join(cwd, filename)))
