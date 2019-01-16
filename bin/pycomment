@@ -2,18 +2,33 @@
 
 """
    A vi command to comment-out and un-comment a section of Python code
+
+   Take care if an assertion is thrown - the block selected from vi is potentially:
+     - deleted completely
+     - only partially modified, the offending line might be missing
+   It might be possible to work around this:
+     1) Rather than emit each modified line immediately, stash it in a list
+     2) If there were no errors, emit the modified lines
+     3) If there was an error, emit the original lines unchanged
 """
 
 import re
 import sys
 
-assert not sys.stdin.isatty(), 'stdin must be redirected'
+def sneaky_assert(assertion, nastygram):
+  value = eval(assertion)
+  if not value:
+    with open('/dev/tty', 'w') as stream:
+      stream.write('Assertion failed: {assertion!r}: {nastygram}\n'.format(**locals()))
+    exit(1)
+
+sneaky_assert('not sys.stdin.isatty()', 'stdin must be redirected')
 
 regexp = re.compile('^( *)\S.*$')
 
 lines = sys.stdin.read().splitlines()
 match = regexp.search(lines[0])
-assert match, '{line!r} does not match {pattern!r}'.format(line=lines[0], pattern=regexp.pattern)
+sneaky_assert('match', '{line!r} does not match {pattern!r}'.format(line=lines[0], pattern=regexp.pattern))
 prefix = match.group(1)
 length = len(prefix)
 # print '{length} blanks precede block'.format(**locals())
@@ -22,7 +37,7 @@ regexp = re.compile('^ {{{length}}}(.*)$'.format(**locals()))
 for line in lines:
   if line:
     match = regexp.search(line)
-    assert match, '{line!r} does not match {pattern!r}'.format(pattern=regexp.pattern, **locals())
+    sneaky_assert('match', '{line!r} does not match {pattern!r}'.format(pattern=regexp.pattern, **locals()))
     if match.group(1):
       if match.group(1).startswith('#'):
         if match.group(1).startswith('# '):
