@@ -1,0 +1,34 @@
+#! /usr/bin/env python
+
+"""
+   A vi command to comment-out and un-comment a section of Python code
+"""
+
+import re
+import sys
+
+assert not sys.stdin.isatty(), 'stdin must be redirected'
+
+regexp = re.compile('^( *)\S.*$')
+
+lines = sys.stdin.read().splitlines()
+match = regexp.search(lines[0])
+assert match, '{line!r} does not match {pattern!r}'.format(line=lines[0], pattern=regexp.pattern)
+prefix = match.group(1)
+length = len(prefix)
+# print '{length} blanks precede block'.format(**locals())
+regexp = re.compile('^ {{{length}}}(.*)$'.format(**locals()))
+# print regexp.pattern
+for line in lines:
+  if line:
+    match = regexp.search(line)
+    assert match, '{line!r} does not match {pattern!r}'.format(pattern=regexp.pattern, **locals())
+    if match.group(1):
+      if match.group(1).startswith('#'):
+        if match.group(1).startswith('# '):
+          line = prefix + match.group(1)[2:]
+        else:
+          line = prefix + match.group(1)[1:]
+      else:
+        line = prefix + '# ' + match.group(1)
+  print line
