@@ -2,48 +2,49 @@
 
 """
    A vi command to comment-out and un-comment a section of Python code
-
-   Take care if an assertion is thrown - the block selected from vi is potentially:
-     - deleted completely
-     - only partially modified, the offending line might be missing
-   It might be possible to work around this:
-     1) Rather than emit each modified line immediately, stash it in a list
-     2) If there were no errors, emit the modified lines
-     3) If there was an error, emit the original lines unchanged
 """
 
 import re
 import sys
 
 def sneaky_assert(assertion, nastygram):
+  global errors
   value = eval(assertion)
   if not value:
     with open('/dev/tty', 'w') as stream:
       stream.write('Assertion failed: {assertion!r}: {nastygram}\n'.format(**locals()))
-    exit(1)
+    errors += 1
+    return False
+  return True
 
-sneaky_assert('not sys.stdin.isatty()', 'stdin must be redirected')
+assert 'not sys.stdin.isatty()', 'stdin must be redirected'
 
+errors = 0
 regexp = re.compile('^( *)\S.*$')
-
 lines = sys.stdin.read().splitlines()
+newlines = lines
+
 match = regexp.search(lines[0])
-sneaky_assert('match', '{line!r} does not match {pattern!r}'.format(line=lines[0], pattern=regexp.pattern))
-prefix = match.group(1)
-length = len(prefix)
-# print '{length} blanks precede block'.format(**locals())
-regexp = re.compile('^ {{{length}}}(.*)$'.format(**locals()))
-# print regexp.pattern
-for line in lines:
-  if line:
-    match = regexp.search(line)
-    sneaky_assert('match', '{line!r} does not match {pattern!r}'.format(pattern=regexp.pattern, **locals()))
-    if match.group(1):
-      if match.group(1).startswith('#'):
-        if match.group(1).startswith('# '):
-          line = prefix + match.group(1)[2:]
-        else:
-          line = prefix + match.group(1)[1:]
-      else:
-        line = prefix + '# ' + match.group(1)
-  print line
+if sneaky_assert('match', '{line!r} does not match {pattern!r}'.format(line=lines[0], pattern=regexp.pattern)):
+  prefix = match.group(1)
+  length = len(prefix)
+  regexp = re.compile('^ {{{length}}}(.*)$'.format(**locals()))
+  newlines = []
+  for line in lines:
+    if line:
+      match = regexp.search(line)
+      if sneaky_assert('match', '{line!r} does not match {pattern!r}'.format(pattern=regexp.pattern, **locals())):
+        if match.group(1):
+          if match.group(1).startswith('#'):
+            if match.group(1).startswith('# '):
+              line = prefix + match.group(1)[2:]
+            else:
+              line = prefix + match.group(1)[1:]
+          else:
+            line = prefix + '# ' + match.group(1)
+    newlines.append(line)
+
+if errors:
+  print '\n'.join(lines)
+else:
+  print '\n'.join(newlines)
