@@ -8,7 +8,7 @@ import itertools
 def syntax(msg):
     if msg:
         sys.stderr.write(msg + "\n")
-    sys.stderr.write("Syntax: %s [--yaml] [--verbose] [--flatten] [--describe] [--file FILENAME] [--depth DEPTH] [--forgive] [--linear] [--string] [path ...]\n" % sys.argv[0])
+    sys.stderr.write("Syntax: %s [--yaml] [--verbose] [--flatten] [--describe] [--file FILENAME] [--depth DEPTH] [--forgive] [--linear] [--string] [--empty] [path ...]\n" % sys.argv[0])
     exit(1)
 
 def shorten(s, maxLen=80):
@@ -18,15 +18,21 @@ def shorten(s, maxLen=80):
 
 def flatWriter(root, path=[]):
     if type(root) == list:
+      if root:
         for curr in range(len(root)):
-            flatWriter(root[curr], path + [str(curr)])
+          flatWriter(root[curr], path + [str(curr)])
+      elif empty:
+        print '/%s/' % '/'.join(path)
     elif type(root) == dict:
+      if root:
         for curr in sorted(root.keys()):
-            flatWriter(root[curr], path + [str(curr)])
+          flatWriter(root[curr], path + [str(curr)])
+      elif empty:
+        print '/%s/' % '/'.join(path)
     else:
-        if type(root) == unicode:
-            root = str(root)
-        print "/%s %s" % ("/".join(path), repr(root))
+      if type(root) == unicode:
+        root = str(root)
+      print "/%s %s" % ("/".join(path), repr(root))
 
 def jsonWriter(root):
     print json.dumps(root, indent=2, sort_keys=True)
@@ -117,10 +123,11 @@ filename = None
 depth = None
 forgive = False
 inputIsYaml = False
+empty = False
 
 (opts, args) = ([], [])
 try:
-    (opts,args) = getopt.getopt(sys.argv[1:], "v", ["verbose", "flat", "flatten", "describe", "file=", "depth=", "forgive", 'linear', 'string', 'yaml'])
+    (opts,args) = getopt.getopt(sys.argv[1:], "v", ["verbose", "flat", "flatten", "describe", "file=", "depth=", "forgive", 'linear', 'string', 'yaml', 'empty'])
 except Exception as e:
     syntax(str(e))
 
@@ -147,6 +154,8 @@ for (opt,arg) in opts:
     elif opt == "--yaml":
        inputIsYaml = not inputIsYaml
        import yaml
+    elif opt == "--empty":
+       empty = not empty
     else:
         syntax("Don't know how to handle %s" % repr(opt))
 
