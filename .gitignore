@@ -3,3 +3,4 @@ pinger.json
 **.pyc
 bin/gitpulls
 bin/stager
+bin/tostaging
