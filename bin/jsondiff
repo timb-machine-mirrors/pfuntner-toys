@@ -20,7 +20,7 @@ def load(filename):
       data = stream.read()
 
     try:
-      if re.search(r'\.ya?ml$', filename):
+      if re.search(r'\.ya?ml', filename):
         if not yaml:
           yaml = __import__('yaml')
         ret = yaml.load(data)
