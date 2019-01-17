@@ -18,7 +18,8 @@ nodeAliases = {"pfuntner-dev-0": "pfuntner-dev"}
 
 user = pwd.getpwuid(os.getuid()).pw_name
 
-node = os.uname()[1]
+# get node name, stripping off trailing '.localdomain'
+node = re.sub(r'\.localdomain$', '', os.uname()[1])
 
 # import pdb; pdb.set_trace()
 
