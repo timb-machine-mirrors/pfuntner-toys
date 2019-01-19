@@ -17,7 +17,7 @@ def sneaky_assert(assertion, nastygram):
     return False
   return True
 
-assert 'not sys.stdin.isatty()', 'stdin must be redirected'
+assert not sys.stdin.isatty(), 'stdin must be redirected'
 
 errors = 0
 regexp = re.compile('^( *)\S.*$')
