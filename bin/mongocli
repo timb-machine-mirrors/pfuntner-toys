@@ -1,13 +1,31 @@
 #! /usr/bin/env python
 
 import re
+import os
 import sys
+import json
 import getpass
 import pymongo
 import logging
 import argparse
 import traceback
 
+
+CONNECTION_STRING_TEMPLATE = 'mongodb://{args.user}:{pw}@{args.cluster_name}-shard-00-00-{args.server_name}.mongodb.net:27017,{args.cluster_name}-shard-00-01-{args.server_name}.mongodb.net:27017,{args.cluster_name}-shard-00-02-{args.server_name}.mongodb.net:27017/test?ssl=true&replicaSet={args.cluster_name}-shard-0&authSource=admin&retryWrites=true'
+
+def get_value(label, args_attr, env_suffix, args_opt):
+  ret = None
+  environ_name = 'MONGODB_CLOUD_{env_suffix}'.format(**locals())
+
+  if getattr(args, args_attr):
+    ret = getattr(args, args_attr)
+  else:
+    ret = os.environ.get(environ_name)
+
+  if not ret:
+    log.critical('No {label} specified.  Export {environ_name} or specify via {args_opt}'.format(**locals()))
+
+  return ret
 
 def noop(tokens):
   pass
@@ -20,14 +38,42 @@ def list_databases(tokens):
 
   print '\n'.join(mongo.database_names())
 
+def list_collections(tokens):
+  global mongo
+
+  if args.db_name:
+    print '\n'.join(mongo[args.db_name].collection_names())
+  else:
+    log.error('No database selected -- `use DATABASE_NAME`')
+
+def select_from(tokens):
+  global mongo
+
+  if args.db_name:
+    json.dump([doc for doc in mongo[args.db_name][tokens[0]].find({})], sys.stdout)
+  else:
+    log.error('No database selected -- `use DATABASE_NAME`')
+
+def create_database(tokens):
+  global mongo
+
+  if args.db_name:
+    print 'work in progress: {tokens}'.format(**locals())
+  else:
+    log.error('No database selected -- `use DATABASE_NAME`')
+
 def use_database(tokens):
   global mongo
   global args
 
   args.db_name = tokens[1]
 
-parser = argparse.ArgumentParser(description='Simple Mongo app')
+def help(tokens):
+  print '\n'.join([action[0].pattern for action in actions[1:]])
+
+parser = argparse.ArgumentParser(description='mongoDB cloud CLI')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+parser.add_argument('-s', '--server', dest='server_name', nargs='?', help='MongoDB server (eg aen6e)')
 parser.add_argument('-c', '--cluster', dest='cluster_name', nargs='?', help='MongoDB cluster')
 parser.add_argument('-u', '--user', dest='user', nargs='?', help='MongoDB user')
 parser.add_argument('-d', '--db', dest='db_name', nargs='?', help='MongoDB database')
@@ -37,22 +83,30 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-args.cluster_name = args.cluster_name or 'bruno'
-args.user = args.user or 'root'
+args.server_name = get_value('MongoDB server', 'server_name', 'SERVER', '-s')
+args.cluster_name = get_value('MongoDB cluster', 'cluster_name', 'CLUSTER', '-c')
+args.user = get_value('MongoDB user', 'user', 'USER', '-u')
 
-connection_string_template = 'mongodb://{args.user}:{pw}@{args.cluster_name}-shard-00-00-aen6e.mongodb.net:27017,{args.cluster_name}-shard-00-01-aen6e.mongodb.net:27017,{args.cluster_name}-shard-00-02-aen6e.mongodb.net:27017/test?ssl=true&replicaSet={args.cluster_name}-shard-0&authSource=admin&retryWrites=true'
+if not all([args.server_name, args.cluster_name, args.user]):
+  sys.stderr.write('\n')
+  parser.print_help(sys.stderr)
+  exit(1)
 
 pw = getpass.getpass('Enter password for {args.user}@{args.cluster_name} cluster: '.format(**locals()))
 
-connection_string = connection_string_template.format(**locals())
+connection_string = CONNECTION_STRING_TEMPLATE.format(**locals())
 log.debug('Connection: {}'.format(re.sub(':\w+', ':' + ('*'*8), connection_string, 1)))
 mongo = pymongo.MongoClient(connection_string)
 
 actions = [
-  (re.compile('^$', re.IGNORECASE), noop),
+  (re.compile('^$', re.IGNORECASE), noop), # keep this as the first action so help() can skip it
   (re.compile('^quit(\(\))?$', re.IGNORECASE), quit),
-  (re.compile('^list databases$', re.IGNORECASE), list_databases),
+  (re.compile('^help$', re.IGNORECASE), help),
   (re.compile('^use(\s+(\w+))?$', re.IGNORECASE), use_database),
+  (re.compile('^list databases$', re.IGNORECASE), list_databases),
+  (re.compile('^list collections$', re.IGNORECASE), list_collections),
+  (re.compile('^select from (\S+)$', re.IGNORECASE), select_from),
+  (re.compile('^create database (\w+)$', re.IGNORECASE), create_database),
 ]
 
 while True:
