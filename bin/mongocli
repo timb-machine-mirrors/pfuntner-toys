@@ -1,0 +1,74 @@
+#! /usr/bin/env python
+
+import re
+import sys
+import getpass
+import pymongo
+import logging
+import argparse
+import traceback
+
+
+def noop(tokens):
+  pass
+
+def quit(tokens):
+  exit(0)
+
+def list_databases(tokens):
+  global mongo
+
+  print '\n'.join(mongo.database_names())
+
+def use_database(tokens):
+  global mongo
+  global args
+
+  args.db_name = tokens[1]
+
+parser = argparse.ArgumentParser(description='Simple Mongo app')
+parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+parser.add_argument('-c', '--cluster', dest='cluster_name', nargs='?', help='MongoDB cluster')
+parser.add_argument('-u', '--user', dest='user', nargs='?', help='MongoDB user')
+parser.add_argument('-d', '--db', dest='db_name', nargs='?', help='MongoDB database')
+args=parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
+args.cluster_name = args.cluster_name or 'bruno'
+args.user = args.user or 'root'
+
+connection_string_template = 'mongodb://{args.user}:{pw}@{args.cluster_name}-shard-00-00-aen6e.mongodb.net:27017,{args.cluster_name}-shard-00-01-aen6e.mongodb.net:27017,{args.cluster_name}-shard-00-02-aen6e.mongodb.net:27017/test?ssl=true&replicaSet={args.cluster_name}-shard-0&authSource=admin&retryWrites=true'
+
+pw = getpass.getpass('Enter password for {args.user}@{args.cluster_name} cluster: '.format(**locals()))
+
+connection_string = connection_string_template.format(**locals())
+log.debug('Connection: {}'.format(re.sub(':\w+', ':' + ('*'*8), connection_string, 1)))
+mongo = pymongo.MongoClient(connection_string)
+
+actions = [
+  (re.compile('^$', re.IGNORECASE), noop),
+  (re.compile('^quit(\(\))?$', re.IGNORECASE), quit),
+  (re.compile('^list databases$', re.IGNORECASE), list_databases),
+  (re.compile('^use(\s+(\w+))?$', re.IGNORECASE), use_database),
+]
+
+while True:
+  sys.stdout.write('{args.user} {args.db_name}> '.format(**locals()))
+  cmd = sys.stdin.readline().strip('\n').strip()
+  if cmd == 'quit':
+    break
+  matched = False
+  for action in actions:
+    match = action[0].search(cmd)
+    if match:
+      matched = True
+      try:
+        action[1](match.groups())
+      except Exception as e:
+        sys.stderr.write('Caught: {e}\n'.format(**locals()))
+        traceback.print_exc(file=sys.stderr)
+  if not matched:
+    sys.stderr.write('What?\n')
