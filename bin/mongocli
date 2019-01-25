@@ -58,7 +58,15 @@ def create_database(tokens):
   global mongo
 
   if args.db_name:
-    print 'work in progress: {tokens}'.format(**locals())
+    print 'work in progress: create database {tokens}'.format(**locals())
+  else:
+    log.error('No database selected -- `use DATABASE_NAME`')
+
+def create_document(tokens):
+  global mongo
+
+  if args.db_name:
+    print 'work in progress: create document in database {db_name} {tokens}'.format(db_name=args.db_name, **locals())
   else:
     log.error('No database selected -- `use DATABASE_NAME`')
 
@@ -106,7 +114,7 @@ actions = [
   (re.compile('^list databases$', re.IGNORECASE), list_databases),
   (re.compile('^list collections$', re.IGNORECASE), list_collections),
   (re.compile('^select from (\S+)$', re.IGNORECASE), select_from),
-  (re.compile('^create database (\w+)$', re.IGNORECASE), create_database),
+  (re.compile('^create (\S+)\s+(.*)$', re.IGNORECASE), create_document),
 ]
 
 while True:
