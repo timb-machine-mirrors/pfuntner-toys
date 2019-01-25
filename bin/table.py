@@ -41,6 +41,9 @@ class Table:
       for separator in range(len(Table.separators)):
         self.present[separator] = self.present[separator] or (Table.separators[separator] in col)
 
+  def reverse(self):
+    self.rows = self.rows[::-1]
+
   def sort(self, key=0):
     if type(key) == str:
       try:

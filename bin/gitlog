@@ -50,10 +50,11 @@ def report():
     table.add([commit, author, str(date), repr(text.strip('\n')[:50])])
 
 verbose = False
+reverse = False
 
 (opts,args) = ([], [])
 try:
-  (opts,args) = getopt.getopt(sys.argv[1:], "v", ["verbose"])
+  (opts,args) = getopt.getopt(sys.argv[1:], "vr", ["verbose", "reverse"])
 except Exception as e:
   sys.stderr.write("Caught: %s\n" % repr(e))
   exit(1)
@@ -61,6 +62,8 @@ except Exception as e:
 for (opt,arg) in opts:
   if opt in ["-v", "--verbose"]:
     verbose = not verbose
+  elif opt in ["-r", "--reverse"]:
+    reverse = not reverse
 
 # cmd = "git log --name-only".split()
 cmd = "git log".split() + args
@@ -129,4 +132,6 @@ for line in stdout.split('\n'):
           text += "\n"
 
 report()
+if reverse:
+  table.reverse()
 print str(table)
