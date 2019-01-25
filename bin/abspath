@@ -13,7 +13,12 @@ import argparse
 import platform
 import subprocess
 
-onWindows = 'win' in platform.platform().lower()
+parser = argparse.ArgumentParser(description=description)
+parser.add_argument('-u', '--unix', dest='unix', action='store_true', help='Use Unix style - ignore Windows style when run on Windows')
+parser.add_argument('paths', metavar='paths', nargs='+', help='One or more paths to process')
+args = parser.parse_args()
+
+onWindows = (not args.unix) and ('win' in platform.platform().lower())
 
 if onWindows:
   CYGWIN_ROOT = 'c:/cygwin64'
@@ -40,9 +45,5 @@ def process(path):
       path = CYGWIN_ROOT + path
 
   print path
-
-parser = argparse.ArgumentParser(description=description)
-parser.add_argument('paths', metavar='paths', nargs='+', help='One or more paths to process')
-args = parser.parse_args()
 
 map(process, args.paths)
