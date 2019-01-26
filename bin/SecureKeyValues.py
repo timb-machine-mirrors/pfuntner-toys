@@ -5,11 +5,13 @@ import re
 import sys
 import json
 import base64
-import argparse
 import os.path
 import hashlib
 import getpass
+import logging
+import argparse
 import datetime
+
 from cryptography.fernet import Fernet
 
 def syntax(msg=None):
@@ -27,7 +29,7 @@ def berate(s):
     else:
       output["errors"].append(s)
   else:
-    sys.stderr.write("%s\n" % s)
+    log.warning("%s" % s)
 
 def announce(name, value, whisperName=False):
   if args.jsonOutput:
@@ -55,7 +57,7 @@ def getHome():
   return ret
 
 class SecureKeyValues:
-  def __init__(self, filename, key=None, keyPromptForMissingFile=True):
+  def __init__(self, filename, key=None, keyPromptForMissingFile=True, ssh=False):
     self.simpleFilename = filename
     self.store = {}
     self.exists = False
@@ -67,6 +69,14 @@ class SecureKeyValues:
         self.filename = os.path.join(os.getcwd(), filename)
     else:
       self.filename = os.path.join("%s/.private" % getHome(), filename)
+
+    if ssh and (not key):
+      sshFilename = '%s/.ssh/id_rsa' % getHome()
+      if os.path.isfile(sshFilename):
+        log.debug('Reading {sshFilename}'.format(**locals()))
+        with open(sshFilename) as stream:
+          key = ''.join([line for line in stream.read().splitlines() if not re.match('---', line)])
+          log.debug('ssh private key is {bytes} bytes long'.format(bytes=len(key)))
 
     if keyPromptForMissingFile or os.path.exists(self.filename):
       done = False
@@ -135,10 +145,14 @@ class SecureKeyValues:
 
   def write(self):
     if os.path.isfile(self.filename):
-      os.rename(self.filename, self.filename + "D" + datetime.datetime.now().isoformat().replace(':', ''))
-    dir = os.path.dirname(self.filename)
-    if not os.path.isdir(dir):
-      os.mkdir(dir, 0700)
+      backup =  self.filename + "D" + datetime.datetime.now().isoformat().replace(':', '')
+      log.info('Backing up {self.filename} to {backup}')
+      os.rename(self.filename, backup)
+    else:
+      dir = os.path.dirname(self.filename)
+      if not os.path.isdir(dir):
+        os.mkdir(dir, 0700)
+    log.info('Saving store to {self.filename}')
     with open(self.filename, 'w') as f: 
       f.write(self.fernet.encrypt(json.dumps(self.store)))
 
@@ -163,9 +177,15 @@ if __name__ == "__main__":
   parser.add_argument('-o', '--operation', dest='operation', help='Secure store operation', choices=['read', 'get', 'set', 'remove', 'test'], required=True)
   parser.add_argument('-s', '--store', dest='storeName', help='Name of secure store')
   parser.add_argument('-k', '--key', dest='key', help='Encryption key for secure store')
+  parser.add_argument('--ssh', dest='ssh', action='store_true', help='Use ssh private key for secure store encryption key')
   parser.add_argument('-j', '--json', dest='jsonOutput', action='store_true', help='Print output in JSON form')
+  parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging messages')
   parser.add_argument('args', metavar='arg', nargs='*', help='Additional arguments, dependent on operation')
   args = parser.parse_args()
+
+  logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+  log = logging.getLogger()
+  log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
   if args.operation != "test" and (not args.storeName):
     syntax('Use -s/--store to specify secure store')
@@ -186,10 +206,10 @@ if __name__ == "__main__":
       store.put("runs", [])
     store.write()
   else:
-    store = SecureKeyValues(args.storeName, args.key, keyPromptForMissingFile=(args.operation != "read"))
+    store = SecureKeyValues(args.storeName, args.key, keyPromptForMissingFile=(args.operation != "read"), ssh=args.ssh)
     if args.operation == "read":
       if not store.exists:
-        berate("Note: %s does not exist" % repr(store.filename))
+        berate("%s does not exist" % repr(store.filename))
       for key in store.keys():
         announce(key, store.get(key))
     elif args.operation == "set":
