@@ -66,6 +66,7 @@ def create_database(tokens):
 
 def create_document(tokens):
   global mongo
+  global log
 
   if args.db_name:
     collection_name = tokens[0]
@@ -84,6 +85,7 @@ def create_document(tokens):
 
 def delete_document(tokens):
   global mongo
+  global log
 
   if args.db_name:
     collection_name = tokens[0]

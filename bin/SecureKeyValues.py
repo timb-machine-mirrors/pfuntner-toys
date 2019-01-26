@@ -56,6 +56,8 @@ def getHome():
 
 class SecureKeyValues:
   def __init__(self, filename, key=None, keyPromptForMissingFile=True, ssh=False):
+    global log
+
     self.simpleFilename = filename
     self.store = {}
     self.exists = False
@@ -150,6 +152,8 @@ class SecureKeyValues:
       return None
 
   def write(self):
+    global log
+
     if os.path.isfile(self.filename):
       backup =  self.filename + "D" + datetime.datetime.now().isoformat().replace(':', '')
       log.info('Backing up {self.filename} to {backup}')
@@ -161,6 +165,9 @@ class SecureKeyValues:
     log.info('Saving store to {self.filename}')
     with open(self.filename, 'w') as f: 
       f.write(self.fernet.encrypt(json.dumps(self.store)))
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
 
 if __name__ == "__main__":
   output = {"pairs": {}}
@@ -189,8 +196,6 @@ if __name__ == "__main__":
   parser.add_argument('args', metavar='arg', nargs='*', help='Additional arguments, dependent on operation')
   args = parser.parse_args()
 
-  logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
-  log = logging.getLogger()
   log.setLevel(logging.DEBUG if args.verbose else logging.ERROR)
 
   if args.operation != "test" and (not args.storeName):
