@@ -94,7 +94,7 @@ class SecureKeyValues:
           fernet = __import__('cryptography.fernet', fromlist=['Fernet'])
           self.fernet = fernet.Fernet(self.key)
         except Exception as e:
-          log.info('Caught {e!s} trying to load cryptography.fernet'.format(**locals()))
+          log.info('Caught `{e!s}` trying to load cryptography.fernet'.format(**locals()))
           return
   
         if os.path.isfile(self.filename):
