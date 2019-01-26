@@ -27,7 +27,7 @@ def berate(s):
     else:
       output["errors"].append(s)
   else:
-    log.warning("%s" % s)
+    log.info("%s" % s)
 
 def announce(name, value, whisperName=False):
   if args.jsonOutput:
@@ -191,7 +191,7 @@ if __name__ == "__main__":
 
   logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
   log = logging.getLogger()
-  log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+  log.setLevel(logging.DEBUG if args.verbose else logging.ERROR)
 
   if args.operation != "test" and (not args.storeName):
     syntax('Use -s/--store to specify secure store')
