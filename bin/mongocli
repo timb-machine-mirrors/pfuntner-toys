@@ -10,6 +10,7 @@ import logging
 import argparse
 import traceback
 
+import pdb
 
 CONNECTION_STRING_TEMPLATE = 'mongodb://{args.user}:{pw}@{args.cluster_name}-shard-00-00-{args.server_name}.mongodb.net:27017,{args.cluster_name}-shard-00-01-{args.server_name}.mongodb.net:27017,{args.cluster_name}-shard-00-02-{args.server_name}.mongodb.net:27017/test?ssl=true&replicaSet={args.cluster_name}-shard-0&authSource=admin&retryWrites=true'
 
@@ -50,7 +51,8 @@ def select_from(tokens):
   global mongo
 
   if args.db_name:
-    json.dump([doc for doc in mongo[args.db_name][tokens[0]].find({})], sys.stdout)
+    json.dump([doc for doc in mongo[args.db_name][tokens[0]].find({})], sys.stdout, indent=2, sort_keys=True)
+    print ''
   else:
     log.error('No database selected -- `use DATABASE_NAME`')
 
@@ -66,7 +68,35 @@ def create_document(tokens):
   global mongo
 
   if args.db_name:
-    print 'work in progress: create document in database {db_name} {tokens}'.format(db_name=args.db_name, **locals())
+    collection_name = tokens[0]
+    raw = tokens[1]
+    log.debug('raw: {raw!r}'.format(**locals()))
+    content = json.loads(raw)
+    log.debug('work in progress: create document in collection {collection_name} of database {db_name}: {content}'.format(db_name=args.db_name, **locals()))
+    ret = mongo[args.db_name][collection_name].insert_one(content)
+    log.info('Created in {db_name}/{collection_name}: {ret}'.format(
+      db_name=args.db_name,
+      collection_name=collection_name,
+      ret=ret,
+    ))
+  else:
+    log.error('No database selected -- `use DATABASE_NAME`')
+
+def delete_document(tokens):
+  global mongo
+
+  if args.db_name:
+    collection_name = tokens[0]
+    raw = tokens[1]
+    log.debug('raw: {raw!r}'.format(**locals()))
+    selection = json.loads(raw)
+    log.debug('work in progress: delete document from collection {collection_name} of database {db_name}: {selection}'.format(db_name=args.db_name, **locals()))
+    ret = mongo[args.db_name][collection_name].delete_one(selection)
+    log.info('Deleted from {db_name}/{collection_name}: {ret}'.format(
+      db_name=args.db_name,
+      collection_name=collection_name,
+      ret=ret,
+    ))
   else:
     log.error('No database selected -- `use DATABASE_NAME`')
 
@@ -81,6 +111,7 @@ def help(tokens):
 
 parser = argparse.ArgumentParser(description='mongoDB cloud CLI')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+parser.add_argument('-t', '--trace', dest='trace', action='store_true', help='Enable tracing')
 parser.add_argument('-s', '--server', dest='server_name', nargs='?', help='MongoDB server (eg aen6e)')
 parser.add_argument('-c', '--cluster', dest='cluster_name', nargs='?', help='MongoDB cluster')
 parser.add_argument('-u', '--user', dest='user', nargs='?', help='MongoDB user')
@@ -115,13 +146,18 @@ actions = [
   (re.compile('^list collections$', re.IGNORECASE), list_collections),
   (re.compile('^select from (\S+)$', re.IGNORECASE), select_from),
   (re.compile('^create (\S+)\s+(.*)$', re.IGNORECASE), create_document),
+  (re.compile('^delete (\S+)\s+(.*)$', re.IGNORECASE), delete_document),
 ]
 
 while True:
-  sys.stdout.write('{args.user} {args.db_name}> '.format(**locals()))
-  cmd = sys.stdin.readline().strip('\n').strip()
-  if cmd == 'quit':
+  if sys.stdin.isatty():
+    sys.stdout.write('{args.user} {args.db_name}> '.format(**locals()))
+
+  cmd = sys.stdin.readline()
+  if not cmd:
     break
+  cmd = cmd.strip('\n').strip()
+
   matched = False
   for action in actions:
     match = action[0].search(cmd)
