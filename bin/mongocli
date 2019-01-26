@@ -10,7 +10,7 @@ import logging
 import argparse
 import traceback
 
-import pdb
+from SecureKeyValues import SecureKeyValues
 
 CONNECTION_STRING_TEMPLATE = 'mongodb://{args.user}:{pw}@{args.cluster_name}-shard-00-00-{args.server_name}.mongodb.net:27017,{args.cluster_name}-shard-00-01-{args.server_name}.mongodb.net:27017,{args.cluster_name}-shard-00-02-{args.server_name}.mongodb.net:27017/test?ssl=true&replicaSet={args.cluster_name}-shard-0&authSource=admin&retryWrites=true'
 
@@ -111,7 +111,6 @@ def help(tokens):
 
 parser = argparse.ArgumentParser(description='mongoDB cloud CLI')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
-parser.add_argument('-t', '--trace', dest='trace', action='store_true', help='Enable tracing')
 parser.add_argument('-s', '--server', dest='server_name', nargs='?', help='MongoDB server (eg aen6e)')
 parser.add_argument('-c', '--cluster', dest='cluster_name', nargs='?', help='MongoDB cluster')
 parser.add_argument('-u', '--user', dest='user', nargs='?', help='MongoDB user')
@@ -131,7 +130,11 @@ if not all([args.server_name, args.cluster_name, args.user]):
   parser.print_help(sys.stderr)
   exit(1)
 
-pw = getpass.getpass('Enter password for {args.user}@{args.cluster_name} cluster: '.format(**locals()))
+pw = SecureKeyValues('mongodb', ssh=True).get(args.user)
+if pw:
+  log.info('Got password from mongodb secure store')
+else:
+  pw = getpass.getpass('Enter password for {args.user}@{args.cluster_name} cluster: '.format(**locals()))
 
 connection_string = CONNECTION_STRING_TEMPLATE.format(**locals())
 log.debug('Connection: {}'.format(re.sub(':\w+', ':' + ('*'*8), connection_string, 1)))
