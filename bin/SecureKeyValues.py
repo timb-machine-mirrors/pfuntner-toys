@@ -12,8 +12,6 @@ import logging
 import argparse
 import datetime
 
-from cryptography.fernet import Fernet
-
 def syntax(msg=None):
   if msg:
     sys.stderr.write(msg + "\n")
@@ -61,6 +59,7 @@ class SecureKeyValues:
     self.simpleFilename = filename
     self.store = {}
     self.exists = False
+    self.fernet = None
 
     if '/' in filename:
       if filename[0] == '/':
@@ -80,6 +79,7 @@ class SecureKeyValues:
 
     if keyPromptForMissingFile or os.path.exists(self.filename):
       done = False
+
       while not done:
         if key:
           self.simpleKey = key
@@ -89,7 +89,13 @@ class SecureKeyValues:
         hash = hashlib.md5()
         hash.update(self.simpleKey)
         self.key = base64.b64encode(hash.hexdigest())
-        self.fernet = Fernet(self.key)
+
+        try:
+          fernet = __import__('cryptography.fernet', fromlist=['Fernet'])
+          self.fernet = fernet.Fernet(self.key)
+        except Exception as e:
+          log.info('Caught {e!s} trying to load cryptography.fernet'.format(**locals()))
+          return
   
         if os.path.isfile(self.filename):
           with open(self.filename, 'r') as f: 
