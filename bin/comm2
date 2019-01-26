@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/env python
 
 """
   A better `comm` that doesn't expect the files to be sorted.

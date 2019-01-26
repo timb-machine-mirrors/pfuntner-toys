@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/env python
 
 def dump(num, line):
   print "%6d %s" % (num, line)

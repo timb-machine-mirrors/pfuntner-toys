@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/env python
 
 """
   Takes a json object and dumps out all of the values (one per line)
