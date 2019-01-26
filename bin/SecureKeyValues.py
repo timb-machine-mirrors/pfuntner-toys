@@ -5,7 +5,7 @@ import re
 import sys
 import json
 import base64
-import getopt
+import argparse
 import os.path
 import hashlib
 import getpass
@@ -15,11 +15,13 @@ from cryptography.fernet import Fernet
 def syntax(msg=None):
   if msg:
     sys.stderr.write(msg + "\n")
-  sys.stderr.write("Syntax: %s --store STORE --key KEY --operation test|read|set|remove <args>\n" % sys.argv[0])
+  parser.print_help(sys.stderr)
   exit(1)
 
 def berate(s):
-  if jsonOutput:
+  global output
+
+  if args.jsonOutput:
     if not ("errors" in output):
       output["errors"] = [s]
     else:
@@ -28,7 +30,7 @@ def berate(s):
     sys.stderr.write("%s\n" % s)
 
 def announce(name, value, whisperName=False):
-  if jsonOutput:
+  if args.jsonOutput:
     output["pairs"][name] = value
   else:
     if whisperName:
@@ -143,11 +145,6 @@ class SecureKeyValues:
 if __name__ == "__main__":
   output = {"pairs": {}}
 
-  operation = None
-  key = None
-  storeName = None
-  jsonOutput = False
-
   """
     `staticStringRegexp` is a regular expression that let's us
     identify when an argument is a "static string".  That is,
@@ -162,30 +159,18 @@ if __name__ == "__main__":
   """
   staticStringRegexp = re.compile("^['\"](.+)['\"]$")
 
-  (opts,args) = ([], [])
-  try:
-    (opts,args) = getopt.getopt(sys.argv[1:], "h?k:o:s:j", ["help", "key=", "operation=", "store=", "json"])
-  except Exception as e:
-    syntax(str(e))
+  parser = argparse.ArgumentParser(description='A manager of secure stores')
+  parser.add_argument('-o', '--operation', dest='operation', help='Secure store operation', choices=['read', 'get', 'set', 'remove', 'test'], required=True)
+  parser.add_argument('-s', '--store', dest='storeName', help='Name of secure store')
+  parser.add_argument('-k', '--key', dest='key', help='Encryption key for secure store')
+  parser.add_argument('-j', '--json', dest='jsonOutput', action='store_true', help='Print output in JSON form')
+  parser.add_argument('args', metavar='arg', nargs='*', help='Additional arguments, dependent on operation')
+  args = parser.parse_args()
 
-  for (opt,arg) in opts:
-    if opt in ["-o", "--operation"]:
-      operation = arg
-    elif opt in ["-k", "--key"]:
-      key = arg
-    elif opt in ["-s", "--store"]:
-      storeName = arg
-    elif opt in ["-j", "--json"]:
-      jsonOutput = not jsonOutput
-    elif opt in ["-?", "--help"]:
-      syntax()
-    else:
-      raise Exception("Don't know how to handle option %s" % repr(opt))
+  if args.operation != "test" and (not args.storeName):
+    syntax('Use -s/--store to specify secure store')
 
-  if not((operation == "test") or (storeName and (operation in ["read", "get", "set", "remove"]))):
-    syntax()
-
-  if operation == "test":
+  if args.operation == "test":
     store = SecureKeyValues("test", "this is a test")
     print "store file: %s" % store.filename
     keys = store.keys()
@@ -201,35 +186,33 @@ if __name__ == "__main__":
       store.put("runs", [])
     store.write()
   else:
-    store = SecureKeyValues(storeName, key, keyPromptForMissingFile=(operation != "read"))
-    if operation == "read":
+    store = SecureKeyValues(args.storeName, args.key, keyPromptForMissingFile=(args.operation != "read"))
+    if args.operation == "read":
       if not store.exists:
         berate("Note: %s does not exist" % repr(store.filename))
       for key in store.keys():
         announce(key, store.get(key))
-    elif operation == "set":
+    elif args.operation == "set":
       regexp = re.compile("^([^=]+)=(.*)$")
-      if not args and sys.stdin.isatty():
-        args = sys.stdin.read().strip('\n').split('\n')
-      for arg in args:
+      if not args.args and sys.stdin.isatty():
+        args.args = sys.stdin.read().strip('\n').split('\n')
+      for arg in args.args:
         match = regexp.search(arg)
         assert match and (len(match.groups()) == 2), "%s did not match %s" % (repr(arg), repr(regexp.pattern))
         store.put(match.group(1), match.group(2))
       store.write()
-    elif operation == "remove":
-      for arg in args:
+    elif args.operation == "remove":
+      for arg in args.args:
         store.remove(arg)
       store.write()
-    elif operation == "get":
-      for arg in args:
+    elif args.operation == "get":
+      for arg in args.args:
         match = staticStringRegexp.search(arg)
         if match:
-          if (not jsonOutput):
+          if (not args.jsonOutput):
             print match.group(1)
         else:
           announce(arg, store.get(arg), whisperName=True)
-    else:
-      berate("Don't know how to handle operation %s\n" % repr(operation))
 
-  if jsonOutput:
+  if args.jsonOutput:
     print json.dumps(output, indent=2, sort_keys=True)
