@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/env python
 
 """
   Make changes to a stream.  Here's an example:

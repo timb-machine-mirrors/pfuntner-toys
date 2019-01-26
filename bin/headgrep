@@ -1,4 +1,4 @@
-#! /usr/bin/python -u
+#! /usr/bin/env python
 
 """
   Do a `head` or `tail` based on a regular expression

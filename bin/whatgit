@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/env python
 
 """
    Find location of the nearest `.git` file in the file structure - this will tell us the root directory of this local git repository.
