@@ -138,7 +138,7 @@ class SecureKeyValues:
     if len(key) > 1:
       if key[0] not in root:
         root[key[0]] = {}
-        self.put(key[1:], value, root[key[0]])
+      self.put(key[1:], value, root[key[0]])
     else:
       root[key[0]] = value
 
@@ -156,13 +156,13 @@ class SecureKeyValues:
 
     if os.path.isfile(self.filename):
       backup =  self.filename + "D" + datetime.datetime.now().isoformat().replace(':', '')
-      log.info('Backing up {self.filename} to {backup}')
+      log.info('Backing up {self.filename} to {backup}'.format(**locals()))
       os.rename(self.filename, backup)
     else:
       dir = os.path.dirname(self.filename)
       if not os.path.isdir(dir):
         os.mkdir(dir, 0700)
-    log.info('Saving store to {self.filename}')
+    log.info('Saving store to {self.filename}'.format(**locals()))
     with open(self.filename, 'w') as f: 
       f.write(self.fernet.encrypt(json.dumps(self.store)))
 
@@ -189,8 +189,11 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='A manager of secure stores')
   parser.add_argument('-o', '--operation', dest='operation', help='Secure store operation', choices=['read', 'get', 'set', 'remove', 'test'], required=True)
   parser.add_argument('-s', '--store', dest='storeName', help='Name of secure store')
-  parser.add_argument('-k', '--key', dest='key', help='Encryption key for secure store')
-  parser.add_argument('--ssh', dest='ssh', action='store_true', help='Use ssh private key for secure store encryption key')
+
+  group = parser.add_mutually_exclusive_group()
+  group.add_argument('-k', '--key', dest='key', help='Encryption key for secure store')
+  group.add_argument('--ssh', dest='ssh', action='store_true', help='Use ssh private key for secure store encryption key')
+
   parser.add_argument('-j', '--json', dest='jsonOutput', action='store_true', help='Print output in JSON form')
   parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging messages')
   parser.add_argument('args', metavar='arg', nargs='*', help='Additional arguments, dependent on operation')
@@ -218,13 +221,13 @@ if __name__ == "__main__":
     store.write()
   else:
     store = SecureKeyValues(args.storeName, args.key, keyPromptForMissingFile=(args.operation != "read"), ssh=args.ssh)
+    regexp = re.compile("^([^=]+)=(.*)$")
     if args.operation == "read":
       if not store.exists:
         berate("%s does not exist" % repr(store.filename))
       for key in store.keys():
         announce(key, store.get(key))
     elif args.operation == "set":
-      regexp = re.compile("^([^=]+)=(.*)$")
       if not args.args and sys.stdin.isatty():
         args.args = sys.stdin.read().strip('\n').split('\n')
       for arg in args.args:

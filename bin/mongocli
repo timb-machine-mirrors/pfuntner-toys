@@ -132,7 +132,7 @@ if not all([args.server_name, args.cluster_name, args.user]):
   parser.print_help(sys.stderr)
   exit(1)
 
-pw = SecureKeyValues('mongodb', ssh=True).get(args.user)
+pw = SecureKeyValues('mongodb', ssh=True).get([args.server_name, args.cluster_name, args.user])
 if pw:
   log.info('Got password from mongodb secure store')
 else:
