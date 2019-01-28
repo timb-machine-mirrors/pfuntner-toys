@@ -71,6 +71,8 @@ class SecureKeyValues:
     else:
       self.filename = os.path.join("%s/.private" % getHome(), filename)
 
+    log.debug('store is {self.filename}'.format(**locals()))
+
     if ssh and (not key):
       sshFilename = '%s/.ssh/id_rsa' % getHome()
       if os.path.isfile(sshFilename):
