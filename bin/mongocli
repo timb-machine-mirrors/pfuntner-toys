@@ -126,6 +126,7 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 args.server_name = get_value('MongoDB server', 'server_name', 'SERVER', '-s')
 args.cluster_name = get_value('MongoDB cluster', 'cluster_name', 'CLUSTER', '-c')
 args.user = get_value('MongoDB user', 'user', 'USER', '-u')
+args.db_name = get_value('MongoDB database', 'db_name', 'DATABASE', '-d')
 
 if not all([args.server_name, args.cluster_name, args.user]):
   sys.stderr.write('\n')
