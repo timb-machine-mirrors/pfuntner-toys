@@ -24,7 +24,7 @@ def get_value(label, args_attr, env_suffix, args_opt):
     ret = os.environ.get(environ_name)
 
   if not ret:
-    log.critical('No {label} specified.  Export {environ_name} or specify via {args_opt}'.format(**locals()))
+    log.log(logging.WARNING if env_suffix == 'DATABASE' else logging.CRITICAL, 'No {label} specified.  Export {environ_name} or specify via {args_opt}'.format(**locals()))
 
   return ret
 
