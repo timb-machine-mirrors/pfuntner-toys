@@ -113,10 +113,10 @@ def help(tokens):
 
 parser = argparse.ArgumentParser(description='mongoDB cloud CLI')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
-parser.add_argument('-s', '--server', dest='server_name', nargs='?', help='MongoDB server (eg aen6e)')
-parser.add_argument('-c', '--cluster', dest='cluster_name', nargs='?', help='MongoDB cluster')
-parser.add_argument('-u', '--user', dest='user', nargs='?', help='MongoDB user')
-parser.add_argument('-d', '--db', dest='db_name', nargs='?', help='MongoDB database')
+parser.add_argument('-s', '--server', dest='server_name', help='MongoDB server (eg aen6e)')
+parser.add_argument('-c', '--cluster', dest='cluster_name', help='MongoDB cluster')
+parser.add_argument('-u', '--user', dest='user', help='MongoDB user')
+parser.add_argument('-d', '--db', dest='db_name', help='MongoDB database')
 args=parser.parse_args()
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
