@@ -49,7 +49,7 @@ class Reader(object):
           self.col += 1
       else:
         self.eof = True
-      log.debug('Returning {c!r}, eof={self.eof}'.format(**locals()))
+      log.debug('Returning {c!r} at {where}, eof={self.eof}'.format(where=self.where(), **locals()))
       return c
 
   def push(self, s):
@@ -144,10 +144,11 @@ def readNode(reader):
   
   log.debug('<{tag}> ends at {where}'.format(where=reader.where(), **locals()))
 
-  c = reader.nextNonSpace()
+  reader.push(reader.nextNonSpace())
 
   # process sub-nodes or text
   while True:
+    c = reader.read()
     if not c:
       break
     if c == '<':
@@ -156,11 +157,18 @@ def readNode(reader):
         break
       else:
         reader.push('<' + c)
-        log.error('WIP: Need to process sub-node')
-        exit(1)
+        child = readNode(reader)
+        if child:
+          node.children.append(child)
     else:
-      log.error('WIP: Need to process text')
-      exit(1)
+      child = Node(text=c)
+      while True:
+        c = reader.read()
+        if (not c) or (c == '<'):
+          break
+        child.text += c
+      reader.push(c)
+      node.children.append(child)
 
   tag = ''
   while True:
@@ -184,6 +192,19 @@ def readNode(reader):
 
   return node
 
+def dump(root):
+  if root.tag:
+    sys.stdout.write('<{root.tag}'.format(**locals()))
+    if root.attrs:
+      sys.stdout.write(' ' + ' '.join(['{name}={value!r}'.format(**locals()) for (name, value) in root.attrs.items()]))
+    sys.stdout.write('>')
+    for child in root.children:
+      dump(child)
+    sys.stdout.write('</{root.tag}>'.format(**locals()))
+  else:
+    # sys.stdout.write('{root.text!r}'.format(**locals())[1:-1])
+    sys.stdout.write(root.text)
+
 parser = argparse.ArgumentParser()
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 args = parser.parse_args()
@@ -203,3 +224,6 @@ c = reader.nextNonSpace()
 if c:
   log.error('Unexpected data {c!r} at {where} after root is complete'.format(where=reader.where(), **locals()))
   exit(1)
+
+dump(root)
+print ''
