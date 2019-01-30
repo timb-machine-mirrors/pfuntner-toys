@@ -196,8 +196,10 @@ def readNode(reader):
   if tag != node.tag:
     if args.lazy and (tag or reader.eof):
       # forgive lack of closing tag when operating in lazy mode
-      log.error('Forgiving </{tag}> at {where} when </{node.tag}> was expected'.format(where=reader.where(), **locals()))
-      if not reader.eof:
+      if reader.eof:
+        log.info('Forgiving EOF when </{node.tag}> was expected'.format(where=reader.where(), **locals()))
+      else:
+        log.info('Forgiving </{tag}> at {where} when </{node.tag}> was expected'.format(where=reader.where(), **locals()))
         reader.push('</{tag}'.format(**locals()))
       return node
     else:
