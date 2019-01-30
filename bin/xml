@@ -72,6 +72,8 @@ class Reader(object):
 
 def readNode(reader):
   node = None
+  selfEnded = False
+
   log.debug('readNode() starting with {where}'.format(where=reader.where()))
 
   c = reader.nextNonSpace()
@@ -95,8 +97,17 @@ def readNode(reader):
   # process attributes
   while True:
     log.debug('Top of attribute loop with {c!r} at {where}'.format(where=reader.where(), **locals()))
+
+    if c == '/':
+      selfEnded = True
+      c = reader.read()
+
     if c == '>':
       break
+    elif selfEnded:
+      log.critical('Expected `>` at {where} but got {c!r}'.format(where=reader.where(), **locals()))
+      exit(1)
+
     reader.push(c)
     name = ''
     while True:
@@ -145,6 +156,9 @@ def readNode(reader):
   log.debug('<{tag}> ends at {where}'.format(where=reader.where(), **locals()))
 
   reader.push(reader.nextNonSpace())
+
+  if selfEnded:
+    return node # preemptive return when a tag is self-closed like `<br/>`: the node has no children (tags or text) and no ending tag is expected
 
   # process sub-nodes or text
   while True:
