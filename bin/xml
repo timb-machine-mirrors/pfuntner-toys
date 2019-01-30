@@ -1,0 +1,205 @@
+#! /usr/bin/env python
+
+import re
+import sys
+import string
+import logging
+import argparse
+
+IDENTIFIER_REGEXP = re.compile('^[a-zA-Z][a-zA-Z0-9#_-]*$')
+
+class Node(object):
+  def __init__(self, tag=None, text=None):
+    log.debug('Node.init(tag={tag!r}, text={text!r})'.format(**locals()))
+
+    if not bool(tag) ^ bool(text):
+      log.critical('tag/text mismatch: tag={tag!r} text={text!r}'.format(**locals()))
+      exit(1)
+
+    self.tag = tag
+    self.attrs = {}
+    self.text = text
+    self.children = []
+
+class Reader(object):
+  def __init__(self, stream=sys.stdin):
+    self.stream = stream
+    self.buf = []
+    self.eof = False
+
+    self.line = 1
+    self.col = 0
+
+  def read(self):
+    if self.buf:
+      self.col += 1
+      c = self.buf.pop(0)
+      log.debug('Popping {c!r} from buffer'.format(**locals()))
+      return c
+    elif self.eof:
+      log.debug('Encountered eof')
+      return ''
+    else:
+      c = self.stream.read(1)   
+      if c:
+        if c == '\n':
+          self.line += 1
+          self.col = 1
+        else:
+          self.col += 1
+      else:
+        self.eof = True
+      log.debug('Returning {c!r}, eof={self.eof}'.format(**locals()))
+      return c
+
+  def push(self, s):
+    for c in s[::-1]:
+      log.debug('Pushing {c!r} onto buffer'.format(**locals()))
+      self.buf.insert(0, c)
+      self.col -= 1
+      self.eof = False
+
+  def nextNonSpace(self):
+    c = ''
+    while True:
+      c = self.read()
+      if (not c) or (c not in string.whitespace):
+        break
+    return c
+
+  def where(self):
+    return '{self.line}:{self.col}'.format(**locals())
+
+def readNode(reader):
+  node = None
+  log.debug('readNode() starting with {where}'.format(where=reader.where()))
+
+  c = reader.nextNonSpace()
+  if c != '<':
+    log.error('Unexpected character {c!r} at {where} when trying to find beginning tag'.format(where=reader.where(), **locals()))
+    exit(1)
+
+  tag = ''
+  while True:
+    c = reader.read()
+    if c and IDENTIFIER_REGEXP.search(tag + c):
+      tag += c
+    else:
+      reader.push(c)
+      break
+
+  node = Node(tag=tag)
+
+  c = reader.nextNonSpace()
+
+  # process attributes
+  while True:
+    log.debug('Top of attribute loop with {c!r} at {where}'.format(where=reader.where(), **locals()))
+    if c == '>':
+      break
+    reader.push(c)
+    name = ''
+    while True:
+      c = reader.read()
+      if c and IDENTIFIER_REGEXP.search(name + c):
+        name += c
+      else:
+        reader.push(c)
+        break
+
+    if not name:
+      log.error('Expected attribute identifier for <{tag}> at {where}'.format(where=reader.where(), **locals()))
+      exit(1)
+
+    c = reader.read()
+    if c != '=':
+      log.error('Expected `=` after identifier for <{tag}> but got {c!r} at {where}'.format(where=reader.where(), **locals()))
+      exit(1)
+  
+    c = reader.read()
+    if c not in '\'"':
+      log.error('Expected single or double quote to start {name!r} attribute value for <{tag}> at {where}'.format(where=reader.where(), **locals()))
+      exit(1)
+    quote = c
+    log.debug('After seeing {c!r} for {name!r} attribute value for <{tag}> at {where}, expecting a closing {c!r}'.format(where=reader.where(), **locals()))
+
+    value = ''
+    while True:
+      c = reader.read()
+      if c == '\\':
+        c = reader.read()
+        if c:
+          value += c
+        else:
+          log.error('Unterminated value for {name!r} attribute value for <{tag}> at {where}'.format(where=reader.where(), **locals()))
+          exit(1)
+      elif (not c) or (c == quote):
+        break
+      else:
+        value += c
+    log.info('<{tag} {name}={value!r})'.format(**locals()))
+    node.attrs[name] = value
+
+    c = reader.nextNonSpace()
+  
+  log.debug('<{tag}> ends at {where}'.format(where=reader.where(), **locals()))
+
+  c = reader.nextNonSpace()
+
+  # process sub-nodes or text
+  while True:
+    if not c:
+      break
+    if c == '<':
+      c = reader.read()
+      if c == '/':
+        break
+      else:
+        reader.push('<' + c)
+        log.error('WIP: Need to process sub-node')
+        exit(1)
+    else:
+      log.error('WIP: Need to process text')
+      exit(1)
+
+  tag = ''
+  while True:
+    c = reader.read()
+    if IDENTIFIER_REGEXP.search(tag + c):
+      tag += c
+    else:
+      reader.push(c)
+      break
+  
+  if tag != node.tag:
+    log.error('</{tag}> at {where} when </{node.tag}> was expected'.format(where=reader.where(), **locals()))
+    exit(1)
+
+  log.debug('</{tag}> at {where}'.format(where=reader.where(), **locals()))
+
+  c = reader.read()
+  if c != '>':
+    log.error('Missing closed angle bracket for </{tag}> at {where}'.format(where=reader.where(), **locals()))
+    exit(1)
+
+  return node
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
+if sys.stdin.isatty():
+  log.critical('stdin must be redirected')
+  exit(1)
+
+reader = Reader()
+root = readNode(reader)
+
+c = reader.nextNonSpace()
+if c:
+  log.error('Unexpected data {c!r} at {where} after root is complete'.format(where=reader.where(), **locals()))
+  exit(1)
