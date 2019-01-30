@@ -187,15 +187,21 @@ def readNode(reader):
   tag = ''
   while True:
     c = reader.read()
-    if IDENTIFIER_REGEXP.search(tag + c):
+    if c and IDENTIFIER_REGEXP.search(tag + c):
       tag += c
     else:
       reader.push(c)
       break
   
   if tag != node.tag:
-    log.error('</{tag}> at {where} when </{node.tag}> was expected'.format(where=reader.where(), **locals()))
-    exit(1)
+    if args.lazy:
+      # forgive lack of closing tag when operating in lazy mode
+      log.error('Forgiving </{tag}> at {where} when </{node.tag}> was expected'.format(where=reader.where(), **locals()))
+      reader.push('</{tag}'.format(**locals()))
+      return node
+    else:
+      log.error('</{tag}> at {where} when </{node.tag}> was expected'.format(where=reader.where(), **locals()))
+      exit(1)
 
   log.debug('</{tag}> at {where}'.format(where=reader.where(), **locals()))
 
@@ -219,7 +225,8 @@ def dump(root):
     # sys.stdout.write('{root.text!r}'.format(**locals())[1:-1])
     sys.stdout.write(root.text)
 
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(description='Bruno\'s homegrown xml parser')
+parser.add_argument('-l', '--lazy', dest='lazy', action='store_true', help='Forgive some malformed documents')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 args = parser.parse_args()
 
