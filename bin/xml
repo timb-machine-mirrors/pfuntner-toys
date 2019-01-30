@@ -148,7 +148,7 @@ def readNode(reader):
         break
       else:
         value += c
-    log.info('<{tag} {name}={value!r})'.format(**locals()))
+    log.debug('<{tag} {name}={value!r})'.format(**locals()))
     node.attrs[name] = value
 
     c = reader.nextNonSpace()
