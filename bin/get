@@ -22,7 +22,7 @@ def local(filename):
 def remote(location, filename):
   ret = None
   try:
-    cmd = ['ssh', location, 'cat', filename]
+    cmd = ['ssh', '-q', location, 'cat', filename]
     log.debug('cmd: {cmd}'.format(**locals()))
   except Exception as e:
     log.warning('Caught `{e!s}` while reading {filename!r}'.format(**locals()))
