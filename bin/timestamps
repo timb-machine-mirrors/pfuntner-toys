@@ -2,6 +2,7 @@
 
 import sys
 import os.path
+import argparse
 import datetime
 
 def process(filename):
@@ -13,10 +14,14 @@ def process(filename):
   else:
     sys.stderr.write("`%s` does not exist\n" % filename)
 
+parser = argparse.ArgumentParser(description='List files by timestamp')
+parser.add_argument('-n', '--nameonly', dest='nameonly', action='store_true', help='Display only names of files (no timestamp)')
+parser.add_argument('filenames', metavar='filename', nargs='*', help='Names of files (or feed from stdin)')
+args = parser.parse_args()
 
 files = {}
-if len(sys.argv) > 1:
-  for filename in sys.argv[1:]:
+if args.filenames > 1:
+  for filename in args.filenames:
     process(filename)
 else:
   assert not sys.stdin.isatty(), "stdin must be redirected or you must specify files as arguments"
@@ -24,4 +29,4 @@ else:
     process(filename)
 
 for filename in sorted(files, key=lambda file: files[file], reverse=True):
-  print "%s %s" % (files[filename], filename)
+  print "%s%s" % ('' if args.nameonly else (files[filename] + ' '), filename)
