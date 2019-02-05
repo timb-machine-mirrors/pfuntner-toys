@@ -18,10 +18,12 @@ logging.basicConfig(format='%(asctime)s %(msg)s')
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
+iteration = 0
 start = datetime.datetime.now()
 signal.signal(signal.SIGINT, handler)
 
 while True:
+  iteration += 1
   now = datetime.datetime.now()
-  log.info('elapsed:{elapsed} zzzzzz'.format(elapsed=now-start))
+  log.info('elapsed:{elapsed} Iteration {iteration}'.format(elapsed=now-start, **locals()))
   time.sleep(5*60)
