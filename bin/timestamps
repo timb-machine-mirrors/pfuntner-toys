@@ -8,18 +8,24 @@ import datetime
 def process(filename):
   if os.path.exists(filename):
     if os.path.isfile(filename):
-        files[filename] = datetime.datetime.strftime(datetime.datetime.fromtimestamp(os.path.getmtime(filename)), "%Y/%m/%d %H:%M:%S.%f")
+        files[filename] = datetime.datetime.fromtimestamp(os.path.getmtime(filename))
     else:
       sys.stderr.write("`%s` is not a regular file\n" % filename)
   else:
     sys.stderr.write("`%s` does not exist\n" % filename)
 
 parser = argparse.ArgumentParser(description='List files by timestamp')
-parser.add_argument('-n', '--nameonly', dest='nameonly', action='store_true', help='Display only names of files (no timestamp)')
+
+group = parser.add_mutually_exclusive_group()
+group.add_argument('-n', '--nameonly', dest='nameonly', action='store_true', help='Display only names of files (no timestamp)')
+group.add_argument('-e', '-d', '--elapsed', '--duration', dest='elapsed', action='store_true', help='Display elaped time between current time and file modification time')
+
 parser.add_argument('filenames', metavar='filename', nargs='*', help='Names of files (or feed from stdin)')
 args = parser.parse_args()
 
 files = {}
+now = datetime.datetime.now()
+
 if args.filenames:
   for filename in args.filenames:
     process(filename)
@@ -28,5 +34,9 @@ else:
   for filename in sys.stdin.read().strip('\n').split('\n'):
     process(filename)
 
+format_string = '{filename}' if args.nameonly else ('{duration} {filename}' if args.elapsed else '{mtime_human} {filename}')
 for filename in sorted(files, key=lambda file: files[file], reverse=True):
-  print "%s%s" % ('' if args.nameonly else (files[filename] + ' '), filename)
+  mtime = files[filename]
+  mtime_human = datetime.datetime.strftime(mtime, "%Y/%m/%d %H:%M:%S.%f")
+  duration = now - mtime
+  print format_string.format(**locals())
