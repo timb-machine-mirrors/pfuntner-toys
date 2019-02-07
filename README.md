@@ -38,5 +38,5 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`megadiff`](doc/megadiff.md) | | Compare two directories trees |
 | [`peval`](doc/peval.md) | Yes | Evaluate Python expression strings |
 | [`uniqc`](doc/uniqc.md) | Yes | Counts unique instances of input |
-| [`undupe`](doc/undupe.md) | | Removes duplication punctuation & whitespace |
+| [`undupe`](doc/undupe.md) | | Removes duplicate punctuation & whitespace |
 | [`unixdate`](doc/unixdate.md) | | Invokes `date` with Unix-style format on Windoze |
