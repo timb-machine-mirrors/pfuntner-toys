@@ -7,7 +7,7 @@ import argparse
 import subprocess
 
 def see(expression):
-  log.info('>>> {expression}: {value}\n'.format(expression=expression, value=eval(expression)))
+  log.info('>>> {expression}: {value}'.format(expression=expression, value=eval(expression)))
 
 parser = argparse.ArgumentParser(description='Simplify `git status` output')
 parser.add_argument('-c', '--changes', '--changed', '--modified', dest='changes', action='store_true', help='Show changed files')
