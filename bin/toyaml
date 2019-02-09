@@ -19,7 +19,7 @@ def uni2str(root):
 
   return root
 
-parser = argparse.ArgumentParser('Convert json to yaml')
+parser = argparse.ArgumentParser(description='Convert json to yaml')
 parser.add_argument('-f', '--flow', dest='flow', action='store_true', help='Enable default flow style')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging messages')
 args = parser.parse_args()

@@ -7,21 +7,6 @@ import getopt
 import logging
 import argparse
 
-# ibmadmin@z-watchman:~/zwatchman-github$ tty
-# /dev/pts/8
-# ibmadmin@z-watchman:~/zwatchman-github$ who
-# ibmadmin pts/8        2016-12-22 08:12 (9.27.95.171)
-# ibmadmin@z-watchman:~/zwatchman-github$ nslookup 9.27.95.171
-# Server:         9.42.106.2
-# Address:        9.42.106.2#53
-# 
-# Non-authoritative answer:
-# 171.95.27.9.in-addr.arpa        name = ibm750-r9rw756.raleigh.ibm.com.
-# 
-# Authoritative answers can be found from:
-# 
-# ibmadmin@z-watchman:~/zwatchman-github$
-
 def run(cmd):
   log.debug("Running `%s`, " % cmd)
   p = None
@@ -36,7 +21,7 @@ def run(cmd):
   log.debug("rc=%d, stdout=%s, sterr=%s" % (rc, repr(stdout), repr(stderr)))
   return stdout
 
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(description='Discovery the host from which user your user logged into local system')
 parser.add_argument('-i', '--ip-ok', dest='ipOk', action='store_true', help='IP address is ok, node name is not necessary')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 args = parser.parse_args()

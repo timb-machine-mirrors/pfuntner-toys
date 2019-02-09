@@ -6,24 +6,10 @@ import logging
 import argparse
 import subprocess
 
-"""
-(usp-venv-2017-06-07)[10:12:13][jpfuntne<ao-dev>@bxb-mitg7-dev23:/nobackup/jpfuntne/master/usp/uas]$ git status uas
-On branch US39053-AutoDeploy_AutoVNF_support
-Your branch is up-to-date with 'origin/US39053-AutoDeploy_AutoVNF_support'.
-Changes not staged for commit:
-  (use "git add <file>..." to update what will be committed)
-  (use "git checkout -- <file>..." to discard changes in working directory)
-
-        modified:   uas/uspc.py
-        modified:   uas/workers/dep_worker.py
-
-no changes added to commit (use "git add" and/or "git commit -a")
-"""
-
 def see(expression):
   log.info('>>> {expression}: {value}\n'.format(expression=expression, value=eval(expression)))
 
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(description='Simplify `git status` output')
 parser.add_argument('-c', '--changes', '--changed', '--modified', dest='changes', action='store_true', help='Show changed files')
 parser.add_argument('-u', '--untracked', dest='untracked', action='store_true', help='Show untracked files')
 parser.add_argument('--unmerged', dest='unmerged', action='store_true', help='Show unmerged files')

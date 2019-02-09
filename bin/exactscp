@@ -12,7 +12,7 @@ import logging
 import argparse
 import subprocess
 
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(description='Perform scp preserving the source paths of files')
 parser.add_argument('-v', '--verbose', dest='verbose', action='count', help='Enable debugging')
 parser.add_argument('src', metavar='source_file', nargs='+', help='One or more source files')
 parser.add_argument('dst', metavar='dest_dir', help='Name of destination directory')
