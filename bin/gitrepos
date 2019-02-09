@@ -11,7 +11,7 @@ import argparse
 
 from table import Table
 
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(description='Find git repositories in your home directory')
 parser.add_argument('-v', '--verbose', dest='verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
