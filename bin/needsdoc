@@ -1,0 +1,17 @@
+#! /usr/bin/env python
+
+import os
+import sys
+import os.path
+
+bindir = os.path.dirname(sys.argv[0])
+docdir = os.path.join(bindir, "..", "doc")
+for filename in os.listdir(bindir):
+  binpath = os.path.join(bindir, filename)
+  if os.path.isfile(binpath):
+    if filename[-3:] == ".py":
+      docpath = os.path.join(docdir, filename[:-3] + ".md")
+    else:
+      docpath = os.path.join(docdir, filename + ".md")
+    if not os.path.isfile(docpath):
+      print filename

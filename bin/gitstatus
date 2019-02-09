@@ -2,7 +2,8 @@
 
 import re
 import sys
-import getopt
+import logging
+import argparse
 import subprocess
 
 """
@@ -19,23 +20,21 @@ Changes not staged for commit:
 no changes added to commit (use "git add" and/or "git commit -a")
 """
 
-def syntax(msg=None):
-  if msg:
-    sys.stderr.write('{msg}\n'.format(**locals()))
-  sys.stderr.write('{pgm} [-c|--changes|--changed|--modified] [-u|--untracked] [--unmerged] [FILE|DIR ...]\n'.format(pgm=sys.argv[0]))
-  exit(1)
-
 def see(expression):
-  if verbose:
-    sys.stderr.write('>>> {expression}: {value}\n'.format(expression=expression, value=eval(expression)))
+  log.info('>>> {expression}: {value}\n'.format(expression=expression, value=eval(expression)))
 
-(opts, args) = ([], [])
-try:
-  (opts, args) = getopt.getopt(sys.argv[1:], 'cmuv', ['changes', 'changed', 'modified', 'untracked', 'unmerged', 'verbose'])
-except Exception as e:
-  syntax(str(e))
+parser = argparse.ArgumentParser()
+parser.add_argument('-c', '--changes', '--changed', '--modified', dest='changes', action='store_true', help='Show changed files')
+parser.add_argument('-u', '--untracked', dest='untracked', action='store_true', help='Show untracked files')
+parser.add_argument('--unmerged', dest='unmerged', action='store_true', help='Show unmerged files')
+parser.add_argument('-a', '--all', dest='all', action='store_true', help='Show changed, unmerged, and untracked files')
+parser.add_argument('-v', '--verbose', dest='verbose', action='count', help='Enable debugging')
+parser.add_argument('files', metavar='file', nargs='*', help='Files to pass to `git status`')
+args = parser.parse_args()
 
-verbose = False
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
 section_regexps = {
   'modified': {
@@ -55,29 +54,25 @@ section_regexps = {
   },
 }
 
-for (opt,arg) in opts:
-  if opt in ['-c', '--changes', '--changed', '--modified']:
-    section_regexps['modified']['requested'] = not section_regexps['modified']['requested']
-  elif opt in ['-u', '--untracked']:
-    section_regexps['untracked']['requested'] = not section_regexps['untracked']['requested']
-  elif opt in ['--unmerged']:
-    section_regexps['unmerged']['requested'] = not section_regexps['unmerged']['requested']
-  elif opt in ['-v', '--verbose']:
-    verbose = not verbose
-  else:
-    syntax('Unexpected option: {opt!r}'.format(**locals()))
+if args.changes or args.all:
+  section_regexps['modified']['requested'] = not section_regexps['modified']['requested']
+if args.untracked or args.all:
+  section_regexps['untracked']['requested'] = not section_regexps['untracked']['requested']
+if args.unmerged or args.all:
+  section_regexps['unmerged']['requested'] = not section_regexps['unmerged']['requested']
 
 if not any([section_regexps[section]['requested'] for section in section_regexps.keys()]):
   section_regexps['modified']['requested'] = True # default to modified only
 
 see('section_regexps')
 
-cmd = ['git', 'status'] + args
+cmd = ['git', 'status'] + args.files
 p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 (stdout, stderr) = p.communicate()
 rc = p.wait()
 if (rc != 0) or stderr:
-  syntax('{cmd} failed: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
+  log.critical('{cmd} failed: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
+  exit(1)
 
 section_end_regexp = re.compile('^\S')
 
