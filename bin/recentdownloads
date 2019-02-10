@@ -1,29 +1,65 @@
 #! /usr/bin/env python
 
-import sys
+import re
 import os
-import os.path
+import sys
 import getopt
+import logging
+import argparse
 import subprocess
 
 def findDir(templates):
   for template in templates:
      try:
        dir = (template % os.environ).replace('\\', '/')
+     except Exception as e:
+       log.debug('Ignoring `{e!s}` for {template!r}'.format(**locals()))
+     else:
        if os.path.isdir(dir):
          return dir
-     except Exception as e:
-       pass
 
-  assert False, "Could not find a directory from: %s" % templates
+  log.error('Could not find a download directory from: {templates}'.format(**locals()))
+  exit(1)
   
-mtime = -1.0/24 # one hour
-(opts,args) = getopt.getopt(sys.argv[1:], "m:", ["mtime="])
-for (opt,arg) in opts:
-  if opt in ["-m", "--mtime"]:
-    mtime = float(arg)
+parser = argparse.ArgumentParser(description='Search for recently downloaded files')
+parser.add_argument('-v', '--verbose', dest='verbose', action='count', help='Enable debugging')
+parser.add_argument('time', nargs='?', help='Time: FLOAT(s|m|h|d)? - Default: 1 hour')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.WARNING - 10*(args.verbose or 0))
+
+if not args.time:
+  mtime = -1/24
+else:
+  match = re.search('^((\d+)?\.?(\d+)?)([smhd])?$', args.time)
+  if match:
+    log.debug('match groups: {groups}'.format(groups=match.groups()))
+    mtime = match.group(2)
+    suffix = match.group(4)
+    if mtime:
+      try:
+        mtime = -float(mtime)
+      except Exception as e:
+        mtime = None
+        log.debug('Caught `{e!s}` while converting {mtime!r} to float'.format(**locals()))
+    log.debug('Raw mtime: {mtime}'.format(**locals()))
+    if mtime:
+      if suffix == 's':
+        mtime /= 24*60*60
+      elif suffix == 'm':
+        mtime /= 24*60
+      elif suffix == 'h' or not suffix:
+        mtime /= 24
+    if not mtime:
+      log.error('{args.time!r} is not a valid time'.format(**locals()))
+      exit(1)
+    else:
+      log.info('Parsed `{args.time}` to `{mtime}`'.format(**locals()))
   else:
-    assert False, "Could not handle option %s" % repr(opt)
+    log.error('{args.time!r} is not a valid time'.format(**locals()))
+    exit(1)
 
 dir = findDir(["%(USERPROFILE)s/downloads", "%(HOME)s/downloads"])
 
