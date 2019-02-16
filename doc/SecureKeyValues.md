@@ -21,7 +21,7 @@ Syntax: SecureKeyValues.py [-h]
 | ------ | ----------- | ------- |
 | `-s`, `--store` | The name of the secure store file.   For a simple name without a slash such as `foo`, this translates to path `$HOME/.private/foo`.  If the name starts with a slash, it specifies the absolute pathname to the file.  If the file has a slash but it's not the first character, argument is a filename relative to the current working directory. | Required for `read`, `get`, `set`, and `remove` operations. |
 | `-k`, `--key` | The encryption key.  It's up to you but I think it's a bad idea to provide the key as an argument because it will be visible to other users in the output from the `ps` command. | There is no default key.  If it is not specified, it will be prompted for without echoing the key. |
-| `-ssh` | Use your private rsa SSH key (`$HOME/.ssh/id_rsa`) as the encryption key | There is no default key |
+| `-ssh` | Use your private rsa SSH key (`$HOME/.ssh/id_rsa`) as the encryption key.  I highly recommend using this rather than entering the key. | There is no default key |
 | `-j`, `--json` | Display output in JSON form. | The output is to print keys and values in free form style (see the example) |  
 | `-o`, `--operation` | The operation to perform | There is no default.  You must specify `read`, `get`, `set`, remove`, or `test` as an argument. | 
 |  `-v`, `--verbose`  | Enable verbose debugging | Debugging is not enabled |
