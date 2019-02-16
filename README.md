@@ -31,6 +31,7 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`dowhile`](doc/dowhile.md) | | Perform a command repeatedly until output is seen in the output |
 | [`extensions`](doc/extensions.md) | | Show extensions used by files |
 | [`drop`](doc/drop.md) | Yes | Drop the first or last `n` lines, similar to `head`/`tail` |
+| [`fernet`](doc/fernet.md) | | Perform fernet encryption/decryption |
 | [`flow`](doc/flow.md) | Yes | Flow lines from stdin into columnar form |
 | [`gitstatus`](doc/gitstatus.md) | | Show files in a local git repo that have been changed, etc. |
 | [`headtail`](doc/headtail.md) | Yes | Print out the top and bottom of stdin or one or more files |

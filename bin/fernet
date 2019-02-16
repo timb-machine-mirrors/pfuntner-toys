@@ -4,32 +4,34 @@ import os
 import sys
 import base64
 import getopt
-import hashlib
 import getpass
-from cryptography.fernet import Fernet
+import hashlib
+import logging
+import argparse
 
-def syntax(msg):
-  if msg:
-    sys.stderr.write(msg + "\n")
-  sys.stderr.write("Syntax: %s [--decrypt|-d]\n" % sys.argv[0])
-  exit(1)
+parser = argparse.ArgumentParser(description='Perform fernet encryption/decryption')
+parser.add_argument('-d', '--decrypt', dest='decrypt', action='store_true', help='Perform decryption')
+parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+args = parser.parse_args()
 
-encrypt = True
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-(opts,args) = ([], [])
+Fernet = None
 try:
-  (opts,args) = getopt.getopt(sys.argv[1:], "d", ["decrypt"])
-except Exception as e:
-  syntax("Caught: %s" % e)
+  from cryptography.fernet import Fernet
+except:
+  log.critical('Could not load the Fernet class.  Try installing the cryptography package')
   exit(1)
 
-for (opt,arg) in opts:
-  if opt in ["-d", "--decrypt"]:
-    encrypt = not encrypt
-  
-assert not sys.stdin.isatty(), "stdin must be redirected"
+encrypt = not args.decrypt
 
-secret = getpass.getpass("Encryption key: ")
+if sys.stdin.isatty():
+  log.critical('stdin must be redirected')
+  exit(1)
+
+secret = getpass.getpass('Encryption key: ')
 
 hash = hashlib.md5()
 hash.update(secret)
