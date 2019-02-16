@@ -30,6 +30,7 @@ $
 
 - The data must be supplied via stdin.
 - The cryptography package must be installed to do fernet encryption/decryption.  For install instructions, check out https://pypi.org/project/cryptography/.
+- Fernet encryption is used my [SecureKeyValues](SecureKeyValues.md) package.  You can use the `fernet` tool to decrypt a secure key store file in `$HOME/.private` if you know the encryption key.
 - Regarding the example:
   - The encryption key is requested for both encryption and decryption.  The characters are **not** echoed to the terminal.
     - I tried to do an example with a single pipeline the encrypted and decrypted the data like so:
