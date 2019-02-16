@@ -20,7 +20,7 @@ Syntax: SecureKeyValues.py [-h]
 | Option | Description | Default |
 | ------ | ----------- | ------- |
 | `-s`, `--store` | The name of the secure store file.   For a simple name without a slash such as `foo`, this translates to path `$HOME/.private/foo`.  If the name starts with a slash, it specifies the absolute pathname to the file.  If the file has a slash but it's not the first character, argument is a filename relative to the current working directory. | Required for `read`, `get`, `set`, and `remove` operations. |
-| `-k`, `--key` | The encryption key | There is no default key.  If it is not specified, it will be prompted for without echoing the key.  It's up to you but I think it's a bad idea to provide the key as an argument because it will be visible to other users in the output from the `ps` command. |
+| `-k`, `--key` | The encryption key.  It's up to you but I think it's a bad idea to provide the key as an argument because it will be visible to other users in the output from the `ps` command. | There is no default key.  If it is not specified, it will be prompted for without echoing the key. |
 | `-ssh` | Use your private rsa SSH key (`$HOME/.ssh/id_rsa`) as the encryption key | There is no default key |
 | `-j`, `--json` | Display output in JSON form. | The output is to print keys and values in free form style (see the example) |  
 | `-o`, `--operation` | The operation to perform | There is no default.  You must specify `read`, `get`, `set`, remove`, or `test` as an argument. | 
@@ -61,7 +61,7 @@ Key for 'foo':
 $ SecureKeyValues.py -s foo -o get foo  # get a specific key from the store
 Key for 'foo': 
 bar
-$ fernet -d < $HOME/.private/foo        # we can decrypt the secure key file ourselves
+$ fernet -d < $HOME/.private/foo        # we can decrypt the secure key file ourselves - the key/value pairs are just stored in JSON form
 Encryption key: 
 {"foo": "bar"}$ 
 $ 
@@ -71,7 +71,7 @@ $
 Note this makes use of my [`fernet`](fernet.md) tool.
 
 ### Python example
-Here's an example of a Python script that makes use of the class to obtain the value of a secure key 
+Here's an example of a Python script that makes use of the class to obtain the value of a secure key.  It's also a great example of using the ssh private key as the encryption key.
 
 ```
 $ rm -f $HOME/.private/foo
