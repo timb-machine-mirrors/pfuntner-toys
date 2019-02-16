@@ -37,6 +37,7 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`json`](doc/json.md) | Yes | JSON magic - it's a disservice to try to summarize this tool in a single string. |
 | [`megadiff`](doc/megadiff.md) | | Compare two directories trees |
 | [`peval`](doc/peval.md) | Yes | Evaluate Python expression strings |
+| [`timer`](doc/timer.md) | | Display a progress meter over a specified duration of time |
 | [`uniqc`](doc/uniqc.md) | Yes | Counts unique instances of input |
 | [`undupe`](doc/undupe.md) | | Removes duplicate punctuation & whitespace |
 | [`unixdate`](doc/unixdate.md) | | Invokes `date` with Unix-style format on Windoze |

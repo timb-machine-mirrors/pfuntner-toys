@@ -1,0 +1,60 @@
+#! /usr/bin/env python
+
+import os
+import re
+import logging
+import argparse
+import subprocess
+
+def ignore(filename):
+  return any([bool(ignore_regexp.search(filename)) for ignore_regexp in ignore_regexps])
+
+ignore_regexps = [
+  re.compile(r'^\.'),
+  re.compile(r'\.pyc$'),
+  re.compile(r'^__init__\.py$'),
+  re.compile(r'-sample$'),
+]
+
+bin_regexp = re.compile('^bin/([^/]+)$')
+doc_regexp = re.compile('^doc/([^/]+)$')
+
+parser = argparse.ArgumentParser(description='Show my tools that don\'t have a documentation page')
+parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
+repo_base = os.path.join(os.environ['HOME'], 'toys')
+if not os.path.isdir(repo_base):
+  log.critical('Could not find directory {repo_base!r}'.format(**locals()))
+  exit(1)
+
+os.chdir(repo_base)
+p = subprocess.Popen(['git', 'log', '--name-only'], stdout=subprocess.PIPE)
+(stdout, stderr) = p.communicate()
+rc = p.wait()
+if rc != 0:
+  log.critical('`git log` failed: {rc}'.format(**locals()))
+  exit(1)
+
+bins = set()
+docs = set()
+for line in stdout.splitlines():
+  match = bin_regexp.search(line)
+  if match:
+    bins.add(match.group(1))
+  else:
+    match = doc_regexp.search(line)
+    if match:
+      docs.add(match.group(1))
+
+# tools = os.listdir('bin')
+log.debug('bins: {bins}'.format(**locals()))
+# docs = os.listdir('doc')
+log.debug('docs: {docs}'.format(**locals()))
+needs = [bin for bin in bins if (not ignore(bin)) and ((bin + '.md') not in docs)]
+
+print '\n'.join(sorted(needs))
