@@ -18,7 +18,7 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
 match = re.search('^(\d+)([smh]?)$', args.time)
 if not match:
-  sys.stderr.write('{args.time!r} is not a valid elapsed time'.format(**locals()))
+  log.critical('{args.time!r} is not a valid elapsed time'.format(**locals()))
   exit(1)
 log.debug('match: {match}'.format(match=match.groups()))
 
