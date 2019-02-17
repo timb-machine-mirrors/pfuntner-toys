@@ -41,6 +41,7 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`pycomment`](doc/pycomment.md) | | vi command to toggle Python-style comments, similar to PyCharm `ctrl-/` command |
 | [`SecureKeyValues`](doc/SecureKeyValues.md) | | Manage secure key value stores |
 | [`timer`](doc/timer.md) | | Display a progress meter over a specified duration of time |
+| [`timestamps`](doc/timestamps.md) | | Show times when files were last modified, most-recently updated first |
 | [`uniqc`](doc/uniqc.md) | Yes | Counts unique instances of input |
 | [`undupe`](doc/undupe.md) | | Removes duplicate punctuation & whitespace |
 | [`unixdate`](doc/unixdate.md) | | Invokes `date` with Unix-style format on Windoze |
