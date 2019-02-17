@@ -52,4 +52,7 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 if args.files:
   map(process, args.files)
 else:
+  if sys.stdin.isatty():
+    log.critical('stdin must be redirected if you don\'t specify any files on the command line')
+    exit(1)
   process(sys.stdin)
