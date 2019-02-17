@@ -37,6 +37,7 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`headtail`](doc/headtail.md) | Yes | Print out the top and bottom of stdin or one or more files |
 | [`json`](doc/json.md) | Yes | JSON magic - it's a disservice to try to summarize this tool in a single string. |
 | [`megadiff`](doc/megadiff.md) | | Compare two directories trees |
+| [`nocrs`](doc/nocrs.md) | | Remove carriage returns from files |
 | [`peval`](doc/peval.md) | Yes | Evaluate Python expression strings |
 | [`pycomment`](doc/pycomment.md) | | vi command to toggle Python-style comments, similar to PyCharm `ctrl-/` command |
 | [`SecureKeyValues`](doc/SecureKeyValues.md) | | Manage secure key value stores |
