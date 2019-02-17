@@ -39,4 +39,8 @@ for filename in sorted(files, key=lambda file: files[file], reverse=True):
   mtime = files[filename]
   mtime_human = datetime.datetime.strftime(mtime, "%Y/%m/%d %H:%M:%S.%f")
   duration = now - mtime
+  if duration.total_seconds() >= 0:
+    duration = str(duration)
+  else:
+    duration = '-' + str(datetime.timedelta(seconds=-duration.total_seconds()))
   print format_string.format(**locals())
