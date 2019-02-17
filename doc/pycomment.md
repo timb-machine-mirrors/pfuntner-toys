@@ -33,9 +33,10 @@ Before invoking the command, consider that your edit buffer looks like:
 0015   # print '\n'.join(sys.argv[1:])
 ```
 ### Invoking the command
-To comment out lines 11-13 and uncomment lines 14-15, you could use this `vi` command:
+To comment out lines 11-13 and uncomment lines 14-15, you could use two `vi` commands:
 ```
-:11,15!pycomment
+:11,13!pycomment
+:14,15!pycomment
 ```
 ### After
 After the command runs, the comment status of lines 11 through 15 is swapped:
@@ -59,4 +60,4 @@ After the command runs, the comment status of lines 11 through 15 is swapped:
 
 ## Notes
 
-- This was inspired by the `Ctrl-/` command in [PyCharm](https://www.wikiwand.com/en/PyCharm).  I created this command because I often edit scripts just in `vi` rather than any IDE.
+- This was inspired by the [`Ctrl-/`](https://www.jetbrains.com/help/pycharm/commenting-and-uncommenting-blocks-of-code.html) command in [PyCharm](https://www.wikiwand.com/en/PyCharm).  I created this command because I often edit scripts just in `vi` rather than any IDE.
