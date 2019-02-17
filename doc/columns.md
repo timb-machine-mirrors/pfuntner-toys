@@ -56,4 +56,5 @@ $
 
 <ul>
 <li>The data is read from stdin.  If stdin is not directed from a file or pipe, en error message is printed and the script terminates</li>
+<li>Since creating this script, I learned about the <a href="http://man7.org/linux/man-pages/man1/column.1.html"><tt>column</tt></a> command common on Linux systems (although it's not part of the <a href="http://pubs.opengroup.org/onlinepubs/7908799/"><i>Single Unix Specification</i></a>), which is kind of similar.  My script has some more features in formatting but <tt>column</tt> might be a good alternative too.</li>
 </ul>
