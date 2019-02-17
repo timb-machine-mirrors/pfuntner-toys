@@ -38,6 +38,7 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`json`](doc/json.md) | Yes | JSON magic - it's a disservice to try to summarize this tool in a single string. |
 | [`megadiff`](doc/megadiff.md) | | Compare two directories trees |
 | [`peval`](doc/peval.md) | Yes | Evaluate Python expression strings |
+| [`pycomment`](doc/pycomment.md) | | vi command to toggle Python-style comments, similar to PyCharm `ctrl-/` command |
 | [`SecureKeyValues`](doc/SecureKeyValues.md) | | Manage secure key value stores |
 | [`timer`](doc/timer.md) | | Display a progress meter over a specified duration of time |
 | [`uniqc`](doc/uniqc.md) | Yes | Counts unique instances of input |
