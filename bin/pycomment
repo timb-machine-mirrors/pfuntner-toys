@@ -6,43 +6,44 @@
 
 import re
 import sys
+import copy
 
-def sneaky_assert(assertion, nastygram):
-  global errors
-  value = eval(assertion)
-  if not value:
-    with open('/dev/tty', 'w') as stream:
-      stream.write('Assertion failed: {assertion!r}: {nastygram}\n'.format(**locals()))
-    errors += 1
-    return False
-  return True
+def len_of_group1(match):
+  if match:
+    return len(match.group(1))
+  else:
+    return None
+
+def all_commented_out(lengths):
+  lengths = set(lengths)
+  return (len(lengths) == 1) and (lengths != set([None]))
 
 assert not sys.stdin.isatty(), 'stdin must be redirected'
 
 errors = 0
-regexp = re.compile('^( *)\S.*$')
 lines = sys.stdin.read().splitlines()
-newlines = lines
+newlines = copy.deepcopy(lines)
 
-match = regexp.search(lines[0])
-if sneaky_assert('match', '{line!r} does not match {pattern!r}'.format(line=lines[0], pattern=regexp.pattern)):
-  prefix = match.group(1)
-  length = len(prefix)
-  regexp = re.compile('^ {{{length}}}(.*)$'.format(**locals()))
-  newlines = []
-  for line in lines:
-    if line:
-      match = regexp.search(line)
-      if sneaky_assert('match', '{line!r} does not match {pattern!r}'.format(pattern=regexp.pattern, **locals())):
-        if match.group(1):
-          if match.group(1).startswith('#'):
-            if match.group(1).startswith('# '):
-              line = prefix + match.group(1)[2:]
-            else:
-              line = prefix + match.group(1)[1:]
-          else:
-            line = prefix + '# ' + match.group(1)
-    newlines.append(line)
+# is the block completely commented out at the same column?
+regexp = re.compile('^(\s*)#( |$)')
+if all_commented_out([len_of_group1(regexp.search(line)) for line in lines]):
+  regexp = re.compile('^\s*(#( |$))')
+  for (pos, newline) in enumerate(newlines):
+    match = regexp.search(newline)
+    newlines[pos] = newline[:match.start(1)] + newline[match.end(1):]
+else:
+  # find least indented line
+  regexp = re.compile('(^\s*)\S')
+  indents = []
+  for newline in newlines:
+    match = regexp.search(newline)
+    if match:
+      indents.append(len(match.group(1)))
+  if indents:
+    least_indent = min(indents)
+    regexp = re.compile('(^\s{{{least_indent}}})'.format(**locals()))
+    for (pos, newline) in enumerate(newlines):
+      newlines[pos] = regexp.sub(r'\1' + '# ', newline)
 
 if errors:
   print '\n'.join(lines)
