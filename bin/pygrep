@@ -27,7 +27,7 @@ def process(filename=None):
         sys.stdout.write(filename)
         if numbers: sys.stdout.write(' ')
       if numbers:
-        sys.stdout.write(lineno)
+        sys.stdout.write(str(lineno))
       if filename or numbers:
         sys.stdout.write(':')
       sys.stdout.write("%s\n" % line)
