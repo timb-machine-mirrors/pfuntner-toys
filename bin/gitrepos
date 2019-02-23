@@ -19,22 +19,23 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-def findfiles(root, name, isDir=False, isFile=True):
+def findfiles(root, name, isDir=False, isFile=True, assureNotLink=False):
   ret = []
-  base = os.path.basename(root)
-  if os.path.isfile(root):
-    if re.search(name, base) and isFile:
-      ret.append(root)
-  elif os.path.isdir(root):
-    if re.search(name, base) and isDir:
-      ret.append(root)
-    children = []
-    try:
-      children = os.listdir(root)
-    except Exception as e:
-      log.error('Could not list directory {root!r}: {e!s}'.format(**locals()))
-    for child in children:
-      ret += findfiles(os.path.join(root, child), name, isDir, isFile)
+  if (not assureNotLink) or (not os.path.islink(root)):
+    base = os.path.basename(root)
+    if os.path.isfile(root):
+      if re.search(name, base) and isFile:
+        ret.append(root)
+    elif os.path.isdir(root):
+      if re.search(name, base) and isDir:
+        ret.append(root)
+      children = []
+      try:
+        children = os.listdir(root)
+      except Exception as e:
+        log.error('Could not list directory {root!r}: {e!s}'.format(**locals()))
+      for child in children:
+        ret += findfiles(os.path.join(root, child), name, isDir=isDir, isFile=isFile, assureNotLink=assureNotLink)
   return ret
 
 regexp = re.compile('^\s+url\s*=\s*(.*)$')
@@ -43,7 +44,7 @@ table = Table(('root', 'url'), desiredSep=' ')
 
 home = os.environ.get('HOME')
 if home:
-  gits = findfiles(home, name=r'^\.git$', isDir=True, isFile=False)
+  gits = findfiles(home, name=r'^\.git$', isDir=True, isFile=False, assureNotLink=True)
   log.debug('gits: {gits}'.format(**locals()))
   for git in gits:
     root = os.path.dirname(git)
