@@ -42,6 +42,7 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`nocrs`](doc/nocrs.md) | | Remove carriage returns from files |
 | [`peval`](doc/peval.md) | Yes | Evaluate Python expression strings |
 | [`pycomment`](doc/pycomment.md) | | vi command to toggle Python-style comments, similar to PyCharm `ctrl-/` command |
+| [`recentdownloads`](doc/recentdownloads.md) | | Find recently downloaded files |
 | [`SecureKeyValues`](doc/SecureKeyValues.md) | | Manage secure key value stores |
 | [`timer`](doc/timer.md) | | Display a progress meter over a specified duration of time |
 | [`timestamps`](doc/timestamps.md) | | Show times when files were last modified, most-recently updated first |
