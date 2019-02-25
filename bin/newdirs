@@ -6,15 +6,18 @@ import logging
 import argparse
 
 def dive(root):
+  ret = []
   log.debug('dive({root!r})'.format(**locals()))
-  if os.path.isdir(root):
+  if os.path.isdir(root) and not os.path.islink(root):
     base = os.path.basename(root)
     log.debug('testing: {base}'.format(**locals()))
     if regexp.search(base):
-      print root
+      ret.append(root)
 
     for child in os.listdir(root):
-      dive(os.path.join(root, child))
+      ret += dive(os.path.join(root, child))
+
+  return ret
 
 def makerange(low, high):
   nums = range(low, high+1)
@@ -41,4 +44,4 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
 log.debug('pattern: {regexp.pattern}'.format(**locals()))
 
-dive(os.environ['HOME'])
+print '\n'.join(sorted(dive(os.environ['HOME']), reverse=True))
