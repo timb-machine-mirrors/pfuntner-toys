@@ -46,11 +46,12 @@ else:
         log.debug('Caught `{e!s}` while converting {mtime!r} to float'.format(**locals()))
     log.debug('Raw mtime: {mtime}'.format(**locals()))
     if mtime:
+      # we don't have to do anything for suffix=='d' - mtime is all set!
       if suffix == 's':
         mtime /= 24*60*60
       elif suffix == 'm':
         mtime /= 24*60
-      elif suffix == 'h' or not suffix:
+      elif suffix == 'h':
         mtime /= 24
     if not mtime:
       log.error('{args.time!r} is not a valid time'.format(**locals()))
@@ -64,6 +65,6 @@ else:
 dir = findDir(["%(USERPROFILE)s/downloads", "%(HOME)s/downloads"])
 
 cmd = ["find", dir, "-maxdepth", "1", "-follow", "!", "-name", "*.swp", "-type", "f", "-mtime", str(mtime)]
-sys.stderr.write("%s\n" % cmd)
+log.debug("%s" % cmd)
 p = subprocess.Popen(cmd)
 exit(p.wait())

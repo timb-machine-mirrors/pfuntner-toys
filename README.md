@@ -36,11 +36,13 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`gitstatus`](doc/gitstatus.md) | | Show files in a local git repo that have been changed, etc. |
 | [`headtail`](doc/headtail.md) | Yes | Print out the top and bottom of stdin or one or more files |
 | [`hex`](doc/hex.md) | | Print out data or a file in hex and character form |
+| [`indent`](doc/indent.md) | | Indent stdin by a specified number of columns |
 | [`json`](doc/json.md) | Yes | JSON magic - it's a disservice to try to summarize this tool in a single string. |
 | [`megadiff`](doc/megadiff.md) | | Compare two directories trees |
 | [`nocrs`](doc/nocrs.md) | | Remove carriage returns from files |
 | [`peval`](doc/peval.md) | Yes | Evaluate Python expression strings |
 | [`pycomment`](doc/pycomment.md) | | vi command to toggle Python-style comments, similar to PyCharm `ctrl-/` command |
+| [`recentdownloads`](doc/recentdownloads.md) | | Find recently downloaded files |
 | [`SecureKeyValues`](doc/SecureKeyValues.md) | | Manage secure key value stores |
 | [`timer`](doc/timer.md) | | Display a progress meter over a specified duration of time |
 | [`timestamps`](doc/timestamps.md) | | Show times when files were last modified, most-recently updated first |
