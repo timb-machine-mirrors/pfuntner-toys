@@ -2,6 +2,7 @@
 
 import os
 import re
+import pdb
 import time
 import logging
 import argparse
@@ -18,17 +19,24 @@ def process(filename):
   with open(filename) as stream:
     timestamps = []
     bytes = 0
+    lines = 0
+    with_timestamps = 0
     while True:
       line = stream.readline()
       if line:
         bytes += len(line)
+        lines += 1
         timestamp = get_timestamp(line)
         if timestamp:
+          with_timestamps += 1
           timestamps.append(timestamp)
       else:
         break
 
-    log.debug('{bytes} bytes, {count} timestamps'.format(count=len(timestamps), **locals()))
+    # pdb.set_trace()
+    log.debug('read {bytes:,} bytes with {count:,} timestamps, {ratio:.2f}% had comments'.format(count=len(timestamps), ratio=(with_timestamps*100.0)/lines if lines else 0, **locals()))
+    if len(timestamps) > 2:
+      log.debug('Bytes written over {duration}'.format(duration=timestamps[-1]-timestamps[0]))
     total_rate = '{:.2f}b/sec'.format(bytes / (timestamps[-1]-timestamps[0]).total_seconds()) if len(timestamps) > 1 else 'n/a'
 
     if os.path.isfile(filename):
@@ -38,6 +46,7 @@ def process(filename):
       t2 = datetime.datetime.now()
       bytes2 = os.path.getsize(filename)
       measured_rate = '{:.2f}b/sec'.format((bytes2-bytes1) / (t2-t1).total_seconds())
+      log.debug('Measured {count:,} bytes over {duration} seconds'.format(count=bytes2-bytes1, duration=(t2-t1).total(seconds)))
     else:
       measured_rate = 'n/a'
 
