@@ -8,7 +8,7 @@ import argparse
 def dive(root):
   ret = []
   log.debug('dive({root!r})'.format(**locals()))
-  if os.path.isdir(root) and not os.path.islink(root):
+  if os.path.isdir(root) and (args.links or not os.path.islink(root)):
     base = os.path.basename(root)
     log.debug('testing: {base}'.format(**locals()))
     if regexp.search(base):
@@ -35,6 +35,7 @@ regexp = re.compile('^20[12]\d({months})({days})({hours})({minutes})({seconds})\
 ))
 
 parser = argparse.ArgumentParser()
+parser.add_argument('-l', '--links', dest='links', action='store_true', help='Follow symbolic links')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 args = parser.parse_args()
 
