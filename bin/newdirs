@@ -30,7 +30,7 @@ regexp = re.compile('^20[12]\d({months})({days})({hours})({minutes})({seconds})\
   months=makerange(1,12),
   days=makerange(1,31),
   hours=makerange(0,23),
-  minutes=makerange(1,59),
+  minutes=makerange(0,59),
   seconds=makerange(0,59),
 ))
 
