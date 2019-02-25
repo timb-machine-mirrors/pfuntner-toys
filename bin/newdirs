@@ -1,0 +1,44 @@
+#! /usr/bin/env python
+
+import re
+import os
+import logging
+import argparse
+
+def dive(root):
+  log.debug('dive({root!r})'.format(**locals()))
+  if os.path.isdir(root):
+    base = os.path.basename(root)
+    log.debug('testing: {base}'.format(**locals()))
+    if regexp.search(base):
+      print root
+
+    for child in os.listdir(root):
+      dive(os.path.join(root, child))
+
+def makerange(low, high):
+  nums = range(low, high+1)
+  return '|'.join(['{num:>02}'.format(**locals()) for num in nums])
+
+#                12341212121212123456789
+#                YYYYmmddHHMMSSNNNNNNNNN
+# /home/jpfuntne/20190225070346659215100
+regexp = re.compile('^20[12]\d({months})({days})({hours})({minutes})({seconds})\d{{9}}$'.format(
+  months=makerange(1,12),
+  days=makerange(1,31),
+  hours=makerange(0,23),
+  minutes=makerange(1,59),
+  seconds=makerange(0,59),
+))
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
+log.debug('pattern: {regexp.pattern}'.format(**locals()))
+
+dive(os.environ['HOME'])

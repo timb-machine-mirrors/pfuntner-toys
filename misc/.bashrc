@@ -12,6 +12,7 @@ alias r='fc -s'
 alias more=less
 alias width='tput cols'
 alias copy=cp
+alias newdir='dir=$(date +%Y%m%d%H%M%S%N); mkdir -v $dir; cd $dir'
 
 # My git frontend is not needed if you authenticate with an sshkey and use the ssh-style URL
 # for the repo such as git@github.com:USER/REPO.git
