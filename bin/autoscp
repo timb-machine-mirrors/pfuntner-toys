@@ -1,0 +1,52 @@
+#! /usr/bin/env python
+
+import os
+import time
+import signal
+import logging
+import argparse
+import subprocess
+
+def handler(signum, stack):
+  log.debug('ending due to SIGINT')
+  exit(0)
+
+parser = argparse.ArgumentParser(description='scp a local file when it gets updated')
+parser.add_argument('src', help='Source file from which to copy')
+parser.add_argument('dest', help='Destination file to which to copy')
+parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.INFO)
+
+signal.signal(signal.SIGINT, handler)
+
+if not os.path.isfile(args.src):
+  log.error('Cannot find {args.src!r} - only local source is supported'.format(**locals()))
+  exit(1)
+
+log.debug('Found {args.src!r}'.format(**locals()))
+lastcopy = None
+
+while True:
+  mtime = os.path.getmtime(args.src)
+  log.debug('lastcopy: {lastcopy!s}, mtime: {mtime!s}'.format(**locals()))
+  if os.path.getmtime(args.src) > lastcopy:
+    log.info('Copying {args.src!r} to {args.dest!r}'.format(**locals()))
+    cmd = [
+      'scp',
+      '-q',
+      args.src,
+      args.dest,
+    ]
+    log.debug('Executing {cmd}'.format(**locals()))
+    p = subprocess.Popen(cmd)
+    rc = p.wait()
+    if rc != 0:
+      log.warning('scp returned {rc}'.format(**locals()))
+      exit(1)
+    lastcopy = mtime
+  log.debug('Checking again in 5 seconds')
+  time.sleep(5)
