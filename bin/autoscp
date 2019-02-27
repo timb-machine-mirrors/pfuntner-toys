@@ -5,11 +5,15 @@ import time
 import signal
 import logging
 import argparse
+import datetime
 import subprocess
 
 def handler(signum, stack):
   log.debug('ending due to SIGINT')
   exit(0)
+
+def getmtime(filename):
+  return datetime.datetime.fromtimestamp(os.path.getmtime(filename))
 
 parser = argparse.ArgumentParser(description='scp a local file when it gets updated')
 parser.add_argument('src', help='Source file from which to copy')
@@ -31,10 +35,12 @@ log.debug('Found {args.src!r}'.format(**locals()))
 lastcopy = None
 
 while True:
-  mtime = os.path.getmtime(args.src)
+  mtime = getmtime(args.src)
   log.debug('lastcopy: {lastcopy!s}, mtime: {mtime!s}'.format(**locals()))
-  if os.path.getmtime(args.src) > lastcopy:
-    log.info('Copying {args.src!r} to {args.dest!r}'.format(**locals()))
+  if (not lastcopy) or (mtime > lastcopy):
+    log.info('Copying {args.src!r} to {args.dest!r}{elapsed}'.format(
+      elapsed=', last copy was {elapsed!s} ago'.format(elapsed=mtime-lastcopy) if lastcopy else '', 
+      **locals()))
     cmd = [
       'scp',
       '-q',

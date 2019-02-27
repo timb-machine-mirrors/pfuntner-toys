@@ -1,5 +1,14 @@
 #! /usr/bin/env python
 
+"""
+Simplify log messages
+
+This assumes log messages of the form:
+
+  date       time         level filename lineno pid   tid             msg
+  2019-02-27 10:00:24,615 DEBUG ./ultralogs:128 23580 139859126458176 MSG ...
+"""
+
 import os
 import re
 import sys
