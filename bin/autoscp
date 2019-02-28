@@ -12,8 +12,22 @@ def handler(signum, stack):
   log.debug('ending due to SIGINT')
   exit(0)
 
-def getmtime(filename):
-  return datetime.datetime.fromtimestamp(os.path.getmtime(filename))
+def safe_max(l):
+  return max(l) if l else None
+  
+def getmtime(root, depth=0):
+  if dir:
+    if os.path.isfile(root):
+      return os.path.getmtime(root)
+    elif os.path.isdir(root):
+      most_recents = []
+      for child in os.listdir(root):
+        most_recents.append(getmtime(os.path.join(root, child), depth+1))
+      most_recent = safe_max(most_recents)
+      log.debug('max of {root!r}: {most_recent}'.format(**locals()))
+      return (datetime.datetime.fromtimestamp(most_recent) if most_recent else None) if depth == 0 else (most_recent if most_recent else None)
+  else:
+    return datetime.datetime.fromtimestamp(os.path.getmtime(root))
 
 parser = argparse.ArgumentParser(description='scp a local file when it gets updated')
 parser.add_argument('src', help='Source file from which to copy')
@@ -27,11 +41,14 @@ log.setLevel(logging.DEBUG if args.verbose else logging.INFO)
 
 signal.signal(signal.SIGINT, handler)
 
-if not os.path.isfile(args.src):
+dir = False
+if os.path.isdir(args.src):
+  dir = True
+elif not os.path.isfile(args.src):
   log.error('Cannot find {args.src!r} - only local source is supported'.format(**locals()))
   exit(1)
 
-log.debug('Found {args.src!r}'.format(**locals()))
+log.debug('Found {args.src!r}, dir={dir}'.format(**locals()))
 lastcopy = None
 
 while True:
@@ -42,11 +59,14 @@ while True:
       elapsed=', last copy was {elapsed!s} ago'.format(elapsed=mtime-lastcopy) if lastcopy else '', 
       **locals()))
     cmd = [
-      'scp',
-      '-q',
-      args.src,
-      args.dest,
-    ]
+            'scp',
+            '-q',
+          ] + \
+          ([ '-r' ] if dir else []) + \
+          [
+            args.src,
+            args.dest,
+          ]
     log.debug('Executing {cmd}'.format(**locals()))
     p = subprocess.Popen(cmd)
     rc = p.wait()
