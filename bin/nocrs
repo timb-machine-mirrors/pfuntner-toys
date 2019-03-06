@@ -21,7 +21,7 @@ def read(filename):
   return ret
 
 def backup(filename):
-  backup_filename = '.' + filename + '-' + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+  backup_filename = filename + '-' + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
   log.info('Backing up {filename!r} to {backup_filename!r}'.format(**locals()))
   cmd = ['cp', '-pv', filename, backup_filename]
   log.debug('Executing: {cmd}'.format(**locals()))
