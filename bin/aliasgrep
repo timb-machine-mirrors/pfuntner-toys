@@ -1,0 +1,25 @@
+#! /usr/bin/env python
+
+import re
+import sys
+import logging
+import argparse
+  
+parser = argparse.ArgumentParser()
+parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
+assert not sys.stdin.isatty(), 'stdin must be redirected'
+
+for line in sys.stdin.read().splitlines():
+  match = re.search('=\'?([^\']+)', line)
+  log.debug('{line!r}: {group!r}'.format(
+    group=match.group(1) if match else None,
+    **locals()
+  ))
+  if match:
+    print match.group(1)

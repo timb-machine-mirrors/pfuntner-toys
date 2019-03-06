@@ -4,3 +4,4 @@ pinger.json
 bin/gitpulls
 bin/stager
 bin/tostaging
+bin/megassh.json
