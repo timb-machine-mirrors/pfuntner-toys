@@ -100,6 +100,7 @@ for system in systems:
 
       push = None
       cmd = []
+      name = system["name"]
       host = system["host"]
       user = system["user"]
       remote = "{user}@{host}".format(**locals())
@@ -118,7 +119,7 @@ for system in systems:
         dst = "{remote}:{dst}".format(**locals())
       cmd.append(dst)
 
-      print "%s: %s" % (host, ' '.join(cmd))
+      print "%s: %s" % (name, ' '.join(cmd))
   
     if isSSH:
       cmd = ["%s@%s" % (system["user"], system["host"])] + cmd
