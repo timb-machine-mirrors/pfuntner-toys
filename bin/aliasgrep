@@ -4,6 +4,7 @@ import re
 import sys
 import logging
 import argparse
+import subprocess
   
 parser = argparse.ArgumentParser()
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
@@ -14,12 +15,22 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-assert not sys.stdin.isatty(), 'stdin must be redirected'
+data = ''
+
+if sys.stdin.isatty():
+  cmd = ['bash', '-ic', 'alias']
+  log.debug('Executing {cmd}'.format(**locals()))
+  p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  (data, stderr) = p.communicate()
+  rc = p.wait()
+  log.debug('{cmd}: {rc}, {data!r}, {stderr!r}'.format(**locals()))
+else:
+  data = sys.stdin.read()
 
 main_regexp = re.compile('^alias ([^=]+)=\'?([^\']+)')
 alias_regexp = re.compile(args.regexp) if args.regexp else None
 
-for line in sys.stdin.read().splitlines():
+for line in data.splitlines():
   match = main_regexp.search(line)
   log.debug('{line!r}: {groups!r}'.format(
     groups=match.groups() if match else None,
