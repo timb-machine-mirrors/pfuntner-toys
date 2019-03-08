@@ -7,6 +7,7 @@ import argparse
   
 parser = argparse.ArgumentParser()
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+parser.add_argument('regexp', nargs='?', help='Regexp to match the alias name')
 args = parser.parse_args()
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
@@ -15,11 +16,15 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
 assert not sys.stdin.isatty(), 'stdin must be redirected'
 
+main_regexp = re.compile('^alias ([^=]+)=\'?([^\']+)')
+alias_regexp = re.compile(args.regexp) if args.regexp else None
+
 for line in sys.stdin.read().splitlines():
-  match = re.search('=\'?([^\']+)', line)
-  log.debug('{line!r}: {group!r}'.format(
-    group=match.group(1) if match else None,
+  match = main_regexp.search(line)
+  log.debug('{line!r}: {groups!r}'.format(
+    groups=match.groups() if match else None,
     **locals()
   ))
   if match:
-    print match.group(1)
+    if (not alias_regexp) or alias_regexp.search(match.group(1)):
+      print match.group(2)
