@@ -36,5 +36,5 @@ The script is too interactive to give a good example. Just try it out.
   ```
   
   Notes:
-  - The `--` is very important - this tells `br` that it's options are complete so the `-c` will be passed to `vi`
+  - The `--` is very important - this tells `br` that its options are complete so the `-c` will be passed to `vi`
   - The lack of a space after `-c` is also significant.  If you pass and operand to an option, you cannot leave any space or else `br` will think it's a filename and try to fully-qualify it
