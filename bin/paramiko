@@ -76,15 +76,37 @@ else:
         log.debug('Sent {bytes} bytes'.format(**locals()))
         sent += bytes
     channel.shutdown_write() # send EOF to remote stdin
+
+    log.debug('Getting stdout')
+    stdout = ''
+    while True:
+      block = channel.recv(2**16)
+      if block:
+        log.debug('Received {bytes} byte block'.format(bytes=len(block)))
+        stdout += block
+      else:
+        log.debug('Reached EOF')
+        break
+    sys.stdout.write(stdout)
+
+    log.debug('Getting stderr')
+    stderr = ''
+    while True:
+      block = channel.recv_stderr(2**16)
+      if block:
+        log.debug('Received {bytes} byte block'.format(bytes=len(block)))
+        stderr += block
+      else:
+        log.debug('Reached EOF')
+        break
+    sys.stderr.write(stderr)
+
     log.debug('Getting exit status')
     rc = channel.recv_exit_status()
     log.debug('Exit status {rc}'.format(**locals()))
 
-    log.debug('Getting stdout')
-    sys.stdout.write(channel.recv(2**64))
-
-    log.debug('Getting stderr')
-    sys.stderr.write(channel.recv_stderr(2**64))
 if client:
   log.debug('Closing paramiko client')
   client.close()
+
+exit(rc)
