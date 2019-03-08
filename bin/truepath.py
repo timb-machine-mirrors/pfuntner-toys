@@ -6,12 +6,16 @@ import logging
 import argparse
 
 def process(rawpath, log):
-  path = os.path.abspath(rawpath)
-  if 'win' in sys.platform:
-    log.debug('Sorry to see you\'re using Windoze...')
-    path = 'C:\\cygwin64' + path.replace('/', '\\')   
+  if rawpath.startswith('-'):
+    log.debug('{rawpath!r} looks like an option so I\'m going to leave it alone!'.format(**locals()))
+    path = rawpath
   else:
-    log.debug('You are not using Windoze like a boss!')
+    path = os.path.abspath(rawpath)
+    if 'win' in sys.platform:
+      log.debug('Sorry to see you\'re using Windoze...')
+      path = 'C:\\cygwin64' + path.replace('/', '\\')   
+    else:
+      log.debug('You are not using Windoze like a boss!')
   log.debug('{rawpath!r} => {path!r}'.format(**locals()))
   return path
 
