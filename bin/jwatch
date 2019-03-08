@@ -15,4 +15,9 @@ then
   dir=$(cygpath -w "$dir")
 fi
 
-java -cp "$dir" jwatch "$@"
+if test -z "$JAVA"
+then
+  JAVA=$(which java 2>/dev/null)
+fi
+
+"$JAVA" -cp "$dir" jwatch "$@"

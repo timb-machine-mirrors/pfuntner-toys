@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import os
 import logging
 import argparse
 import subprocess
@@ -12,6 +13,34 @@ def run(cmd):
   if rc != 0:
     exit(rc)
 
+def common(*dirs):
+  ret = dirs[0]
+  log.debug('dirs: {dirs}, ret={ret}'.format(**locals()))
+  if len(dirs) > 1:
+    pos = min(len(dirs[0]), len(dirs[1]))-1
+    log.debug('{pos}, {one!r}, {two!r}'.format(one=dirs[0][pos], two=dirs[1][pos], pos=pos))
+    while (pos >= 0) and (dirs[0][pos] != dirs[1][pos]):
+      log.debug('{pos}, {one!r}, {two!r}'.format(one=dirs[0][pos], two=dirs[1][pos], pos=pos))
+      pos -= 1
+    if pos < 0:
+      ret = []
+    else:
+      ret = common(*([dirs[0][:pos+1]] + list(dirs[2:])))
+  log.debug('dirs: {dirs} => {ret}'.format(**locals()))
+  return ret
+
+def lastdir(path):
+  return os.path.dirname(path) if os.path.isfile(path) else path
+
+def shorten(paths, dir):
+  ret = []
+  for path in paths:
+    path = path[len(dir):]
+    if not path:
+      path = '.'
+    ret.append(path)
+  return ret
+
 parser = argparse.ArgumentParser(description='git Add, Commit, Push')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 parser.add_argument('-m', '--comment', dest='comment', help='Provide comment')
@@ -22,6 +51,18 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-run('git add'.split() + args.files)
-run('git commit'.split() + (['-m', args.comment] if args.comment else []))
-run('git push'.split())
+paths = [os.path.abspath(path) for path in args.files]
+log.debug('paths: {paths}'.format(**locals()))
+dir = common(*[lastdir(path).split('/')[1:] for path in paths])
+log.debug('dir: {dir}'.format(**locals()))
+if dir:
+  dir = '/' + ('/'.join(dir)) + '/'
+
+  log.info('Changing current working directory to {dir}'.format(**locals()))
+  os.chdir(dir)
+
+  run('git add'.split() + shorten(paths, dir))
+  run('git commit'.split() + (['-m', args.comment] if args.comment else []))
+  run('git push'.split())
+else:
+  parser.error('No common directory for {args.files}'.format(**locals()))

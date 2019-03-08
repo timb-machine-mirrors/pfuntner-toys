@@ -8,24 +8,32 @@ import argparse
 
 class Reader(object):
   def __init__(self, stream):
-    self.stream = stream
-    self.buf = []
+    self.data = stream.read()
     self.pos = 0
 
   def read(self, bytes=1):
     ret = ''
     for iteration in range(bytes):
-      if self.buf:
-        ret += self.buf.pop(0)
-      else:
-        ret += self.stream.read(1)
-    self.pos += len(ret)
+      if self.pos >= len(self.data):
+        break
+      ret += self.data[self.pos]
+      self.pos += 1
     return ret
 
   def push(self, s):
-    log.debug('Pushing {s!r} back onto {self.buf}, pos={self.pos}'.format(**locals()))
     self.pos -= len(s)
-    self.buf += [c for c in s]
+
+  def currline(self):
+    start = self.pos
+    if (self.pos >= len(self.data)) or (self.data[self.pos] == '\n'):
+      start -= 1
+    while (start > 0) and (self.data[start] != '\n'):
+      start -= 1
+    stop = self.pos
+    while (stop < len(self.data)) and (self.data[stop] != '\n'):
+      stop += 1
+
+    return self.data[start:stop]
 
 def process(filename):
   if os.path.isfile(filename):
@@ -79,7 +87,7 @@ def process(filename):
               if (c+follow) == '.format':
                 log.info('Found `.format()` after a string at position {pos}'.format(pos=reader.pos-6))
               else:
-                log.warning('Did not find `.format()` after a string at {filename}:{pos}'.format(pos=reader.pos-6, **locals()))
+                log.warning('Did not find `.format()` after a string at {filename}:{pos}: {line!r}'.format(pos=reader.pos-6, line=reader.currline(), **locals()))
                 reader.push(follow)
               need_format = False
             elif c in '\'"':
