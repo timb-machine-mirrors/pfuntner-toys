@@ -21,7 +21,7 @@ def md5sum(filename):
     hash.update(stream.read())
   return hash.hexdigest()
 
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(description='Compare a local tools directory with a remote directory accessed via ssh')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 parser.add_argument('remote_dest', help='Remote destination user/system: USER@SYS, SYS')
 parser.add_argument('remote_dir', help='Remote directory')

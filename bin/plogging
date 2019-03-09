@@ -22,7 +22,7 @@ def process(filename):
   except Exception as e:
     log.error('Could not process {filename!r}: {e!s}'.format(**locals()))
 
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(description='Print out levels being used in Python logging')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 parser.add_argument('files', metavar='file', nargs='+', help='One or more files')
 args = parser.parse_args()

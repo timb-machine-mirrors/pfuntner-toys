@@ -7,7 +7,7 @@ import logging
 """
 import argparse
 
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(description='Anonymize stdin data')
 parser.add_argument('-w', '--whitespace', dest='whitespace', action='store_true', help='Remove ')
 args = parser.parse_args()
 """
@@ -17,8 +17,7 @@ log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
 if sys.stdin.isatty():
-  log.critical('stdin must be redirected')
-  exit(1)
+  parser.error('stdin must be redirected')
 
 regexp = re.compile('\w+')
 

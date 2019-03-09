@@ -21,7 +21,7 @@ def cleanup(signum=None, frame=None):
     os.remove(name)
   exit(0)
 
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(description='Launch vi on a file/data stream in read-only mode')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 
 if 'win' in sys.platform:

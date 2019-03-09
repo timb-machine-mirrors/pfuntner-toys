@@ -34,7 +34,7 @@ regexp = re.compile('^20[12]\d({months})({days})({hours})({minutes})({seconds})\
   seconds=makerange(0,59),
 ))
 
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(description='Find temporary `YYYYmmddHHMMSS` directories')
 parser.add_argument('-l', '--links', dest='links', action='store_true', help='Follow symbolic links')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 args = parser.parse_args()

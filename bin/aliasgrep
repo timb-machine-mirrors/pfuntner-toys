@@ -6,7 +6,7 @@ import logging
 import argparse
 import subprocess
   
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(description='Search bash aliases, printing the definition(s)')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 parser.add_argument('regexp', nargs='?', help='Regexp to match the alias name')
 args = parser.parse_args()
