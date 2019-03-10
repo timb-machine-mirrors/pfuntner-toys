@@ -7,6 +7,12 @@ import argparse
 
 converters = {}
 
+def safeLog10(num):
+  try:
+    return math.log10(num)
+  except:
+    return 0
+
 class Convertor(object):
   def __init__(self, imperial, metric, conversion):
     imperial_units = imperial.keys()
@@ -51,7 +57,7 @@ def findConverter(amt, suffix):
   suffix_type = None
   converter = None
   isImperial = True
-  for curr_type in converters.keys():
+  for curr_type in [args.scale] if args.scale else converters.keys():
     for (pos, curr) in enumerate(converters[curr_type].imperial_list):
       log.debug('Examining curr[0]: {}'.format(curr[0]))
       if curr[0] == suffix:
@@ -72,7 +78,7 @@ def findConverter(amt, suffix):
 
 def convert(amt, suffix):
   (original_amt, original_suffix) = (amt, suffix)
-  original_digits = math.log10(amt)
+  original_digits = safeLog10(amt)
   log.debug('original_digits: {original_digits}'.format(**locals()))
 
   (suffix_type, converter, isImperial) = findConverter(amt, suffix)
@@ -118,15 +124,18 @@ def convert(amt, suffix):
       log.debug('Now: {amt} {suffix}'.format(**locals()))
       converter -= 1
 
-  if converters[suffix_type].conversion['from'] == suffix:
-    amt *= converters[suffix_type].conversion['amt'] 
-    suffix = converters[suffix_type].conversion['to'] 
+  if type(converters[suffix_type].conversion['amt']) == float:
+    if converters[suffix_type].conversion['from'] == suffix:
+      amt *= converters[suffix_type].conversion['amt'] 
+      suffix = converters[suffix_type].conversion['to'] 
+    else:
+      amt /= converters[suffix_type].conversion['amt'] 
+      suffix = converters[suffix_type].conversion['from'] 
   else:
-    amt /= converters[suffix_type].conversion['amt'] 
-    suffix = converters[suffix_type].conversion['from'] 
+    (amt, suffix) = converters[suffix_type].conversion['amt'](amt, suffix)
 
   log.debug('Now: {amt} {suffix}'.format(**locals()))
-  results = [(amt, suffix, math.log10(amt))]
+  results = [(amt, suffix, safeLog10(amt))]
 
   (suffix_type, converter, isImperial) = findConverter(amt, suffix)
   if converter is None:
@@ -140,7 +149,7 @@ def convert(amt, suffix):
       amt = (amt / converters[suffix_type].imperial_list[converter][1]) * converters[suffix_type].imperial_list[converter+1][1]
       suffix = converters[suffix_type].imperial_list[converter+1][0]
       log.debug('Now: {amt} {suffix}'.format(**locals()))
-      results.append((amt, suffix, math.log10(amt)))
+      results.append((amt, suffix, safeLog10(amt)))
       converter += 1
 
     log.debug('decrease to smaller units')
@@ -149,7 +158,7 @@ def convert(amt, suffix):
       amt = (amt / converters[suffix_type].imperial_list[converter][1]) * converters[suffix_type].imperial_list[converter-1][1]
       suffix = converters[suffix_type].imperial_list[converter-1][0]
       log.debug('Now: {amt} {suffix}'.format(**locals()))
-      results.append((amt, suffix, math.log10(amt)))
+      results.append((amt, suffix, safeLog10(amt)))
       converter -= 1
   else:
     log.debug('increase to larger units')
@@ -157,7 +166,7 @@ def convert(amt, suffix):
       amt = (amt / converters[suffix_type].metric_list[converter][1]) * converters[suffix_type].metric_list[converter+1][1]
       suffix = converters[suffix_type].metric_list[converter+1][0]
       log.debug('Now: {amt} {suffix}'.format(**locals()))
-      results.append((amt, suffix, math.log10(amt)))
+      results.append((amt, suffix, safeLog10(amt)))
       converter += 1
 
     log.debug('decrease to smaller units')
@@ -165,7 +174,7 @@ def convert(amt, suffix):
       amt = (amt / converters[suffix_type].metric_list[converter][1]) * converters[suffix_type].metric_list[converter-1][1]
       suffix = converters[suffix_type].metric_list[converter-1][0]
       log.debug('Now: {amt} {suffix}'.format(**locals()))
-      results.append((amt, suffix, math.log10(amt)))
+      results.append((amt, suffix, safeLog10(amt)))
       converter -= 1
 
   results = sorted(results, key=lambda result: abs(original_digits - result[2]))
@@ -176,14 +185,8 @@ def convert(amt, suffix):
     **locals()
   )
 
-parser = argparse.ArgumentParser(description='Unit converter')
-parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
-parser.add_argument('units', metavar='unit', nargs='+', help='One or more units: `NUM suffix` or `NUMsuffix`')
-args = parser.parse_args()
-
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
-log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
 define(name='length',
   imperial={
@@ -203,7 +206,51 @@ define(name='length',
   }
 )
 
-regexp = re.compile('^(-?(?:\d+\.?\d*)|(?:\d*\.\d+))([a-z]+)?$')
+define(name='mass',
+  imperial={
+    'lb': 1,
+    'oz': 16,
+  },
+  metric={
+    'kg': 1,
+    'g': 1000,
+  },
+  conversion={
+    'from': 'lb',
+    'to': 'kg',
+    'amt': 0.453592,
+  }
+)
+
+def temperature_converter(amt, suffix):
+  if suffix == 'F':
+    return ((amt-32) / (9.0/5), 'C')
+  else:
+    return ((amt * (9.0/5)) + 32, 'F')
+
+define(name='temperature',
+  imperial={
+    'F': 1,
+  },
+  metric={
+    'C': 1,
+  },
+  conversion={
+    'from': 'F',
+    'to': 'C',
+    'amt': temperature_converter,
+  }
+)
+
+parser = argparse.ArgumentParser(description='Unit converter')
+parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+parser.add_argument('-s', '--scale', choices=converters.keys(), help='Specify scale')
+parser.add_argument('units', metavar='unit', nargs='+', help='One or more units: `NUM suffix` or `NUMsuffix`')
+args = parser.parse_args()
+
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
+regexp = re.compile('^(-?(?:\d+\.?\d*)|(?:\d*\.\d+))([a-zA-Z]+)?$')
 
 while args.units:
   unit = args.units.pop(0)
@@ -212,6 +259,7 @@ while args.units:
 
   if not match:
     log.error('{unit} is not valid'.format(**locals()))
+    exit(1)
   amt = float(match.group(1))
   if match.group(2):
     suffix = match.group(2)
