@@ -283,7 +283,8 @@ while args.units:
     suffix = match.group(2)
   else:
     if not args.units:
-      log.error('No suffix for {units}'.format(**locals()))
+      log.error('No suffix for {amt}'.format(**locals()))
+      exit(1)
     suffix = args.units.pop(0)
 
   convert(amt, suffix)
