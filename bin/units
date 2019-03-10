@@ -206,6 +206,24 @@ define(name='length',
   }
 )
 
+define(name='volume',
+  imperial={
+    'gal': 1,
+    'oz': 128,
+    'tbsp': 256,
+    'tsp': 768,
+  },
+  metric={
+    'l': 1,
+    'ml': 1000,
+  },
+  conversion={
+    'from': 'gal',
+    'to': 'l',
+    'amt': 3.78541,
+  }
+)
+
 define(name='mass',
   imperial={
     'lb': 1,
