@@ -5,10 +5,8 @@ import os
 import signal
 import logging
 import argparse
-import subprocess
 
 def process(filename):
-  global output
 
   if os.path.isfile(filename):
     data = ''
@@ -22,7 +20,7 @@ def process(filename):
     for hit in hits:
       if not re.search('{hit}\.'.format(**locals()), data, re.MULTILINE):
         log.debug('{filename} does not use {hit}'.format(**locals()))
-        output.write('{filename} {hit}\n')
+        print '{filename} {hit}'.format(**locals())
   else:
     log.error('{filename!r} is not a file'.format(**locals()))
 
@@ -37,10 +35,4 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
 regexp = re.compile('^(?:from\s+\w+\s+)?import\s+(\w+)', re.MULTILINE)
 
-pipe = os.pipe()
-output = os.fdopen(pipe[1], 'w')
-p = subprocess.Popen(['column'], stdin=pipe[0])
 map(process, args.files)
-output.close()
-log.debug('Waiting for `column` to end')
-p.wait()
