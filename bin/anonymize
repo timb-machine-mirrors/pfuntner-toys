@@ -3,14 +3,11 @@
 import re
 import sys
 import logging
-
-"""
 import argparse
 
 parser = argparse.ArgumentParser(description='Anonymize stdin data')
-parser.add_argument('-w', '--whitespace', dest='whitespace', action='store_true', help='Remove ')
+parser.add_argument('-d', '--digits', dest='digits', action='store_true', help='Remove only digits')
 args = parser.parse_args()
-"""
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
@@ -19,11 +16,14 @@ log.setLevel(logging.DEBUG)
 if sys.stdin.isatty():
   parser.error('stdin must be redirected')
 
-regexp = re.compile('\w+')
+if args.digits:
+  regexp = re.compile('\d+')
+else:
+  regexp = re.compile('\w+')
 
 while True:
   line = sys.stdin.readline()
   if line:
-    sys.stdout.write(regexp.sub('foo', line))
+    sys.stdout.write(regexp.sub('#' if args.digits else 'foo', line))
   else:
     break
