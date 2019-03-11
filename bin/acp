@@ -58,11 +58,13 @@ log.debug('dir: {dir}'.format(**locals()))
 if dir:
   dir = '/' + ('/'.join(dir)) + '/'
 
-  log.info('Changing current working directory to {dir}'.format(**locals()))
-  os.chdir(dir)
-
-  run('git add'.split() + shorten(paths, dir))
-  run('git commit'.split() + (['-m', args.comment] if args.comment else []))
-  run('git push'.split())
+  if os.path.isdir(dir):
+    log.info('Changing current working directory to {dir}'.format(**locals()))
+    os.chdir(dir)
+    run('git add'.split() + shorten(paths, dir))
+    run('git commit'.split() + (['-m', args.comment] if args.comment else []))
+    run('git push'.split())
+  else:
+    log.error('{dir!r} is not a directory'.format(**locals()))
 else:
   parser.error('No common directory for {args.files}'.format(**locals()))
