@@ -1,6 +1,7 @@
 .*
 pinger.json
 **.pyc
+**.class
 bin/gitpulls
 bin/stager
 bin/tostaging
