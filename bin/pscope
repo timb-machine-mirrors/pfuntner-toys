@@ -32,6 +32,11 @@ def process(item, depth=0):
         print '{indent}{item!r}'.format(
           indent='  '*depth,
           **locals()
+        )
+    elif type(data) in [int, float]:
+      print '{indent}{item}'.format(
+        indent='  '*depth,
+        **locals()
       )
     elif isinstance(data, tuple):
       log.debug('{count} tuple'.format(count=len(data)))
@@ -42,8 +47,6 @@ def process(item, depth=0):
     else:
       log.debug('Don\'t know how to handle {typ}'.format(typ=type(data)))
 
-assert not sys.stdin.isatty(), 'stdin must be redirected'
-
 parser = argparse.ArgumentParser(description='Scope out stdin')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 parser.add_argument('regexp', nargs='?', help='Regular expression')
@@ -53,8 +56,12 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
+if sys.stdin.isatty():
+  parser.error('stdin must be redirected')
+
 if args.regexp:
   regexp = re.compile(args.regexp)
+  log.debug('regexp: {regexp.pattern}'.format(**locals()))
 else:
   regexp = None
 
@@ -66,6 +73,7 @@ for line in sys.stdin.read().splitlines():
       **locals()
     ))
     if match:
+      print repr(line)
       if match.groups():
         map(process, match.groups())
       else:
