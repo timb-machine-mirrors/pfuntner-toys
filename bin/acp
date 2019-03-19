@@ -44,12 +44,13 @@ def shorten(paths, dir):
 parser = argparse.ArgumentParser(description='git Add, Commit, Push')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 parser.add_argument('-m', '--comment', dest='comment', help='Provide comment')
+parser.add_argument('-p', '--push', dest='nopush', action='store_true', help='Do not do push operation')
 parser.add_argument('files', metavar='file', nargs='+', help='One or more files to commit')
 args = parser.parse_args()
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
-log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+log.setLevel(logging.DEBUG if args.verbose else logging.INFO)
 
 paths = [os.path.abspath(path) for path in args.files]
 log.debug('paths: {paths}'.format(**locals()))
@@ -59,11 +60,14 @@ if dir:
   dir = '/' + ('/'.join(dir)) + '/'
 
   if os.path.isdir(dir):
-    log.info('Changing current working directory to {dir}'.format(**locals()))
+    log.debug('Changing current working directory to {dir}'.format(**locals()))
     os.chdir(dir)
     run('git add'.split() + shorten(paths, dir))
     run('git commit'.split() + (['-m', args.comment] if args.comment else []))
-    run('git push'.split())
+    if not args.nopush:
+      run('git push'.split())
+    else:
+      log.info('No push')
   else:
     log.error('{dir!r} is not a directory'.format(**locals()))
 else:
