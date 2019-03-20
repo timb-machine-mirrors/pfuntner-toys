@@ -67,7 +67,7 @@ if dir:
     if not args.nopush:
       run('git push'.split())
     else:
-      log.info('No push')
+      log.info('Due to request, not doing `git push`')
   else:
     log.error('{dir!r} is not a directory'.format(**locals()))
 else:
