@@ -44,7 +44,7 @@ def shorten(paths, dir):
 parser = argparse.ArgumentParser(description='git Add, Commit, Push')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 parser.add_argument('-m', '--comment', dest='comment', help='Provide comment')
-parser.add_argument('-p', '--push', dest='nopush', action='store_true', help='Do not do push operation')
+parser.add_argument('-p', '--push', '--nopush', dest='nopush', action='store_true', help='Do not do push operation')
 parser.add_argument('files', metavar='file', nargs='+', help='One or more files to commit')
 args = parser.parse_args()
 

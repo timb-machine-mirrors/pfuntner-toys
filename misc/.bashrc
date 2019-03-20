@@ -13,6 +13,7 @@ alias more=less
 alias width='tput cols'
 alias copy=cp
 alias newdir='dir=$(date +%Y%m%d%H%M%S%N); mkdir -v $dir; cd $dir'
+alias indent="$HOME/bin/indent"
 alias pushsshkey=ssh-copy-id
 
 # My git frontend is not needed if you authenticate with an sshkey and use the ssh-style URL

@@ -9,6 +9,10 @@ import getpass
 import argparse
 import paramiko
 
+
+def explore(*args):
+  log.debug('args: {args}'.format(**locals()))
+
 parser = argparse.ArgumentParser(description='General purpose Paramiko driver')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 parser.add_argument('-k', '--key', action='store_true', help='Use ssh RSA keys rather than prompting for password')
@@ -63,7 +67,8 @@ else:
   try:
     channel = client.get_transport().open_session()
     log.debug('Executing {args.cmd}'.format(**locals()))
-    channel.exec_command(' '.join(args.cmd))
+    explore(*args.cmd)
+    channel.exec_command(*args.cmd)
   except paramiko.SSHException as e:
     log.warning('Cannot execute {args.cmd} on {user}@{host}: {e!s}'.format(**locals()))
   else:
