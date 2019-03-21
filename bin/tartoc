@@ -14,6 +14,9 @@ def process(file_name=None):
   if args.gzip:
     cmd.append('-z')
 
+  if args.long:
+    cmd.append('-v')
+
   cmd.append('-f')
 
   if file_name:
@@ -33,6 +36,7 @@ def process(file_name=None):
 
 parser = argparse.ArgumentParser(description='Display table of contents of tarballs')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+parser.add_argument('-l', '--long', dest='long', action='store_true', help='Use tar -v')
 parser.add_argument('-z', '--gzip', dest='gzip', action='store_true', help='Use gzip decompression')
 parser.add_argument('files', metavar='file', nargs='*', help='Zero or more files')
 args = parser.parse_args()
