@@ -1,0 +1,49 @@
+#! /usr/bin/env python
+
+import sys
+import logging
+import argparse
+import subprocess
+
+def process(file_name=None):
+  cmd = [
+    'tar',
+    '-t',
+  ]
+
+  if args.gzip:
+    cmd.append('-z')
+
+  cmd.append('-f')
+
+  if file_name:
+    cmd.append(file_name)
+  else:
+    cmd.append('-')
+
+  log.debug(cmd)
+  p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+  (stdout, stderr) = p.communicate()
+  for line in stdout.splitlines():
+    print '{filename}{line}'.format(
+      filename='{file_name}: '.format(**locals()) if file_name else '',
+      line=line
+    )
+  p.wait()
+
+parser = argparse.ArgumentParser(description='Display table of contents of tarballs')
+parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+parser.add_argument('-z', '--gzip', dest='gzip', action='store_true', help='Use gzip decompression')
+parser.add_argument('files', metavar='file', nargs='*', help='Zero or more files')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
+if args.files:
+  map(process, args.files)
+else:
+  if sys.stdin.isatty():
+    parser.error('If no file names are specified on the command line, tarball must be redirected to stdin')
+  process()
