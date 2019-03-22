@@ -30,7 +30,10 @@ def process(file_name=None):
   (stdout, stderr) = p.communicate()
   if args.anonymize:
     stdout = regexp.sub('#', stdout)
-  for line in stdout.splitlines():
+  lines = stdout.splitlines()
+  if args.sort:
+    lines.sort()
+  for line in lines:
     print '{filename}{line}'.format(
       filename='{file_name}: '.format(**locals()) if file_name else '',
       line=line
@@ -41,6 +44,7 @@ parser = argparse.ArgumentParser(description='Display table of contents of tarba
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 parser.add_argument('-l', '--long', dest='long', action='store_true', help='Use tar -v')
 parser.add_argument('-a', '--anonymize', dest='anonymize', action='store_true', help='Normalize output by removing digits')
+parser.add_argument('-s', '--sort', dest='sort', action='store_true', help='Sort output')
 parser.add_argument('-z', '--gzip', dest='gzip', action='store_true', help='Use gzip decompression')
 parser.add_argument('files', metavar='file', nargs='*', help='Zero or more files')
 args = parser.parse_args()
