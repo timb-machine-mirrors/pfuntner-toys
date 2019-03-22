@@ -30,6 +30,8 @@ def process(file_name=None):
   (stdout, stderr) = p.communicate()
   if args.anonymize:
     stdout = regexp.sub('#', stdout)
+    if file_name:
+      file_name = regexp.sub('#', file_name)
   lines = stdout.splitlines()
   if args.sort:
     lines.sort()
