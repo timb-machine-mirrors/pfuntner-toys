@@ -1,290 +1,119 @@
 #! /usr/bin/env python
 
+import os
 import re
-import math
+import sys
+import json
 import logging
 import argparse
 
-converters = {}
+class Measurement(object):
+  @staticmethod
+  def find(amt, units):
+    for measurement in conversions:
+      if (not args.measurement) or (measurement['name'] == args.measurement_name):
+        if units in measurement['imperial'].keys():
+          return Measurement(amt, units, 'imperial', measurement)
+        elif units in measurement['metric'].keys():
+          return Measurement(amt, units, 'metric', measurement)
+    parser.error('Unknown units: {units!r}'.format(**locals()))
+  
+  def __init__(self, amt, units, system, measurement):
+    self.amt = amt
+    self.original_amt = amt
 
-def safeLog10(num):
-  try:
-    return math.log10(num)
-  except:
-    return 0
+    self.units = units
+    self.original_units = units
 
-class Convertor(object):
-  def __init__(self, imperial, metric, conversion):
-    imperial_units = imperial.keys()
-    self.imperial_list = sorted(imperial.items(), key=lambda item: item[1], reverse=True)
-    log.debug('imperial_list: {self.imperial_list}'.format(**locals()))
-    imperial_singletons = [key for (key, value) in imperial.items() if value == 1]
-    if len(imperial_singletons) != 1:
-      log.error('Expected one value of `1`: {imperial}'.format(**locals()))
-      exit(1)
-    self.imperial_singleton = [pos for (pos, curr) in enumerate(self.imperial_list) if curr[0] == imperial_singletons[0]][0]
-    log.debug('imperial_singleton: {self.imperial_singleton}'.format(**locals()))
+    self.system = system
+    self.original_system = system
 
-    metric_units = metric.keys()
-    self.metric_list = sorted(metric.items(), key=lambda item: item[1], reverse=True)
-    log.debug('metric_list: {self.metric_list}'.format(**locals()))
-    metric_singletons = [key for (key, value) in metric.items() if value == 1]
-    if len(metric_singletons) != 1:
-      log.error('Expected one value of `1`: {metric}'.format(**locals()))
-      exit(1)
-    self.metric_singleton = [pos for (pos, curr) in enumerate(self.metric_list) if curr[0] == metric_singletons[0]][0]
-    log.debug('metric_singleton: {self.metric_singleton}'.format(**locals()))
+    self.measurement = measurement
+    self.converter = measurement['conversion']['convert']
 
-    self.imperial_conversion_singleton = [
-      pos for (pos, curr) in enumerate(self.imperial_list) if (curr[0] in imperial_units) and (curr[0] in [conversion['from'], conversion['to']])
-    ][0]
-    self.metric_conversion_singleton = [
-      pos for (pos, curr) in enumerate(self.metric_list) if (curr[0] in metric_units) and (curr[0] in [conversion['from'], conversion['to']])
-    ][0]
-    self.conversion = conversion
+    self.sorted_units = [key for (key,value) in sorted(
+      measurement[system].items(), 
+      reverse=True, 
+      key=lambda suffix: suffix[1] # sort on value
+    )]
+    log.debug('sorted_units: {self.sorted_units}'.format(**locals()))
+
+    if hasattr(self.converter, '__call__'):
+      self.destination = units
+    else:
+      self.destination = measurement['conversion']['from'] if measurement['conversion']['from'] in self.sorted_units else measurement['conversion']['to']
+    log.debug('destination: {self.destination}'.format(**locals()))
+
+  def convert(self):
+    log.debug('self.converter: {self.converter}'.format(**locals()))
+    if hasattr(self.converter, '__call__'):
+      (amt, units, system) = self.converter(self.amt, self.units)
+      return Measurement(amt, units, system, self.measurement)
+    else:
+      assert False, 'work in progress'
 
   def __str__(self):
-    return 'self.imperial_list: {self.imperial_list}, self.imperial_singleton: {self.imperial_singleton}, self.metric_list: {self.metric_list}, self.metric_singleton: {self.metric_singleton}, self.conversion: {self.conversion}, self.imperial_conversion_singleton={self.imperial_conversion_singleton}, self.metric_conversion_singleton={self.metric_conversion_singleton}'.format(**locals())
+    return '{self.amt} {self.units} {self.system} {measurement_name}'.format(
+      measurement_name=self.measurement['name'],
+      **locals()
+    )
 
-def define(name, imperial, metric, conversion):
-  if name in converters:
-    log.critical('{name!r} has already been defined in converters'.format(**locals()))
-    exit(1)
-
-  converters[name] = Convertor(imperial, metric, conversion)
-
-def findConverter(amt, suffix):
-  suffix_type = None
-  converter = None
-  isImperial = True
-  for curr_type in [args.scale] if args.scale else converters.keys():
-    for (pos, curr) in enumerate(converters[curr_type].imperial_list):
-      log.debug('Examining curr[0]: {}'.format(curr[0]))
-      if curr[0] == suffix:
-        suffix_type = curr_type
-        converter = pos
-        break
-    if converter is None:
-      for (pos, curr) in enumerate(converters[curr_type].metric_list):
-        log.debug('Examining curr[0]: {}'.format(curr[0]))
-        if curr[0] == suffix:
-          suffix_type = curr_type
-          converter = pos
-          isImperial = False
-          break
-    if converter is not None:
-      break
-  return (suffix_type, converter, isImperial)
-
-def convert(amt, suffix):
-  (original_amt, original_suffix) = (amt, suffix)
-  original_digits = safeLog10(amt)
-  log.debug('original_digits: {original_digits}'.format(**locals()))
-
-  (suffix_type, converter, isImperial) = findConverter(amt, suffix)
-  if converter is None:
-    log.error('Did not find suffix {suffix!r}'.format(**locals()))     
-    exit(1)
-
-  log.info('converters[suffix_type]: {}'.format(str(converters[suffix_type])))
-
-  log.info('suffix_type: {suffix_type}, isImperial: {isImperial}, converter[{converter_int}]: {converter}'.format(
-    suffix_type=suffix_type,
-    isImperial=isImperial,
-    converter_int=converter,
-    converter=getattr(converters[suffix_type], 'imperial_list' if isImperial else 'metric_list')[converter],
-  ))
-
-  if isImperial:
-    log.debug('increase to larger units')
-    while (converter < len(converters[suffix_type].imperial_list)-1) and (converter < converters[suffix_type].imperial_conversion_singleton):
-      amt = (amt / converters[suffix_type].imperial_list[converter][1]) * converters[suffix_type].imperial_list[converter+1][1]
-      suffix = converters[suffix_type].imperial_list[converter+1][0]
-      log.debug('Now: {amt} {suffix}'.format(**locals()))
-      converter += 1
-
-    log.debug('decrease to smaller units')
-    while (converter > 0) and (converter > converters[suffix_type].imperial_conversion_singleton):
-      amt = (amt / converters[suffix_type].imperial_list[converter][1]) * converters[suffix_type].imperial_list[converter-1][1]
-      suffix = converters[suffix_type].imperial_list[converter-1][0]
-      log.debug('Now: {amt} {suffix}'.format(**locals()))
-      converter -= 1
-  else:
-    log.debug('increase to larger units')
-    while (converter < len(converters[suffix_type].metric_list)-1) and (converter < converters[suffix_type].metric_conversion_singleton):
-      amt = (amt / converters[suffix_type].metric_list[converter][1]) * converters[suffix_type].metric_list[converter+1][1]
-      suffix = converters[suffix_type].metric_list[converter+1][0]
-      log.debug('Now: {amt} {suffix}'.format(**locals()))
-      converter += 1
-
-    log.debug('decrease to smaller units')
-    while (converter > 0) and (converter > converters[suffix_type].metric_conversion_singleton):
-      amt = (amt / converters[suffix_type].metric_list[converter][1]) * converters[suffix_type].metric_list[converter-1][1]
-      suffix = converters[suffix_type].metric_list[converter-1][0]
-      log.debug('Now: {amt} {suffix}'.format(**locals()))
-      converter -= 1
-
-  if type(converters[suffix_type].conversion['amt']) == float:
-    if converters[suffix_type].conversion['from'] == suffix:
-      amt *= converters[suffix_type].conversion['amt'] 
-      suffix = converters[suffix_type].conversion['to'] 
-    else:
-      amt /= converters[suffix_type].conversion['amt'] 
-      suffix = converters[suffix_type].conversion['from'] 
-  else:
-    (amt, suffix) = converters[suffix_type].conversion['amt'](amt, suffix)
-
-  log.debug('Now: {amt} {suffix}'.format(**locals()))
-  results = [(amt, suffix, safeLog10(amt))]
-
-  (suffix_type, converter, isImperial) = findConverter(amt, suffix)
-  if converter is None:
-    log.error('Did not find suffix {suffix!r}'.format(**locals()))     
-    exit(1)
-  original_converter = converter
-
-  if isImperial:
-    log.debug('increase to larger units')
-    while converter < len(converters[suffix_type].imperial_list)-1:
-      amt = (amt / converters[suffix_type].imperial_list[converter][1]) * converters[suffix_type].imperial_list[converter+1][1]
-      suffix = converters[suffix_type].imperial_list[converter+1][0]
-      log.debug('Now: {amt} {suffix}'.format(**locals()))
-      results.append((amt, suffix, safeLog10(amt)))
-      converter += 1
-
-    log.debug('decrease to smaller units')
-    converter = original_converter 
-    while converter > 0:
-      amt = (amt / converters[suffix_type].imperial_list[converter][1]) * converters[suffix_type].imperial_list[converter-1][1]
-      suffix = converters[suffix_type].imperial_list[converter-1][0]
-      log.debug('Now: {amt} {suffix}'.format(**locals()))
-      results.append((amt, suffix, safeLog10(amt)))
-      converter -= 1
-  else:
-    log.debug('increase to larger units')
-    while converter < len(converters[suffix_type].metric_list)-1:
-      amt = (amt / converters[suffix_type].metric_list[converter][1]) * converters[suffix_type].metric_list[converter+1][1]
-      suffix = converters[suffix_type].metric_list[converter+1][0]
-      log.debug('Now: {amt} {suffix}'.format(**locals()))
-      results.append((amt, suffix, safeLog10(amt)))
-      converter += 1
-
-    log.debug('decrease to smaller units')
-    while converter > 0:
-      amt = (amt / converters[suffix_type].metric_list[converter][1]) * converters[suffix_type].metric_list[converter-1][1]
-      suffix = converters[suffix_type].metric_list[converter-1][0]
-      log.debug('Now: {amt} {suffix}'.format(**locals()))
-      results.append((amt, suffix, safeLog10(amt)))
-      converter -= 1
-
-  results = sorted(results, key=lambda result: abs(original_digits - result[2]))
-  log.debug('results: {results}'.format(**locals()))
-  print '{original_amt} {original_suffix} = {equiv_amt} {equiv_suffix}'.format(
-    equiv_amt=results[0][0],
-    equiv_suffix=results[0][1],
-    **locals()
-  )
+def massage(root):
+  """
+  Massage `units.json` by interpreting strings which accomplishes two things:
+    - converts numeric expressions that are encoded as strings (such as "INT**INT") into numeric values
+    - compiles lambda functions into callable functions
+  Returns: the same root object passed in, possibly altered
+  """
+  # log.debug('massage({root})'.format(**locals()))
+  if isinstance(root, list):
+    map(massage, root)
+  elif isinstance(root, dict):
+    for (key, value) in root.items():
+      if key in ['name', 'from', 'to']:
+        pass # no need to massage these fields - they remain as strings
+      elif isinstance(value, basestring):
+        root[key] = eval(value)
+      elif isinstance(value, dict):
+        massage(value)
+  return root
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
+log.setLevel(logging.DEBUG if '-v' in sys.argv else logging.WARNING)
 
-define(name='length',
-  imperial={
-    'mi': 1,
-    'ft': 5280,
-    'in': 5280*12,
-  },
-  metric={
-    'km': 1,
-    'm': 10**3,
-    'mm': 10**6,
-  },
-  conversion={
-    'from': 'in',
-    'to': 'mm',
-    'amt': 25.4,
-  }
-)
+conversions = {}
+with open(os.path.join(os.path.dirname(sys.argv[0]), 'units.json')) as stream:
+  conversions = massage(json.load(stream))
 
-define(name='volume',
-  imperial={
-    'gal': 1,
-    'oz': 128,
-    'tbsp': 256,
-    'tsp': 768,
-  },
-  metric={
-    'l': 1,
-    'ml': 1000,
-  },
-  conversion={
-    'from': 'gal',
-    'to': 'l',
-    'amt': 3.78541,
-  }
-)
-
-define(name='mass',
-  imperial={
-    'lb': 1,
-    'oz': 16,
-  },
-  metric={
-    'kg': 1,
-    'g': 1000,
-  },
-  conversion={
-    'from': 'lb',
-    'to': 'kg',
-    'amt': 0.453592,
-  }
-)
-
-def temperature_converter(amt, suffix):
-  if suffix == 'F':
-    return ((amt-32) / (9.0/5), 'C')
-  else:
-    return ((amt * (9.0/5)) + 32, 'F')
-
-define(name='temperature',
-  imperial={
-    'F': 1,
-  },
-  metric={
-    'C': 1,
-  },
-  conversion={
-    'from': 'F',
-    'to': 'C',
-    'amt': temperature_converter,
-  }
-)
-
-parser = argparse.ArgumentParser(description='Unit converter')
-parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
-parser.add_argument('-s', '--scale', choices=converters.keys(), help='Specify scale')
-parser.add_argument('units', metavar='unit', nargs='+', help='One or more units: `NUM suffix` or `NUMsuffix`')
+parser = argparse.ArgumentParser(description='Perform unit conversions')
+parser.add_argument('-m', '--measurement', dest='measurement', help='Measurement system', choices=[datum['name'] for datum in conversions or []])
+parser.add_argument('-v', '--verbose', dest='verbose', action='count', help='Enable more debugging')
+parser.add_argument('args', metavar='arg', nargs='+', help='Measurement to convert')
 args = parser.parse_args()
 
-log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+log.setLevel(logging.WARNING - 10*(args.verbose or 0))
+log.debug('conversions: {conversions}'.format(**locals()))
 
-regexp = re.compile('^(-?(?:\d+\.?\d*)|(?:\d*\.\d+))([a-zA-Z]+)?$')
-
-while args.units:
-  unit = args.units.pop(0)
-  match = regexp.search(unit)
-  log.debug('{unit!r}: {groups}'.format(groups=match.groups() if match else None, unit=unit))
-
-  if not match:
-    log.error('{unit} is not valid'.format(**locals()))
-    exit(1)
+match = re.search('^((?:\d+\.?\d?)|(?:\d*\.?\d+))(\w+)?$', args.args[0])
+if match:
   amt = float(match.group(1))
   if match.group(2):
-    suffix = match.group(2)
+    units = match.group(2)
+    if len(args.args) > 1:
+      parser.error('Unexpected arguments: {remain}'.format(remain=' '.join(args.args[1:])))
   else:
-    if not args.units:
-      log.error('No suffix for {amt}'.format(**locals()))
-      exit(1)
-    suffix = args.units.pop(0)
-
-  convert(amt, suffix)
+    if len(args.args) == 1:
+      parser.error('No units found for {amt}'.format(**locals()))
+    elif len(args.args) > 2:
+      parser.error('Unexpected arguments: {remain}'.format(remain=' '.join(args.args[2:])))
+    else:
+      units = args.args[1]
+  measurement1 = Measurement.find(amt, units)
+  log.info('Initial measurement: {measurement}'.format(
+    measurement=str(measurement1)
+  ))
+  measurement2 = measurement1.convert()
+  print '{measurement1.amt} {measurement1.units} = {measurement2.amt} {measurement2.units}'.format(**locals())
+else:
+  parser.error('Unexpected measurement: {arg}'.format(arg=args.args[0]))
