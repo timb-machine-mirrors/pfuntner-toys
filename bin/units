@@ -4,8 +4,18 @@ import os
 import re
 import sys
 import json
+import math
 import logging
 import argparse
+
+def other_system(system):
+  return 'imperial' if system == 'metric' else 'metric'
+
+def near_log10(x):
+  if x == 0:
+    return 0
+  else:
+    return math.log(x,10)
 
 class Measurement(object):
   @staticmethod
@@ -38,11 +48,24 @@ class Measurement(object):
     )]
     log.debug('sorted_units: {self.sorted_units}'.format(**locals()))
 
+    self.home_equivs = {}
+    self.other_equivs = {}
+
     if hasattr(self.converter, '__call__'):
       self.destination = units
     else:
       self.destination = measurement['conversion']['from'] if measurement['conversion']['from'] in self.sorted_units else measurement['conversion']['to']
     log.debug('destination: {self.destination}'.format(**locals()))
+
+  def convert_to(self, destination, equivs):
+    log.debug('convert_to({destination!r}, {equivs})'.format(**locals()))
+    while self.units != destination:
+      curr = self.sorted_units.index(self.units)
+      new_units = self.sorted_units[curr+1 if curr < self.sorted_units.index(destination) else curr-1]
+      self.amt = (self.amt / self.measurement[self.system][self.units]) * self.measurement[self.system][new_units]
+      self.units = new_units
+      equivs[self.units] = (self.amt, near_log10(self.amt))
+      log.debug('now: {}'.format(str(self)))
 
   def convert(self):
     log.debug('self.converter: {self.converter}'.format(**locals()))
@@ -50,7 +73,35 @@ class Measurement(object):
       (amt, units, system) = self.converter(self.amt, self.units)
       return Measurement(amt, units, system, self.measurement)
     else:
-      assert False, 'work in progress'
+      self.convert_to(self.destination, self.home_equivs)
+      log.debug('home_equivs: {self.home_equivs}'.format(**locals()))
+      if self.units == self.measurement['conversion']['from']:
+        other = Measurement(self.amt*self.converter, self.measurement['conversion']['to'], other_system(self.system), self.measurement)
+      else:
+        other = Measurement(self.amt/self.converter, self.measurement['conversion']['from'], other_system(self.system), self.measurement)
+      log.debug('other: {}'.format(str(other)))
+      amt = other.amt
+      units = other.units
+
+      self.other_equivs[other.units] = (other.amt, near_log10(other.amt))
+      other.convert_to(other.sorted_units[0], self.other_equivs)
+      log.debug('other_equivs: {self.other_equivs}'.format(**locals()))
+
+      other.amt = amt
+      other.units = units
+
+      other.convert_to(other.sorted_units[-1], self.other_equivs)
+      log.debug('other_equivs: {self.other_equivs}'.format(**locals()))
+
+      (other.units, value) = sorted(tuple(self.other_equivs.items()), key=lambda equiv: abs(equiv[1][1]-near_log10(self.original_amt)))[0]
+      other.amt = value[0]
+
+      if args.all:
+        self.convert_to(self.sorted_units[0], self.home_equivs)
+        self.amt = self.original_amt
+        self.units = self.original_units
+        self.convert_to(self.sorted_units[-1], self.home_equivs)
+      return other
 
   def __str__(self):
     return '{self.amt} {self.units} {self.system} {measurement_name}'.format(
@@ -78,6 +129,10 @@ def massage(root):
         massage(value)
   return root
 
+def show(equivs):
+  for (units, value) in equivs.items():
+    print '{amt} {units}'.format(amt=value[0], **locals())
+
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
 log.setLevel(logging.DEBUG if '-v' in sys.argv else logging.WARNING)
@@ -88,6 +143,7 @@ with open(os.path.join(os.path.dirname(sys.argv[0]), 'units.json')) as stream:
 
 parser = argparse.ArgumentParser(description='Perform unit conversions')
 parser.add_argument('-m', '--measurement', dest='measurement', help='Measurement system', choices=[datum['name'] for datum in conversions or []])
+parser.add_argument('-a', '--all', dest='all', action='store_true', help='Show all equivalent values')
 parser.add_argument('-v', '--verbose', dest='verbose', action='count', help='Enable more debugging')
 parser.add_argument('args', metavar='arg', nargs='+', help='Measurement to convert')
 args = parser.parse_args()
@@ -95,7 +151,7 @@ args = parser.parse_args()
 log.setLevel(logging.WARNING - 10*(args.verbose or 0))
 log.debug('conversions: {conversions}'.format(**locals()))
 
-match = re.search('^((?:\d+\.?\d?)|(?:\d*\.?\d+))(\w+)?$', args.args[0])
+match = re.search('^((?:\d+\.?\d*)|(?:\d*\.?\d+))(\w+)?$', args.args[0])
 if match:
   amt = float(match.group(1))
   if match.group(2):
@@ -114,6 +170,10 @@ if match:
     measurement=str(measurement1)
   ))
   measurement2 = measurement1.convert()
-  print '{measurement1.amt} {measurement1.units} = {measurement2.amt} {measurement2.units}'.format(**locals())
+  print '{measurement1.original_amt} {measurement1.original_units} = {measurement2.amt} {measurement2.units}'.format(**locals())
+  if args.all:
+    del measurement1.other_equivs[measurement2.units]
+    show(measurement1.home_equivs)
+    show(measurement1.other_equivs)
 else:
   parser.error('Unexpected measurement: {arg}'.format(arg=args.args[0]))
