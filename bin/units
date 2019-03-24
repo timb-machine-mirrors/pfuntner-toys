@@ -144,6 +144,7 @@ with open(os.path.join(os.path.dirname(sys.argv[0]), 'units.json')) as stream:
 parser = argparse.ArgumentParser(description='Perform unit conversions')
 parser.add_argument('-m', '--measurement', dest='measurement', help='Measurement system', choices=[datum['name'] for datum in conversions or []])
 parser.add_argument('-a', '--all', dest='all', action='store_true', help='Show all equivalent values')
+parser.add_argument('-f', '--fractional', dest='fractional', action='store_true', help='Break imperial fractions down to additional units')
 parser.add_argument('-v', '--verbose', dest='verbose', action='count', help='Enable more debugging')
 parser.add_argument('args', metavar='arg', nargs='+', help='Measurement to convert')
 args = parser.parse_args()
@@ -169,11 +170,39 @@ if match:
   log.info('Initial measurement: {measurement}'.format(
     measurement=str(measurement1)
   ))
-  measurement2 = measurement1.convert()
-  print '{measurement1.original_amt} {measurement1.original_units} = {measurement2.amt} {measurement2.units}'.format(**locals())
-  if args.all:
-    del measurement1.other_equivs[measurement2.units]
-    show(measurement1.home_equivs)
-    show(measurement1.other_equivs)
+  if args.fractional:
+    if measurement1.system == 'metric':
+      parser.error('Only imperial measurements can be used with -f')
+    elif len(measurement1.sorted_units) == 1:
+      parser.error('Only one unit defined for {}'.format(measurement1.measurement['name']))
+    measurement1.convert_to(measurement1.sorted_units[0], {})
+    log.debug('Now: {}'.format(str(measurement1)))
+    amt = measurement1.amt
+    results = []
+    final_units = measurement1.sorted_units[0]
+    pos = len(measurement1.sorted_units)-1
+    while pos > 0:
+      units = measurement1.sorted_units[pos]
+      factor = measurement1.measurement['imperial'][final_units] / measurement1.measurement['imperial'][units]
+      log.debug('factor: {factor}'.format(**locals()))
+      curr = int(amt / factor)
+      log.debug('{curr} {units}'.format(**locals()))
+      if curr:
+        results.append('{curr}{units}'.format(**locals()))
+        amt -= curr*factor
+      pos -= 1
+    log.debug('{amt} {final_units}'.format(**locals()))
+
+    if amt > 0:
+      results.append('{amt}{final_units}'.format(**locals()))
+
+    print ', '.join(results)
+  else:
+    measurement2 = measurement1.convert()
+    print '{measurement1.original_amt} {measurement1.original_units} = {measurement2.amt} {measurement2.units}'.format(**locals())
+    if args.all:
+      del measurement1.other_equivs[measurement2.units]
+      show(measurement1.home_equivs)
+      show(measurement1.other_equivs)
 else:
   parser.error('Unexpected measurement: {arg}'.format(arg=args.args[0]))
