@@ -152,24 +152,39 @@ args = parser.parse_args()
 log.setLevel(logging.WARNING - 10*(args.verbose or 0))
 log.debug('conversions: {conversions}'.format(**locals()))
 
-match = re.search('^((?:\d+\.?\d*)|(?:\d*\.?\d+))(\w+)?$', args.args[0])
-if match:
-  amt = float(match.group(1))
-  if match.group(2):
-    units = match.group(2)
-    if len(args.args) > 1:
-      parser.error('Unexpected arguments: {remain}'.format(remain=' '.join(args.args[1:])))
-  else:
-    if len(args.args) == 1:
-      parser.error('No units found for {amt}'.format(**locals()))
-    elif len(args.args) > 2:
-      parser.error('Unexpected arguments: {remain}'.format(remain=' '.join(args.args[2:])))
+measurement1 = None
+regexp = re.compile('^((?:\d+\.?\d*)|(?:\d*\.?\d+))(\w+)?$')
+while True:
+  if not args.args:
+    break # Exhausted the arguments!
+  match = regexp.search(args.args[0])
+  if match:
+    args.args.pop(0)
+    amt = float(match.group(1))
+    if match.group(2):
+      units = match.group(2)
+      if len(args.args) > 1:
+        parser.error('Unexpected arguments: {remain}'.format(remain=' '.join(args.args[1:])))
     else:
-      units = args.args[1]
-  measurement1 = Measurement.find(amt, units)
+      units = args.args.pop(0)
+    measurement = Measurement.find(amt, units)
+    log.debug('curr: {}'.format(str(measurement)))
+    if measurement1:
+      if (measurement1.measurement['name'] == measurement.measurement['name']) and (measurement1.system == measurement.system):
+        measurement.convert_to(measurement1.units, {})
+        measurement1.amt += measurement.amt
+        measurement1.original_amt = measurement1.amt
+    else:
+      measurement1 = measurement
+    log.debug('now: {}'.format(str(measurement1)))
+  else:
+    parser.error('Unexpected measurement: {arg}'.format(arg=args.args[0]))
+
+if measurement1:
   log.info('Initial measurement: {measurement}'.format(
     measurement=str(measurement1)
   ))
+
   if args.fractional:
     if measurement1.system == 'metric':
       parser.error('Only imperial measurements can be used with -f')
@@ -205,4 +220,4 @@ if match:
       show(measurement1.home_equivs)
       show(measurement1.other_equivs)
 else:
-  parser.error('Unexpected measurement: {arg}'.format(arg=args.args[0]))
+  parser.error('No measurements provided')

@@ -39,8 +39,9 @@
   {
     "name": "mass",
     "imperial": {
-      "lb": 1,
-      "oz": 16
+      "ton": 1,
+      "lb": 2000,
+      "oz": "16*2000"
     },
     "metric": {
       "kg": 1,
