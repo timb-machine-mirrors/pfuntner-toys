@@ -55,12 +55,15 @@ class GzippedTarball(Tarball):
 
 class XzTarball(Tarball):
   """
-  The super class is sufficient to read gzipped tar balls so we don't need to implement compare().  The only
-  difference between the classes is the constructor: basically, what regular expression we use to identify
-  the type of file.
+  The super class is not quite sufficient to read xz-compressed tar balls so we need to implement compare().
   """
   def __init__(self):
     super(XzTarball, self).__init__('XZ tarball', pattern=r'\.tar\.xz$')
+
+  def compare(self, file_name1=None, file_name2=None):
+    data1 = xz_uncompress(read(file_name1))
+    data2 = xz_uncompress(read(file_name1))
+    super(XzTarball, self).compare(file_name1=file_name1, data1=data1, file_name2=file_name2, data2=data2)
 
 
 class PlainText(BaseFileType):
@@ -110,6 +113,14 @@ class Object(object):
   Bogus class that will allow us to instantiate an instance and create arbitrary attributes.
   """
   pass
+
+
+def xz_uncompress(data):
+  p = subprocess.Popen('xz --decompress --stdout'.split(), stdin=subprocess.Popen, stdout=subprocess.Popen, stderr=subprocess.Popen)
+  (stdout, stderr) = p.commuicate(data)
+  rc = p.wait()
+  assert (rc == 0) and (not stderr), 'xz uncompress failure: {rc}, {stderr!r}'.format(**locals())
+  return stdout
 
 def read(file_name):
   data = None
