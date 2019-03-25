@@ -53,6 +53,16 @@ class GzippedTarball(Tarball):
     super(GzippedTarball, self).__init__('Gzipped tarball', pattern=r'\.(tgz|tar\.gz)$')
 
 
+class XzTarball(Tarball):
+  """
+  The super class is sufficient to read gzipped tar balls so we don't need to implement compare().  The only
+  difference between the classes is the constructor: basically, what regular expression we use to identify
+  the type of file.
+  """
+  def __init__(self):
+    super(XzTarball, self).__init__('XZ tarball', pattern=r'\.tar\.xz$')
+
+
 class PlainText(BaseFileType):
   def __init__(self, name=None, pattern=None, content=None):
     super(PlainText, self).__init__(name or 'Plain text', pattern=pattern, content=content if name else no_binary)
