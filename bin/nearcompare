@@ -235,6 +235,7 @@ def emit(*rows):
 file_types = [
   Tarball(),
   GzippedTarball(),
+  XzTarball(),
   GzippedText(),
   PlainText(),
   UnknownType(),
