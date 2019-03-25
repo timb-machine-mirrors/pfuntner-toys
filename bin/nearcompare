@@ -116,7 +116,7 @@ class Object(object):
 
 
 def xz_uncompress(data):
-  p = subprocess.Popen('xz --decompress --stdout'.split(), stdin=subprocess.Popen, stdout=subprocess.Popen, stderr=subprocess.Popen)
+  p = subprocess.Popen('xz --decompress --stdout'.split(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   (stdout, stderr) = p.communicate(data)
   rc = p.wait()
   assert (rc == 0) and (not stderr), 'xz uncompress failure: {rc}, {stderr!r}'.format(**locals())
