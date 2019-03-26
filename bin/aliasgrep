@@ -8,6 +8,7 @@ import subprocess
   
 parser = argparse.ArgumentParser(description='Search bash aliases, printing the definition(s)')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+parser.add_argument('-a', '--all', dest='all', action='store_true', help='Show entire alias definition')
 parser.add_argument('regexp', nargs='?', help='Regexp to match the alias name')
 args = parser.parse_args()
 
@@ -38,4 +39,7 @@ for line in data.splitlines():
   ))
   if match:
     if (not alias_regexp) or alias_regexp.search(match.group(1)):
-      print match.group(2)
+      if args.all:
+        print line
+      else:
+        print match.group(2)

@@ -63,7 +63,7 @@
       "C": 1
     },
     "conversion": {
-      "convert": "lambda amt, suffix: ((args-32) / (9.0/5), 'C', 'metric') if suffix == 'F' else ((amt * (9.0/5)) + 32, 'F', 'imperial')"
+      "convert": "lambda amt, suffix: ((amt-32) / (9.0/5), 'C', 'metric') if suffix == 'F' else ((amt * (9.0/5)) + 32, 'F', 'imperial')"
     }
   }
 ]
