@@ -45,6 +45,7 @@ parser = argparse.ArgumentParser(description='git Add, Commit, Push')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 parser.add_argument('-m', '--comment', dest='comment', help='Provide comment')
 parser.add_argument('-p', '--push', '--nopush', dest='nopush', action='store_true', help='Do not do push operation')
+parser.add_argument('-P', '--pulls', dest='pulls', action='store_true', help='Run `gitpulls` script to distribute repos to remote systems')
 parser.add_argument('files', metavar='file', nargs='+', help='One or more files to commit')
 args = parser.parse_args()
 
@@ -66,6 +67,8 @@ if dir:
     run('git commit'.split() + (['-m', args.comment] if args.comment else []))
     if not args.nopush:
       run('git push'.split())
+      if args.pulls:
+        run('gitpulls')
     else:
       log.info('Due to request, not doing `git push`')
   else:
