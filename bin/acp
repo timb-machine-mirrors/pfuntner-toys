@@ -6,6 +6,8 @@ import argparse
 import subprocess
 
 def run(cmd):
+  if isinstance(cmd, basestring):
+    cmd = cmd.split()
   log.debug('Running {cmd}'.format(**locals()))
   p = subprocess.Popen(cmd)
   rc = p.wait()
@@ -66,7 +68,7 @@ if dir:
     run('git add'.split() + shorten(paths, dir))
     run('git commit'.split() + (['-m', args.comment] if args.comment else []))
     if not args.nopush:
-      run('git push'.split())
+      run('git push')
       if args.pulls:
         run('bash -c gitpulls')
     else:
