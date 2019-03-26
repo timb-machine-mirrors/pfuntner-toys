@@ -68,7 +68,7 @@ if dir:
     if not args.nopush:
       run('git push'.split())
       if args.pulls:
-        run('gitpulls')
+        run('bash -c gitpulls')
     else:
       log.info('Due to request, not doing `git push`')
   else:
