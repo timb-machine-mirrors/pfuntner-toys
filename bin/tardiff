@@ -2,7 +2,7 @@ function examine {
   tar -tf "$1" | tr -s '[0-9]' \# | sort
 }
 
-if [ $# -wq 2 ]
+if [ $# -eq 2 ]
 then
   diff <(examine "$1") <(examine "$2")
 else
