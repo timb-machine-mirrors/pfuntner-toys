@@ -62,7 +62,7 @@ class XzTarball(Tarball):
 
   def compare(self, file_name1=None, file_name2=None):
     data1 = xz_uncompress(read(file_name1))
-    data2 = xz_uncompress(read(file_name1))
+    data2 = xz_uncompress(read(file_name2))
     super(XzTarball, self).compare(file_name1=file_name1, data1=data1, file_name2=file_name2, data2=data2)
 
 
