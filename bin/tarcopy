@@ -4,6 +4,7 @@ import re
 import os
 import sys
 import time
+import base64
 import select
 import logging
 import argparse
@@ -29,6 +30,11 @@ class Echo(threading.Thread):
         break
     log.debug('{self.title} echo thread ending'.format(**locals()))
 
+def replace_all(s, replacements):
+  for (key, value) in replacements.items():
+    s = s.replace(key, repr(value))
+  return s
+
 def kill(p):
   """
   Kill a process created by subprocess.Popen()
@@ -52,7 +58,6 @@ args = parser.parse_args()
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(process)d %(thread)d %(msg).{bytes}s'.format(bytes=2*1024**2))
 log = logging.getLogger()
-
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
 log.debug('args: {args}'.format(**locals()))
@@ -83,19 +88,61 @@ if to_dest is None:
   log.debug('Started `to` tar in process {pid}'.format(pid=to_tar.pid))
   if args.loud:
     to_echo = Echo('TO', to_tar.stdout, sys.stdout)
+
+  (to_stdout, to_stderr) = to_tar.communicate()
 else:
   # we're doing a remote copy
-  assert False, 'Work in progress'
+  script = replace_all("""import os
+import base64
+import logging
+import subprocess
 
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(process)d %(thread)d %(msg).{bytes}s'.format(bytes=2*1024**2))
+log = logging.getLogger()
+log.setLevel(%loglevel%)
+
+rc = -1
+
+dst = %dst%
+if not os.path.isdir(dst):
+  log.error('Not a directory: {dst!r}'.format(**locals()))
+  exit(1)
+
+encoded_tarball = %encoded_tarball%
+p = subprocess.Popen(['tar'] + %verbose% + ['-C', dst, '-xzpf-'], stdin=subprocess.PIPE)
+(stdout, stderr) = p.communicate(base64.b64decode(encoded_tarball))
+rc = p.wait()
+
+exit(rc)
+""",
+    {
+      '%loglevel%': log.level,
+      '%dst%': to_dir,
+      '%encoded_tarball%': base64.b64encode(from_tar.stdout.read()),
+      '%verbose%': verbose,
+    }
+  )
+  to_tar = subprocess.Popen(['ssh', '-q', to_dest, 'python'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  log.debug('Started `to` tar via ssh in process {pid}'.format(pid=to_tar.pid))
+  to_tar.stdin.write(script)
+  to_tar.stdin.close()
+  if args.loud:
+    to_echo = Echo('TO', to_tar.stdout, sys.stdout)
+  else:
+    to_stdout = to_tar.stdout.read()
+  to_stderr = to_tar.stderr.read()
+  to_rc = to_tar.wait()
+  
 if from_tar and to_tar:
   while (from_tar.poll() is None) or (to_tar.poll() is None):
     log.debug('Copy status: {from_poll} {to_poll}'.format(from_poll=from_tar.poll(), to_poll=to_tar.poll()))
     time.sleep(0.1)
+
   (from_stdout, from_stderr) = from_tar.communicate()
   from_rc = from_tar.wait()
-  (to_stdout, to_stderr) = to_tar.communicate()
-  to_rc = to_tar.wait()
   
+  to_rc = to_tar.wait()
+
   log.debug('From: {from_rc}, {from_stdout!r}, {from_stderr!r}'.format(**locals()))
   log.debug('To: {to_rc}, {to_stdout!r}, {to_stderr!r}'.format(**locals()))
   
