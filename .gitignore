@@ -6,3 +6,4 @@ bin/gitpulls
 bin/stager
 bin/tostaging
 bin/megassh.json
+bin/megascp.json

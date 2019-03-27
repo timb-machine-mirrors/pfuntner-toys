@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import re
 import sys
 import argparse
 
@@ -11,8 +12,14 @@ if sys.stdin.isatty():
   sys.stderr.write('stdin must be redirected\n')
   exit(1)
 
-if args.spaces < 0:
-  sys.stderr.write('Cannot specify negative spaces\n')
-  exit(1)
+lines = sys.stdin.read().splitlines()
 
-print '\n'.join([(' '*args.spaces) + line for line in sys.stdin.read().splitlines()])
+spaces = ' ' * abs(args.spaces)
+
+if args.spaces >= 0:
+  lines = [spaces + line for line in lines]
+else:
+  regexp = re.compile('^' + spaces)
+  lines = [regexp.sub('', line) for line in lines]
+
+print '\n'.join(lines)
