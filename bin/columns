@@ -6,68 +6,47 @@ import re
 import getopt
 import csv
 import StringIO
-import pdb
-
-def syntax(msg = None):
-  if msg:
-    sys.stderr.write("%s\n\n" % msg)
-  sys.stderr.write("Syntax: %s [-v|--verbose] [-d|--debug] [-s] [-F |] [--regexp pattern] [--file FILE] field ...\n" % sys.argv[0])
-  exit(1)
-
-def debug(msg):
-  if verbose:
-    sys.stderr.write(msg + "\n")
+import logging
+import argparse
 
 def delimOrBlank():
-  global delim
+  return args.delim or ' '
 
-  return delim if delim else ' '
+parser = argparse.ArgumentParser(description='Print columns from input')
 
-regexp = None
-delim = None # default to whitespace
-pat = ' +'
-csvInput = False
-# squeeze = True # squeeze consecutive fields together: treating them as one
-squeeze = False # squeeze consecutive fields together: treating them as one
-ignore = False # ignore lines that do not have the desired fields
-filename = None
+group = parser.add_mutually_exclusive_group()
+group.add_argument('-s', '-F', '--separator', '--delim', dest='delim', help='Specify regular expression delimiter')
+group.add_argument('-r', '--regexp', dest='regexp', help='Specify regular expression')
 
-verbose = False
+parser.add_argument('-c', '--csv', dest='csv', action='store_true', help='Read CSV input')
+parser.add_argument('-f', '--file', dest='filename', help='Specify file')
+parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 
-(opts,args) = getopt.getopt(sys.argv[1:], "visF:d", ["verbose", "regexp=", "csv", "file=", "debug"])
+parser.add_argument('columns', metavar='column', nargs='+', help='Specify columns')
+args = parser.parse_args()
 
-for (opt,arg) in opts:
-   if opt == "-F":
-     delim = arg
-   elif opt == "-s":
-     squeeze = not squeeze
-   elif opt == "-i":
-     ignore = not ignore
-   elif opt == "--regexp":
-     regexp = re.compile(arg)
-   elif opt == "--csv":
-     csvInput = not csvInput
-   elif opt in ["-v", "--verbose"]:
-     verbose = not verbose
-   elif opt in ["-d", "--debug"]:
-     pdb.set_trace()
-   elif opt == "--file":
-     filename = arg
-   else:
-     syntax("Unknown option `%s`" % opt)
+if args.delim == '\\t':
+  args.delim = '\t'
 
-if filename:
-  stream = open(filename)
+if (not args.delim) and (not args.regexp):
+  delim = re.compile('\s+')
+elif args.delim:
+  delim = re.compile(args.delim)
+else:
+  delim = None
+
+regexp = re.compile(args.regexp) if args.regexp else None
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
+if args.filename:
+  stream = open(args.filename)
 else:
   if sys.stdin.isatty():
-    syntax("stdin is not redirected and --file FILENAME is not specified")
+    parser.error('stdin is not redirected and --file FILENAME is not specified')
   stream = sys.stdin
-
-if not args:
-  syntax("No columns specified")
-
-if delim == "\\t":
-  delim = '\t'
 
 values = []
 
@@ -75,61 +54,58 @@ values = []
   expand ranges of fields
 """
 curr = 0
-while curr < len(args):
-  match = re.search("^(\d+)-(\d+)$", args[curr])
+while curr < len(args.columns):
+  match = re.search('^(\d+)-(\d+)$', args.columns[curr])
   if match:
     low = int(match.group(1))
     high = int(match.group(2))
-    args = args[:curr] + [str(low + inc) for inc in range(high-low+1)] + args[curr+1:]
+    args.columns = args.columns[:curr] + [str(low + inc) for inc in range(high-low+1)] + args.columns[curr+1:]
     values += [None] * (high-low+1)
   else:
-    match = re.search("^(\d+)\*(\d+)$", args[curr])
+    match = re.search('^(\d+)\*(\d+)$', args.columns[curr])
     if match:
       field = int(match.group(1))
       repeat = int(match.group(2))
-      args = args[:curr] + ([str(field)]*repeat) + args[curr+1:]
+      args.columns = args.columns[:curr] + ([str(field)]*repeat) + args.columns[curr+1:]
       values += [None] * repeat
     else:
-      match = re.search("^(\d+)=(.+)$", args[curr])
+      match = re.search('^(\d+)=(.+)$', args.columns[curr])
       if match:
-        args[curr] = int(match.group(1))
+        args.columns[curr] = int(match.group(1))
         values.append(match.group(2))
       else:
         values.append(None)
   curr += 1
+log.debug('After expanding fields: {values}'.format(**locals()))
 
 desiredFields = []
 try:
-  for field in args:
+  for field in args.columns:
     field = int(field)
     if field == 0:
-      raise Exception("Field cannot be zero")
+      parser.error('Cannot specify columns 0')
     if (field > 0) and (not regexp):
       field -= 1
     desiredFields += [field]
 except Exception as e:
-  syntax("Invalid field: `%s`" % str(e))
-
-splitArgs = []
-if delim:
-  splitArgs.append(delim)
+  parser.error('Invalid field: `%s`' % str(e))
+log.debug('desiredFields: {desiredFields}'.format(**locals()))
 
 for line in stream:
-  line = string.replace(string.replace(line, '\n', ''), '\r', '')
-  if squeeze:
-    line = re.sub(pat, delimOrBlank(), line.strip(delim))
+  line = line.strip('\n').strip('\r')
   output = []
   if regexp:
     match = regexp.search(line)
+    log.debug('{line!r}: {groups}'.format(groups=match.groups() if match else None, **locals()))
     if match:
       print delimOrBlank().join([match.group(field) for field in desiredFields])
   else:
-    if csvInput:
+    if args.csv:
       tokens = (csv.reader(StringIO.StringIO(line))).next()
     else:
-      tokens = line.split(*splitArgs)
+      tokens = delim.split(line)
 
-    debug("{line}: {tokens}".format(line=repr(line), tokens=tokens))
+    log.debug('{line!r}: {tokens}'.format(line=repr(line), tokens=tokens))
     skip = False
     for curr in range(len(values)):
       value = values[curr]
@@ -141,5 +117,5 @@ for line in stream:
       for field in desiredFields:
         if field < len(tokens):
           output += [tokens[field]]
-      if (not ignore) or (len(output) > 0):
+      if output:
         print delimOrBlank().join(output)
