@@ -1,7 +1,8 @@
 #! /usr/bin/env python
 
 import sys
-import getopt
+import logging
+import argparse
 
 def toLeft(s, width):
   return s.ljust(width)
@@ -14,21 +15,34 @@ def toCenter(s, width):
 
 def process(lines):
   maxWidth = max([len(line) for line in lines])
+  log.debug('maxWidth: {maxWidth}'.format(**locals()))
   print ("%s%s%s" % (topLeftCorner, horizontal * (maxWidth+2), topRightCorner)).encode('utf-8')
   for line in lines:
-    if verbose:
-      print ["%s:%d" % (c, ord(c)) for c in line]
     print ("%s %s %s" % (vertical, just(line, maxWidth), vertical)).encode('utf-8')
   print ("%s%s%s" % (bottomLeftCorner, horizontal * (maxWidth+2), bottomRightCorner)).encode('utf-8')
 
-def syntax(msg=None):
-  if msg:
-    sys.stderr.write(msg + "\n")
-
-  sys.stderr.write("Syntax: %s [--character C] [--box] [--left] [--center] [--right] [text ...]\n" % sys.argv[0])
-  exit(1)
-
 horizontal = unichr(9473)
+parser = argparse.ArgumentParser(description='Print a message or information in a pretty banner')
+
+group = parser.add_mutually_exclusive_group()
+group.add_argument('-C', '--character', dest='character', help='Character to use to construct banner')
+group.add_argument('-H', '--hash', dest='hash', action='store_true', help='Construct banner with hash signs rather than cool `line art` characters')
+
+group = parser.add_mutually_exclusive_group()
+group.add_argument('-c', '--center', dest='center', help='Center text inside banner')
+group.add_argument('-r', '--right', dest='right', help='Right-justify text inside banner')
+
+parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+
+parser.add_argument('args', metavar='arg', nargs='*', help='Provide a message on the command line')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
+log.debug('args: {args}')
+
 vertical = unichr(9475)
 
 topLeftCorner = unichr(9487)
@@ -36,35 +50,20 @@ topRightCorner = unichr(9491)
 bottomLeftCorner = unichr(9495)
 bottomRightCorner = unichr(9499)
 
-box = True
-
-just = toLeft
 fillChar = '#'
 
-verbose = False
+box = True
+if args.character:
+  box = False
+  fillChar = args.character
+elif args.hash:
+  box = False
 
-(opts, args) = ([], [])
-try:
-  (opts, args) = getopt.getopt(sys.argv[1:], "hvxc:", ["help", "character=", "left", "center", "right", "box"])
-except Exception as e:
-  syntax("Caught: %s" % e)
-
-for (opt,arg) in opts:
-  if opt == "--left":
-    just = toLeft
-  elif opt == "--right":
-    just = toRight
-  elif opt == "--center":
-    just = toCenter
-  elif opt in ["-c", "--character"]:
-    fillChar = arg[0]
-    box = False
-  elif opt in ["-x", "--box"]:
-    box = not box
-  elif opt in ["-h", "--help"]:
-    syntax()
-  elif opt == "-v":
-    verbose = not verbose
+just = toLeft
+if args.center:
+  just = toCenter
+elif args.right:
+  just = toRight
 
 if not box:
   horizontal = fillChar
@@ -78,7 +77,7 @@ if not box:
 if (not args) and sys.stdin.isatty():
   syntax("Text must be on the command line or redirected through stdin")
 
-if args:
-  process([' '.join(args)])
+if args.args:
+  process([' '.join(args.args)])
 else:
   process(sys.stdin.read().strip('\n').split('\n')) 
