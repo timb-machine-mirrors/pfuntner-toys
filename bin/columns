@@ -17,8 +17,8 @@ parser = argparse.ArgumentParser(description='Print columns from input')
 group = parser.add_mutually_exclusive_group()
 group.add_argument('-s', '-F', '--separator', '--delim', dest='delim', help='Specify regular expression delimiter')
 group.add_argument('-r', '--regexp', dest='regexp', help='Specify regular expression')
+group.add_argument('-c', '--csv', dest='csv', action='store_true', help='Read CSV input')
 
-parser.add_argument('-c', '--csv', dest='csv', action='store_true', help='Read CSV input')
 parser.add_argument('-f', '--file', dest='filename', help='Specify file')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 
