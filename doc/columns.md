@@ -4,7 +4,7 @@
 <p>I love this script so much! I must use this at least an average of once a day! The basic idea is that you tell it the positional columns you want to print and it prints them out.</p>
 <h2>Syntax</h2>
 <pre>
-Syntax: columns [-F CHAR] [--regexp REGEXP] [col] [-col1] [col1-col2]
+columns [-h] [-s DELIM | -r REGEXP | -c] [-f FILENAME] [-v] column [column ...]
 </pre>
 
 <h3>Options and arguments</h3>
@@ -13,10 +13,13 @@ Syntax: columns [-F CHAR] [--regexp REGEXP] [col] [-col1] [col1-col2]
 <th>Option</th><th>Description</th><th>Default</th>
 </tr>
 <tr>
-<td><tt>-F</tt></td><td>Specifies the character by which to break up tokens</td><td>The default is to parse tokens by spaces</td>
+<td><tt>-s DELIM</tt> or <tt>-F DELIM</tt> or <tt>--separator DELIM</tt> or <tt>--delim DELIM</tt></td><td>Specifies the regular expression to separate columns.</td><td>The default is to separate columns by one or more whitespace characters</td>
 </tr>
 <tr>
-<td><tt>--regexp</tt></td><td>Specifies a regular expression by which to break up tokens</td><td>The default is to parse tokens by spaces</td>
+<td><tt>--r REGEXP</tt> or <tt>--regexp REGEXP</tt></td><td>Specifies a regular expression by which to break up tokens</td><td>The default is to separate columns by one or more whitespace characters</td>
+<td><tt>-c</tt> or <tt>--csv</tt></td><td>Reads input as CSV</td><td>The default is to separate columns by one or more whitespace characters</td>
+<td><tt>-f FILENAME</tt> or <tt>--filename FILENAME</tt></td><td>Reads input from the specified file</td><td>The default is to read from stdin</td>
+<td><tt>-v</tt> or <tt>--verbose</tt></td><td>Enables debugging messages</td><td>Debugging messages are not printed</td>
 </tr>
 </table>
 <p>
@@ -56,5 +59,4 @@ $
 
 <ul>
 <li>The data is read from stdin.  If stdin is not directed from a file or pipe, en error message is printed and the script terminates</li>
-<li>Since creating this script, I learned about the <a href="http://man7.org/linux/man-pages/man1/column.1.html"><tt>column</tt></a> command common on Linux systems (although it's not part of the <a href="http://pubs.opengroup.org/onlinepubs/7908799/"><i>Single Unix Specification</i></a>), which is kind of similar.  My script has some more features in formatting but <tt>column</tt> might be a good alternative too.</li>
 </ul>
