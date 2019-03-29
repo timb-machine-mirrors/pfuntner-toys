@@ -223,7 +223,8 @@ if __name__ == "__main__":
     store.write()
   else:
     store = SecureKeyValues(args.storeName, args.key, keyPromptForMissingFile=(args.operation != "read"), ssh=args.ssh)
-    regexp = re.compile("^([^=]+)=(.*)$")
+    keyvalue_regexp = re.compile("^([^=]+)=(.+)$")
+    key_regexp = re.compile("^(\w+)$")
     if args.operation == "read":
       if not store.exists:
         berate("%s does not exist" % repr(store.filename))
@@ -233,9 +234,15 @@ if __name__ == "__main__":
       if not args.args and sys.stdin.isatty():
         args.args = sys.stdin.read().strip('\n').split('\n')
       for arg in args.args:
-        match = regexp.search(arg)
-        assert match and (len(match.groups()) == 2), "%s did not match %s" % (repr(arg), repr(regexp.pattern))
-        store.put(match.group(1), match.group(2))
+        match = keyvalue_regexp.search(arg)
+        if match:
+          store.put(match.group(1), match.group(2))
+        else:
+          match = key_regexp.search(arg)
+          if match:
+            store.put(match.group(1), getpass.getpass('Enter value for {name!r}: '.format(name=match.group(1))))
+          else:
+            parser.error('{arg!r} is neither a valid key nor key/value pair'.format(**locals()))
       store.write()
     elif args.operation == "remove":
       for arg in args.args:
