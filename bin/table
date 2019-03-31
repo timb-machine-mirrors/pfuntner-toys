@@ -1,0 +1,82 @@
+#! /usr/bin/env python
+
+import re
+import csv
+import sys
+import logging
+import argparse
+
+def readCsv():
+  return [row for row in csv.reader(sys.stdin)]
+
+def readSeparator():
+  ret = []
+  regexp = re.compile(args.separator)
+  for line in sys.stdin.read().splitlines():
+    ret.append(regexp.split(line))
+  log.debug('ret: {ret}'.format(**locals()))
+  return ret
+
+def emit_tags(start_tag, end_tag):
+  print '{start_tag}table{end_tag}'.format(**locals())
+  print '{start_tag}tbody{end_tag}'.format(**locals())
+  for (rownum, row) in enumerate(data):
+    print '{start_tag}tr{end_tag}'.format(**locals())
+    for col in row:
+      print '{start_tag}{tag}{end_tag}{col}{start_tag}{tag}{end_tag}'.format(tag='th' if (rownum == 0) and args.headings else 'td', **locals())
+    print '{start_tag}tr{end_tag}'.format(**locals())
+  print '{start_tag}tbody{end_tag}'.format(**locals())
+  print '{start_tag}table{end_tag}'.format(**locals())
+
+def emitHtml():
+  emit_tags(start_tag='<', end_tag='>')
+
+def emitMarkdown():
+  print '| {row} |'.format(row=' | '.join(data[0]))
+  if args.headings:
+    print '|' + (' ---- | ' * len(data[0]))
+  print '\n'.join(['| {row} |'.format(row=' | '.join(row)) for row in data[1:]])
+
+def emitBbcode():
+  emit_tags(start_tag='[', end_tag=']')
+
+parser = argparse.ArgumentParser(description='Turn data into a table')
+
+input_group = parser.add_mutually_exclusive_group()
+input_group.add_argument('-c', '--csv', dest='csv', action='store_true', help='Read CSV data')
+input_group.add_argument('-s', '--separator', dest='separator', help='Specify regular expression to separate input columns')
+
+output_group = parser.add_mutually_exclusive_group()
+output_group.add_argument('-H', '--html', dest='html', action='store_true', help='Output HTML')
+output_group.add_argument('-m', '--markdown', dest='markdown', action='store_true', help='Output Markdown')
+output_group.add_argument('-b', '--bbcode', dest='bbcode', action='store_true', help='Output BBCode')
+
+parser.add_argument('--headings', dest='headings', action='store_true', help='First row contains headings, not data')
+parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
+if sys.stdin.isatty():
+  parser.error('stdin must be redirected')
+
+data = []
+
+if args.csv:
+  data = readCsv()
+elif args.separator:
+  data = readSeparator()
+else:
+  parser.error('Select an input method')
+
+if args.html:
+  emitHtml()
+elif args.markdown:
+  emitMarkdown()
+elif args.bbcode:
+  emitBbcode()
+else:
+  parser.error('Select an output method')
