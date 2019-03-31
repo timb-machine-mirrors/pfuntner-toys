@@ -62,9 +62,17 @@ log.debug('Connected to mysql')
 
 cursor = con.cursor()
 
-cursor.execute(sys.stdin.read())
+try:
+  cursor.execute(sys.stdin.read())
+except Exception as e:
+  log.error('Caught `{e!s}` while executing command'.format(**locals()))
+  exit(1)
 
-results = cursor.fetchall()
+try:
+  results = cursor.fetchall()
+except Exception as e:
+  log.error('Caught `{e!s}` while extracting results'.format(**locals()))
+  exit(1)
 
 if args.csv:
   writer = csv.writer(sys.stdout)

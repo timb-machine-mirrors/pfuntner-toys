@@ -224,7 +224,7 @@ if __name__ == "__main__":
   else:
     store = SecureKeyValues(args.storeName, args.key, keyPromptForMissingFile=(args.operation != "read"), ssh=args.ssh)
     keyvalue_regexp = re.compile("^([^=]+)=(.+)$")
-    key_regexp = re.compile("^(\w+)$")
+    key_regexp = re.compile("^(\w[^=]*\w+)$")
     if args.operation == "read":
       if not store.exists:
         berate("%s does not exist" % repr(store.filename))

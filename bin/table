@@ -23,10 +23,10 @@ def emit_tags(start_tag, end_tag):
   for (rownum, row) in enumerate(data):
     print '{start_tag}tr{end_tag}'.format(**locals())
     for col in row:
-      print '{start_tag}{tag}{end_tag}{col}{start_tag}{tag}{end_tag}'.format(tag='th' if (rownum == 0) and args.headings else 'td', **locals())
-    print '{start_tag}tr{end_tag}'.format(**locals())
-  print '{start_tag}tbody{end_tag}'.format(**locals())
-  print '{start_tag}table{end_tag}'.format(**locals())
+      print '{start_tag}{tag}{end_tag}{col}{start_tag}/{tag}{end_tag}'.format(tag='th' if (rownum == 0) and args.headings else 'td', **locals())
+    print '{start_tag}/tr{end_tag}'.format(**locals())
+  print '{start_tag}/tbody{end_tag}'.format(**locals())
+  print '{start_tag}/table{end_tag}'.format(**locals())
 
 def emitHtml():
   emit_tags(start_tag='<', end_tag='>')
