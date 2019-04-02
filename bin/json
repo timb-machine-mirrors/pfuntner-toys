@@ -8,7 +8,7 @@ import itertools
 def syntax(msg):
     if msg:
         sys.stderr.write(msg + "\n")
-    sys.stderr.write("Syntax: %s [--yaml] [--verbose] [--flatten] [--describe] [--file FILENAME] [--depth DEPTH] [--forgive] [--linear] [--string] [--empty] [path ...]\n" % sys.argv[0])
+    sys.stderr.write("Syntax: %s [--yaml] [--fromstr] [--verbose] [--flatten] [--describe] [--file FILENAME] [--depth DEPTH] [--forgive] [--linear] [--string] [--empty] [path ...]\n" % sys.argv[0])
     exit(1)
 
 def shorten(s, maxLen=80):
@@ -117,6 +117,7 @@ def lop(root, depth):
                 lop(root[key], depth-1)
 
 verbose = False
+fromstr = False
 describe = False
 writer = jsonWriter
 filename = None
@@ -127,7 +128,7 @@ empty = False
 
 (opts, args) = ([], [])
 try:
-    (opts,args) = getopt.getopt(sys.argv[1:], "v", ["verbose", "flat", "flatten", "describe", "file=", "depth=", "forgive", 'linear', 'string', 'yaml', 'empty'])
+    (opts,args) = getopt.getopt(sys.argv[1:], "v", ["verbose", "fromstr", "flat", "flatten", "describe", "file=", "depth=", "forgive", 'linear', 'string', 'yaml', 'empty'])
 except Exception as e:
     syntax(str(e))
 
@@ -136,6 +137,8 @@ for (opt,arg) in opts:
         verbose = not verbose
     elif opt in ["--flat", "--flatten"]:
         writer = flatWriter
+    elif opt == "--fromstr":
+        fromstr = not fromstr
     elif opt == "--describe":
         writer = describeWriter
     elif opt == "--linear":
@@ -168,6 +171,9 @@ else:
     if sys.stdin.isatty():
         syntax("stdin must be redirected if not file name is specified")
     data = sys.stdin.read()
+
+if fromstr:
+  data = json.dumps(eval(data))
 
 root = None
 try:
