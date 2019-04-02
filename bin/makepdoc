@@ -61,7 +61,7 @@ td {
 </head>
 <body>
 <h1>Python Libraries</h1>
-<p>Below are some of my favorite Python libraries.  I'm often pulling up their pages because I can't remember all the details.
+<p>Below are some of my favorite Python libraries.  I'm often pulling up their pages because I can't remember all the details.  There are many more libraries - some I rarely use and others I use less regularly than the ones below.  I might expand the list if I want to include another library.
 <table border="1">'''
 
 depth = int(math.ceil(float(len(libraries))/args.width))
