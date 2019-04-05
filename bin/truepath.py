@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 import os
+import re
 import sys
 import logging
 import argparse
@@ -11,9 +12,17 @@ def process(rawpath, log):
     path = rawpath
   else:
     path = os.path.abspath(rawpath)
+    log.debug('path: {path!r}'.format(**locals()))
     if 'win' in sys.platform:
       log.debug('Sorry to see you\'re using Windoze...')
-      path = 'C:\\cygwin64' + path.replace('/', '\\')   
+      match = re.search('^/+cygdrive/+([a-z])/+(.+)$', path, flags=re.IGNORECASE)
+      if match:
+        path = '{drive}:/{remain}'.format(
+          drive=match.group(1),
+          remain=match.group(2),
+        )
+      else:
+        path = 'C:\\cygwin64' + path.replace('/', '\\')
     else:
       log.debug('You are not using Windoze like a boss!')
   log.debug('{rawpath!r} => {path!r}'.format(**locals()))
