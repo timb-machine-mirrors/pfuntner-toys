@@ -21,10 +21,16 @@ def cleanup(signum=None, frame=None):
     os.remove(name)
   exit(0)
 
+def add_crs(s):
+  if windoze and args.notepad:
+    s = '\r\n'.join(s.splitlines()) + '\r\n'
+  return s
+
 parser = argparse.ArgumentParser(description='Launch vi on a file/data stream in read-only mode')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 
-if 'win' in sys.platform:
+windoze = 'win' in sys.platform
+if windoze:
   # Windoze only options
   group = parser.add_mutually_exclusive_group()
   group.add_argument('-g', '--gvim', dest='gvim', action='store_true', help='Use gvim instead of vi (Windoze only)')
@@ -33,7 +39,7 @@ if 'win' in sys.platform:
 parser.add_argument('files', metavar='file', nargs='*', help='Zero or more files')
 args = parser.parse_args()
 
-if 'win' not in sys.platform:
+if not windoze:
   args.gvim = False
   args.notepad = False
 
@@ -75,7 +81,7 @@ signal.signal(signal.SIGTERM, cleanup)
 
 (fd, name) = tempfile.mkstemp()
 log.warning("Created %s" % repr(name))
-os.write(fd, sys.stdin.read())
+os.write(fd, add_crs(sys.stdin.read()))
 os.close(fd)
 
 with open("/dev/tty", 'r') as tty:
