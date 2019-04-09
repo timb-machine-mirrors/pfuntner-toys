@@ -17,8 +17,8 @@ def readSeparator():
   log.debug('ret: {ret}'.format(**locals()))
   return ret
 
-def emit_tags(start_tag, end_tag):
-  print '{start_tag}table{end_tag}'.format(**locals())
+def emit_tags(start_tag, end_tag, extras={}):
+  print '{start_tag}table{extra}{end_tag}'.format(extra=extras.get('table', ''), **locals())
   print '{start_tag}tbody{end_tag}'.format(**locals())
   for (rownum, row) in enumerate(data):
     print '{start_tag}tr{end_tag}'.format(**locals())
@@ -29,7 +29,12 @@ def emit_tags(start_tag, end_tag):
   print '{start_tag}/table{end_tag}'.format(**locals())
 
 def emitHtml():
-  emit_tags(start_tag='<', end_tag='>')
+  emit_tags(
+    start_tag='<',
+    end_tag='>',
+    extras={
+      'table': ' border=\'1\'',
+    })
 
 def emitMarkdown():
   print '| {row} |'.format(row=' | '.join(data[0]))
