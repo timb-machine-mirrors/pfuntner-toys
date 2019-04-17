@@ -133,11 +133,17 @@ def applyFilters(root, from_list=False):
   elif isinstance(root, dict):
     keys = root.keys()
     for key in keys:
-      ret = applyFilters(root[key])
-      if ret:
-        root[key] = ret
-      else:
-        del root[key]
+      for filter in excludes:
+        if (filter.value is None) and filter.name.search(key):
+          del root[key]
+          key = None
+          break
+      if key is not None:
+        ret = applyFilters(root[key])
+        if ret:
+          root[key] = ret
+        else:
+          del root[key]
 
     if not any([type(value) in [list,dict] for value in root.values()]):
       """
@@ -169,11 +175,7 @@ def applyFilters(root, from_list=False):
             break
 
       for filter in excludes:
-        if filter.value is None:
-          if any([filter.name.search(key) for key in root.keys()]):
-            root = None
-            break
-        else:
+        if filter.value is not None:
           for (key, value) in root.items():
             if type(value) not in [dict, list]:
               value = str(value)
