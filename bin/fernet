@@ -1,9 +1,9 @@
 #! /usr/bin/env python
 
 import os
+import re
 import sys
 import base64
-import getopt
 import getpass
 import hashlib
 import logging
@@ -11,6 +11,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Perform fernet encryption/decryption')
 parser.add_argument('-d', '--decrypt', dest='decrypt', action='store_true', help='Perform decryption')
+parser.add_argument('-s', '--ssh', dest='ssh', action='store_true', help='Use private ssh key for fernet encryption/decryption')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 args = parser.parse_args()
 
@@ -31,7 +32,21 @@ if sys.stdin.isatty():
   log.critical('stdin must be redirected')
   exit(1)
 
-secret = getpass.getpass('Encryption key: ')
+secret = None
+
+if args.ssh:
+  sshFilename = '%s/.ssh/id_rsa' % (os.environ.get('HOME') or os.environ.get('USERPROFILE'))
+
+  if os.path.isfile(sshFilename):
+    log.debug('Reading {sshFilename}'.format(**locals()))
+    with open(sshFilename) as stream:
+      secret = ''.join([line for line in stream.read().splitlines() if not re.match('---', line)])
+      log.debug('ssh private key is {bytes} bytes long'.format(bytes=len(secret)))
+  else:
+    log.info('Did not find {sshFielname}'.format(**locals()))
+
+if secret is None:
+  secret = getpass.getpass('Encryption key: ')
 
 hash = hashlib.md5()
 hash.update(secret)

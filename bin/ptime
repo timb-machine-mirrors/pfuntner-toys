@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 import os
+import sys
 import logging
 import argparse
 import datetime
@@ -21,6 +22,9 @@ def protect(*args):
       '"')
   return ret
 
+def say(msg):
+  sys.stderr.write(msg + ('\n' if (msg and msg[-1] != '\n') else ''))
+
 parser = argparse.ArgumentParser(description='Python implementation of time utility')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 parser.add_argument('cmd', help='Command to execute')
@@ -34,13 +38,13 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 log.debug('args: {args}'.format(**locals()))
 
 start = datetime.datetime.now()
-print 'Started {start!s}'.format(**locals())
+say('Started {start!s}'.format(**locals()))
 p = subprocess.Popen(' '.join([args.cmd] + protect(*args.args)), shell=True)
 rc = p.wait()
 stop = datetime.datetime.now()
-print 'Stopped {stop!s}'.format(**locals())
+say('Stopped {stop!s}'.format(**locals()))
 
 times = os.times()
-print 'real\t{elapsed!s}'.format(elapsed=stop-start)
-print 'user\t{elapsed!s}'.format(elapsed=datetime.timedelta(seconds=times[2]))
-print 'sys\t{elapsed!s}'.format(elapsed=datetime.timedelta(seconds=times[3]))
+say('real\t{elapsed!s}'.format(elapsed=stop-start))
+say('user\t{elapsed!s}'.format(elapsed=datetime.timedelta(seconds=times[2])))
+say('sys\t{elapsed!s}'.format(elapsed=datetime.timedelta(seconds=times[3])))
