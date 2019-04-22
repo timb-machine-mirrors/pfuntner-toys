@@ -17,6 +17,24 @@ def readSeparator():
   log.debug('ret: {ret}'.format(**locals()))
   return ret
 
+def readFixed():
+  ret = []
+  line = sys.stdin.readline().strip('\n').strip('\r')
+  columns = re.findall('\w+\s+', line)
+  widths = [len(column) for column in columns]
+  log.debug('columns/widths: {zip}'.format(zip=zip(columns, widths)))
+  ret.append([column.strip() for column in columns])
+  for line in sys.stdin.read().splitlines():
+    ret.append([])
+    pos = 0
+    col = 0
+    while pos < len(line):
+      log.debug('{linenum} {col} {pos} {remain!r}'.format(linenum=len(ret), remain=line[pos:], **locals()))
+      ret[-1].append(line[pos:pos+widths[col]].strip())
+      pos += widths[col]
+      col += 1
+  return ret
+
 def emit_tags(start_tag, end_tag, extras={}):
   print '{start_tag}table{extra}{end_tag}'.format(extra=extras.get('table', ''), **locals())
   print '{start_tag}tbody{end_tag}'.format(**locals())
@@ -45,16 +63,23 @@ def emitMarkdown():
 def emitBbcode():
   emit_tags(start_tag='[', end_tag=']')
 
+def emitRotated():
+  for (rownum, row) in enumerate(data[1 if args.headings else 0:]):
+    for (colnum, col) in enumerate(row):
+      print '{rownum:>06d} {colnum:>02d} {name}{col}'.format(name=data[0][colnum].ljust(33) if args.headings else '', **locals())
+    
 parser = argparse.ArgumentParser(description='Turn data into a table')
 
 input_group = parser.add_mutually_exclusive_group()
 input_group.add_argument('-c', '--csv', dest='csv', action='store_true', help='Read CSV data')
 input_group.add_argument('-s', '--separator', dest='separator', help='Specify regular expression to separate input columns')
+input_group.add_argument('-f', '--fixed', dest='fixed', action='store_true', help='Fixed width columns')
 
 output_group = parser.add_mutually_exclusive_group()
 output_group.add_argument('-H', '--html', dest='html', action='store_true', help='Output HTML')
 output_group.add_argument('-m', '--markdown', dest='markdown', action='store_true', help='Output Markdown')
 output_group.add_argument('-b', '--bbcode', dest='bbcode', action='store_true', help='Output BBCode')
+output_group.add_argument('-r', '--rotate', dest='rotate', action='store_true', help='Rotate data')
 
 parser.add_argument('--headings', dest='headings', action='store_true', help='First row contains headings, not data')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
@@ -69,11 +94,14 @@ if sys.stdin.isatty():
   parser.error('stdin must be redirected')
 
 data = []
+widths = []
 
 if args.csv:
   data = readCsv()
 elif args.separator:
   data = readSeparator()
+elif args.fixed:
+  data = readFixed()
 else:
   parser.error('Select an input method')
 
@@ -83,5 +111,7 @@ elif args.markdown:
   emitMarkdown()
 elif args.bbcode:
   emitBbcode()
+elif args.rotate:
+  emitRotated()
 else:
   parser.error('Select an output method')
