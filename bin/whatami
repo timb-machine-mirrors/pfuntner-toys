@@ -1,0 +1,74 @@
+#! /usr/bin/env python
+
+import os
+import sys
+import logging
+import argparse
+import datetime
+import subprocess
+
+def warn(msg):
+  log.info(msg)
+
+def show(expr):
+  try:
+    value = eval(expr)
+  except Exception as e:
+    warn('Caught {e!s} while evaluating {value!r}'.format(**locals()))
+  else:
+    print '{expr}: {value!r}'.format(**locals())
+
+def cat(filename):
+  if os.path.exists(filename):
+    if os.path.isfile(filename):
+      try:
+        with open(filename) as stream:
+          data = stream.read().splitlines()
+      except Exception as e:
+        warn('Caught {e!s} reading {filename!s}'.format(**locals()))
+      else:
+        print '{filename!r}: {data}'.format(**locals())
+    else:
+      log.info('{filename!r} is not a file'.format(**locals()))
+  else:
+    log.info('{filename!r} does not exist'.format(**locals()))
+
+def run(cmd):
+  if isinstance(cmd, str):
+    cmd = cmd.split()
+  try:
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  except Exception as e:
+    warn('Caught {e!s} from {cmd}'.format(**locals()))
+  else:
+    (stdout, stderr) = p.communicate()
+    rc = p.wait()
+    log.debug('run({cmd}): {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
+    if stdout:
+      stdout = stdout.splitlines()
+      print '{cmd}: {stdout!r}'.format(**locals())
+
+parser = argparse.ArgumentParser(description='General "what am I" with respect to host system')
+parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
+print 'It is {!s}'.format(datetime.datetime.utcnow())
+print
+run('uname -a')
+run('uname -n')
+run('uname -s')
+run('uname -v')
+run('uname -r')
+run('uname -m')
+run('uname -p')
+run('uname -i')
+run('uname -o')
+
+cat('/etc/system-release')
+
+show('sys.path')
+show('sys.platform')
