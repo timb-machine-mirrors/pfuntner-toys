@@ -68,7 +68,7 @@ say('Started {start!s}'.format(**locals()))
 p = subprocess.Popen(' '.join([args.cmd] + protect(*args.args)), shell=True)
 rc = p.wait()
 stop = datetime.datetime.now()
-say('Stopped {stop!s}'.format(**locals()))
+say('Stopped {stop!s}, rc={rc}'.format(**locals()))
 
 times = os.times()
 say('real\t{elapsed!s}'.format(elapsed=stop-start))
