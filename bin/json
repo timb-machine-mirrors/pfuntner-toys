@@ -240,6 +240,7 @@ if args.path:
 
 includes = [Filter(filter) for filter in (args.includes or [])]
 excludes = [Filter(filter) for filter in (args.excludes or [])]
-root = applyFilters(root)
+if includes or excludes:
+  root = applyFilters(root)
 
 writer(root)
