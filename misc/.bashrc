@@ -7,6 +7,8 @@ do
 done
 
 set -o vi
+set -o ignoreeof
+
 # alias br='vi -R'
 alias r='fc -s'
 alias more=less
