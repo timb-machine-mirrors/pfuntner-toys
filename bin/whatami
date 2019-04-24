@@ -79,6 +79,23 @@ def parse_fixed_table(data):
   log.debug('fixed table: {ret}'.format(**locals()))
   return ret
 
+def human(value):
+  units = 'b'
+  value = float(value)
+  if value > 1000:
+    value /= 1024
+    units = 'KB'
+    if value > 1000:
+      value /= 1024
+      units = 'MB'
+      if value > 1000:
+        value /= 1024
+        units = 'GB'
+        if value > 1000:
+          value /= 1024
+          units = 'TB'
+  return '{value}{units}'.format(value=int(value), units=units)
+
 parser = argparse.ArgumentParser(description='General "what am I" with respect to host system')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 args = parser.parse_args()
@@ -108,6 +125,7 @@ show('sys.path')
 print ''
 show('socket.gethostname()')
 show('socket.gethostbyname(socket.gethostname())')
+show('socket.gethostbyname_ex(socket.gethostname())')
 
 if 'win' in sys.platform.lower():
   out = run('ipconfig', silent=True)
@@ -123,7 +141,7 @@ if 'win' in sys.platform.lower():
                                            10.150.160.1
   """
   ipconfig_adapter_regexp = re.compile('^([A-Z][^:]+):')
-  ipconfig_attr_regexp = re.compile(r'^\s+([^.]+)(?=[ .]*): (\S+)')
+  ipconfig_attr_regexp = re.compile(r'^\s+([^.]+)[ .]*: (\S+)')
 
   adapter = None
   attrs = {}
@@ -134,13 +152,13 @@ if 'win' in sys.platform.lower():
         break
       adapter = match.group(1)
       attrs = { 'adapter': adapter }
-      if 'VirtualBox' in adapter:
+      if ('VirtualBox' in adapter) or ('Docker' in adapter):
         adapter = None
       log.debug('Adapter match: {adapter!r} {line!r}'.format(**locals()))
     elif adapter:
       match = ipconfig_attr_regexp.search(line)
       if match:
-        log.debug('Attr match: {groups} {line!r}'.format(match.groups(), **locals()))
+        log.debug('Attr match: {groups} {line!r}'.format(groups=match.groups(), **locals()))
         attrs[match.group(1).strip()] = match.group(2).strip()
       else:
         log.debug('Failed to match attr regexp: {line!r} {ipconfig_attr_regexp.pattern!r}'.format(**locals()))
@@ -219,3 +237,11 @@ if 'win' in sys.platform.lower():
   cpu_name = cpu_table.get('Name')
   if cpu_name:
     print 'CPU name: {cpu_name}'.format(**locals())
+
+pwd = os.getcwd()
+stat = os.statvfs(pwd)
+print '{pwd}: {pcent:.2f}% of {total} full, {reserve}% reserve'.format(
+  pcent=(stat.f_blocks-stat.f_bavail)*100.0/stat.f_blocks,
+  total=(human(stat.f_blocks*stat.f_bsize)),
+  reserve=(stat.f_bfree-stat.f_bavail)*100/stat.f_blocks,
+  **locals())
