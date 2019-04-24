@@ -38,6 +38,9 @@ class Filter(object):
 def load(stream):
   data = stream.read()
 
+  if args.python:
+    return eval(data)
+
   if args.yaml:
     return yaml.load(data)
 
@@ -195,11 +198,14 @@ def applyFilters(root, from_list=False):
   return root
 
 parser = argparse.ArgumentParser(description='JSON tool')
+
 group = parser.add_mutually_exclusive_group()
 group.add_argument('-f', '--flatten', dest='flatten', action='store_true', help='Flatten elements')
 group.add_argument('-l', '--linear', dest='linear', action='store_true', help='Print elements linearly')
 
 parser.add_argument('-y', '--yaml', dest='yaml', action='store_true', help='Read input yaml file')
+parser.add_argument('-p', '--python', dest='python', action='store_true', help='Treat input as Python source')
+
 parser.add_argument('-a', '--all', dest='all', action='store_true',
                     help='Show "directories" of the JSON with --flatten')
 parser.add_argument('-F', '--file', dest='file', help='Input file')
