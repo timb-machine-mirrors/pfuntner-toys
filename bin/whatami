@@ -12,11 +12,14 @@ import subprocess
 def warn(msg):
   log.info(msg)
 
-def smartSplit(obj):
+def smartSplit(obj, strip_whitespace=False):
   if isinstance(obj, basestring):
     obj = obj.splitlines()
-  if isinstance(obj, list) and len(obj) == 1:
-    obj = obj[0]
+  if isinstance(obj, list):
+    if strip_whitespace:
+      obj = [s.strip() for s in obj]
+    if len(obj) == 1:
+      obj = obj[0]
   return obj
 
 def show(expr):
@@ -43,7 +46,7 @@ def cat(filename):
   else:
     log.info('{filename!r} does not exist'.format(**locals()))
 
-def run(cmd, silent=False):
+def run(cmd, silent=False, strip_whitespace=False):
   ret = ''
 
   if isinstance(cmd, str):
@@ -59,9 +62,11 @@ def run(cmd, silent=False):
     if stdout:
       ret = stdout
       if not silent:
-        stdout = smartSplit(stdout)
+        stdout = smartSplit(stdout, strip_whitespace=strip_whitespace)
         print '{cmd}: {stdout!r}'.format(**locals())
 
+  if isinstance(ret, basestring) and strip_whitespace:
+    ret = ret.strip()
   return ret
 
 def parse_fixed_table(data):
@@ -104,7 +109,7 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-print 'It is {!s}'.format(datetime.datetime.utcnow())
+print 'It is {} UTC'.format(datetime.datetime.utcnow().strftime('%a %Y-%m-%d %H:%M:%S.%f'))
 print
 run('uname -a')
 run('uname -n')
@@ -165,7 +170,7 @@ if 'win' in sys.platform.lower():
 
   log.debug('attrs: {attrs}'.format(**locals()))
   if 'IPv4 Address' in attrs:
-    print 'IP: {ip} ({adapter})'.format(ip=attrs['IPv4 Address'], **locals())
+    print 'ipconfig: {ip} ({adapter})'.format(ip=attrs['IPv4 Address'], **locals())
 
   """
     $ wmic MemoryChip get Capacity, BankLabel
@@ -237,6 +242,46 @@ if 'win' in sys.platform.lower():
   cpu_name = cpu_table.get('Name')
   if cpu_name:
     print 'CPU name: {cpu_name}'.format(**locals())
+else:
+  out = run('/sbin/ifconfig', silent=True)
+  if out:
+    adapter_regexp = re.compile('^(\w+):')
+    ignore_adapter_regexp = re.compile('(lo|docker)')
+    attrs = {}
+    for line in out.splitlines():
+      match = adapter_regexp.search(line)
+      if match:
+        if attrs:
+          if (not ignore_adapter_regexp.match(attrs['name'])) and 'inet' in attrs:
+            print 'ifconfig: {inet} ({name})'.format(**attrs)
+          attrs = {}
+        attrs['name'] = match.group(1)
+      elif attrs:
+        tokens = line.split()
+        if tokens:
+          curr = 0
+          if tokens[0] in ['RX', 'TX']:
+            if tokens[0] not in attrs:
+              attrs[tokens[0]] = {}
+            base = attrs[tokens[0]]
+            curr += 1
+          else:
+            base = attrs
+          while curr+1 < len(tokens):
+            name = tokens[curr]
+            curr += 1
+            value = tokens[curr]
+            curr += 1
+            while (curr < len(tokens)) and (value[0] == '(') and (value[-1] != ')'):
+              value += ' ' + tokens[curr]
+              curr += 1
+            base[name] = value
+    if attrs:
+      if (not ignore_adapter_regexp.match(attrs['name'])) and 'inet' in attrs:
+        print 'ifconfig: {inet} ({name})'.format(**attrs)
+
+  print ''
+  run('uptime', strip_whitespace=True)
 
 pwd = os.getcwd()
 stat = os.statvfs(pwd)
