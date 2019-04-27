@@ -4,6 +4,7 @@ import os
 import re
 import sys
 import socket
+import hashlib
 import logging
 import argparse
 import datetime
@@ -45,6 +46,12 @@ def cat(filename):
       log.info('{filename!r} is not a file'.format(**locals()))
   else:
     log.info('{filename!r} does not exist'.format(**locals()))
+
+def hash(filename):
+  hasher = hashlib.md5()
+  with open(filename) as stream:
+    hasher.update(stream.read())
+  return hasher.hexdigest()
 
 def run(cmd, silent=False, strip_whitespace=False):
   ret = ''
@@ -101,6 +108,70 @@ def human(value):
           units = 'TB'
   return '{value}{units}'.format(value=int(value), units=units)
 
+def extract(cmd, pattern, label, formatter):
+  stdout = run(cmd, silent=True)
+  match = re.search(pattern, stdout, flags=re.MULTILINE)
+  if match:
+    print '{label}: {value}'.format(value=formatter(match), **locals())
+
+def ram_usage(match):
+  total = float(match.group(1))
+  used = float(match.group(2))
+  free = float(match.group(3))
+  return '{free}/{total} {pcent:.2f}%'.format(free=human(free), total=human(total), pcent=free*100/total)
+
+def get_version():
+  git_used = False
+  ret = '?'
+
+  dir = os.path.dirname(sys.argv[0])
+  base = os.path.basename(sys.argv[0])
+  cwd = os.getcwd()
+  try:
+    os.chdir(dir)
+  except:
+    pass
+  else:
+    stdout = run(['git', 'log', '-1', base], silent=True)
+    """
+      commit {SHA1}
+      Author: {FIRST_NAME} {LAST_NAME} <{EMAIL_ADDRESS}>
+      Date:   Wed Jan 16 09:32:03 2019 -0500
+      . 
+      . 
+      . 
+    """
+    match = re.search(r'^commit\s+(\S+).*\nDate:\s+(([A-Z][a-z]{2} ){2}[ 0123]\d (\d{2}:){2}\d{2} \d{4})', stdout, re.DOTALL)
+    log.debug('`git log 0` search groups: {groups}'.format(groups=match.groups() if match else None))
+    if match:
+      commit = match.group(1)[:6]
+      timestamp = datetime.datetime.strptime(match.group(2), '%a %b %d %H:%M:%S %Y')
+      log.debug('timestamp: {timestamp!s}'.format(**locals()))
+
+      stdout = run('git branch', silent=True)
+      match = re.search(r'\*\s(\S+)', stdout, re.DOTALL)
+      log.debug('`git branch` search groups: {groups}'.format(groups=match.groups() if match else None))
+      if match:
+        branch = match.group(1)
+
+        stdout = run('git remote -v', silent=True)
+        """
+          origin  https://github.com/pfuntner/gists.git (fetch)
+          origin  git@github.com:pfuntner/toys.git (fetch)
+        """
+        match = re.search('origin\s+[^:@]+[:@]/?/?([^/]+/.*)\.git\s+\(fetch\)', stdout)
+        log.debug('`git remote -v` groups: {groups}'.format(groups=match.groups() if match else None))
+        if match:
+          ret = '{timestamp!s}, {repo}, {branch}, {commit}'.format(repo=match.group(1), **locals())
+          git_used = True     
+
+  os.chdir(cwd)
+
+  if not git_used:
+    ret = str(datetime.datetime.fromtimestamp(os.path.getmtime(sys.argv[0])))
+
+  return ret + ', ' + hash(sys.argv[0])
+
 parser = argparse.ArgumentParser(description='General "what am I" with respect to host system')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 args = parser.parse_args()
@@ -110,6 +181,7 @@ log = logging.getLogger()
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
 print 'It is {} UTC'.format(datetime.datetime.utcnow().strftime('%a %Y-%m-%d %H:%M:%S.%f'))
+print 'I am {pgm}: {version}'.format(pgm=sys.argv[0], version=get_version())
 print
 run('uname -a')
 run('uname -n')
@@ -122,7 +194,7 @@ run('uname -i')
 run('uname -o')
 
 print ''
-cat('/etc/system-release')
+cat('/etc/system-release') or cat('/etc/os-release')
 show('sys.version')
 show('sys.platform')
 show('sys.path')
@@ -243,6 +315,7 @@ if 'win' in sys.platform.lower():
   if cpu_name:
     print 'CPU name: {cpu_name}'.format(**locals())
 else:
+  # Linux
   out = run('/sbin/ifconfig', silent=True)
   if out:
     adapter_regexp = re.compile('^(\w+):')
@@ -281,6 +354,10 @@ else:
         print 'ifconfig: {inet} ({name})'.format(**attrs)
 
   print ''
+
+  extract('free -b', '^Mem:\s+(\d+)\s+(\d+)\s+(\d+)', 'Free RAM', ram_usage)
+
+  extract('lscpu', '^Model name:\s+(.+)$', 'CPU name', lambda match: match.group(1).strip())
   run('uptime', strip_whitespace=True)
 
 pwd = os.getcwd()
