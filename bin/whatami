@@ -108,11 +108,15 @@ def human(value):
           units = 'TB'
   return '{value}{units}'.format(value=int(value), units=units)
 
-def extract(cmd, pattern, label, formatter):
+def extract(cmd, pattern, formatter, label=None):
+  value = None
   stdout = run(cmd, silent=True)
   match = re.search(pattern, stdout, flags=re.MULTILINE)
   if match:
-    print '{label}: {value}'.format(value=formatter(match), **locals())
+    value = formatter(match)
+    if label:
+      print '{label}: {value}'.format(**locals())
+  return value
 
 def ram_usage(match):
   total = float(match.group(1))
@@ -255,7 +259,7 @@ if 'win' in sys.platform.lower():
   out = run('wmic MemoryChip get Capacity, BankLabel', silent=True)
   if out:
     out = out.splitlines()
-    ram = 0
+    total = 0.0
     for line in out[1:]:
       bytes = 0
       tokens = line.split()
@@ -264,19 +268,12 @@ if 'win' in sys.platform.lower():
       except:
         pass
       else:
-        ram += bytes
-    if ram:
-      units = 'b'
-      if ram > 1000:
-        ram /= 1024
-        units = 'KB'
-        if ram > 1000:
-          ram /= 1024
-          units = 'MB'
-          if ram > 1000:
-            ram /= 1024
-            units = 'GB'
-      print 'RAM: {ram} {units}'.format(**locals())
+        total += bytes
+
+    free = extract('wmic os get freephysicalmemory', '(\d+)', lambda match: float(match.group(1))*1024)
+
+    if total and free:
+      print 'Free RAM: {free}/{total} {pcent:.2f}%'.format(free=human(free), total=human(total), pcent=100*free/total)
 
   """
     $ wmic cpu list | table --fixed --rotate --headings
@@ -355,15 +352,15 @@ else:
 
   print ''
 
-  extract('free -b', '^Mem:\s+(\d+)\s+(\d+)\s+(\d+)', 'Free RAM', ram_usage)
+  extract('free -b', '^Mem:\s+(\d+)\s+(\d+)\s+(\d+)', ram_usage, 'Free RAM')
 
-  extract('lscpu', '^Model name:\s+(.+)$', 'CPU name', lambda match: match.group(1).strip())
+  extract('lscpu', '^Model name:\s+(.+)$', lambda match: match.group(1).strip(), 'CPU name')
   run('uptime', strip_whitespace=True)
 
 pwd = os.getcwd()
 stat = os.statvfs(pwd)
-print '{pwd}: {pcent:.2f}% of {total} full, {reserve}% reserve'.format(
+print '{pwd}: {pcent:.2f}% of {total_space} full, {reserve}% reserve'.format(
   pcent=(stat.f_blocks-stat.f_bavail)*100.0/stat.f_blocks,
-  total=(human(stat.f_blocks*stat.f_bsize)),
+  total_space=(human(stat.f_blocks*stat.f_bsize)),
   reserve=(stat.f_bfree-stat.f_bavail)*100/stat.f_blocks,
   **locals())
