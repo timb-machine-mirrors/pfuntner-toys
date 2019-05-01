@@ -11,7 +11,9 @@ def write(stream, stream_name, msg):
   if msg:
     msg = msg.strip('\n')
     lock.acquire()
-    stream.write('{now} {stream_name} {msg!r}\n'.format(now=datetime.datetime.now(), **locals()))
+    now = datetime.datetime.now()
+    elapsed = now - start
+    stream.write('{now} +{elapsed} {stream_name} {msg!r}\n'.format(**locals()))
     lock.release()
 
 class Redirect(threading.Thread):
@@ -26,17 +28,31 @@ class Redirect(threading.Thread):
 
     buf = ''
     stream_name = self.stream_name
+    read_list = [self.in_stream]
+    write_list = []
+    excp_list = write_list
+    last_c = None
     while True:
-      c = self.in_stream.read(1)
-      if c:
-        if c == '\n':
-          write(self.out_stream, stream_name, buf)
-          buf = ''
+      (read_ready, write_ready, excp_ready) = select.select(read_list, write_list, excp_list, 1)
+      if read_ready:
+        c = self.in_stream.read(1)
+        if c:
+          if c == '\n':
+            write(self.out_stream, stream_name, buf)
+            buf = ''
+          else:
+            buf += c
+          last_c = c
         else:
-          buf += c
-      else:
-        break
-    write(self.out_stream, stream_name, buf)
+          write(self.out_stream, stream_name, buf)
+          break
+      elif last_c not in [None, '\n']:
+        """
+        The select() timed out.  If the command printed out some data without a newline, it likely printed out a prompt
+        and we would like to display it.
+        """
+        write(self.out_stream, stream_name, buf)
+        buf = ''
 
 def syntax(msg=None):
   if msg:
