@@ -2,9 +2,17 @@
 
 import sys
 import time
+import select
 import datetime
 import threading
 import subprocess
+
+def write(stream, stream_name, msg):
+  if msg:
+    msg = msg.strip('\n')
+    lock.acquire()
+    stream.write('{now} {stream_name} {msg!r}\n'.format(now=datetime.datetime.now(), **locals()))
+    lock.release()
 
 class Redirect(threading.Thread):
   def __init__(self, stream_name, in_stream, out_stream):
@@ -17,29 +25,18 @@ class Redirect(threading.Thread):
     global lock
 
     buf = ''
-    done = False
     stream_name = self.stream_name
-    while not done:
+    while True:
       c = self.in_stream.read(1)
-      now = datetime.datetime.now()
       if c:
         if c == '\n':
-          if not buf:
-            buf = '{stream_name} {now}'.format(**locals())
-          lock.acquire()
-          self.out_stream.write('{buf}\n'.format(**locals()))
-          lock.release()
+          write(self.out_stream, stream_name, buf)
           buf = ''
-        elif c != '\r':
-          if not buf:
-            buf = '{stream_name} {now} '.format(**locals())
+        else:
           buf += c
       else:
-        done = True
-    if buf:
-      lock.acquire()
-      self.out_stream.write('{stream_name} {buf}\n'.format(**locals()))
-      lock.release()
+        break
+    write(self.out_stream, stream_name, buf)
 
 def syntax(msg=None):
   if msg:
