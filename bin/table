@@ -13,7 +13,8 @@ def readSeparator():
   ret = []
   regexp = re.compile(args.separator)
   for line in sys.stdin.read().splitlines():
-    ret.append(regexp.split(line))
+    if regexp.search(line):
+      ret.append([token.strip() for token in regexp.split(line)])
   log.debug('ret: {ret}'.format(**locals()))
   return ret
 
