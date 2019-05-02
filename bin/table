@@ -106,6 +106,12 @@ elif args.fixed:
 else:
   parser.error('Select an input method')
 
+if all([(len(datum[0]) == 0) for datum in data]):
+  data = [datum[1:] for datum in data]
+
+if all([(len(datum[-1]) == 0) for datum in data]):
+  data = [datum[:-1] for datum in data]
+
 if args.html:
   emitHtml()
 elif args.markdown:
