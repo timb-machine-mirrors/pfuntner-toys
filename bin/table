@@ -3,36 +3,50 @@
 import re
 import csv
 import sys
+import json
 import logging
 import argparse
 
 def readCsv():
   return [row for row in csv.reader(sys.stdin)]
 
+def fix_headings(line):
+  # replace simple embedded blanks in headings
+  return re.subn('[a-z] [a-z]', lambda match: match.group(0)[0] + '_' + match.group(0)[2], line)[0]
+
 def readSeparator():
   ret = []
   regexp = re.compile(args.separator)
-  for line in sys.stdin.read().splitlines():
+  for (linenum, line) in enumerate(sys.stdin.read().splitlines()):
+    log.debug('{linenum} {line!r}'.format(**locals()))
+    if linenum == 0:
+      line = fix_headings(line)
+      log.debug('Post-fix: {line!r}'.format(**locals()))
     if regexp.search(line):
-      ret.append([token.strip() for token in regexp.split(line)])
+      ret.append([token for token in regexp.split(line)])
   log.debug('ret: {ret}'.format(**locals()))
   return ret
 
 def readFixed():
   ret = []
-  line = sys.stdin.readline().strip('\n').strip('\r')
-  columns = re.findall('\w+\s+', line)
+  line = fix_headings(sys.stdin.readline().strip('\n').strip('\r'))
+
+  columns = [''.join(hits) for hits in re.findall('(\S+)(\s+|$)', line)]
   widths = [len(column) for column in columns]
   log.debug('columns/widths: {zip}'.format(zip=zip(columns, widths)))
-  ret.append([column.strip() for column in columns])
+  ret.append(columns)
   for line in sys.stdin.read().splitlines():
     ret.append([])
     pos = 0
     col = 0
     while pos < len(line):
       log.debug('{linenum} {col} {pos} {remain!r}'.format(linenum=len(ret), remain=line[pos:], **locals()))
-      ret[-1].append(line[pos:pos+widths[col]].strip())
-      pos += widths[col]
+      if col+1 < len(widths):
+        ret[-1].append(line[pos:pos+widths[col]])
+        pos += widths[col]
+      else:
+        ret[-1].append(line[pos:])
+        pos = len(line)
       col += 1
   return ret
 
@@ -69,6 +83,19 @@ def emitRotated():
     for (colnum, col) in enumerate(row):
       print '{rownum:>06d} {colnum:>02d} {name}{col}'.format(name=data[0][colnum].ljust(33) if args.headings else '', **locals())
     
+def emitJson():
+  if args.headings:
+    obj = []
+    for datum in data[1:]:
+      obj.append({})
+      for pos in range(len(data[0])):
+        heading = data[0][pos] if (pos < len(data[0])) else 'column {pos}'.format(**locals())
+        value = datum[pos] if pos < len(datum) else None
+        obj[-1][heading] = value
+  else:
+    obj = data
+  print json.dumps(obj, indent=2, sort_keys=True)
+
 parser = argparse.ArgumentParser(description='Turn data into a table')
 
 input_group = parser.add_mutually_exclusive_group()
@@ -80,7 +107,8 @@ output_group = parser.add_mutually_exclusive_group()
 output_group.add_argument('-H', '--html', dest='html', action='store_true', help='Output HTML')
 output_group.add_argument('-m', '--markdown', dest='markdown', action='store_true', help='Output Markdown')
 output_group.add_argument('-b', '--bbcode', dest='bbcode', action='store_true', help='Output BBCode')
-output_group.add_argument('-r', '--rotate', dest='rotate', action='store_true', help='Rotate data')
+output_group.add_argument('-r', '--rotate', dest='rotate', action='store_true', help='Output rotate data')
+output_group.add_argument('-j', '--json', dest='json', action='store_true', help='Rotate JSON')
 
 parser.add_argument('--headings', dest='headings', action='store_true', help='First row contains headings, not data')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
@@ -112,6 +140,8 @@ if all([(len(datum[0]) == 0) for datum in data]):
 if all([(len(datum[-1]) == 0) for datum in data]):
   data = [datum[:-1] for datum in data]
 
+data = [[token.strip() for token in datum] for datum in data]
+
 if args.html:
   emitHtml()
 elif args.markdown:
@@ -120,5 +150,7 @@ elif args.bbcode:
   emitBbcode()
 elif args.rotate:
   emitRotated()
+elif args.json:
+  emitJson()
 else:
   parser.error('Select an output method')
