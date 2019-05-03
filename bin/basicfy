@@ -1,9 +1,16 @@
 #! /usr/bin/env python
 
 import os
+import sys
 import logging
 import argparse
 import subprocess
+
+def lookfor(*paths):
+  for path in paths:
+    if os.path.isfile(path):
+      return path
+  raise Exception('Could not find any of {paths}'.format(**locals()))
 
 parser = argparse.ArgumentParser(description='append ~/python/basic to a file')
 parser.add_argument('file', help='File to `basicfy`')
@@ -14,7 +21,12 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(funcName)s:
 log = logging.getLogger()
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-with open('{HOME}/python/basic'.format(**os.environ)) as basic:
+basic_file = lookfor(
+  '{HOME}/python/basic'.format(**os.environ),
+  '{pgm}/../python/basic'.format(pgm=os.path.dirname(sys.argv[0])),
+)
+
+with open(basic_file) as basic:
   with open(args.file, 'a') as work:
     work.write(basic.read())
     subprocess.Popen(['chmod', '-v', 'a+x', args.file]).wait()
