@@ -90,6 +90,16 @@ def linearWriter(root):
     sys.stderr.write('Can only use --linear on lists\n')
     exit(1)
 
+def makeIntIfPossible(elem):
+  try:
+    elem = int(elem)
+  except:
+    pass
+  return elem
+
+def path_sorter(path):
+  return [makeIntIfPossible(elem) for elem in path.split('/')]
+
 def flatWriter(root, path=[]):
   ret = []
   if type(root) in [list, dict]:
@@ -101,7 +111,7 @@ def flatWriter(root, path=[]):
     ret.append('/{path} {root}'.format(path='/'.join(path), root=root))
 
   if path == []:
-    print '\n'.join(sorted(ret))
+    print '\n'.join(sorted(ret, key=path_sorter))
   return ret
 
 def findpath(root, path_pattern, path=[]):
