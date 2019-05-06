@@ -91,13 +91,18 @@ def linearWriter(root):
     exit(1)
 
 def flatWriter(root, path=[]):
+  ret = []
   if type(root) in [list, dict]:
     if args.all:
-      print '/{path}{final}'.format(path='/'.join(path), final='/' if path else '')
+      ret.append('/{path}{final}'.format(path='/'.join(path), final='/' if path else ''))
     for key in range(len(root)) if isinstance(root, list) else root.keys():
-      flatWriter(root[key], path + [str(key)])
+      ret += flatWriter(root[key], path + [str(key)])
   else:
-    print '/{path} {root}'.format(path='/'.join(path), root=root)
+    ret.append('/{path} {root}'.format(path='/'.join(path), root=root))
+
+  if path == []:
+    print '\n'.join(sorted(ret))
+  return ret
 
 def findpath(root, path_pattern, path=[]):
   ret = []
