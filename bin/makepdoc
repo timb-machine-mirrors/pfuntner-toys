@@ -48,6 +48,7 @@ libraries = [
   ('subprocess', 'https://docs.python.org/2/library/subprocess.html'),
   ('sys', 'https://docs.python.org/2/library/sys.html'),
   ('threading', 'https://docs.python.org/2/library/threading.html'),
+  ('itertools', 'https://docs.python.org/2/library/itertools.html'),
 ]
 
 libraries.sort(key=lambda library: library[0])
