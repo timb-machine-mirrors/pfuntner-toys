@@ -3,6 +3,8 @@
 import sys
 import time
 import select
+import logging
+import argparse
 import datetime
 import threading
 import subprocess
@@ -65,14 +67,43 @@ def redirect(p, stream_name):
   threads.append(Redirect(stream_name, getattr(p, stream_name), getattr(sys, stream_name)))
   threads[-1].start() 
 
-if len(sys.argv) < 2:
-  syntax()
+past_options = False
+options = []
+for arg in sys.argv[1:]:
+  if past_options:
+    options.append(arg)
+  elif (arg == '--'):
+    options.append(arg)
+    past_options = True
+  else:
+    if not arg.startswith('-'):
+      past_options = True
+      options.append('--')
+    options.append(arg)
+
+parser = argparse.ArgumentParser(description='Capture output from a command')
+parser.add_argument('cmd', help='Command to execute')
+parser.add_argument('args', metavar='arg', nargs='*', help='Arguments for command')
+parser.add_argument('-v', '--verbose', action='store_true', help='Enable debugging')
+args = parser.parse_args(options)
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
+log.debug('options: {options}'.format(**locals()))
+log.debug('args: {args}'.format(**locals()))
 
 threads = []
 lock = threading.Lock()
 
 start = datetime.datetime.now()
-p = subprocess.Popen(sys.argv[1:], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+command = [args.cmd] + args.args
+try:
+  p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+except Exception as e:
+  log.error('Caught {e!s} executing {command}'.format(**locals()))
+  exit(1)
 redirect(p, 'stdout')
 redirect(p, 'stderr')
 rc = p.wait()

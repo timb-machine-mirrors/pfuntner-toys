@@ -1,66 +1,48 @@
 # `capture`
 
 ## Purpose
-Capture output and other info from a shell command:
+Capture output from a command.  Each line is preceded with:
 
-  - saves stdout and stderr to a file
-  - print:
-    - start and stop time, duration
-    - exit status
-    - if the command was killed by a signal, the signal number and symbolic name
-    - user and system CPU time
+  - The local wall clock time
+  - The elapsed time since the command started
+  - Whether the output is stdout or stderr
+
+Lines printed to stdout or stderr are directed to their normal destination in the shell.
+
+Along with the times shows for each line of output, the total elapsed time is shown when the command is complete.
 
 ## Syntax
 ```
-Syntax: capture [-o | --output FILENAME] command [OPTIONS ...] [ARGUMENTS ...]
+capture [-h] [-v] cmd [arg [arg ...]]
+
 ```
 
 ### Options and arguments
 | Option | Description | Default |
 | ------ | ----------- | ------- |
-|  `-o` or `--output`  | Specify output file nameor directory | `./{commandBaseName}-%Y%m%d%H%M%S%f.out` |
+|  `-v` or `--verbose`  | Enable verbose debugging | Debugging is not enabled |
+|  `-h` or `--help`  | Display help | Help is not displayed |
+
+### Arguments
+
+- `cmd` is the name of the command and is required
+- the list of `arg` tokens are the optional arguments to the command
 
 ## Example
 
 ```
-$ capture python -c 'for num in range(10): print num'
-Writing to 'capture-20180418152936235508.out'
-0
-1
-2
-3
-4
-5
-6
-7
-8
-9
+$ capture bash -c 'echo Start; sleep 5; echo End'
+2019-05-08 08:03:32.716248 +0:00:00.119175 stdout 'Start'
+2019-05-08 08:03:37.803516 +0:00:05.206443 stdout 'End'
+Elapsed time: 0:00:05.216319s
 
-Start: 2018-04-18T15:29:36.243807
-Stop: 2018-04-18T15:29:36.409296
-Duration: 0:00:00.165489
-Status: 0000, rc=0
-User: 0.05s, System: 0.11s
-$ headtail capture-20180418152936235508.out
-capture-20180418152936235508.out        1 0
-capture-20180418152936235508.out        2 1
-capture-20180418152936235508.out        3 2
-capture-20180418152936235508.out        4 3
-capture-20180418152936235508.out        5 4
-                                          .
-                                          .
-                                          .
-capture-20180418152936235508.out       12 Start: 2018-04-18T15:29:36.243807
-capture-20180418152936235508.out       13 Stop: 2018-04-18T15:29:36.409296
-capture-20180418152936235508.out       14 Duration: 0:00:00.165489
-capture-20180418152936235508.out       15 Status: 0000, rc=0
-capture-20180418152936235508.out       16 User: 0.05s, System: 0.11s
+$ capture bash -c 'echo -e "\0"'
+2019-05-08 08:04:18.496815 +0:00:00.099494 stdout '\x00'
+Elapsed time: 0:00:00.110389s
 
 $
 ```
 
 ## Notes
 
-- If the command is a script (Bash, Python, awk, etc.), you will likely have to invoke the interpreter and give it the script file name.
-- If you just specify a directory for `-o` and don't specify a file name, the default file name will be created in the specified directory
-- The script doesn't work well when prompting interactively for input.  If if prints a prompt without a terminating newline, the prompt will not show up on the console.  I'm trying to fix that but haven't got it yet.
+- The options for `capture` must appear before the command and arguments.  If you try to place them after the command, the option is assumed to pertain to the command, not `capture`.
