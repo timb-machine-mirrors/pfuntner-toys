@@ -53,3 +53,7 @@ $
 
 - The options for `capture` must appear before the command and arguments.  If you try to place them after the command, the option is assumed to pertain to the command, not `capture`.
 - Note that some output is not trapped by the script.  For instance, I believe the Python `getpass.getpass()` option writes directly to `/dev/tty` rather than writing to stdout which might be redirected somewhere.
+- The data of each line is enclosed by single or double quotes. Portions of the output might be protected by escape symbols, such as:
+    - the tab character
+    - the null character (see the example above)
+    - If both double and single quotes appear in the output, the quotes that are chosen to enclose the string will be escaped when they appear in the output
