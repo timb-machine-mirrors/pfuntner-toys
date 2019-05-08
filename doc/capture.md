@@ -41,8 +41,15 @@ $ capture bash -c 'echo -e "\0"'
 Elapsed time: 0:00:00.110389s
 
 $
+$ capture python -c 'import getpass; print repr(getpass.getpass("Enter a string> "))'
+Enter a string>
+2019-05-08 08:13:48.956318 +0:00:04.634819 stdout "'foobar'"
+Elapsed time: 0:00:04.635743s
+
+$
 ```
 
 ## Notes
 
 - The options for `capture` must appear before the command and arguments.  If you try to place them after the command, the option is assumed to pertain to the command, not `capture`.
+- Note that some output is not trapped by the script.  For instance, I believe the Python `getpass.getpass()` option writes directly to `/dev/tty` rather than writing to stdout which might be redirected somewhere.
