@@ -1,6 +1,8 @@
 if [ "$BASH_SOURCE" != "$0" ]
 then
   echo "sourced"
+  true
 else
   echo "not sourced"
+  false
 fi
