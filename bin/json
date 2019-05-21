@@ -100,6 +100,12 @@ def makeIntIfPossible(elem):
 def path_sorter(path):
   return [makeIntIfPossible(elem) for elem in path.split('/')]
 
+def see(o):
+  ret = repr(o)
+  if ret.startswith('u'):
+    ret = ret[1:]
+  return ret
+
 def flatWriter(root, path=[]):
   ret = []
   if type(root) in [list, dict]:
@@ -108,7 +114,7 @@ def flatWriter(root, path=[]):
     for key in range(len(root)) if isinstance(root, list) else root.keys():
       ret += flatWriter(root[key], path + [str(key)])
   else:
-    ret.append('/{path} {root}'.format(path='/'.join(path), root=root))
+    ret.append('/{path} {root}'.format(path='/'.join(path), root=see(root)))
 
   if path == []:
     print '\n'.join(sorted(ret, key=path_sorter))
