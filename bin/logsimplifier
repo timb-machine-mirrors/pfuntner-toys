@@ -3,10 +3,13 @@
 """
 Simplify log messages
 
-This assumes log messages of the form:
+This assumes log messages of the forms:
 
   date       time         level filename lineno pid   tid             msg
   2019-02-27 10:00:24,615 DEBUG ./ultralogs:128 23580 139859126458176 MSG ...
+
+  date       time         level filename       lineno msg
+  2019-05-23 14:28:46,763 INFO ./docker-health.py:494 MSG
 """
 
 import os
@@ -26,17 +29,22 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 assert not sys.stdin.isatty(), 'stdin must be redirected'
 
 # 2019-02-27 10:00:24,615 DEBUG ./ultralogs:128 23580 139859126458176 MSG ...
-regexp = re.compile('^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3} \S+ ([^:]+):(\d+) \d+ \d+ (.+)$')
+regexps = [
+  re.compile('^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3} \S+ ([^:]+):(\d+) \d+ \d+ (.+)$'),
+  re.compile('^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3} \S+ ([^:]+):(\d+) (.+)$'),
+]
 
 for line in sys.stdin.read().splitlines():
-  match = regexp.search(line)
-  log.debug('{line!r} {groups}'.format(
-    line=line,
-    groups=match.groups() if match else None
-  ))
-  if match:
-    base = os.path.basename(match.group(1))
-    linenum = match.group(2)
-    msg = match.group(3)
-
-    print '{base}:{linenum} {msg}'.format(**locals())
+  for regexp in regexps:
+    match = regexp.search(line)
+    log.debug('{line!r} {groups}'.format(
+      line=line,
+      groups=match.groups() if match else None
+    ))
+    if match:
+      base = os.path.basename(match.group(1))
+      linenum = match.group(2)
+      msg = match.group(3)
+  
+      print '{base}:{linenum} {msg}'.format(**locals())
+      break
