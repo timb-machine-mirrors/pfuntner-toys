@@ -6,7 +6,12 @@ import sys
 import logging
 import argparse
 
-def process(rawpath, log):
+def process(rawpath, log=None):
+  if log is None:
+    logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+    log = logging.getLogger()
+    log.setLevel(logging.WARNING)
+
   if rawpath.startswith('-'):
     log.debug('{rawpath!r} looks like an option so I\'m going to leave it alone!'.format(**locals()))
     path = rawpath
