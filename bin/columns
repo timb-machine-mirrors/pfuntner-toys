@@ -14,6 +14,7 @@ def delimOrBlank():
 
 parser = argparse.ArgumentParser(description='Print columns from input')
 
+parser.add_argument('-n', '--negate', action='store_true', help='Exclude specified columns')
 group = parser.add_mutually_exclusive_group()
 group.add_argument('-s', '-F', '--separator', '--delim', dest='delim', help='Specify regular expression delimiter')
 group.add_argument('-r', '--regexp', dest='regexp', help='Specify regular expression')
@@ -78,15 +79,22 @@ while curr < len(args.columns):
   curr += 1
 log.debug('After expanding fields: {values}'.format(**locals()))
 
+log.info('args.columns: {args.columns}'.format(**locals()))
+
 desiredFields = []
 try:
-  for field in args.columns:
-    field = int(field)
-    if field == 0:
-      parser.error('Cannot specify columns 0')
-    if (field > 0) and (not regexp):
-      field -= 1
-    desiredFields += [field]
+  if args.negate:
+    for arg in range(1, 100001):
+      if str(arg) not in args.columns:
+        desiredFields.append(arg)
+  else:
+    for field in args.columns:
+      field = int(field)
+      if field == 0:
+        parser.error('Cannot specify columns 0')
+      if (field > 0) and (not args.regexp):
+        field -= 1
+      desiredFields.append(field)
 except Exception as e:
   parser.error('Invalid field: `%s`' % str(e))
 log.debug('desiredFields: {desiredFields}'.format(**locals()))
