@@ -4,7 +4,7 @@
 <p>I love this script so much! I must use this at least an average of once a day! The basic idea is that you tell it the positional columns you want to print and it prints them out.</p>
 <h2>Syntax</h2>
 <pre>
-columns [-h] [-s DELIM | -r REGEXP | -c] [-f FILENAME] [-v] column [column ...]
+columns [-h] [-s DELIM | -r REGEXP | -c] [-n] [-f FILENAME] [-v] column [column ...]
 </pre>
 
 <h3>Options and arguments</h3>
@@ -18,6 +18,7 @@ columns [-h] [-s DELIM | -r REGEXP | -c] [-f FILENAME] [-v] column [column ...]
 <tr>
 <td><tt>-r REGEXP</tt> or <tt>--regexp REGEXP</tt></td><td>Specifies a regular expression by which to break up tokens</td><td>The default is to separate columns by one or more whitespace characters</td>
 <td><tt>-c</tt> or <tt>--csv</tt></td><td>Reads input as CSV</td><td>The default is to separate columns by one or more whitespace characters</td>
+<td><tt>-n</tt> or <tt>--negate</tt></td><td>Excludes specified columns</td><td>Includes specified columns</td>
 <td><tt>-f FILENAME</tt> or <tt>--filename FILENAME</tt></td><td>Reads input from the specified file</td><td>The default is to read from stdin</td>
 <td><tt>-v</tt> or <tt>--verbose</tt></td><td>Enables debugging messages</td><td>Debugging messages are not printed</td>
 </tr>
@@ -59,4 +60,5 @@ $
 
 <ul>
 <li>The data is read from stdin.  If stdin is not directed from a file or pipe, en error message is printed and the script terminates</li>
+<li>Negative columns don't work when `--negate` is specified and no error is thrown.</li>
 </ul>
