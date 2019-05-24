@@ -16,7 +16,7 @@ columns [-h] [-s DELIM | -r REGEXP | -c] [-f FILENAME] [-v] column [column ...]
 <td><tt>-s DELIM</tt> or <tt>-F DELIM</tt> or <tt>--separator DELIM</tt> or <tt>--delim DELIM</tt></td><td>Specifies the regular expression to separate columns.</td><td>The default is to separate columns by one or more whitespace characters</td>
 </tr>
 <tr>
-<td><tt>--r REGEXP</tt> or <tt>--regexp REGEXP</tt></td><td>Specifies a regular expression by which to break up tokens</td><td>The default is to separate columns by one or more whitespace characters</td>
+<td><tt>-r REGEXP</tt> or <tt>--regexp REGEXP</tt></td><td>Specifies a regular expression by which to break up tokens</td><td>The default is to separate columns by one or more whitespace characters</td>
 <td><tt>-c</tt> or <tt>--csv</tt></td><td>Reads input as CSV</td><td>The default is to separate columns by one or more whitespace characters</td>
 <td><tt>-f FILENAME</tt> or <tt>--filename FILENAME</tt></td><td>Reads input from the specified file</td><td>The default is to read from stdin</td>
 <td><tt>-v</tt> or <tt>--verbose</tt></td><td>Enables debugging messages</td><td>Debugging messages are not printed</td>
