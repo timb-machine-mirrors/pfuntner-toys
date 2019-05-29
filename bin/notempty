@@ -1,0 +1,28 @@
+#! /usr/bin/env python
+
+import re
+import sys
+
+def process(filename=None):
+  if filename:
+    stream = open(filename)
+  else:
+    stream = sys.stdin
+
+  for line in stream.read().splitlines():
+    if not regexp.search(line):
+      print '{location}{line}'.format(
+        location='{}: '.format(filename) if filename else '',
+        line=line,
+      )
+
+  if filename:
+    stream.close()
+
+regexp = re.compile('^\s*(#|$)')
+if len(sys.argv) > 1:
+  for filename in sys.argv[1:]:
+    process(filename)
+else:
+  assert not sys.stdin.isatty(), 'stdin must be redirected if no files are specified'
+  process()
