@@ -50,7 +50,7 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-regexp = re.compile('^\s*(#|$)')
+regexp = re.compile('^\s*("|#|$)')
 if args.args:
   for filename in args.args:
     process(filename)
