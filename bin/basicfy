@@ -7,26 +7,42 @@ import argparse
 import subprocess
 
 def lookfor(*paths):
+  ret = None
   for path in paths:
     if os.path.isfile(path):
-      return path
-  raise Exception('Could not find any of {paths}'.format(**locals()))
+      ret = open(path).read()
 
-parser = argparse.ArgumentParser(description='append ~/python/basic to a file')
+  if not ret:
+    log.warning('Could not find any of {paths}'.format(**locals()))
+
+  return ret
+
+parser = argparse.ArgumentParser(description='Append basic logging/argparse template to a file')
 parser.add_argument('file', help='File to `basicfy`')
 parser.add_argument('-v', '--verbose', action='store_true', help='Enable debugging')
-args = parser.parse_args()
+args = parser.parse_args('basicfy')
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(funcName)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-basic_file = lookfor(
+basic = lookfor(
   '{HOME}/python/basic'.format(**os.environ),
   '{pgm}/../python/basic'.format(pgm=os.path.dirname(sys.argv[0])),
 )
 
-with open(basic_file) as basic:
-  with open(args.file, 'a') as work:
-    work.write(basic.read())
-    subprocess.Popen(['chmod', '-v', 'a+x', args.file]).wait()
+if not basic:
+  import requests
+
+  url = 'https://raw.githubusercontent.com/pfuntner/fun/master/basic'
+  log.info('GET {url}...'.format(**locals()))
+  req = requests.get(url)
+  if req.ok:
+    basic = req.text
+  else:
+    log.warning('{url}: {req.status_code}, {req.text!r}'.format(**locals()))
+    parser.error('Cannot locate basic template!')
+
+with open(args.file, 'a') as work:
+  work.write(basic)
+  subprocess.Popen(['chmod', '-v', 'a+x', args.file]).wait()
