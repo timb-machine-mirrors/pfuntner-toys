@@ -55,7 +55,7 @@ def load(stream):
     log.debug('Loaded {ret}'.format(**locals()))
     return ret
 
-  ansible_regexp = re.compile(r'^(\S+)\s+\|\s+(\S+)\s+=>\s+(\{)')
+  ansible_regexp = re.compile(r'^(\S+)\s+\|\s+(\S+)\s+(?:=>|>>)\s+(\{)')
   ansible_host = None
   ansible_result = None
 
