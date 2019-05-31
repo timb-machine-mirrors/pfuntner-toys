@@ -1,0 +1,106 @@
+#! /usr/bin/env python
+
+import re
+import logging
+import argparse
+import datetime
+import subprocess
+
+date_formats = [
+  ('date', [
+             ('([A-Z][a-z]{2} ){2}( |\d)\d \d{2}:\d{2}:\d{2} \d{4}', '%a %b %d %H:%M:%S %Y'), # Fri May 31 15:00:50 2019
+             ('([A-Z][a-z]{2} ){2}( |\d)\d \d{2}:\d{2}:\d{2} \S+ \d{4}', '%a %b %d %H:%M:%S %Z %Y'), # Fri May 31 15:00:50 EDT 2019
+           ],
+  )
+]
+
+class Table(object):
+  def __init__(self, *args, **vargs):
+    """
+    Instantiate a table object, creating a list to hold lines
+    :param args: A list of heading strings
+    """
+    self.lines = ['\t'.join([str(arg) for arg in args]) + '\n']
+    self.vargs = vargs
+
+  def add(self, *args):
+    """
+    Add a row to the table
+    :param args: A list of strings for the columns
+    """
+    self.lines.append('\t'.join([str(arg) for arg in args]) + '\n')
+
+  def close(self):
+    """
+    This completes the table by opening a process for the `column` utility and writing the lines to it.
+    :return: None
+    """
+    p = subprocess.Popen([
+      'column',
+      '--table',
+      '--separator', '\t',
+      '--output-separator', self.vargs.get('separator', ' '*3),
+    ], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    (stdout, stderr) = p.communicate('\n'.join(self.lines) + '\n')
+    rc = p.wait()
+    if (rc != 0) or stderr:
+      log.error('`column` failed: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
+      exit(1)
+
+    return stdout.strip('\n')
+
+def is_numeric(s):
+  return bool(numeric_regexp.search(s))
+
+def parse_timestamp(arg):
+  ret = None
+  comment = None
+  if is_numeric(arg):
+    secs = float(arg)
+    try:
+      ret = datetime.datetime.fromtimestamp(secs)
+    except Exception as e:
+      comment = 'fromtimestamp() threw {e!s}'.format(**locals())
+  else:
+    for (title, formats) in date_formats:
+      for (regexp, format) in formats:
+        log.debug('Trying `{title}`: {regexp!r}'.format(**locals()))
+        if re.match(regexp + '$', arg):
+          try:
+            ret = datetime.datetime.strptime(arg, format)
+          except Exception as e:
+            comment = '`{title}` format threw {e!s}'.format(**locals())
+          break
+      if ret or comment:
+        break
+  if comment is None:
+    comment = 'No conversion'
+  return (ret, comment)
+
+parser = argparse.ArgumentParser(description='Perform time magic')
+parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+parser.add_argument('args', metavar='arg', nargs='+', help='One or more arguments to interpret')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
+numeric_regexp = re.compile('^\d+\.?\d*$')
+
+table = Table(*(['Argument', 'ISO'] + [format[0] for format in date_formats] + ['Comment']))
+
+for arg in args.args:
+  columns = [arg]
+
+  (timestamp, comment) = parse_timestamp(arg)
+  if timestamp:
+    for (title, formats) in date_formats:
+      columns.append(datetime.datetime.strftime(timestamp, formats[0][1]))
+  else:
+    columns += ['' for format in date_formats]
+    columns.append(comment)
+
+  table.add(*columns)
+print table.close()
