@@ -6,7 +6,7 @@ import re
 def syntax(msg=None):
   if msg:
     sys.stderr.write("{msg}\n".format(**locals()))
-  sys.stderr.write("Syntax: {pgm} REGEXP FILE ...\n".format(**locals()))
+  sys.stderr.write("Syntax: {pgm} REGEXP FILE ...\n".format(pgm=sys.argv[0]))
   exit(1)
 
 def process(filename):

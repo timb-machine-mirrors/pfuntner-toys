@@ -18,9 +18,9 @@ def dump(name):
     getattr(sys, name).write('\n'.join(msgs) + '\n')
 
 parser = argparse.ArgumentParser(description='A simple script that just writes the specified stdout/stderr and exits with the specified exit status')
-parser.add_argument('-o', '--out', '--stdout', dest='stdout', nargs='*')
-parser.add_argument('-e', '--err', '--stderr', dest='stderr', nargs='*')
-parser.add_argument('-s', '--status', dest='status', type=int)
+parser.add_argument('-o', '--out', '--stdout', dest='stdout', action='append', help='Message for stdout')
+parser.add_argument('-e', '--err', '--stderr', dest='stderr', action='append', help='Message for stderr')
+parser.add_argument('-x', '--exit', '-s', '--status', dest='status', type=int, default=0, help='Exit status')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true')
 args = parser.parse_args()
 
@@ -34,4 +34,4 @@ see('args.status')
 
 dump('stdout')
 dump('stderr')
-exit(args.status or 0)
+exit(args.status)
