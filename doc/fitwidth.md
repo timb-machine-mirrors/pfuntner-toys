@@ -3,7 +3,7 @@
 ## Purpose
 Basically, this script shortens long strings.
 
-So many times I've had output that just flowed over so many physical lines on my screen (potentially filling up the entire window, maybe with a **single** line that's **extremely** long) that make the output virtually impossible to read.  This script simplifies the output, perhaps by making every line fit on the physical window.
+So many times I've had output that just flowed over so many physical lines on my screen (potentially filling up the entire window, maybe with a **single** line that's **extremely** long) that make the output virtually impossible to read.  This script simplifies the output, ideally by making every line fit on the physical window.
 
 ## Syntax
 ```
