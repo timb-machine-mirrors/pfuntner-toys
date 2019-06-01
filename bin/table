@@ -108,7 +108,7 @@ output_group.add_argument('-H', '--html', dest='html', action='store_true', help
 output_group.add_argument('-m', '--markdown', dest='markdown', action='store_true', help='Output Markdown')
 output_group.add_argument('-b', '--bbcode', dest='bbcode', action='store_true', help='Output BBCode')
 output_group.add_argument('-r', '--rotate', dest='rotate', action='store_true', help='Output rotate data')
-output_group.add_argument('-j', '--json', dest='json', action='store_true', help='Rotate JSON')
+output_group.add_argument('-j', '--json', dest='json', action='store_true', help='Output JSON')
 
 parser.add_argument('--headings', dest='headings', action='store_true', help='First row contains headings, not data')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
