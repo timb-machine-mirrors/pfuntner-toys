@@ -24,7 +24,7 @@ def test(regexp_var, line):
 executable = '/usr/bin/time'
 
 cat_regexp = re.compile('^\s{2,}([a-zA-Z/]+)\s*$')
-format_regexp = re.compile('^\s{2,}%(\S)\s{2,}(?:\(Not in tcsh\.\) )?(\S.*)$')
+format_regexp = re.compile('^\s{2,}%?([a-zA-Z])\s{2,}(?:\(Not in tcsh\.\) )?(\S.*)$')
 multiblank = re.compile('\s{2,}')
 
 parser = argparse.ArgumentParser(description='Utilize time utility formatting')
@@ -55,7 +55,7 @@ for (pos, line) in enumerate(lines):
     log.debug('Captured category {cat!r}'.format(**locals()))
 
     format_string += ('\n\n' if format_string else '') + cat
-  elif cat:
+  else:
     match = format_regexp.search(line)
     if match:
       char = match.group(1)
