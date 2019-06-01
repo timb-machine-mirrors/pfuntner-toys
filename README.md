@@ -32,6 +32,7 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`extensions`](doc/extensions.md) | | Show extensions used by files |
 | [`drop`](doc/drop.md) | Yes | Drop the first or last `n` lines, similar to `head`/`tail` |
 | [`fernet`](doc/fernet.md) | | Perform fernet encryption/decryption |
+| [`fitwidth`](doc/fitwidth.md) | Yes | Restrict lines of data to a desired width |
 | [`flow`](doc/flow.md) | Yes | Flow lines from stdin into columnar form |
 | [`fulltime`](doc/fulltime.md) | | Execute a command using standard `time` utility and all options available to it |
 | [`gitstatus`](doc/gitstatus.md) | | Show files in a local git repo that have been changed, etc. |
