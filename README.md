@@ -33,6 +33,7 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`drop`](doc/drop.md) | Yes | Drop the first or last `n` lines, similar to `head`/`tail` |
 | [`fernet`](doc/fernet.md) | | Perform fernet encryption/decryption |
 | [`flow`](doc/flow.md) | Yes | Flow lines from stdin into columnar form |
+| [`fulltime`](doc/fulltime.md) | | Execute a command using standard `time` utility and all options available to it |
 | [`gitstatus`](doc/gitstatus.md) | | Show files in a local git repo that have been changed, etc. |
 | [`headtail`](doc/headtail.md) | Yes | Print out the top and bottom of stdin or one or more files |
 | [`hex`](doc/hex.md) | | Print out data or a file in hex and character form |
