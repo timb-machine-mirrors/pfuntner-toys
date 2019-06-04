@@ -5,6 +5,7 @@ import os
 import json
 import logging
 import argparse
+import datetime
 import subprocess
 
 
@@ -15,6 +16,7 @@ class Boxes(object):
   def __init__(self):
     self.status_regexp = re.compile('^(\S+)\s+(\S+)\s+\(virtualbox\)$')
     self.state_regexp = re.compile('^\s+(\S+)\s+(.+)$')
+    self.setup_regexp = re.compile('(\{.+\})\s*$', flags=re.DOTALL)
 
   @classmethod
   def run(cls, cmd, forgive=False):
@@ -51,19 +53,30 @@ class Boxes(object):
           'status': match.group(2),
         }
         ret.append(box)
-        log.debug('Testing {line!r} against {self.state_regexp.pattern!r}'.format(**locals()))
         (rc, stdout, stderr) = self.run(['vagrant', 'ssh-config', box['name']])
         for line in stdout.splitlines():
+          log.debug('Testing {line!r} against {self.state_regexp.pattern!r}'.format(**locals()))
           match = self.state_regexp.search(line)
           if match:
             box[match.group(1)] = match.group(2)
 
+        (rc, stdout, stderr) = self.run(['ansible', box['name'], '-m', 'setup'], forgive=True)
+        match = self.setup_regexp.search(stdout)
+        if match:
+          setup = json.loads(match.group(1))
+          if setup:
+            log.info('got setup')
+            secs = int(setup.get('ansible_facts', {}).get('ohai_uptime_seconds', 0))
+            log.info('secs: {secs}'.format(**locals()))
+            if secs:
+              box['uptime'] = str(datetime.timedelta(seconds=secs))
+
     if not ret:
       dir = '.vagrant/machines'
       if os.path.isdir(dir):
-        for machine in os.listdir(dir):
+        for name in os.listdir(dir):
           ret.append({
-            'name': machine,
+            'name': name,
             'status': 'down',
           })
         if not ret:
