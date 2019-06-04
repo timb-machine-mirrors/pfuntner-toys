@@ -27,7 +27,7 @@ class Boxes(object):
     else:
       (stdout, stderr) = p.communicate()
       rc = p.wait()
-      log.log(logging.DEBUG if rc == 0 else logging.ERROR, '{rc}, {stdout!r}, {stderr!r}')
+      log.log(logging.DEBUG if rc == 0 else logging.ERROR, '{rc}, {stdout!r}, {stderr!r}'.format(**locals()))
       if rc != 0:
         parser.error('{cmd} failed'.format(**locals()))
       return (rc, stdout, stderr)
@@ -52,6 +52,7 @@ class Boxes(object):
             box[match.group(1)] = match.group(2)
 
     return ret
+
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Display Vagrant systems')
