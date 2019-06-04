@@ -7,50 +7,56 @@ import argparse
 import subprocess
 
 
-def run(cmd):
-  if isinstance(cmd, basestring):
-    cmd = cmd.split()
-  log.debug('Executing {cmd}'.format(**locals()))
-  try:
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  except Exception as e:
-    parser.error('Caught {e!s} executing {cmd}'.format(**locals()))
-  else:
-    (stdout, stderr) = p.communicate()
-    rc = p.wait()
-    log.log(logging.DEBUG if rc == 0 else logging.ERROR, '{rc}, {stdout!r}, {stderr!r}')
-    if rc != 0:
-      parser.error('{cmd} failed'.format(**locals()))
-    return (rc, stdout, stderr)
-
-
-parser = argparse.ArgumentParser(description='Display Vagrant systems')
-parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
-args = parser.parse_args()
-
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
-log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-status_regexp = re.compile('^(\S+)\s+(\S+)\s+\(virtualbox\)$')
-state_regexp = re.compile('^\s+(\S+)\s+(.+)$')
+class Boxes(object):
+  def __init__(self):
+    self.status_regexp = re.compile('^(\S+)\s+(\S+)\s+\(virtualbox\)$')
+    self.state_regexp = re.compile('^\s+(\S+)\s+(.+)$')
 
-boxes = []
+  @classmethod
+  def run(cls, cmd):
+    if isinstance(cmd, basestring):
+      cmd = cmd.split()
+    log.debug('Executing {cmd}'.format(**locals()))
+    try:
+      p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except Exception as e:
+      parser.error('Caught {e!s} executing {cmd}'.format(**locals()))
+    else:
+      (stdout, stderr) = p.communicate()
+      rc = p.wait()
+      log.log(logging.DEBUG if rc == 0 else logging.ERROR, '{rc}, {stdout!r}, {stderr!r}')
+      if rc != 0:
+        parser.error('{cmd} failed'.format(**locals()))
+      return (rc, stdout, stderr)
 
-(rc, stdout, stderr) = run('vagrant status')
-for line in stdout.splitlines():
-  log.debug('Testing {line!r} against {status_regexp.pattern!r}'.format(**locals()))
-  match = status_regexp.search(line)
-  if match:
-    box = {
-      'name': match.group(1),
-      'status': match.group(2),
-    }
-    boxes.append(box)
-    (rc, stdout, stderr) = run(['vagrant', 'ssh-config', box['name']])
+  def boxes(self):
+    ret = []
+    (rc, stdout, stderr) = self.run('vagrant status')
     for line in stdout.splitlines():
-      match = state_regexp.search(line)
+      log.debug('Testing {line!r} against {self.status_regexp.pattern!r}'.format(**locals()))
+      match = self.status_regexp.search(line)
       if match:
-        box[match.group(1)] = match.group(2)
+        box = {
+          'name': match.group(1),
+          'status': match.group(2),
+        }
+        ret.append(box)
+        log.debug('Testing {line!r} against {self.state_regexp.pattern!r}'.format(**locals()))
+        (rc, stdout, stderr) = self.run(['vagrant', 'ssh-config', box['name']])
+        for line in stdout.splitlines():
+          match = self.state_regexp.search(line)
+          if match:
+            box[match.group(1)] = match.group(2)
 
-print json.dumps(boxes)
+    return ret
+
+if __name__ == '__main__':
+  parser = argparse.ArgumentParser(description='Display Vagrant systems')
+  parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+  args = parser.parse_args()
+  log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
+  print json.dumps(Boxes().boxes())
