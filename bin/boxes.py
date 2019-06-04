@@ -20,7 +20,7 @@ class Boxes(object):
 
   @classmethod
   def run(cls, cmd, forgive=False):
-    ret = None
+    rc = None
     stdout = ''
     stderr = ''
     if isinstance(cmd, basestring):
