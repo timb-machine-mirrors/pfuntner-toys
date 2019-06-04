@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 import re
+import os
 import json
 import logging
 import argparse
@@ -16,25 +17,31 @@ class Boxes(object):
     self.state_regexp = re.compile('^\s+(\S+)\s+(.+)$')
 
   @classmethod
-  def run(cls, cmd):
+  def run(cls, cmd, forgive=False):
+    ret = None
+    stdout = ''
+    stderr = ''
     if isinstance(cmd, basestring):
       cmd = cmd.split()
     log.debug('Executing {cmd}'.format(**locals()))
     try:
       p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     except Exception as e:
-      parser.error('Caught {e!s} executing {cmd}'.format(**locals()))
+      if forgive:
+        log.info('Forgiving  `{e!s}` exception executing {cmd}'.format(**locals()))
+      else:
+        parser.error('Caught `{e!s}` executing {cmd}'.format(**locals()))
     else:
       (stdout, stderr) = p.communicate()
       rc = p.wait()
-      log.log(logging.DEBUG if rc == 0 else logging.ERROR, '{rc}, {stdout!r}, {stderr!r}'.format(**locals()))
-      if rc != 0:
+      log.log(logging.DEBUG if forgive or rc == 0 else logging.ERROR, '{rc}, {stdout!r}, {stderr!r}'.format(**locals()))
+      if (not forgive) and (rc != 0):
         parser.error('{cmd} failed'.format(**locals()))
       return (rc, stdout, stderr)
 
   def boxes(self):
     ret = []
-    (rc, stdout, stderr) = self.run('vagrant status')
+    (rc, stdout, stderr) = self.run('vagrant status', forgive=True)
     for line in stdout.splitlines():
       log.debug('Testing {line!r} against {self.status_regexp.pattern!r}'.format(**locals()))
       match = self.status_regexp.search(line)
@@ -51,6 +58,18 @@ class Boxes(object):
           if match:
             box[match.group(1)] = match.group(2)
 
+    if not ret:
+      dir = '.vagrant/machines'
+      if os.path.isdir(dir):
+        for machine in os.listdir(dir):
+          ret.append({
+            'name': machine,
+            'status': 'down',
+          })
+        if not ret:
+          log.info('No machines in {dir} directory'.format(**locals()))
+      else:
+        log.info('No {dir} directory - please cd to a vagrant directory'.format(**locals()))
     return ret
 
 
