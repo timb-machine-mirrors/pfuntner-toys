@@ -8,16 +8,19 @@ import logging
 import argparse
 
 def readCsv():
-  return [row for row in csv.reader(sys.stdin)]
+  return [row for row in csv.reader(stream)]
 
 def fix_headings(line):
-  # replace simple embedded blanks in headings
-  return re.subn('[a-z] [a-z]', lambda match: match.group(0)[0] + '_' + match.group(0)[2], line)[0]
+  if args.simple_headings:
+    return line
+  else:
+    # replace simple embedded blanks in headings
+    return re.subn('[a-z] [a-z]', lambda match: match.group(0)[0] + '_' + match.group(0)[2], line)[0]
 
 def readSeparator():
   ret = []
   regexp = re.compile(args.separator)
-  for (linenum, line) in enumerate(sys.stdin.read().splitlines()):
+  for (linenum, line) in enumerate(stream.read().splitlines()):
     log.debug('{linenum} {line!r}'.format(**locals()))
     if linenum == 0:
       line = fix_headings(line)
@@ -29,13 +32,13 @@ def readSeparator():
 
 def readFixed():
   ret = []
-  line = fix_headings(sys.stdin.readline().strip('\n').strip('\r'))
+  line = fix_headings(stream.readline().strip('\n').strip('\r'))
 
   columns = [''.join(hits) for hits in re.findall('(\S+)(\s+|$)', line)]
   widths = [len(column) for column in columns]
   log.debug('columns/widths: {zip}'.format(zip=zip(columns, widths)))
   ret.append(columns)
-  for line in sys.stdin.read().splitlines():
+  for line in stream.read().splitlines():
     ret.append([])
     pos = 0
     col = 0
@@ -108,7 +111,10 @@ output_group.add_argument('-H', '--html', dest='html', action='store_true', help
 output_group.add_argument('-m', '--markdown', dest='markdown', action='store_true', help='Output Markdown')
 output_group.add_argument('-b', '--bbcode', dest='bbcode', action='store_true', help='Output BBCode')
 output_group.add_argument('-r', '--rotate', dest='rotate', action='store_true', help='Output rotate data')
-output_group.add_argument('-j', '--json', dest='json', action='store_true', help='Rotate JSON')
+output_group.add_argument('-j', '--json', dest='json', action='store_true', help='Output JSON')
+
+parser.add_argument('--simple-headings', action='store_true', help='Process headings simply')
+parser.add_argument('--file', help='File from which to read')
 
 parser.add_argument('--headings', dest='headings', action='store_true', help='First row contains headings, not data')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
@@ -119,8 +125,12 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-if sys.stdin.isatty():
-  parser.error('stdin must be redirected')
+stream = sys.stdin
+if args.file:
+  stream = open(args.file)
+else:
+  if stream.isatty():
+    parser.error('stdin must be redirected if --file is not specified')
 
 data = []
 widths = []

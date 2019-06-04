@@ -32,7 +32,9 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`extensions`](doc/extensions.md) | | Show extensions used by files |
 | [`drop`](doc/drop.md) | Yes | Drop the first or last `n` lines, similar to `head`/`tail` |
 | [`fernet`](doc/fernet.md) | | Perform fernet encryption/decryption |
+| [`fitwidth`](doc/fitwidth.md) | Yes | Restrict lines of data to a desired width |
 | [`flow`](doc/flow.md) | Yes | Flow lines from stdin into columnar form |
+| [`fulltime`](doc/fulltime.md) | | Execute a command using standard `time` utility and all options available to it |
 | [`gitstatus`](doc/gitstatus.md) | | Show files in a local git repo that have been changed, etc. |
 | [`headtail`](doc/headtail.md) | Yes | Print out the top and bottom of stdin or one or more files |
 | [`hex`](doc/hex.md) | | Print out data or a file in hex and character form |
@@ -44,6 +46,7 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`pycomment`](doc/pycomment.md) | | vi command to toggle Python-style comments, similar to PyCharm `ctrl-/` command |
 | [`recentdownloads`](doc/recentdownloads.md) | | Find recently downloaded files |
 | [`SecureKeyValues`](doc/SecureKeyValues.md) | | Manage secure key value stores |
+| [`table`](doc/table.md) | | Parse data into a tabular form using several input and output forms |
 | [`timer`](doc/timer.md) | | Display a progress meter over a specified duration of time |
 | [`timestamps`](doc/timestamps.md) | | Show times when files were last modified, most-recently updated first |
 | [`uniqc`](doc/uniqc.md) | Yes | Counts unique instances of input |
