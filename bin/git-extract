@@ -133,7 +133,7 @@ print 'Extracting to: {baseExtractDir}'.format(**locals())
 for match in matches:
   (commit, timestamp) = (match.group(1), parseTimestamp(match.group(2))) # ex: 'Wed Nov 1 16:07:15 2017 -0400'
   print '{commit} {timestamp}'.format(commit=commit, timestamp=datetime.datetime.utcfromtimestamp(timestamp))
-  run('git checkout {commit} {path}'.format(**locals()))
+  run('git checkout {commit} {path}'.format(**locals()), checkStderr=False)
   dest = '{baseExtractDir}/{commit}'.format(**locals())
   run('cp {path} {dest}'.format(**locals()))
   if local_direction == '-':
@@ -144,4 +144,4 @@ for match in matches:
 
 # check out most recent version
 (commit, timestamp) = (matches[0].group(1), parseTimestamp(matches[0].group(2))) # ex: 'Wed Nov 1 16:07:15 2017 -0400'
-run('git checkout {commit} {path}'.format(**locals()))
+run('git checkout {commit} {path}'.format(**locals()), checkStderr=False)
