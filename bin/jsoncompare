@@ -82,7 +82,7 @@ def compare(root1, root2, path=[]):
     print '/{path}: {root1!r} vs {root2!r}'.format(path='/'.join(path), root1=root1, root2=root2)
     differ = True
 
-parser = argparse.ArgumentParser(description='yamlcompare')
+parser = argparse.ArgumentParser(description='Compare two JSON or YAML files')
 parser.add_argument('file1', help='First file to compare')
 parser.add_argument('file2', help='Second file to compare')
 parser.add_argument('-y', '--yaml', action='store_true', help='Read both files as yaml')
@@ -98,6 +98,12 @@ log = logging.getLogger()
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
 log.debug('args: {args}'.format(**locals()))
+
+if args.file1.endswith('.yaml'):
+  args.yaml1 = True
+
+if args.file2.endswith('.yaml'):
+  args.yaml2 = True
 
 if args.side_by_side and not args.char_by_char:
   args.char_by_char = True
