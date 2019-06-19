@@ -40,6 +40,7 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`hex`](doc/hex.md) | | Print out data or a file in hex and character form |
 | [`indent`](doc/indent.md) | | Indent stdin by a specified number of columns |
 | [`json`](doc/json.md) | Yes | JSON magic - it's a disservice to try to summarize this tool in a single string. |
+| [`jsoncompare`](doc/jsoncompare.md) | | Compares JSON and/or YAML files, element by element |
 | [`megadiff`](doc/megadiff.md) | | Compare two directories trees |
 | [`nocrs`](doc/nocrs.md) | | Remove carriage returns from files |
 | [`peval`](doc/peval.md) | Yes | Evaluate Python expression strings |

@@ -105,9 +105,6 @@ if args.file1.endswith('.yaml'):
 if args.file2.endswith('.yaml'):
   args.yaml2 = True
 
-if args.side_by_side and not args.char_by_char:
-  args.char_by_char = True
-
 if args.yaml or args.yaml1 or args.yaml2:
   yaml = __import__('yaml')
 root1 = read(args.file1, isYaml=args.yaml or args.yaml1)
