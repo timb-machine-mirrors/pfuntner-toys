@@ -14,7 +14,7 @@ def run(cmd, capture=False):
   rc = p.wait()
   log.info(logging.DEBUG if rc == 0 else logging.ERROR, 'Ran {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
   if rc != 0:
-    parser.error('{cmd} failed')
+    parser.error('{cmd} failed'.format(**locals()))
   return (rc, stdout, stderr)
 
 parser = argparse.ArgumentParser(description='pullfrommine - pull from my fork after forced push')
