@@ -33,7 +33,7 @@ regexp = re.compile('^\*\s+(\S+)$', flags=re.MULTILINE)
 branches = regexp.findall(stdout)
 if len(branches) == 1:
   branch = branches[0]
-  if branch != 'master':
+  if branch == 'master':
     parser.error('Current branch cannot be `master`')
   log.debug('branch is {branch!r}'.format(**locals()))
   run('git checkout master')
