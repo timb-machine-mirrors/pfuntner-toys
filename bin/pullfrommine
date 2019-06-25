@@ -12,7 +12,7 @@ def run(cmd, capture=False):
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE if capture else None, stderr=subprocess.PIPE if capture else None)
   (stdout, stderr) = p.communicate()
   rc = p.wait()
-  log.info(logging.DEBUG if rc == 0 else logging.ERROR, 'Ran {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
+  log.log(logging.DEBUG if rc == 0 else logging.ERROR, 'Ran {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
   if rc != 0:
     parser.error('{cmd} failed'.format(**locals()))
   return (rc, stdout, stderr)
