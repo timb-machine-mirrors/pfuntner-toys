@@ -17,9 +17,17 @@ columns [-h] [-s DELIM | -r REGEXP | -c] [-n] [-f FILENAME] [-v] column [column 
 </tr>
 <tr>
 <td><tt>-r REGEXP</tt> or <tt>--regexp REGEXP</tt></td><td>Specifies a regular expression by which to break up tokens</td><td>The default is to separate columns by one or more whitespace characters</td>
+</tr>
+<tr>
 <td><tt>-c</tt> or <tt>--csv</tt></td><td>Reads input as CSV</td><td>The default is to separate columns by one or more whitespace characters</td>
+</tr>
+<tr>
 <td><tt>-n</tt> or <tt>--negate</tt></td><td>Excludes specified columns</td><td>Includes specified columns</td>
+</tr>
+<tr>
 <td><tt>-f FILENAME</tt> or <tt>--filename FILENAME</tt></td><td>Reads input from the specified file</td><td>The default is to read from stdin</td>
+</tr>
+<tr>
 <td><tt>-v</tt> or <tt>--verbose</tt></td><td>Enables debugging messages</td><td>Debugging messages are not printed</td>
 </tr>
 </table>
