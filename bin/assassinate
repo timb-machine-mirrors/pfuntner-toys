@@ -1,0 +1,60 @@
+#! /usr/bin/env python
+
+"""
+A kind of quick-and-dirty script to kill all of my processes on a system *except* for those connected with the script and its ancestors:
+the login-shell, the vnc processes, etc.  For example, here is the chain from a login shell:
+
+  $ ps -o pid,ppid,user,cmd $$ 20828 1
+    PID  PPID USER     CMD
+      1     0 root     /usr/lib/systemd/systemd --switched-root --system --deserialize 21
+   6709 20828 jpfuntne /bin/bash
+  20828     1 jpfuntne kdeinit4: konsole [kdeinit] -session 1017c14016df9000153858566600000218250015_1542113609_237485
+  $ 
+
+I used this to solve a problem I had where I had been using the same vnc server on a machine for several months but had gotten into a
+state where I could no longer open any GUI windows such as xclock or PyCharm.
+"""
+
+import os
+import signal
+import logging
+import argparse
+import subprocess
+
+parser = argparse.ArgumentParser(description='assassin')
+parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
+p = subprocess.Popen('ps -e -o pid,ppid,user'.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+(stdout, stderr) = p.communicate()
+rc = p.wait()
+
+pids = {}
+for line in stdout.splitlines()[1:]:
+  (pid, ppid, user) = line.split()
+  if user == 'jpfuntne':
+    pids[pid] = ppid
+
+log.info('my pids: {pids}'.format(**locals()))
+
+chain = [str(os.getpid())]
+while True:
+  pid = str(chain[-1])
+  if pid in pids:
+    chain.append(pids[pid])
+  else:
+    break
+
+log.info('my pid chain: {chain}'.format(**locals()))
+
+for pid in pids.keys():
+  if pid not in chain:
+    log.info('Killing {pid}'.format(**locals()))
+    try:
+      os.kill(int(pid), signal.SIGKILL)
+    except Exception as e:
+      log.debug('Ignoring {e!s}'.format(**locals()))
