@@ -3,24 +3,41 @@
 import sys
 import math
 
+import logging
+import argparse
+
+
 def install(token):
   global tokens
   global total
+  global order
 
-  if token not in tokens:
-    tokens[token] = 0
-  tokens[token] += 1
+  if token not in order:
+    order.append(token)
+  tokens[token] = tokens.get(token, 0) + 1
   total += 1
 
 def process(f):
   for line in f:
     install(line.strip('\n').strip('\r'))
 
+parser = argparse.ArgumentParser(description='Print and count unique occurrences of lines')
+parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+parser.add_argument('-f', '--fifo', dest='fifo', action='store_true',
+                    help='List lines in the order the first occurrence appears')
+parser.add_argument('files', metavar='file', nargs='*', help='Zero or more files')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
 tokens = {}
+order = []
 total = 0
 
-if len(sys.argv) > 1:
-  for filename in sys.argv[1:]:
+if args.files:
+  for filename in args.files:
     with open(filename, "r") as f:
       process(f)
 elif sys.stdin.isatty():
@@ -49,5 +66,5 @@ if total:
       return tokens[token1] - tokens[token2]
     
   # for token in sorted(tokens.keys(), key=lambda token: tokens[token], reverse=True):
-  for token in sorted(tokens.keys(), cmp=comparator, reverse=True):
+  for token in order if args.fifo else sorted(tokens.keys(), cmp=comparator, reverse=True):
     print "%*d %6.2f%% %s" % (digits, tokens[token], (tokens[token]*100.0)/total, token)

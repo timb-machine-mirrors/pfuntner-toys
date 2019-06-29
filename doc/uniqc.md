@@ -5,12 +5,16 @@ Print how many unique instances of data appear in standard input.  Along with th
 
 ## Syntax
 ```
-Syntax: uniqc [FILE ...]
+Syntax: uniqc [-f|--fifo] [FILE ...]
 ```
 
 ### Options and arguments
 
-There are no options.  One or more file names can be specified to be processed.
+| Option | Description | Default |
+| ------ | ----------- | ------- |
+| `-f` or `--fifo` | List lines in the order they first appeared | By default, the script prints lines in descending occurrence |
+
+One or more file names can be specified to be processed.
 
 ## Examples
 
@@ -50,6 +54,34 @@ $ find . -type f -print0 | xargs -0 extensions | columns -F \| 2 | uniqc
 $ 
 ```
 This is another non-trivial pipeline (do you see a running theme?) that involves the use of the <a href="extensions.md">`extensions`</a> utility.  You can see the current working directory has eighty-four `*.gz` files, forty `*.jpg` files, etc.  Many of the files also lack an extension so that's why you see ninety-seven appear to be blank.
+
+### Show most recently updates files in git
+
+```
+$ gitfiles | columns -- -1 | uniqc --fifo | headtail
+       1 1200 total items
+       2    2   0.17% misc/zaci-20/setup
+       3    2   0.17% bin/assassinate
+       4   10   0.83% doc/columns.md
+       5    1   0.08% bin/delete_docker_images
+         .
+         .
+         .
+     432    3   0.25% git.json-sample
+     433    3   0.25% htmlize
+     434    3   0.25% longjson
+     435    3   0.25% timestamp
+     436    2   0.17% git.json
+$
+```
+
+So the most recently updated file was `misc/zaci-20/setup`.  Since this is the most recently updated, I have a good memory of it at the time of the update - I actually **deleted** the file so you won't find it in the repo any longer unless you look at old commits.
+
+You'll notice that I use three other scripts of mine: `gitfiles` (_I haven't been inspired to do doc for that yet_), [`columns`](columns.md), and [`headtail`](headtail.md).
+
+In this example, I'm not so interested in the number of times a file occurred but the info 
+
+Gee, another pipeline! :-)
 
 ## Notes
 
