@@ -21,6 +21,8 @@
     "name": "volume",
     "imperial": {
       "gal": 1,
+      "pint": 8,
+      "cup": 16,
       "oz": 128,
       "tbsp": 256,
       "tsp": 768
