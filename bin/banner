@@ -50,16 +50,6 @@ def print_color(color):
   if color and args.color:
     sys.stdout.write('\x1b[{color}m'.format(**locals()))
 
-"""
-And then use them like this in your script:
-
-#    .---------- constant part!
-#    vvvv vvvv-- the code from above
-RED='\033[0;31m'
-NC='\033[0m' # No Color
-printf "I ${RED}love${NC} Stack Overflow\n
-"""
-
 colors = {
   'black': '0;30',
   'white': '1;37',
