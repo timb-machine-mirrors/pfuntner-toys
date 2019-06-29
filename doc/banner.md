@@ -21,7 +21,7 @@ Syntax: banner [--character C] [--box] [--left] [--center] [--middle] [--right] 
 - Text is taken from the command line after any options and arguments, if there is such text.
 - Text is taken from stdin if there is no text after the options and arguments, assuming stdin is directed via a file or pipe.  The command fails if there are no arguments and stdin is the terminal.
 
-## Example
+## Examples
 
 ```
 $ banner hello
@@ -35,3 +35,7 @@ $ echo -e "The time is\n$(date)" | banner --center --box
 ################################
 $ 
 ```
+
+### Color
+
+![Example of banner with --color option][../images/banner-color-example.png]
