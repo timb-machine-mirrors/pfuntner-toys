@@ -1,0 +1,12 @@
+# Refresh my repositories
+cd
+for dir in repos/*
+do
+  banner $dir
+  if cd "$HOME/$dir"
+  then
+    git pull
+    echo
+    cd -
+  fi
+done
