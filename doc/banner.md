@@ -38,4 +38,4 @@ $
 
 ### Color
 
-![Example of banner with --color option][https://github.com/pfuntner/toys/blob/master/images/banner-color-example.png]
+![Example of banner with --color option](https://raw.githubusercontent.com/pfuntner/toys/master/images/banner-color-example.png)
