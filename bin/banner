@@ -2,6 +2,7 @@
 
 import re
 import sys
+import signal
 import logging
 import argparse
 
@@ -70,6 +71,12 @@ colors = {
   'lightgray': '0;37',
 }
 
+def reset(signum=None, stack=None):
+  print_color('0')
+  if signum is not None:
+    sys.stdout.write('\n')
+  exit(0)
+
 horizontal = unichr(9473)
 parser = argparse.ArgumentParser(description='Print a message or information in a pretty banner')
 
@@ -129,6 +136,7 @@ if not box:
 if (not args) and sys.stdin.isatty():
   syntax("Text must be on the command line or redirected through stdin")
 
+signal.signal(signal.SIGINT, reset)
 print_color(args.color)
 
 if args.args:
@@ -136,4 +144,4 @@ if args.args:
 else:
   process(sys.stdin.read().strip('\n').split('\n')) 
 
-print_color('0')
+reset()
