@@ -7,7 +7,7 @@ import platform
 
 system = platform.system()
 if re.search("win", system, re.IGNORECASE):
-  system = "Windows"
+  system = "Windoze"
 
 cmd = ["hostname", "--all-ip-addresses"]
 p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -17,7 +17,7 @@ if (system == "Linux") or (rc == 0):
   assert rc == 0, "%s failed with %d" % (cmd, rc)
   
   # Linux: 9.42.89.63 172.17.0.1
-  # Windows: 2620:1f7:853:3846::1:12 9.27.95.92 0.0.0.0 169.254.140.207 0.0.0.0 169.254.204.25 192.168.56.1 192.168.99.1 2001:0:9d38:90d7:2472:2b63:f6e4:a0a3
+  # Windoze: 2620:1f7:853:3846::1:12 9.27.95.92 0.0.0.0 169.254.140.207 0.0.0.0 169.254.204.25 192.168.56.1 192.168.99.1 2001:0:9d38:90d7:2472:2b63:f6e4:a0a3
   
   regexp = re.compile("^(\d+)\.(\d+)\.(\d+)\.(\d+)$")
 
@@ -27,7 +27,7 @@ if (system == "Linux") or (rc == 0):
       if ("--all" in sys.argv[1:]) or (match.group(1) not in ['0', '169', '127', '172', '192']):
         print addr
 else:
-  # Alternate method on Windows
+  # Alternate method on Windoze
 
   cmd = "ipconfig"
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE)

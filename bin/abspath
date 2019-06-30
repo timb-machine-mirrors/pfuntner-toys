@@ -14,13 +14,13 @@ import platform
 import subprocess
 
 parser = argparse.ArgumentParser(description=description)
-parser.add_argument('-u', '--unix', dest='unix', action='store_true', help='Use Unix style - ignore Windows style when run on Windows')
+parser.add_argument('-u', '--unix', dest='unix', action='store_true', help='Use Unix style - ignore Windoze style when run on Windoze')
 parser.add_argument('paths', metavar='paths', nargs='+', help='One or more paths to process')
 args = parser.parse_args()
 
-onWindows = (not args.unix) and ('win' in platform.platform().lower())
+onWindoze = (not args.unix) and ('win' in platform.platform().lower())
 
-if onWindows:
+if onWindoze:
   CYGWIN_ROOT = 'c:/cygwin64'
   try:
     p = subprocess.Popen('cygpath --windows /'.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -37,7 +37,7 @@ def process(path):
 
   path = os.path.abspath(path)
 
-  if onWindows:
+  if onWindoze:
     match = re.match('/cygdrive/([a-zA-Z])(/.*)$', path)
     if match:
       path = match.group(1) + ':' + match.group(2)

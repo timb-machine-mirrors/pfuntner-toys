@@ -53,3 +53,4 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`uniqc`](doc/uniqc.md) | Yes | Counts unique instances of input |
 | [`undupe`](doc/undupe.md) | | Removes duplicate punctuation & whitespace |
 | [`unixdate`](doc/unixdate.md) | | Invokes `date` with Unix-style format on Windoze |
+| [`wholegrep`](doc/wholegrep.md) | | Grep entire files that contain or do not contain regular expressions |
