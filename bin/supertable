@@ -4,7 +4,6 @@ import re
 import sys
 import csv
 import json
-import yaml
 import logging
 import argparse
 
@@ -25,6 +24,18 @@ class MethodBase(object):
           for col in item:
             if type(col) not in [str, unicode, int, float, bool]:
               parser.error('Row column is unexpected type')
+
+
+  def get_key(self, pattern, actual_keys):
+    regexp = re.compile(pattern)
+    keys = [key for key in actual_keys if regexp.search(key)]
+    if len(keys) == 1:
+      return keys[0]
+    elif keys:
+      parser.error('{pattern!r} is an ambiguous column: select {keys}'.format(**locals()))
+    else:
+      parser.error('{pattern!r} matches no columns: {actual_keys}'.format(**locals()))
+
 
 class CsvMethod(MethodBase):
   name = 'csv'
@@ -56,6 +67,30 @@ class CsvMethod(MethodBase):
           parser.error('Cannot write a dictionary without an order for columns')
 
 
+class JsonMethod(MethodBase):
+  name = 'json'
+
+  def read(self, stream):
+    ret = json.load(stream)
+    self.validate(ret)
+
+    order = []
+    if ret and isinstance(ret[0], dict):
+      keys = set()
+      for item in ret:
+        for key in item.keys():
+          keys.add(key)
+      for key in args.order or []:
+        key = self.get_key(key, keys)
+        keys.remove(key)
+        order.append(key)
+      order += sorted(list(keys))
+
+    return (ret, order)
+
+  def write(self, stream, root, order):
+    json.dump(root, stream, indent=2, sort_keys=True)
+
 def method_names(method_type):
   global methods
   ret = []
@@ -76,6 +111,10 @@ def get_method(name):
   parser.error('{name!r} is an unsupported I/O method'.format(**locals()))
 
 
+def order_splitter(arg):
+  return arg.split(',')
+
+
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
@@ -87,6 +126,7 @@ parser = argparse.ArgumentParser(description='Super Table - work in progress')
 parser.add_argument('-H', '--headings', dest='headings', action='store_true', help='Treat row 1 as columns')
 parser.add_argument('-i', '--input', dest='input', help='Input method', choices=method_names('read'), required=True)
 parser.add_argument('-o', '--output', dest='output', help='Output method', choices=method_names('write'), required=True)
+parser.add_argument('--order', dest='order', type=order_splitter, help='Specify the order of columns')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 args = parser.parse_args()
 
@@ -95,8 +135,13 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 args.input = get_method(args.input)
 args.output = get_method(args.output)
 
+if 'yaml' in [args.input.name, args.output.name]:
+  yaml = __import__('yaml')
+
 if sys.stdin.isatty():
   parser.error('stdin must be redirected')
 
 (root, order) = args.input.read(sys.stdin)
+log.debug('order: {order}'.format(**locals()))
+log.debug('root: {root}'.format(**locals()))
 args.output.write(sys.stdout, root, order)
