@@ -14,8 +14,11 @@ def dive(root):
     if regexp.search(base):
       ret.append(root)
 
-    for child in os.listdir(root):
-      ret += dive(os.path.join(root, child))
+    try:
+      for child in os.listdir(root):
+        ret += dive(os.path.join(root, child))
+    except Exception as e:
+      log.warn('Cannot list {root!r}: `{e!s}`'.format(**locals()))
 
   return ret
 
