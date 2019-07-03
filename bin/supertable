@@ -1,0 +1,102 @@
+#! /usr/bin/env python
+
+import re
+import sys
+import csv
+import json
+import yaml
+import logging
+import argparse
+
+
+class MethodBase(object):
+  name = None
+
+  def validate(self, root):
+    if not isinstance(root, list):
+      parser.error('Root object is not a list')
+    if root:
+      expected_type = type(root[0])
+      if expected_type not in [list, dict]:
+        parser.error('First row is a {}, not a list or dictionary'.format(expected_type))
+      for item in root:
+        if type(item) != expected_type:
+          parser.error('Row type does not match first row')
+          for col in item:
+            if type(col) not in [str, unicode, int, float, bool]:
+              parser.error('Row column is unexpected type')
+
+class CsvMethod(MethodBase):
+  name = 'csv'
+
+  def read(self, stream):
+    rows = [row for row in csv.reader(stream)]
+    if args.headings and rows:
+      ret = []
+      order = rows[0]
+      for row in rows[1:]:
+        ret.append({name: row[pos] for (pos, name) in enumerate(order)})
+    else:
+      ret = rows
+      order = []
+    self.validate(ret)
+    return (ret, order)
+
+  def write(self, stream, root, order):
+    writer = csv.writer(stream)
+    if order:
+      writer.writerow(order)
+    for row in root:
+      if isinstance(row, list):
+        writer.writerow(row)
+      else:
+        if order:
+          writer.writerow([row.get(name, '') for name in order])
+        else:
+          parser.error('Cannot write a dictionary without an order for columns')
+
+
+def method_names(method_type):
+  global methods
+  ret = []
+  for (name, value) in globals().items():
+    if method_name_regexp.match(name) and type(value) == type:
+      method = value()
+      if isinstance(method, MethodBase):
+        methods.append(method)
+        if hasattr(method, method_type):
+          ret.append(value.name)
+  return ret
+
+
+def get_method(name):
+  for method in methods:
+    if method.name == name:
+      return method
+  parser.error('{name!r} is an unsupported I/O method'.format(**locals()))
+
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG)
+
+method_name_regexp = re.compile('[A-Z][a-z]+Method$')
+methods = []
+
+parser = argparse.ArgumentParser(description='Super Table - work in progress')
+parser.add_argument('-H', '--headings', dest='headings', action='store_true', help='Treat row 1 as columns')
+parser.add_argument('-i', '--input', dest='input', help='Input method', choices=method_names('read'), required=True)
+parser.add_argument('-o', '--output', dest='output', help='Output method', choices=method_names('write'), required=True)
+parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+args = parser.parse_args()
+
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
+args.input = get_method(args.input)
+args.output = get_method(args.output)
+
+if sys.stdin.isatty():
+  parser.error('stdin must be redirected')
+
+(root, order) = args.input.read(sys.stdin)
+args.output.write(sys.stdout, root, order)
