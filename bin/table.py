@@ -261,7 +261,8 @@ class SeparatorMethod(MethodBase):
         if headings:
           if len(tokens) > len(headings):
             parser.error('Column without heading')
-          root.append({heading: tokens[pos] for (pos, heading) in enumerate(headings)})
+          root.append({heading: tokens[heading_pos] if heading_pos < len(tokens) else ''
+                       for (heading_pos, heading) in enumerate(headings)})
         else:
           root.append(tokens)
 
