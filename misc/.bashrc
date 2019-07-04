@@ -18,6 +18,7 @@ alias newdir='dir=$(date +%Y%m%d%H%M%S%N) && mkdir -v $dir && cd $dir'
 alias indent="$HOME/bin/indent"
 alias pushsshkey=ssh-copy-id
 alias time=ptime
+alias table=table.py
 
 # My git frontend is not needed if you authenticate with an sshkey and use the ssh-style URL
 # for the repo such as git@github.com:USER/REPO.git
