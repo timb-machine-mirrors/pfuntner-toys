@@ -11,9 +11,24 @@ import StringIO
 
 
 class MethodBase(object):
+  """
+  Base class for the I/O methods.  Contains some common methods.
+  """
   name = None
 
   def validate(self, root):
+    """
+    Validate a table after it's read.  Since JSON and YAML files could have arbitrary structure, the method ensures
+    the following after reading such formats:
+
+      1) The root object is a list
+      2) Either:
+         a) each element is a list
+         b) each element is a dictionary
+      3) Each element of the lists/dictionaries from step 2 is a simple type such as string, int, etc.
+    :param root: The root object to consider
+    :return: None
+    """
     if not isinstance(root, list):
       parser.error('Root object is not a list')
     if root:
@@ -29,6 +44,12 @@ class MethodBase(object):
 
 
   def get_key(self, pattern, actual_keys):
+    """
+    Get a key from a list of keys.
+    :param pattern: An input regular expression pattern that should map to a single key
+    :param actual_keys: The actual keys from which to choose
+    :return:
+    """
     regexp = re.compile(pattern)
     keys = [key for key in actual_keys if regexp.search(key)]
     if len(keys) == 1:
@@ -39,6 +60,13 @@ class MethodBase(object):
       parser.error('{pattern!r} matches no columns: {actual_keys}'.format(**locals()))
 
   def make_order(self, root):
+    """
+    Create a ordered list of dictionary keys to be used in outputing the column when order is significant.  The list
+    favors the user-specified order and completes the list with remaining columns in alphabetical order.
+    :param root: A list of lists or dictionaries.
+    :return: A list of column names when given a list of dictionaries.  The return is an empty list when given a list
+    of lists
+    """
     order = []
     if root and isinstance(root[0], dict):
       keys = set()
@@ -52,18 +80,39 @@ class MethodBase(object):
       order += sorted(list(keys))
     return order
 
+
   def markup(self, stream, row, prefix, separator, suffix):
+    """
+    Emit a heading or data row using markup tags.
+    :param stream: The output stream (eg sys.stdout)
+    :param row: A list of the heading names or columnar data.
+    :param prefix: The tag(s) that should begin the row
+    :param separator: The tag(s) that will separate columns
+    :param suffix: The tg(s) that should end the row
+    :return:
+    """
     stream.write(prefix)
     stream.write(separator.join(row))
     stream.write(suffix + '\n')
 
 
 class CsvMethod(MethodBase):
+  """
+  Handle I/O for CSV format
+  """
   name = 'csv'
 
   def read(self, stream):
+    """
+    Read a list of lists of dictionaries in CSV format
+    :param stream: The input stream (eg sys.stdin)
+    :return: A two-element tuple: (the list of lists or dictionaries, a list of named column headings)
+    """
     rows = [row for row in csv.reader(stream)]
     if args.headings and rows:
+      """
+        Turn the list of list into a list of dictionaries making use of the heading row
+      """
       ret = []
       order = rows[0]
       for row in rows[1:]:
@@ -75,6 +124,13 @@ class CsvMethod(MethodBase):
     return (ret, order)
 
   def write(self, stream, root, order):
+    """
+    Write the list of lists or dictionaries in CSV format.
+    :param stream: The output stream (eg. sys.stdout)
+    :param root: The list of lists or dictionaries
+    :param order: The order of named columns if order is important
+    :return: None
+    """
     writer = csv.writer(stream)
     if order:
       writer.writerow(order)
@@ -89,34 +145,73 @@ class CsvMethod(MethodBase):
 
 
 class JsonMethod(MethodBase):
+  """
+  Handle I/O for JSON format
+  """
   name = 'json'
 
   def read(self, stream):
+    """
+    Read a list of lists of dictionaries in JSON format
+    :param stream: The input stream (eg sys.stdin)
+    :return: A two-element tuple: (the list of lists or dictionaries, a list of named column headings)
+    """
     ret = json.load(stream)
     self.validate(ret)
     return (ret, self.make_order(ret))
 
   def write(self, stream, root, order):
+    """
+    Write the list of lists or dictionaries in JSON format.
+    :param stream: The output stream (eg. sys.stdout)
+    :param root: The list of lists or dictionaries
+    :param order: The order of named columns if order is important
+    :return: None
+    """
     json.dump(root, stream, indent=2, sort_keys=True)
     stream.write('\n')
 
 
 class YamlMethod(MethodBase):
+  """
+  Handle I/O for YAML format
+  """
   name = 'yaml'
 
   def read(self, stream):
+    """
+    Read a list of lists of dictionaries in YAML format
+    :param stream: The input stream (eg sys.stdin)
+    :return: A two-element tuple: (the list of lists or dictionaries, a list of named column headings)
+    """
     ret = yaml.load(stream)
     self.validate(ret)
     return (ret, self.make_order(ret))
 
   def write(self, stream, root, order):
+    """
+    Write the list of lists or dictionaries in YAML format.
+    :param stream: The output stream (eg. sys.stdout)
+    :param root: The list of lists or dictionaries
+    :param order: The order of named columns if order is important
+    :return: None
+    """
     yaml.dump(root, stream)
 
 
 class SeparatorMethod(MethodBase):
+  """
+  Handle I/O for a free-form format where columns are separated by some set of characters (whitespace, a vertical bar,
+  etc.)
+  """
   name = 'separator'
 
   def read(self, stream):
+    """
+    Read a list of lists of dictionaries in free format where columns are separated by a set of characters
+    :param stream: The input stream (eg sys.stdin)
+    :return: A two-element tuple: (the list of lists or dictionaries, a list of named column headings)
+    """
     root = []
     headings = []
     leading_sep = False
@@ -124,9 +219,11 @@ class SeparatorMethod(MethodBase):
     for (pos, line) in enumerate(stream.read().splitlines()):
       tokens = args.regexp.split(line)
       log.debug('tokens: {tokens}'.format(**locals()))
-      if args.headings and (pos == 0):
-        if not tokens:
-          parser.error('No headings')
+
+      if pos == 0:
+        """
+        Strip off empty beginning and trailing tokens in case the separator is used as a border
+        """
         leading_sep = not tokens[0]
         trailing_sep = (tokens[-1] == '') and (len(tokens) > 1)
 
@@ -141,6 +238,8 @@ class SeparatorMethod(MethodBase):
         del tokens[-1]
 
       if args.headings and (pos == 0):
+        if not tokens:
+          parser.error('No headings')
         headings = tokens
       else:
         if headings:
@@ -154,6 +253,14 @@ class SeparatorMethod(MethodBase):
 
 
   def write(self, stream, root, order):
+    """
+    Write the list of lists or dictionaries in free format with a separator
+    :param stream: The output stream (eg. sys.stdout)
+    :param root: The list of lists or dictionaries
+    :param order: The order of named columns if order is important
+    :return: None
+    """
+
     for (pos, row) in enumerate(root):
       log.debug('{pos}: {row}'.format(**locals()))
       if isinstance(row, dict):
@@ -167,22 +274,44 @@ class SeparatorMethod(MethodBase):
 
 
 class FixedMethod(MethodBase):
+  """
+  Handle I/O of a fixed column format
+  """
   name = 'fixed'
 
   def read(self, stream):
+    """
+    Read a list of lists of dictionaries in fixed column format
+    :param stream: The input stream (eg sys.stdin)
+    :return: A two-element tuple: (the list of lists or dictionaries, a list of named column headings)
+    """
     root = []
     headings = []
     columns = []
 
     lines = stream.read().splitlines()
+
+    """
+    Most columns are probably left-justified but some (like numeric data) might be right-justified.  We need to
+    examine all the lines to see where each column begins and ends.  We'll consider a column complete when we reach
+    the end of a column where the same position is whitespace on all of the lines. 
+    """
+
     c = 0
     start = 0
     while any([c < len(line) for line in lines]):
-      if all([line[c:c+1] in string.whitespace for line in lines]) and any([line[start:c].strip() for line in lines]):
+      if all([line[c:c+1].ljust(1) in string.whitespace for line in lines]) and \
+          any([line[start:c].strip() for line in lines]):
+        """
+        Remember the beginning and end of this column
+        """
         columns.append((start, c))
         start = c
       c += 1
 
+    """
+    Complete the trailing column
+    """
     if any([line[start:].strip() for line in lines]):
       columns.append((start, sys.maxint))
 
@@ -201,6 +330,13 @@ class FixedMethod(MethodBase):
 
 
   def write(self, stream, root, order):
+    """
+    Write the list of lists or dictionaries in fixed column format.
+    :param stream: The output stream (eg. sys.stdout)
+    :param root: The list of lists or dictionaries
+    :param order: The order of named columns if order is important
+    :return: None
+    """
     widths = []
     for (row_num, row) in enumerate(root):
       if isinstance(row, dict):
@@ -233,9 +369,21 @@ class FixedMethod(MethodBase):
 
 
 class HtmlMethod(MethodBase):
+  """
+  Handle output in the HTML format.
+
+  This method does not support reading data in HTML format.
+  """
   name = 'html'
 
   def write(self, stream, root, order):
+    """
+    Write the list of lists or dictionaries in HTML format.
+    :param stream: The output stream (eg. sys.stdout)
+    :param root: The list of lists or dictionaries
+    :param order: The order of named columns if order is important
+    :return: None
+    """
     stream.write('<table>\n')
     stream.write('<tbody>\n')
     if root and isinstance(root[0], dict):
@@ -250,9 +398,21 @@ class HtmlMethod(MethodBase):
 
 
 class MarkdownMethod(MethodBase):
+  """
+  Handle output in the Markdown format.
+
+  This method does not support reading data in HTML format.
+  """
   name = 'markdown'
 
   def write(self, stream, root, order):
+    """
+    Write the list of lists or dictionaries in Markdown format.
+    :param stream: The output stream (eg. sys.stdout)
+    :param root: The list of lists or dictionaries
+    :param order: The order of named columns if order is important
+    :return: None
+    """
     if root and isinstance(root[0], dict):
       self.markup(stream, order, '| ', ' | ', ' |')
       self.markup(stream, ['-'] * len(order), '| ', ' | ', ' |')
@@ -264,9 +424,21 @@ class MarkdownMethod(MethodBase):
 
 
 class BbcodeMethod(MethodBase):
+  """
+  Handle output in the BBCode format.
+
+  This method does not support reading data in HTML format.
+  """
   name = 'bbcode'
 
   def write(self, stream, root, order):
+    """
+    Write the list of lists or dictionaries in BBCode format.
+    :param stream: The output stream (eg. sys.stdout)
+    :param root: The list of lists or dictionaries
+    :param order: The order of named columns if order is important
+    :return: None
+    """
     stream.write('[table]\n')
     if root and isinstance(root[0], dict):
       self.markup(stream, order, '[tr][th]', '[/th][th]', '[/th][/tr]')
@@ -279,25 +451,53 @@ class BbcodeMethod(MethodBase):
 
 
 class Table(object):
+  """
+  This class can be used by other scripts to produce fixed column output.  It provides an add() method so the caller
+  can provide input in a different way
+  """
   def __init__(self, headings, desiredSep=None):
+    """
+    The constructor prepares the caller to provide data.
+    :param headings: A list of column names as strings
+    :param desiredSep: The optional desired separator - the default separator is used if one is not specified by the
+    caller
+    """
     self.root = []
     self.headings = headings
     if desiredSep:
       args.separator = desiredSep
 
   def add(self, row):
-    self.root.append({name: row[pos] for (pos, name) in enumerate(self.headings)})
+    """
+    This method is used by the caller to add a new row to the table
+    :param row: A list of columns for this row of the table
+    :return: None
+    """
+    self.root.append({name: str(row[pos]) for (pos, name) in enumerate(self.headings)})
 
   def reverse(self):
+    """
+    Used by the caller to reverse the rows in the table, typically after all rows have been added.
+    :return: None
+    """
     self.root.reverse()
 
   def __str__(self):
+    """
+    Convert the table into fixed column format.
+    :return: A single string with newlines to present the table with fixed columns
+    """
     buf = StringIO.StringIO()
     args.output.write(buf, self.root, self.headings)
     return buf.getvalue()
 
 
 def method_names(method_type):
+  """
+  Generate a list of names for the input or output methods
+  :param method_type: Either "read" or "write" which specifies the method that the I/O method must support
+  :return: A list of names of I/O methods that have the specified method_type
+  """
   global methods
   ret = []
   for (name, value) in globals().items():
@@ -312,6 +512,11 @@ def method_names(method_type):
 
 
 def get_method(name):
+  """
+  Get a method based on a I/O method name
+  :param name: The name of the I/O method to locate
+  :return: An instance of the specified I/O method class
+  """
   for method in methods:
     if method.name == name:
       return method
@@ -319,17 +524,29 @@ def get_method(name):
 
 
 def order_splitter(arg):
+  """
+  Called from argparse.parse_args()
+  :param arg: The --order argument specified by the user
+  :return: A list of strings, seperating the --order argument at commas
+  """
   return arg.split(',')
 
 
 def method_abbreviator(arg):
-  # log.debug('arg: {arg}'.format(**locals()))
+  """
+  Return the name of an I/O method based on a potential abbreviated name.  For example, "sep" should be sufficient
+  to specify the separator I/O method
+  :param arg: The I/O method name specified by the user
+  :return: The name of the I/O method that uniquely matches the user argument.  If the argument does not uniquely
+  match a single I/O method, the original argument is returned by the method - argparse.parse_args() will likely
+  refuse to accept it because it won't match any of the exact I/O method names.
+  """
   regexp = re.compile(arg)
   matches = []
   for method in methods:
     if regexp.match(method.name):
       matches.append(method.name)
-  # log.debug('matches: {matches}'.format(**locals()))
+
   return matches[0] if len(matches) == 1 else arg
 
 
@@ -339,8 +556,8 @@ log = logging.getLogger()
 method_name_regexp = re.compile('[A-Z][a-z]+Method$')
 methods = []
 
-parser = argparse.ArgumentParser(description='Super Table - work in progress')
-parser.add_argument('-H', '--headings', dest='headings', action='store_true', help='Treat row 1 as columns')
+parser = argparse.ArgumentParser(description='Process tabulur data in several input and output formats')
+parser.add_argument('-H', '--headings', dest='headings', action='store_true', help='Treat row 1 as headings')
 parser.add_argument('-i', '--input', dest='input', help='Input method', type=method_abbreviator,
                     choices=method_names('read'), required=True)
 parser.add_argument('-o', '--output', dest='output', help='Output method', type=method_abbreviator,
