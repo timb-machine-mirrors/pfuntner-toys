@@ -66,8 +66,7 @@ for curr_test in [dir for dir in os.listdir(test_dir) if os.path.isdir(os.path.j
     original = original_stream.read()
     for headings in [[], ['--headings']]:
       for input in methods['input']:
-        (rc, input_string, stderr) = run([table_script, '--headings', '-i', 'fixed', '-o', input] + headings,
-                                         stdin=original)
+        (rc, input_string, stderr) = run([table_script, '-i', 'fixed', '-o', input] + headings, stdin=original)
         mkdir(test_dir,curr_test, input)
         for output in methods['output']:
           mkdir(test_dir, curr_test, input, output)
