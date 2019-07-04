@@ -37,7 +37,6 @@ class MethodBase(object):
     else:
       parser.error('{pattern!r} matches no columns: {actual_keys}'.format(**locals()))
 
-
   def make_order(self, root):
     order = []
     if root and isinstance(root[0], dict):
@@ -51,6 +50,12 @@ class MethodBase(object):
         order.append(key)
       order += sorted(list(keys))
     return order
+
+  def markup(self, stream, row, prefix, separator, suffix):
+    stream.write(prefix)
+    stream.write(separator.join(row))
+    stream.write(suffix + '\n')
+
 
 class CsvMethod(MethodBase):
   name = 'csv'
@@ -225,6 +230,52 @@ class FixedMethod(MethodBase):
       stream.write('\n')
 
 
+class HtmlMethod(MethodBase):
+  name = 'html'
+
+  def write(self, stream, root, order):
+    stream.write('<table>\n')
+    stream.write('<tbody>\n')
+    if root and isinstance(root[0], dict):
+      self.markup(stream, order, '<tr><th>', '</th><th>', '</th></tr>')
+      for row in root:
+        self.markup(stream, [row.get(col, '') for col in order], '<tr><td>', '</td><td>', '</td></tr>')
+    else:
+      for row in root:
+        self.markup(stream, row, '<tr><td>', '</td></tr>', '</td><td>')
+    stream.write('</tbody>\n')
+    stream.write('</table>\n')
+
+
+class MarkdownMethod(MethodBase):
+  name = 'markdown'
+
+  def write(self, stream, root, order):
+    if root and isinstance(root[0], dict):
+      self.markup(stream, order, '| ', ' | ', ' |')
+      self.markup(stream, ['-'] * len(order), '| ', ' | ', ' |')
+      for row in root:
+        self.markup(stream, [row.get(col, '') for col in order], '| ', ' | ', ' |')
+    else:
+      for row in root:
+        self.markup(stream, row, '| ', ' | ', ' |')
+
+
+class BbcodeMethod(MethodBase):
+  name = 'bbcode'
+
+  def write(self, stream, root, order):
+    stream.write('[table]\n')
+    if root and isinstance(root[0], dict):
+      self.markup(stream, order, '[tr][th]', '[/th][th]', '[/th][/tr]')
+      for row in root:
+        self.markup(stream, [row.get(col, '') for col in order], '[tr][td]', '[/td][td]', '[/td][/tr]')
+    else:
+      for row in root:
+        self.markup(stream, row, '[tr][td]', '[/td][/tr]', '[/td][td]')
+    stream.write('[/table]\n')
+
+
 def method_names(method_type):
   global methods
   ret = []
@@ -251,13 +302,13 @@ def order_splitter(arg):
 
 
 def method_abbreviator(arg):
-  log.debug('arg: {arg}'.format(**locals()))
+  # log.debug('arg: {arg}'.format(**locals()))
   regexp = re.compile(arg)
   matches = []
   for method in methods:
     if regexp.match(method.name):
       matches.append(method.name)
-  log.debug('matches: {matches}'.format(**locals()))
+  # log.debug('matches: {matches}'.format(**locals()))
   return matches[0] if len(matches) == 1 else arg
 
 
