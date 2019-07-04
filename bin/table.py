@@ -7,6 +7,7 @@ import json
 import string
 import logging
 import argparse
+import StringIO
 
 
 class MethodBase(object):
@@ -277,6 +278,25 @@ class BbcodeMethod(MethodBase):
     stream.write('[/table]\n')
 
 
+class Table(object):
+  def __init__(self, headings, desiredSep=None):
+    self.root = []
+    self.headings = headings
+    if desiredSep:
+      args.separator = desiredSep
+
+  def add(self, row):
+    self.root.append({name: row[pos] for (pos, name) in enumerate(self.headings)})
+
+  def reverse(self):
+    self.root.reverse()
+
+  def __str__(self):
+    buf = StringIO.StringIO()
+    args.output.write(buf, self.root, self.headings)
+    return buf.getvalue()
+
+
 def method_names(method_type):
   global methods
   ret = []
@@ -315,7 +335,6 @@ def method_abbreviator(arg):
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
-log.setLevel(logging.DEBUG)
 
 method_name_regexp = re.compile('[A-Z][a-z]+Method$')
 methods = []
@@ -330,7 +349,8 @@ parser.add_argument('--order', dest='order', type=order_splitter, help='Specify 
 parser.add_argument('-r', '--regexp', help='Regular expression to be used as an input separator', default=r'\s+')
 parser.add_argument('-s', '--separator', help='Output separator')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
-args = parser.parse_args()
+
+args = parser.parse_args() if __name__ == '__main__' else parser.parse_args(['-i', 'separator', '-o', 'fixed'])
 
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
@@ -345,10 +365,11 @@ if args.regexp:
 if 'yaml' in [args.input.name, args.output.name]:
   yaml = __import__('yaml')
 
-if sys.stdin.isatty():
-  parser.error('stdin must be redirected')
+if __name__ == '__main__':
+  if sys.stdin.isatty():
+    parser.error('stdin must be redirected')
 
-(root, order) = args.input.read(sys.stdin)
-log.debug('order: {order}'.format(**locals()))
-log.debug('root: {root}'.format(**locals()))
-args.output.write(sys.stdout, root, order)
+  (root, order) = args.input.read(sys.stdin)
+  log.debug('order: {order}'.format(**locals()))
+  log.debug('root: {root}'.format(**locals()))
+  args.output.write(sys.stdout, root, order)
