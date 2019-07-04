@@ -25,10 +25,11 @@ def mkdir(*path):
   exists = os.path.isdir(dir)
   log.log(logging.DEBUG if exists or args.create else logging.ERROR,
           '{dir} exists: {state}'.format(state=exists, **locals()))
-  if args.create and (not os.path.isdir(dir)):
-    os.mkdir(dir)
-  elif not args.create:
-    exit(1)
+  if not exists:
+    if args.create:
+      os.mkdir(dir)
+    else:
+      exit(1)
 
 def process(input, output, actual_string, *path):
   with open(os.path.join(*path), 'w' if args.create else 'r') as stream:
