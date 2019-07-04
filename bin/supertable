@@ -4,6 +4,7 @@ import re
 import sys
 import csv
 import json
+import string
 import logging
 import argparse
 
@@ -162,15 +163,35 @@ class SeparatorMethod(MethodBase):
 class FixedMethod(MethodBase):
   name = 'fixed'
 
-  # def read(self, stream):
-  #   root = []
-  #   headings = []
-  #   columns = []
-  #
-  #   data = stream.read().splitlines()
-  #   if data:
-  #
-  #   return (root, headings)
+  def read(self, stream):
+    root = []
+    headings = []
+    columns = []
+
+    lines = stream.read().splitlines()
+    c = 0
+    start = 0
+    while any([c < len(line) for line in lines]):
+      if all([line[c:c+1] in string.whitespace for line in lines]) and any([line[start:c].strip() for line in lines]):
+        columns.append((start, c))
+        start = c
+      c += 1
+
+    if any([line[start:].strip() for line in lines]):
+      columns.append((start, sys.maxint))
+
+    log.debug('columns: {columns}'.format(**locals()))
+
+    if args.headings and lines:
+      headings = [lines[0][stops[0]:stops[1]].strip() for stops in columns]
+
+    for line in lines[1 if args.headings else 0:]:
+      if args.headings:
+        root.append({headings[num]: line[start:stop].strip() for (num, (start, stop)) in enumerate(columns)})
+      else:
+        root.append([line[start:stop].strip() for (start, stop) in columns])
+
+    return (root, headings)
 
 
   def write(self, stream, root, order):
