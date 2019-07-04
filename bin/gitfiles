@@ -7,8 +7,6 @@ import getopt
 import datetime
 import subprocess
 
-from table import Table
-
 """
 commit c2bcf77c55ac334999d1b3bdb7706d40580590eb
 Author: John Pfuntner <pfuntner@us.ibm.com>

@@ -12,6 +12,7 @@ import argparse
 from table import Table
 
 parser = argparse.ArgumentParser(description='Find git repositories in your home directory')
+parser.add_argument('-l', '--link', dest='link', action='store_true', help='Follow symlinks')
 parser.add_argument('-v', '--verbose', dest='verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -44,7 +45,7 @@ table = Table(('root', 'url'), desiredSep=' ')
 
 home = os.environ.get('HOME')
 if home:
-  gits = findfiles(home, name=r'^\.git$', isDir=True, isFile=False, assureNotLink=True)
+  gits = findfiles(home, name=r'^\.git$', isDir=True, isFile=False, assureNotLink=not(args.link or False))
   log.debug('gits: {gits}'.format(**locals()))
   for git in gits:
     root = os.path.dirname(git)
