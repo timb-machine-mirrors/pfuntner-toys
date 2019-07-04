@@ -37,6 +37,20 @@ class MethodBase(object):
       parser.error('{pattern!r} matches no columns: {actual_keys}'.format(**locals()))
 
 
+  def make_order(self, root):
+    order = []
+    if root and isinstance(root[0], dict):
+      keys = set()
+      for item in root:
+        for key in item.keys():
+          keys.add(key)
+      for key in args.order or []:
+        key = self.get_key(key, keys)
+        keys.remove(key)
+        order.append(key)
+      order += sorted(list(keys))
+    return order
+
 class CsvMethod(MethodBase):
   name = 'csv'
 
@@ -73,23 +87,77 @@ class JsonMethod(MethodBase):
   def read(self, stream):
     ret = json.load(stream)
     self.validate(ret)
-
-    order = []
-    if ret and isinstance(ret[0], dict):
-      keys = set()
-      for item in ret:
-        for key in item.keys():
-          keys.add(key)
-      for key in args.order or []:
-        key = self.get_key(key, keys)
-        keys.remove(key)
-        order.append(key)
-      order += sorted(list(keys))
-
-    return (ret, order)
+    return (ret, self.make_order(ret))
 
   def write(self, stream, root, order):
     json.dump(root, stream, indent=2, sort_keys=True)
+    stream.write('\n')
+
+
+class YamlMethod(MethodBase):
+  name = 'yaml'
+
+  def read(self, stream):
+    ret = yaml.load(stream)
+    self.validate(ret)
+    return (ret, self.make_order(ret))
+
+  def write(self, stream, root, order):
+    yaml.dump(root, stream)
+
+
+class SeparatorMethod(MethodBase):
+  name = 'separator'
+
+  def read(self, stream):
+    root = []
+    headings = []
+    leading_sep = False
+    trailing_sep = False
+    for (pos, line) in enumerate(stream.read().splitlines()):
+      tokens = args.regexp.split(line)
+      log.debug('tokens: {tokens}'.format(**locals()))
+      if args.headings and (pos == 0):
+        if not tokens:
+          parser.error('No headings')
+        leading_sep = not tokens[0]
+        trailing_sep = (tokens[-1] == '') and (len(tokens) > 1)
+
+      if leading_sep:
+        if tokens[0]:
+          parser.error('Unexpected token under empty leading heading')
+        del tokens[0]
+
+      if trailing_sep:
+        if tokens[-1]:
+          parser.error('Unexpected token under empty trailing heading')
+        del tokens[-1]
+
+      if args.headings and (pos == 0):
+        headings = tokens
+      else:
+        if headings:
+          if len(tokens) > len(headings):
+            parser.error('Column without heading')
+          root.append({heading: tokens[pos] for (pos, heading) in enumerate(headings)})
+        else:
+          root.append(tokens)
+
+    return (root, headings)
+
+
+  def write(self, stream, root, order):
+    for (pos, row) in enumerate(root):
+      log.debug('{pos}: {row}'.format(**locals()))
+      if isinstance(row, dict):
+        if pos == 0:
+          stream.write(args.separator.join(order))
+          stream.write('\n')
+        stream.write(args.separator.join([row[name] for name in order]))
+      else:
+        stream.write(args.separator.join(row))
+      stream.write('\n')
+
 
 def method_names(method_type):
   global methods
@@ -98,7 +166,8 @@ def method_names(method_type):
     if method_name_regexp.match(name) and type(value) == type:
       method = value()
       if isinstance(method, MethodBase):
-        methods.append(method)
+        if method.name not in [curr.name for curr in methods]:
+          methods.append(method)
         if hasattr(method, method_type):
           ret.append(value.name)
   return ret
@@ -115,6 +184,17 @@ def order_splitter(arg):
   return arg.split(',')
 
 
+def method_abbreviator(arg):
+  log.debug('arg: {arg}'.format(**locals()))
+  regexp = re.compile(arg)
+  matches = []
+  for method in methods:
+    if regexp.match(method.name):
+      matches.append(method.name)
+  log.debug('matches: {matches}'.format(**locals()))
+  return matches[0] if len(matches) == 1 else arg
+
+
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
@@ -124,9 +204,13 @@ methods = []
 
 parser = argparse.ArgumentParser(description='Super Table - work in progress')
 parser.add_argument('-H', '--headings', dest='headings', action='store_true', help='Treat row 1 as columns')
-parser.add_argument('-i', '--input', dest='input', help='Input method', choices=method_names('read'), required=True)
-parser.add_argument('-o', '--output', dest='output', help='Output method', choices=method_names('write'), required=True)
+parser.add_argument('-i', '--input', dest='input', help='Input method', type=method_abbreviator,
+                    choices=method_names('read'), required=True)
+parser.add_argument('-o', '--output', dest='output', help='Output method', type=method_abbreviator,
+                    choices=method_names('write'), required=True)
 parser.add_argument('--order', dest='order', type=order_splitter, help='Specify the order of columns')
+parser.add_argument('-r', '--regexp', help='Regular expression to be used as an input separator', default=r'\s+')
+parser.add_argument('-s', '--separator', help='Output separator', default='|')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 args = parser.parse_args()
 
@@ -134,6 +218,8 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
 args.input = get_method(args.input)
 args.output = get_method(args.output)
+if args.regexp:
+  args.regexp = re.compile(args.regexp)
 
 if 'yaml' in [args.input.name, args.output.name]:
   yaml = __import__('yaml')
