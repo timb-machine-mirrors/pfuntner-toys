@@ -43,6 +43,21 @@ class MethodBase(object):
               parser.error('Row column is unexpected type')
 
 
+  def stringify(self, root):
+    """
+    Replace unicode strings with regular strings
+    :param root: A list of lists or dictionaries
+    :return: The list of lists or dictionaries with unicode elements replaced with regular strings
+    """
+    for item in root:
+      if isinstance(item, dict):
+        for (key, value) in item.items():
+          item[key] = str(value)
+      else:
+        for (pos, value) in enumerate(item):
+          item[pos] = str(value)
+    return root
+
   def get_key(self, pattern, actual_keys):
     """
     Get a key from a list of keys.
@@ -158,6 +173,7 @@ class JsonMethod(MethodBase):
     """
     ret = json.load(stream)
     self.validate(ret)
+    self.stringify(ret)
     return (ret, self.make_order(ret))
 
   def write(self, stream, root, order):
