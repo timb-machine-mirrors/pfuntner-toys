@@ -204,9 +204,9 @@ class FixedMethod(MethodBase):
     for (row_num, row) in enumerate(root):
       if isinstance(row, dict):
         if row_num == 0:
-          for (col_num, col) in order:
+          for (col_num, col) in enumerate(order):
             widths.append(len(col))
-        for (col_num, col) in order:
+        for (col_num, col) in enumerate(order):
           widths[col_num] = max(widths[col_num], len(row.get(col, '')))
       else:
         for (col_num, col) in enumerate(row):
@@ -221,6 +221,7 @@ class FixedMethod(MethodBase):
       if isinstance(row, dict):
         if row_num == 0:
           stream.write(args.separator.join([col.ljust(widths[col_num]) for (col_num, col) in enumerate(order)]))
+          stream.write('\n')
         stream.write(args.separator.join([row.get(col, '').ljust(widths[col_num])
                                           for (col_num, col) in enumerate(order)]))
       else:
