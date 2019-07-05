@@ -65,7 +65,7 @@ class MethodBase(object):
     :param actual_keys: The actual keys from which to choose
     :return:
     """
-    regexp = re.compile(pattern)
+    regexp = re.compile(pattern, flags=re.IGNORECASE)
     keys = [key for key in actual_keys if regexp.search(key)]
     if len(keys) == 1:
       return keys[0]
@@ -463,7 +463,7 @@ class BbcodeMethod(MethodBase):
         self.markup(stream, [row.get(col, '') for col in order], '[tr][td]', '[/td][td]', '[/td][/tr]')
     else:
       for row in root:
-        self.markup(stream, row, '[tr][td]', '[/td][/tr]', '[/td][td]')
+        self.markup(stream, row, '[tr][td]', '[/td][td]', '[/td][/tr]')
     stream.write('[/table]\n')
 
 
