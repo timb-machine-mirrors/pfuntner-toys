@@ -30,9 +30,9 @@ table.py [-h] [-H] -i {csv,yaml,fixed,json,separator} -o
 | `fixed` | ![Supported](../images/Green_tick.png) | ![Supported](../images/Green_tick.png) | Common to many Unix utilities such as `df` or `ls -l`.  The script identifies the beginning and ending of columns by looking for whitespace on every row |
 | `json` | ![Supported](../images/Green_tick.png) | ![Supported](../images/Green_tick.png) | Popular structured format, less ambiguities than less structured formats, more flexability |
 | `yaml` | ![Supported](../images/Green_tick.png) | ![Supported](../images/Green_tick.png) | Another popular structure format with the same strengths as `json` |
-| `html` | ![Not Supported](../images/red x.png) | ![Supported](../images/Green_tick.png) | A format that can only be used for output to produce a table in [HTML](https://www.wikiwand.com/en/HTML) |
-| `markdown` | ![Not Supported](../images/red x.png) | ![Supported](../images/Green_tick.png) | A format that can only be used for output to produce a table in [Markdown](https://www.wikiwand.com/en/Markdown).  Used extensively in [Slack](https://slack.com/) and [Github](https://www.wikiwand.com/en/GitHub): Issues (including pull requests), documentation, reviews, etc. | 
-| `bbcode` | ![Not Supported](../images/red x.png) | ![Supported](../images/Green_tick.png) | A format that can only be used for output to produce a table in [BBCode](https://www.wikiwand.com/en/BBCode).  Used in some bulletin board systems such as [Ubuntu Forums](https://ubuntuforums.org) | 
+| `html` | ![Not Supported](../images/red_x.png) | ![Supported](../images/Green_tick.png) | A format that can only be used for output to produce a table in [HTML](https://www.wikiwand.com/en/HTML) |
+| `markdown` | ![Not Supported](../images/red_x.png) | ![Supported](../images/Green_tick.png) | A format that can only be used for output to produce a table in [Markdown](https://www.wikiwand.com/en/Markdown).  Used extensively in [Slack](https://slack.com/) and [Github](https://www.wikiwand.com/en/GitHub): Issues (including pull requests), documentation, reviews, etc. | 
+| `bbcode` | ![Not Supported](../images/red_x.png) | ![Supported](../images/Green_tick.png) | A format that can only be used for output to produce a table in [BBCode](https://www.wikiwand.com/en/BBCode).  Used in some bulletin board systems such as [Ubuntu Forums](https://ubuntuforums.org) | 
 
 ## Examples
 
