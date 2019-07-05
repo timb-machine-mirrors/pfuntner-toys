@@ -5,16 +5,16 @@ A script to manipulate tables, reading from various formats (fixed column, CSV, 
 
 ## Syntax
 ```
-table.py [-h] [-H] -i {csv,yaml,fixed,json,separator} -o
-         {csv,yaml,fixed,bbcode,html,json,markdown,separator}
+table.py [-h] [-H] -i {csv,yaml,fixed,json,separator,xml} -o
+         {csv,yaml,fixed,bbcode,html,json,markdown,separator,xml}
          [--order ORDER] [-r REGEXP] [-s SEPARATOR] [-v]
 ```
 
 ### Options and arguments
 | Option | Description | Default |
 | ------ | ----------- | ------- |
-|  `-i FORMAT` or `--input FORMAT`  | Required option that identifies the input format: `csv`, `yaml`, `fixed`, `json`, or `separator` | There is no default.  You must identify the input format. |
-|  `-o FORMAT` or `--output FORMAT`  | Required option that identifies the output format: `csv`, `yaml`, `fixed`, `json`, `separator`, `html`, `markdown`, or `bbcode` | There is no default.  You must identify the output format. |
+|  `-i FORMAT` or `--input FORMAT`  | Required option that identifies the input format: `csv`, `yaml`, `fixed`, `json`, `separator`, or `xml` | There is no default.  You must identify the input format. |
+|  `-o FORMAT` or `--output FORMAT`  | Required option that identifies the output format: `csv`, `yaml`, `fixed`, `json`, `separator`, `html`, `markdown`, `bbcode`, or `xml` | There is no default.  You must identify the output format. |
 |  `-H` or `--headings`  | Treat first row of input as headings.  Significant for formats `csv`, `fixed`, and `separator` where the first row could be interpreted either way.  The option is ignored for other formats `json` and `yaml` where the interpretation is not possible. | The default is to not treat the first row as headings |
 | `-r REGEXP` or `--regexp REGEXP` | Regular expression to be used when reading with the `separator` format, ignored in all other cases | The default regular expression is to treat whitespace (`\w+`) as column separators |
 | `-s SEPARATOR` or `--separator SEPARATOR` | One or more characters to use to seperate columns when writing with the `separator` or `fixed` formats | The default is to use a single blank to separate columns in `fixed` format and a single vertical bar when writing in `separator` format. |
@@ -29,7 +29,8 @@ table.py [-h] [-H] -i {csv,yaml,fixed,json,separator} -o
 | `separator` | ![Supported](../images/Green_tick.png) | ![Supported](../images/Green_tick.png) | A free format where columns are separated by the `--regexp` regular expression.  Suseptible to mistakes when the separator is used within data.  Whitespace is a common separator but whitespace can also appear within data and headings |
 | `fixed` | ![Supported](../images/Green_tick.png) | ![Supported](../images/Green_tick.png) | Common to many Unix utilities such as `df` or `ls -l`.  The script identifies the beginning and ending of columns by looking for whitespace on every row |
 | `json` | ![Supported](../images/Green_tick.png) | ![Supported](../images/Green_tick.png) | Popular structured format, less ambiguities than less structured formats, more flexability |
-| `yaml` | ![Supported](../images/Green_tick.png) | ![Supported](../images/Green_tick.png) | Another popular structure format with the same strengths as `json` |
+| `yaml` | ![Supported](../images/Green_tick.png) | ![Supported](../images/Green_tick.png) | Another popular structured format with the same strengths as `json` |
+| `xml` | ![Supported](../images/Green_tick.png) | ![Supported](../images/Green_tick.png) | Another popular structured format.  |
 | `html` | ![Not Supported](../images/red_x.png) | ![Supported](../images/Green_tick.png) | A format that can only be used for output to produce a table in [HTML](https://www.wikiwand.com/en/HTML) |
 | `markdown` | ![Not Supported](../images/red_x.png) | ![Supported](../images/Green_tick.png) | A format that can only be used for output to produce a table in [Markdown](https://www.wikiwand.com/en/Markdown).  Used extensively in [Slack](https://slack.com/) and [Github](https://www.wikiwand.com/en/GitHub): Issues (including pull requests), documentation, reviews, etc. | 
 | `bbcode` | ![Not Supported](../images/red_x.png) | ![Supported](../images/Green_tick.png) | A format that can only be used for output to produce a table in [BBCode](https://www.wikiwand.com/en/BBCode).  Used in some bulletin board systems such as [Ubuntu Forums](https://ubuntuforums.org) | 
@@ -380,3 +381,25 @@ $
   alias table=table.py
   ```
   This could be placed in your `$HOME/.bashrc` profile to get set automatically.
+- There is minimal XML support:
+  - When reading XML:
+    - The second level node tags must all be the same
+    - Node attributes are ignored
+    - Fourth level elements and beyond are ignored
+    - I haven't found _naturally occurring_ XMLs that get processed very well.  Many are processed without error but render very little table content.  A sample XML I was using for testing was:
+      ```
+        <root>
+          <node>
+            <firstname>First 1</firstname>
+            <lastname>Last 1</lastname>
+          </node>
+          <node>
+            <firstname>First 2</firstname>
+            <lastname>Last 2</lastname>
+          </node>
+        </root>
+      ```
+  - When writing XML:
+    - The 1st level node tag is `<table>`
+    - The 2nd level node tags are `<row>`
+    - When processing a list of lists (no headings) 3rd level tags are follow the style `col00000000`, `col00000001`, etc.

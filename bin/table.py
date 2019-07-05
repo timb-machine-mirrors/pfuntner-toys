@@ -8,6 +8,8 @@ import string
 import logging
 import argparse
 import StringIO
+import xml.etree.ElementTree as ET
+
 
 
 class MethodBase(object):
@@ -15,6 +17,17 @@ class MethodBase(object):
   Base class for the I/O methods.  Contains some common methods.
   """
   name = None
+
+  def normalize(self, s):
+    """
+    Normalize a string by replacing non-alphanumerics with underscores
+    :param s: The input string
+    :return: The normalized string
+    """
+    s = normalizing_regexp.sub('_', s)
+    if s[0:1] in string.digits:
+      s = '_' + s
+    return s
 
   def validate(self, root):
     """
@@ -110,6 +123,59 @@ class MethodBase(object):
     stream.write(separator.join(row))
     stream.write(suffix + '\n')
 
+class XmlMethod(MethodBase):
+  """
+  Handle I/O for XML format
+  """
+  name = 'xml'
+
+  def read(self, stream):
+    """
+    Read a list dictionaries in XML format - it is not possible to produce a list of lists
+    :param stream: The input stream (eg sys.stdin)
+    :return: A two-element tuple: (the list of dictionaries, a list of named column headings)
+    """
+    ret = []
+    order = []
+
+    row_tag = None
+
+    tree = ET.parse(stream)
+    root = tree.getroot()
+    for row in root:
+      if row_tag and row_tag != row.tag:
+        parser.error('Expected row tag <{row_tag}> but got <{row.tag}> instead'.format(**locals()))
+      row_tag = row.tag
+      ret.append({})
+
+      for column in row:
+        ret[-1][column.tag] = column.text or ''
+
+    return (ret, self.make_order(ret))
+
+  def write(self, stream, root, order):
+    """
+    Write the list of lists or dictionaries in XML format.
+    :param stream: The output stream (eg. sys.stdout)
+    :param root: The list of dictionaries
+    :param order: The order of named columns - ignored for this method
+    :return: None
+    """
+
+    if root:
+      tree = ET.Element('table')
+      for row in root:
+        tree_row = ET.SubElement(tree, 'row')
+        if isinstance(row, list):
+          for (pos, col) in enumerate(row):
+            tree_col = ET.SubElement(tree_row, 'col{pos:>08}'.format(**locals()))
+            tree_col.text = col
+        else:
+          for (key, col) in row.items():
+            tree_col = ET.SubElement(tree_row, self.normalize(key))
+            tree_col.text = col
+
+      stream.write(ET.tostring(tree) + '\n')
 
 class CsvMethod(MethodBase):
   """
@@ -119,7 +185,7 @@ class CsvMethod(MethodBase):
 
   def read(self, stream):
     """
-    Read a list of lists of dictionaries in CSV format
+    Read a list of lists or dictionaries in CSV format
     :param stream: The input stream (eg sys.stdin)
     :return: A two-element tuple: (the list of lists or dictionaries, a list of named column headings)
     """
@@ -569,6 +635,8 @@ def method_abbreviator(arg):
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
+
+normalizing_regexp = re.compile('[^a-zA-Z0-9]')
 
 method_name_regexp = re.compile('[A-Z][a-z]+Method$')
 methods = []
