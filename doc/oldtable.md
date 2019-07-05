@@ -1,11 +1,13 @@
-# `table`
+# `oldtable`
 
 ## Purpose
 Format standard input in the form of a table.  Various styles of input and output are supported which can be mixed together.
 
+**This script has been replaced [_table_](table.md) which is much more flexible and handles more combinations of reading and writing formats.  I already had this documentation page for the old script and thought I would just keep it around.  I'm a bit of a packrat!**
+
 ## Syntax
 ```
-usage: table [-h] [-c | -s SEPARATOR | -f] [-H | -m | -b | -r | -j]
+usage: oldtable [-h] [-c | -s SEPARATOR | -f] [-H | -m | -b | -r | -j]
              [--headings] [--simple-headings] [--file FILENAME] [-v]
 ```
 
@@ -29,7 +31,7 @@ usage: table [-h] [-c | -s SEPARATOR | -f] [-H | -m | -b | -r | -j]
 
 ### Input: regular expression / Output: JSON
 ```
-$ df | head -5 | table -s \\s+ -j 
+$ df | head -5 | oldtable -s \\s+ -j 
 [
   [
     "Filesystem", 
@@ -76,7 +78,7 @@ $ df | head -5 | table -s \\s+ -j
 Note that this is a list of lists because the headings row were treated as just another row of input.
 ### Input: regular expression with headings / Output: JSON
 ```
-$ df | head -5 | table -s \\s+ -j  --headings
+$ df | head -5 | oldtable -s \\s+ -j  --headings
 [
   {
     "1K-blocks": "8133756", 
@@ -116,7 +118,7 @@ $
 By using the `--headings` option, we now get a list of dictionaries and the heading for each column is used for the keys of the dictionaries.
 ### Input: regular expression with headings / Output: HTML
 ```
-$ df | head -5 | table -s \\s+ --html  --headings
+$ df | head -5 | oldtable -s \\s+ --html  --headings
 <table border='1'>
 <tbody>
 <tr>
@@ -165,7 +167,7 @@ $ df | head -5 | table -s \\s+ --html  --headings
 Note that the `<th>` tags are used for the headings.  The output isn't especially pretty because it's meant to be rendered in a browser window but it should look good.
 ### Input: regular expression with headings / Output: BBCode
 ```
-$ df | head -5 | table -s \\s+ --b  --headings
+$ df | head -5 | oldtable -s \\s+ --b  --headings
 [table]
 [tbody]
 [tr]
@@ -215,7 +217,7 @@ $
 This output looks kind of like HTML but there are some differences in the tags.  Internally, a shared piece of code is used to generate both output styles.
 ### Input: regular expression with headings / Output: rotated
 ```
-$ df | head -5 | table -s \\s+ -r  --headings
+$ df | head -5 | oldtable -s \\s+ -r  --headings
 000000 00 Filesystem                       udev
 000000 01 1K-blocks                        8133756
 000000 02 Used                             0
@@ -244,7 +246,7 @@ $ df | head -5 | table -s \\s+ -r  --headings
 My _rotated_ style is a little hard to describe but it basically prints every column of every row on a separate line, indicating the row and column numbers.  Since headings were specified, the heading also appears along on every line.
 ### Input: regular expression without headings / Output: rotated
 ```
-$ df | head -5 | table -s \\s+ -r  
+$ df | head -5 | oldtable -s \\s+ -r  
 000000 00 Filesystem
 000000 01 1K-blocks
 000000 02 Used
@@ -280,7 +282,7 @@ $
 Without the `--headings` option, the rotated output is a little different but not much.
 ### Input: fixed width / Output: JSON
 ```
-$ ls -l | drop 1 | table --simple -f -j | head -40
+$ ls -l | drop 1 | oldtable --simple -f -j | head -40
 [
   [
     "-rwxr-xr-x", 
@@ -327,7 +329,7 @@ Regular,Anti-Backgammon,15300064812762,Donna D,15200000663034,Win,189,white,18/1
 Regular,Anti-Backgammon,15300065319531,Danny Bad Boy,15200000782400,Win,31,black,18/08/28,08:53:00
 Regular,Anti-Backgammon,15300064893256,supermanwuvsme,15200003044703,Win,290,black,18/07/05,22:28:00
 Regular,Anti-Backgammon,15300064965692,pandagirl,15200003408150,Win,11,white,18/05/20,17:58:00
-$ head -5 /home/mrbruno/repos/iyt/csv/20190407_102324_846368.csv | table --csv -j --headings 
+$ head -5 /home/mrbruno/repos/iyt/csv/20190407_102324_846368.csv | oldtable --csv -j --headings 
 [
   {
     "Category": "Regular", 

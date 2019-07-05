@@ -43,12 +43,12 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`jsoncompare`](doc/jsoncompare.md) | | Compares JSON and/or YAML files, element by element |
 | [`megadiff`](doc/megadiff.md) | | Compare two directories trees |
 | [`nocrs`](doc/nocrs.md) | | Remove carriage returns from files |
+| [`oldtable`](doc/oldtable.md) | | Parse data into a tabular form using a few input and output forms - replaced by _table_ |
 | [`peval`](doc/peval.md) | Yes | Evaluate Python expression strings |
 | [`pycomment`](doc/pycomment.md) | | vi command to toggle Python-style comments, similar to PyCharm `ctrl-/` command |
 | [`recentdownloads`](doc/recentdownloads.md) | | Find recently downloaded files |
 | [`SecureKeyValues`](doc/SecureKeyValues.md) | | Manage secure key value stores |
 | [`table`](doc/table.md) | yes | Parse data into a tabular form using several input and output forms - more flexible than _oldtable_ |
-| [`oldtable`](doc/oldtable.md) | | Parse data into a tabular form using a few input and output forms |
 | [`timer`](doc/timer.md) | | Display a progress meter over a specified duration of time |
 | [`timestamps`](doc/timestamps.md) | | Show times when files were last modified, most-recently updated first |
 | [`uniqc`](doc/uniqc.md) | Yes | Counts unique instances of input |
