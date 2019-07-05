@@ -29,6 +29,7 @@ class MethodBase(object):
       s = '_' + s
     return s
 
+
   def validate(self, root):
     """
     Validate a table after it's read.  Since JSON and YAML files could have arbitrary structure, the method ensures
@@ -65,7 +66,8 @@ class MethodBase(object):
     for item in root:
       if isinstance(item, dict):
         for (key, value) in item.items():
-          item[key] = str(value)
+          del item[key]
+          item[str(key)] = str(value)
       else:
         for (pos, value) in enumerate(item):
           item[pos] = str(value)
