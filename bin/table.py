@@ -11,7 +11,6 @@ import StringIO
 import xml.etree.ElementTree as ET
 
 
-
 class MethodBase(object):
   """
   Base class for the I/O methods.  Contains some common methods.
@@ -635,6 +634,55 @@ def method_abbreviator(arg):
   return matches[0] if len(matches) == 1 else arg
 
 
+def to_numeric(s):
+  """
+  Convert a string to numeric if possible
+  :param s: A string
+  :return: The string interpreted as a numeric if possible.  Otherwise, it is simply the input string.
+  """
+
+  try:
+    s = float(s)
+  except Exception as e:
+    log.debug('Caught `{e!s}` trying to cast {s!r} to numeric'.format(**locals()))
+    pass
+  return s
+
+
+def sorter(a, b):
+  """
+  Sort two rows of a table as specified by args.sort.  If two or more columns are specified, they are examined in
+  sequence until two unequal columns are found.
+  :param a: First row
+  :param b: Second row
+  :return: -1 if a < b, 1 if a > b, 0 if a == b
+  """
+  ret = 0
+  if isinstance(a, list):
+    for key in args.sort:
+      if key >= len(a):
+        ret = -1
+        break
+      elif key >= len(b):
+        ret = 1
+        break
+      elif a[key] != b[key]:
+        ret = cmp(to_numeric(a[key]), to_numeric(b[key]))
+        break
+  else:
+    for key in args.sort:
+      if (key not in a) and (key in b):
+        ret = -1
+        break
+      elif (key in a) and (key not in b):
+        ret = 1
+        break
+      elif (key in a) and (key in b) and (a[key] != b[key]):
+        ret = cmp(to_numeric(a[key]), to_numeric(b[key]))
+        break
+  return ret
+
+
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
 
@@ -652,6 +700,7 @@ parser.add_argument('-o', '--output', dest='output', help='Output method', type=
 parser.add_argument('--order', dest='order', type=order_splitter, help='Specify the order of columns')
 parser.add_argument('-r', '--regexp', help='Regular expression to be used as an input separator', default=r'\s+')
 parser.add_argument('-s', '--separator', help='Output separator')
+parser.add_argument('--sort', help='Sort rows by one or more columns')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 
 args = parser.parse_args() if __name__ == '__main__' else parser.parse_args(['-i', 'separator', '-o', 'fixed'])
@@ -676,4 +725,22 @@ if __name__ == '__main__':
   (root, order) = args.input.read(sys.stdin)
   log.debug('order: {order}'.format(**locals()))
   log.debug('root: {root}'.format(**locals()))
+
+  if args.sort:
+    if root:
+      if isinstance(root[0], list):
+        args.sort = [int(key) for key in args.sort.split(',')]
+      else:
+        sort_list = []
+        keys = set()
+        for row in root:
+          log.debug('keys available to sort with: {keys}'.format(**locals()))
+          log.debug('row keys: {}'.format(row.keys()))
+          keys = keys.union(set(row.keys()))
+        for arg in args.sort.split(','):
+          sort_list.append(args.input.get_key(arg, keys))
+          keys.remove(sort_list[-1])
+        args.sort = sort_list
+      root.sort(cmp=sorter)
+
   args.output.write(sys.stdout, root, order)
