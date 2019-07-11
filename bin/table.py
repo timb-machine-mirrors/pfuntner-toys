@@ -124,6 +124,9 @@ class MethodBase(object):
     stream.write(separator.join(row))
     stream.write(suffix + '\n')
 
+  def justify(self, s, width):
+    return s.rjust(width) if (numeric_regexp.search(s) and args.numeric_justify) else s.ljust(width)
+
 class XmlMethod(MethodBase):
   """
   Handle I/O for XML format
@@ -443,10 +446,10 @@ class FixedMethod(MethodBase):
         if row_num == 0:
           stream.write(args.separator.join([col.ljust(widths[col_num]) for (col_num, col) in enumerate(order)]))
           stream.write('\n')
-        stream.write(args.separator.join([row.get(col, '').ljust(widths[col_num])
+        stream.write(args.separator.join([self.justify(row.get(col, ''), widths[col_num])
                                           for (col_num, col) in enumerate(order)]))
       else:
-        stream.write(args.separator.join([(row[col_num] if col_num < len(row) else '').ljust(width)
+        stream.write(args.separator.join([self.justify(row[col_num] if col_num < len(row) else '', width)
                                           for (col_num, width) in enumerate(widths)]))
 
       stream.write('\n')
@@ -539,25 +542,36 @@ class Table(object):
   This class can be used by other scripts to produce fixed column output.  It provides an add() method so the caller
   can provide input in a different way
   """
-  def __init__(self, headings, desiredSep=None):
+  def __init__(self, headings=None, desiredSep=None, numeric_justify=False):
     """
     The constructor prepares the caller to provide data.
-    :param headings: A list of column names as strings
+    :param headings: A list of column names as strings.  Can be None if no headings are present
     :param desiredSep: The optional desired separator - the default separator is used if one is not specified by the
     caller
+    :param numeric_justify: Boolean indicating whether to right-justify numeric columns
     """
     self.root = []
     self.headings = headings
     if desiredSep:
       args.separator = desiredSep
+    if numeric_justify:
+      args.numeric_justify = numeric_justify
 
-  def add(self, row):
+  def add(self, *args):
     """
     This method is used by the caller to add a new row to the table
-    :param row: A list of columns for this row of the table
+    :param args: The row: if there is one element and it is an Iterable, the elements of the first element are the
+    columns.  Otherwise, each element is a column.
     :return: None
     """
-    self.root.append({name: str(row[pos]) for (pos, name) in enumerate(self.headings)})
+    if (len(args) == 1) and type(args[0]) in [list, tuple]:
+      row = args[0]
+    else:
+      row = args
+    if self.headings:
+      self.root.append({name: str(row[pos]) for (pos, name) in enumerate(self.headings)})
+    else:
+      self.root.append([col for col in row])
 
   def reverse(self):
     """
@@ -687,6 +701,7 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 
 normalizing_regexp = re.compile('[^a-zA-Z0-9]')
+numeric_regexp = re.compile(r'^((\d+(\.\d+)?)|(\d*\.\d+))%?$')
 
 method_name_regexp = re.compile('[A-Z][a-z]+Method$')
 methods = []
@@ -701,6 +716,8 @@ parser.add_argument('--order', dest='order', type=order_splitter, help='Specify 
 parser.add_argument('-r', '--regexp', help='Regular expression to be used as an input separator', default=r'\s+')
 parser.add_argument('-s', '--separator', help='Output separator')
 parser.add_argument('--sort', help='Sort rows by one or more columns')
+parser.add_argument('-n', '--numeric_justify', action='store_true',
+                    help='Right-justify numeric columns during fixed format output')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 
 args = parser.parse_args() if __name__ == '__main__' else parser.parse_args(['-i', 'separator', '-o', 'fixed'])
