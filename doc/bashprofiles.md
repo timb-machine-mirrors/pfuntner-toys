@@ -32,3 +32,21 @@ You do not have /home/mrbruno/.bash_login
 You have /home/mrbruno/.profile
 $ 
 ```
+
+## Notes
+
+- You might need to use quotes to protect blanks in the path name reported by the script.  Generally blanks are discouraged in paths on Unix but they are more common on Windoze, especially in name of a user's home directory.
+
+  ```
+  $ bashprofiles
+  /home/John Doe/.bash_profile
+  $ wc $(bashprofiles)                                   # blank is not protected
+  wc: /home/John: No such file or directory
+  wc: Doe/.bash_profile: No such file or directory
+  0 0 0 total
+  $ wc "$(bashprofiles)"                                 # blank is protected
+    52  251 1686 /home/John Doe/.bash_profile
+  $
+  ```
+
+  This solution might not work for all cases.  If someone decided to use the name _John O'Doe_, the embedded quote would probably confuse the shell.
