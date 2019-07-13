@@ -9,6 +9,14 @@ export PAGER=less
 export EDITOR=vi
 export PYTHONUNBUFFERED=true
 
+# Windoze variables
+if expr match "$(uname -s)" '.*[Ww][Ii][Nn]' >/dev/null 2>&1
+then
+  export ROOT=/cygdrive/c
+  export GVIM=$ROOT/utils/gVimPortable/gVimPortable.exe
+  export HOSTS=$ROOT/Windows/System32/drivers/etc/hosts
+fi
+
 # For shared systems, this is useful for automatically sourcing my personal setup script
 #
 # if [ "$($HOME/bruno/bin/incomingHost)" == "ibm750-r9rw756.raleigh.ibm.com" ]
