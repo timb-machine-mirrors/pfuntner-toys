@@ -68,7 +68,7 @@ table = Table(numeric_justify=True)
 now = datetime.datetime.now()
 six_months_ago = now - datetime.timedelta(days=6*30)
 
-for (pos, pathname) in enumerate([os.path.abspath(arg) for arg in args.files]):
+for (pos, pathname) in enumerate([os.path.realpath(arg) for arg in args.files]):
   log.debug('pathname: {pathname!r}'.format(**locals()))
   if pos > 0:
     table.add('')
