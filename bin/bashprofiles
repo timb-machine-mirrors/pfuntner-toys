@@ -7,11 +7,6 @@ import os.path
 all = False
 hits = 0
 
-def protect(s):
-  if ' ' in s:
-    s = '\'{}\''.format(s)
-  return s
-
 def process(path):
   global hits
 
@@ -20,13 +15,13 @@ def process(path):
   path = path % os.environ
   if os.path.isfile(path):
     if all:
-      print "You%s have %s" % (" also" if hits else "", protect(path))
+      print "You%s have %s" % (" also" if hits else "", path)
     else:
-      print protect(path)
+      print path
       ret = True
     hits += 1
   elif all:
-    print "You do not have %s" % protect(path)
+    print "You do not have %s" % path
 
   return ret
 
