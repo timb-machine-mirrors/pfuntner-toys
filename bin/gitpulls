@@ -16,6 +16,6 @@ ATTENTION!
 The branch of $dir is $branch, not master!
 EOF
     fi
-    cd -
+    cd - >/dev/null
   fi
 done
