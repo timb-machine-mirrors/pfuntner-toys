@@ -718,6 +718,7 @@ parser.add_argument('-s', '--separator', help='Output separator')
 parser.add_argument('--sort', help='Sort rows by one or more columns')
 parser.add_argument('-n', '--numeric_justify', action='store_true',
                     help='Right-justify numeric columns during fixed format output')
+parser.add_argument('-f', '--file', help='File from which to read, instead of stdin')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 
 args = parser.parse_args() if __name__ == '__main__' else parser.parse_args(['-i', 'separator', '-o', 'fixed'])
@@ -736,10 +737,15 @@ if 'yaml' in [args.input.name, args.output.name]:
   yaml = __import__('yaml')
 
 if __name__ == '__main__':
-  if sys.stdin.isatty():
-    parser.error('stdin must be redirected')
+  (root, order) = (None, None)
+  if args.file:
+    with open(args.file) as stream:
+      (root, order) = args.input.read(stream)
+  else:
+    if sys.stdin.isatty():
+      parser.error('stdin must be redirected if --file is not specified')
+    (root, order) = args.input.read(sys.stdin)
 
-  (root, order) = args.input.read(sys.stdin)
   log.debug('order: {order}'.format(**locals()))
   log.debug('root: {root}'.format(**locals()))
 
