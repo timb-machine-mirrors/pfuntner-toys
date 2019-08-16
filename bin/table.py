@@ -282,7 +282,7 @@ class YamlMethod(MethodBase):
     :param order: The order of named columns if order is important
     :return: None
     """
-    yaml.dump(root, stream)
+    yaml.dump(root, stream, default_flow_style=False if args.style == 'block' else None)
 
 
 class SeparatorMethod(MethodBase):
@@ -718,6 +718,7 @@ parser.add_argument('-s', '--separator', help='Output separator')
 parser.add_argument('--sort', help='Sort rows by one or more columns')
 parser.add_argument('-n', '--numeric_justify', action='store_true',
                     help='Right-justify numeric columns during fixed format output')
+parser.add_argument('--style', choices=['flow', 'block'], help='Specify an yaml output style')
 parser.add_argument('-f', '--file', help='File from which to read, instead of stdin')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 
