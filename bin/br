@@ -80,7 +80,7 @@ signal.signal(signal.SIGINT, cleanup)
 signal.signal(signal.SIGTERM, cleanup)
 
 (fd, name) = tempfile.mkstemp()
-log.warning("Created %s" % repr(name))
+log.info("Created %s" % repr(name))
 os.write(fd, add_crs(sys.stdin.read()))
 os.close(fd)
 
