@@ -2,20 +2,23 @@
 cd
 for dir in repos/*
 do
-  banner $dir
-  if cd "$HOME/$dir"
+  if test -d "$dir"
   then
-    branch=$(git branch | awk '{ if ($1 == "*") print $2 }')
-    if [ "X$branch" = Xmaster ]
+    banner $dir
+    if cd "$HOME/$dir"
     then
-      git pull
-      echo
-    else
-      cat <<EOF | banner --color lightred --center >&2
+      branch=$(git branch | awk '{ if ($1 == "*") print $2 }')
+      if [ "X$branch" = Xmaster ]
+      then
+        git pull
+        echo
+      else
+        cat <<EOF | banner --color lightred --center >&2
 ATTENTION!
 The branch of $dir is $branch, not master!
 EOF
+      fi
+      cd - >/dev/null
     fi
-    cd - >/dev/null
   fi
 done
