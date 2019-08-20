@@ -1,0 +1,54 @@
+#! /usr/bin/env python
+
+import re
+import logging
+import argparse
+import subprocess
+
+parser = argparse.ArgumentParser(description='scp with ansible target ansible host')
+parser.add_argument('host', help='The name of the target host')
+parser.add_argument('files', metavar='file', nargs='+', help='Two or more files')
+parser.add_argument('-q', '--quiet', dest='quiet', action='store_true', help='Enable ssh quiet mode')
+parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+args = parser.parse_args()
+
+if len(args.files) < 2:
+  parser.error('At least two files are expected')
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
+"""
+handles /etc/ansible/hosts files of the following INI format:
+
+  [targets]
+  centos6 ansible_user=centos ansible_host=52.90.79.93 ansible_ssh_private_key_file=/home/centos/sto/pfuntner-aws.pem
+"""
+
+ini_regexp = re.compile('(\S+)=(\S+)')
+remote_regexp = re.compile('^remote:')
+
+host = {}
+with open('/etc/ansible/hosts') as stream:
+  for line in stream.read().splitlines():
+    tokens = line.split()
+    if tokens and (tokens[0] == args.host):
+      for hit in ini_regexp.findall(line):
+        host[hit[0]] = hit[1]
+      break
+
+log.debug('{args.host}: {host}'.format(**locals()))
+remote_prefix = '{ansible_user}@{ansible_host}:'.format(**host)
+
+if host:
+  cmd = ['scp', '-i', host['ansible_ssh_private_key_file']]
+  if args.quiet:
+    cmd.append('-q')
+  cmd.append('{ansible_user}@{ansible_host}'.format(**host))
+  for file in args.files:
+    cmd.append(remote_regexp.sub(remote_prefix, file))
+  log.debug(cmd)
+  subprocess.Popen(cmd).wait()
+else:
+  log.error('Could not find {args.host!r}'.format(**locals()))
