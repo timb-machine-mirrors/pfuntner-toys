@@ -8,6 +8,7 @@ import subprocess
 parser = argparse.ArgumentParser(description='ssh to ansible target ansible host')
 parser.add_argument('host', help='The name of the target host')
 parser.add_argument('cmd', nargs='*', help='Optional command and arguments')
+parser.add_argument('-q', '--quiet', dest='quiet', action='store_true', help='Enable ssh quiet mode')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 args = parser.parse_args()
 
@@ -35,7 +36,12 @@ with open('/etc/ansible/hosts') as stream:
 
 log.debug('{args.host}: {host}'.format(**locals()))
 if host:
-  cmd = ['ssh', '-i', host['ansible_ssh_private_key_file'], '{ansible_user}@{ansible_host}'.format(**host)] + (args.cmd if args.cmd else [])
+  cmd = ['ssh', '-i', host['ansible_ssh_private_key_file']], '{ansible_user}@{ansible_host}'.format(**host)] + (args.cmd if args.cmd else [])
+  if args.quiet:
+    cmd.append('-q')
+  cmd.append('{ansible_user}@{ansible_host}'.format(**host))
+  if args.cmd:
+    cmd += args.cmd
   log.debug(cmd)
   subprocess.Popen(cmd).wait()
 else:
