@@ -36,7 +36,7 @@ with open('/etc/ansible/hosts') as stream:
 
 log.debug('{args.host}: {host}'.format(**locals()))
 if host:
-  cmd = ['ssh', '-i', host['ansible_ssh_private_key_file']], '{ansible_user}@{ansible_host}'.format(**host)] + (args.cmd if args.cmd else [])
+  cmd = ['ssh', '-i', host['ansible_ssh_private_key_file']], '{ansible_user}@{ansible_host}'.format(**host)]
   if args.quiet:
     cmd.append('-q')
   cmd.append('{ansible_user}@{ansible_host}'.format(**host))
