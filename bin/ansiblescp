@@ -42,12 +42,18 @@ log.debug('{args.host}: {host}'.format(**locals()))
 remote_prefix = '{ansible_user}@{ansible_host}:'.format(**host)
 
 if host:
+  substitutions = 0
   cmd = ['scp', '-i', host['ansible_ssh_private_key_file']]
   if args.quiet:
     cmd.append('-q')
   for file in args.files:
-    cmd.append(remote_regexp.sub(remote_prefix, file))
+    if remote_regexp.search(file):
+      substitutions += 1
+      cmd.append(remote_regexp.sub(remote_prefix, file))
   log.debug(cmd)
-  subprocess.Popen(cmd).wait()
+  if substitutions:
+    subprocess.Popen(cmd).wait()
+  else:
+    parser.error('No {remote_regexp.pattern!r} substitutions!'.format(**locals()))
 else:
   log.error('Could not find {args.host!r}'.format(**locals()))
