@@ -50,6 +50,8 @@ if host:
     if remote_regexp.search(file):
       substitutions += 1
       cmd.append(remote_regexp.sub(remote_prefix, file))
+    else:
+      cmd.append(file)
   log.debug(cmd)
   if substitutions:
     subprocess.Popen(cmd).wait()
