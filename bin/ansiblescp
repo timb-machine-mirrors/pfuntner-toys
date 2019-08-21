@@ -5,6 +5,8 @@ import logging
 import argparse
 import subprocess
 
+from ansiblehelper import AnsibleHelper
+
 parser = argparse.ArgumentParser(description='scp with ansible target ansible host')
 parser.add_argument('host', help='The name of the target host')
 parser.add_argument('files', metavar='file', nargs='+', help='Two or more files')
@@ -19,26 +21,11 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-"""
-handles /etc/ansible/hosts files of the following INI format:
-
-  [targets]
-  centos6 ansible_user=centos ansible_host=52.90.79.93 ansible_ssh_private_key_file=/home/centos/sto/pfuntner-aws.pem
-"""
-
-ini_regexp = re.compile('(\S+)=(\S+)')
-remote_regexp = re.compile('^remote:')
-
-host = {}
-with open('/etc/ansible/hosts') as stream:
-  for line in stream.read().splitlines():
-    tokens = line.split()
-    if tokens and (tokens[0] == args.host):
-      for hit in ini_regexp.findall(line):
-        host[hit[0]] = hit[1]
-      break
+host = AnsibleHelper.get_host(args.host)
 
 log.debug('{args.host}: {host}'.format(**locals()))
+
+remote_regexp = re.compile('^remote:')
 remote_prefix = '{ansible_user}@{ansible_host}:'.format(**host)
 
 if host:

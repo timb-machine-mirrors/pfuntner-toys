@@ -5,6 +5,8 @@ import logging
 import argparse
 import subprocess
 
+from ansiblehelper import AnsibleHelper
+
 parser = argparse.ArgumentParser(description='ssh to ansible target ansible host')
 parser.add_argument('host', help='The name of the target host')
 parser.add_argument('cmd', nargs='*', help='Optional command and arguments')
@@ -16,23 +18,7 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-"""
-handles /etc/ansible/hosts files of the following format:
-
-  [targets]
-  centos6 ansible_user=centos ansible_host=52.90.79.93 ansible_ssh_private_key_file=/home/centos/sto/pfuntner-aws.pem
-"""
-
-regexp = re.compile('(\S+)=(\S+)')
-
-host = {}
-with open('/etc/ansible/hosts') as stream:
-  for line in stream.read().splitlines():
-    tokens = line.split()
-    if tokens and (tokens[0] == args.host):
-      for hit in regexp.findall(line):
-        host[hit[0]] = hit[1]
-      break
+host = AnsibleHelper.get_host(args.host)
 
 log.debug('{args.host}: {host}'.format(**locals()))
 if host:
