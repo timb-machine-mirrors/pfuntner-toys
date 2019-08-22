@@ -1,0 +1,64 @@
+#! /usr/bin/env python
+
+import re
+import json
+import logging
+import argparse
+import subprocess
+
+def get(root, path):
+  if not path:
+    return root
+
+  if isinstance(path, basestring):
+    path = path.split('/')
+
+  if int_regexp.search(path[0]):
+    pos = int(path[0])
+    log.debug('pos: {pos}, root: {root}'.format(**locals()))
+    assert 0 <= pos < len(root)
+    return get(root[pos], path[1:])
+  else:
+    return get(root.get(path[0], {}), path[1:])
+
+"""
+  Display information on an AWS instance
+
+    /Reservations/23/Instances/0/PublicIpAddress '34.201.117.107'
+
+"""
+
+parser = argparse.ArgumentParser(description='Make Ansible hosts file from AWS instances')
+parser.add_argument('name', help='AWS hostname')
+parser.add_argument('-v', '--verbose', dest='verbose', action='count', help='Add more debugging')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.WARNING - (args.verbose or 0)*10)
+
+p = subprocess.Popen('aws ec2 describe-instances'.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+(stdout, stderr) = p.communicate()
+rc = p.wait()
+
+if rc or stderr:
+  log.setLevel(logging.DEBUG)
+log.debug('CLI: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
+
+if rc or stderr:
+  parser.error('CLI failure')
+
+names = []
+int_regexp = re.compile('^\d+$')
+
+instances = json.loads(stdout)
+for instance in instances.get('Reservations', []):
+  name = get(instance, 'Instances/0/Tags/0/Value')
+  names.append(str(name))
+  if name == args.name:
+    print json.dumps(instance)
+    exit(0)
+
+print 'Could not find {args.name!r}.  Choose from:'.format(**locals())
+for name in sorted(names):
+  print '  {name}'.format(**locals())

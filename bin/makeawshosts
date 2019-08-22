@@ -1,0 +1,105 @@
+#! /usr/bin/env python
+
+import re
+import os
+import pdb
+import json
+import logging
+import argparse
+import subprocess
+
+def get_user(platform):
+  ret = None
+  if 'centos' in platform.lower():
+    ret = 'centos'
+  elif 'ubuntu' in platform.lower():
+    ret = 'ubuntu'
+  elif 'debian' in platform.lower():
+    ret = 'admin'
+  elif 'rhel' in platform.lower():
+    ret = 'ec2-user'
+  elif 'amazon' in platform.lower():
+    ret = 'ec2-user'
+  else:
+    parser.error('Cannot not figure out user for {platform!r}'.format(**locals()))
+  return ret
+
+def get(root, path):
+  if not path:
+    return root
+
+  if isinstance(path, basestring):
+    path = path.split('/')
+
+  if int_regexp.search(path[0]):
+    pos = int(path[0])
+    log.debug('pos: {pos}, root: {root}'.format(**locals()))
+    assert 0 <= pos < len(root)
+    return get(root[pos], path[1:])
+  else:
+    return get(root.get(path[0], {}), path[1:])
+
+"""
+  Use AWS CLI to generate /etc/ansible/hosts
+
+    [centos@pfuntner1 ~]$ aws ec2 describe-instances | json --flatten | grep -v KeyName | grep -E "pfuntner|PublicIpAddress"
+    /Reservations/23/Instances/0/PublicIpAddress '34.201.117.107'
+    /Reservations/23/Instances/0/Tags/0/Value 'pfuntner-centos6'
+    /Reservations/24/Instances/0/PublicIpAddress '54.164.27.196'
+    /Reservations/24/Instances/0/Tags/0/Value 'pfuntner-amazon1'
+    /Reservations/25/Instances/0/PublicIpAddress '18.206.118.101'
+    /Reservations/25/Instances/0/Tags/0/Value 'pfuntner-amazon2'
+    /Reservations/28/Instances/0/PublicIpAddress '3.86.222.146'
+    /Reservations/28/Instances/0/Tags/0/Value 'pfuntner-debian9'
+    /Reservations/39/Instances/0/PublicIpAddress '100.24.3.24'
+    /Reservations/39/Instances/0/Tags/0/Value 'pfuntner-rhel6'
+    /Reservations/41/Instances/0/PublicIpAddress '54.164.38.49'
+    /Reservations/41/Instances/0/Tags/0/Value 'pfuntner-rhel7'
+    /Reservations/42/Instances/0/PublicIpAddress '3.87.191.9'
+    /Reservations/42/Instances/0/Tags/0/Value 'pfuntner-ubuntu16'
+    /Reservations/43/Instances/0/PublicIpAddress '3.89.35.2'
+    /Reservations/43/Instances/0/Tags/0/Value 'pfuntner-ubuntu18'
+    /Reservations/45/Instances/0/PublicIpAddress '54.234.86.78'
+    /Reservations/45/Instances/0/Tags/0/Value 'pfuntner-debian8'
+    /Reservations/65/Instances/0/PublicIpAddress '54.81.52.4'
+    /Reservations/65/Instances/0/Tags/0/Value 'pfuntner-centos7'
+
+"""
+
+parser = argparse.ArgumentParser(description='Make Ansible hosts file from AWS instances')
+parser.add_argument('hostexpr', help='Regular expression for hostname')
+parser.add_argument('-v', '--verbose', dest='verbose', action='count', help='Add more debugging')
+parser.add_argument('-d', '--debug', dest='debug', action='store_true', help='Enter Python debugging')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.WARNING - (args.verbose or 0)*10)
+
+host_regexp = re.compile(args.hostexpr)
+int_regexp = re.compile('^\d+$')
+
+p = subprocess.Popen('aws ec2 describe-instances'.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+(stdout, stderr) = p.communicate()
+rc = p.wait()
+
+if rc or stderr:
+  log.setLevel(logging.DEBUG)
+log.debug('CLI: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
+
+if rc or stderr:
+  parser.error('CLI failure')
+
+key_file = os.environ.get('ANSIBLE_SSH_PRIVATE_KEY_FILE')
+
+instances = json.loads(stdout)
+if args.debug:
+  pdb.set_trace()
+for instance in instances.get('Reservations', []):
+  name = get(instance, 'Instances/0/Tags/0/Value')
+  if host_regexp.search(name):
+    host = host_regexp.sub('', name)
+    ip = get(instance, 'Instances/0/PublicIpAddress')
+    user = get_user(host)
+
+    print '{host} ansible_host={ip} ansible_user={user}'.format(**locals()) + ((' ansible_ssh_private_key_file=' + key_file) if key_file else '')
