@@ -98,8 +98,11 @@ if args.debug:
 for instance in instances.get('Reservations', []):
   name = get(instance, 'Instances/0/Tags/0/Value')
   if host_regexp.search(name):
-    host = host_regexp.sub('', name)
-    ip = get(instance, 'Instances/0/PublicIpAddress')
-    user = get_user(host)
-
-    print '{host} ansible_host={ip} ansible_user={user}'.format(**locals()) + ((' ansible_ssh_private_key_file=' + key_file) if key_file else '')
+    if get(instance, 'Instances/0/State/Name') == 'started':
+      host = host_regexp.sub('', name)
+      ip = get(instance, 'Instances/0/PublicIpAddress')
+      user = get_user(host)
+  
+      print '{host} ansible_host={ip} ansible_user={user}'.format(**locals()) + ((' ansible_ssh_private_key_file=' + key_file) if key_file else '')
+    else:
+      log.warn('{name} is stopped'.format(**locals()))
