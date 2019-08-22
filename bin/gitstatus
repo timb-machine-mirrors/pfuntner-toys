@@ -24,18 +24,18 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
 section_regexps = {
   'modified': {
-     'header': re.compile('^Changes not staged for commit:'),
-     'file': re.compile('^\s+modified:\s+(.*)$'),
+     'header': re.compile('^#?\s*Changes not staged for commit:'),
+     'file': re.compile('^#?\s+modified:\s+(.*)$'),
      'requested': False,
   },
   'unmerged': {
-     'header': re.compile('^Unmerged paths:'),
-     'file': re.compile('^\s+both modified:\s+(.*)$'),
+     'header': re.compile('^#?\s*Unmerged paths:'),
+     'file': re.compile('^#?\s+both modified:\s+(.*)$'),
      'requested': False,
   },
   'untracked': {
-     'header': re.compile('^Untracked files:'),
-     'file': re.compile('^\t([^( ].*)$'),
+     'header': re.compile('^#?\s*Untracked files:'),
+     'file': re.compile('^#?\t([^( ].*)$'),
      'requested': False,
   },
 }
@@ -60,7 +60,7 @@ if (rc != 0) or stderr:
   log.critical('{cmd} failed: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
   exit(1)
 
-section_end_regexp = re.compile('^\S')
+section_end_regexp = re.compile('^(|# )[A-Za-z]')
 
 inside = None
 
