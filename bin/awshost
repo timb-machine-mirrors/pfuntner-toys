@@ -56,7 +56,7 @@ for instance in instances.get('Reservations', []):
   name = get(instance, 'Instances/0/Tags/0/Value')
   names.append(str(name))
   if name == args.name:
-    print json.dumps(instance)
+    print json.dumps(instance, indent=2, sort_keys=True)
     exit(0)
 
 print 'Could not find {args.name!r}.  Choose from:'.format(**locals())
