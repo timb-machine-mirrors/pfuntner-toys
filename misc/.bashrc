@@ -20,6 +20,11 @@ alias pushsshkey=ssh-copy-id
 alias time=ptime
 alias table=table.py
 
+function git_branch {
+  git branch 2>/dev/null | awk '/^\*/ { print " " $2 }'
+}
+export PS1='[\u@\h \W`git_branch`]\$ '
+
 # My git frontend is not needed if you authenticate with an sshkey and use the ssh-style URL
 # for the repo such as git@github.com:USER/REPO.git
 #
