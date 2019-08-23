@@ -28,14 +28,20 @@ def get(root, path):
 
 """
 
-parser = argparse.ArgumentParser(description='Make Ansible hosts file from AWS instances')
-parser.add_argument('name', help='AWS hostname')
+parser = argparse.ArgumentParser(description='List AWS instance inforation')
+parser.add_argument('names', metavar='name', nargs='*', help='One or more AWS hostnames')
+parser.add_argument('-l', '--list', dest='list', action='store_true', help='List host names')
 parser.add_argument('-v', '--verbose', dest='verbose', action='count', help='Add more debugging')
 args = parser.parse_args()
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
 log.setLevel(logging.WARNING - (args.verbose or 0)*10)
+
+if args.list and args.names:
+  parser.error('-l may not be used with a list of hosts')
+if (not args.list) and (not args.names):
+  parser.error('No hosts specified and -l is not used')
 
 p = subprocess.Popen('aws ec2 describe-instances'.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 (stdout, stderr) = p.communicate()
@@ -48,17 +54,34 @@ log.debug('CLI: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
 if rc or stderr:
   parser.error('CLI failure')
 
-names = []
 int_regexp = re.compile('^\d+$')
+
+names = {name: 0 for name in args.names or []}
 
 instances = json.loads(stdout)
 for instance in instances.get('Reservations', []):
-  name = get(instance, 'Instances/0/Tags/0/Value')
-  names.append(str(name))
-  if name == args.name:
-    print json.dumps(instance, indent=2, sort_keys=True)
-    exit(0)
+  curr = get(instance, 'Instances/0/Tags/0/Value')
+  if args.list:
+    print curr
+  else:
+    chosen = False
+    if curr in names.keys():
+      chosen = True
+      names[curr] += 1
 
-print 'Could not find {args.name!r}.  Choose from:'.format(**locals())
-for name in sorted(names):
-  print '  {name}'.format(**locals())
+    if not chosen:
+      for name in names.keys():
+        try:
+          if re.search(name, curr):
+            chosen = True
+            names[name] += 1
+        except:
+          pass # the argument must not be a valid regular expression - that's ok!
+
+    if chosen:
+      print json.dumps(instance, indent=2, sort_keys=True)
+
+if not args.list:
+  for (name, chosen) in names.items():
+    if not chosen:
+      log.warn('{name!r} was not found'.format(**locals()))
