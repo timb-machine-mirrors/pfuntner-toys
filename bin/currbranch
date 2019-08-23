@@ -1,0 +1,7 @@
+curr=$(git branch 2>/dev/null | awk '/^\*/ { print " " $2 }')
+if [ "X$curr" = X ]
+then
+  banner --color red 'No branch available - are you in a git repo?' >&2
+else
+  echo $curr
+fi
