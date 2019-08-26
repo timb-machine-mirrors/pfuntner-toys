@@ -1,0 +1,43 @@
+#! /usr/bin/env python
+
+import re
+import os
+import logging
+import argparse
+import subprocess
+
+def run(cmd, trap=False):
+  p = subprocess.Popen(cmd, stdout=subprocess.PIPE if trap else None, stderr=subprocess.PIPE if trap else None)
+  (stdout, stderr) = p.communicate()
+  rc = p.wait()
+  log.log(logging.WARN if (rc != 0) or stderr else logging.DEBUG, '{cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
+  return (rc, stdout, stderr)
+
+parser = argparse.ArgumentParser(description='Get Windoze login screen savers')
+parser.add_argument('-v', '--verbose', dest='verbose', action='count', help='Add more debugging')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.WARNING - (args.verbose or 0)*10)
+
+dir = 'C:/Users/jpfuntne/AppData/Local/Packages/Microsoft.Windows.ContentDeliveryManager_cw5n1h2txyewy/LocalState/Assets/'
+
+regexp = re.compile('\s(\d{4})x(\d{4}),')
+if os.path.isdir(dir):
+  for basename in os.listdir(dir):
+    path = os.path.join(dir, basename)
+    (rc, stdout, stderr) = run(['file', path], trap=True)
+    bytes = os.path.getsize(path)
+    size = os.path.getsize(path)
+    match = regexp.search(stdout)
+    if match:
+      width = int(match.group(1))
+      height = int(match.group(2))
+      log.info('{basename}: {size} {width}x{height}'.format(**locals()))
+      if width > height:
+        run(['cp', '-pv', path, os.path.join('/tmp', basename + '.jpg')])
+    else:
+      log.info('{basename}: {size} ?x?'.format(**locals()))
+else:
+  log.warn('Could not find {dir!r}'.format(**locals()))
