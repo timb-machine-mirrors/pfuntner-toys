@@ -61,7 +61,7 @@ class AnsibleHelper(object):
 
     if not hosts:
       # handle file as INI lines
-      name_regexp = re.compile('^(\w+)')
+      name_regexp = re.compile('^(\w\S+)')
       key_regexp = re.compile('(\S+)=(\S+)')
     
       for line in data.splitlines():
