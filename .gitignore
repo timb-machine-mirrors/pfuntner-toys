@@ -6,3 +6,13 @@ bin/stager
 bin/tostaging
 bin/megassh.json
 bin/megascp.json
+
+# On a system at work, a bunch of files were created by RubyGems, whatever the hell that is.  I wish they didn't use such common names but that's the way it is.
+bundle
+bundler
+htmldiff
+ldiff
+rake
+rspec
+serverspec-init
+thor
