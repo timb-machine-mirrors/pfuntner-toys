@@ -38,10 +38,7 @@ export PS1='[\u@\h \W`git_branch`]\$ '
 # fi
 
 # Set alias for vi using my .exrc:
-if test -f "$HOME/bruno/bin/misc/.exrc"
+if test -f "$HOME/repos/toys/misc/.exrc"
 then
-  alias vi="vi -u $HOME/bruno/bin/misc/.exrc"
-elif test -f "$HOME/bin/misc/.exrc"
-then
-  alias vi="vi -u $HOME/bin/misc/.exrc"
+  alias vi="vi -u $HOME/repos/toys/misc/.exrc"
 fi
