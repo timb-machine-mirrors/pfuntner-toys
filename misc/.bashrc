@@ -22,6 +22,10 @@ alias table=table.py
 alias gitbranch=currbranch
 alias ansiblehost=ansiblehelper.py
 
+# some aliases for headingsort since i will try to call it various names
+alias headingsort=headingsort
+alias sortheadings=headingsort
+
 function git_branch {
   git branch 2>/dev/null | awk '/^\*/ { print " " $2 }'
 }
