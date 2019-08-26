@@ -25,6 +25,7 @@ def get_user(platform):
   return ret
 
 def get(root, path):
+  log.debug('get({root}, {path!r})'.format(**locals()))
   if not path:
     return root
 
@@ -34,8 +35,10 @@ def get(root, path):
   if int_regexp.search(path[0]):
     pos = int(path[0])
     log.debug('pos: {pos}, root: {root}'.format(**locals()))
-    assert 0 <= pos < len(root)
-    return get(root[pos], path[1:])
+    if 0 <= pos < len(root):
+      return get(root[pos], path[1:])
+    else:
+      return []
   else:
     return get(root.get(path[0], {}), path[1:])
 
@@ -87,17 +90,18 @@ instances = json.loads(stdout)
 #   pdb.set_trace()
 for instance in instances.get('Reservations', []):
   name = get(instance, 'Instances/0/Tags/0/Value')
-  if host_regexp.search(name):
-    if get(instance, 'Instances/0/State/Name') != 'terminated': # terminated instances are never coming back
-      if get(instance, 'Instances/0/State/Name') == 'running':
-        ip = get(instance, 'Instances/0/PublicIpAddress')
-        if ip:
-          host = host_regexp.sub('', name)
-          user = get_user(host)
-          log.debug('name={name!r}, host={host!r}, ip={ip!r}, user={user!r}'.format(**locals()))
-  
-          print '{host} ansible_host={ip} ansible_user={user}'.format(**locals()) + ((' ansible_ssh_private_key_file=' + key_file) if key_file else '')
+  if name:
+    if host_regexp.search(name):
+      if get(instance, 'Instances/0/State/Name') != 'terminated': # terminated instances are never coming back
+        if get(instance, 'Instances/0/State/Name') == 'running':
+          ip = get(instance, 'Instances/0/PublicIpAddress')
+          if ip:
+            host = host_regexp.sub('', name)
+            user = get_user(host)
+            log.debug('name={name!r}, host={host!r}, ip={ip!r}, user={user!r}'.format(**locals()))
+    
+            print '{host} ansible_host={ip} ansible_user={user}'.format(**locals()) + ((' ansible_ssh_private_key_file=' + key_file) if key_file else '')
+          else:
+            log.error('{name!r} does not have a public IP address'.format(**locals()))
         else:
-          log.error('{name!r} does not have a public IP address'.format(**locals()))
-      else:
-        log.warn('{name!r} is not running'.format(**locals()))
+          log.warn('{name!r} is not running'.format(**locals()))
