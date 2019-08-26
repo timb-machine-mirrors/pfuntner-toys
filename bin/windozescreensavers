@@ -21,7 +21,7 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
-dir = 'C:/Users/jpfuntne/AppData/Local/Packages/Microsoft.Windows.ContentDeliveryManager_cw5n1h2txyewy/LocalState/Assets/'
+dir = os.path.join(os.environ['USERPROFILE'].replace('\\', '/'), 'AppData/Local/Packages/Microsoft.Windows.ContentDeliveryManager_cw5n1h2txyewy/LocalState/Assets/')
 
 regexp = re.compile('\s(\d{4})x(\d{4}),')
 if os.path.isdir(dir):
