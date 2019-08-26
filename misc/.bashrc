@@ -19,6 +19,7 @@ alias indent="$HOME/bin/indent"
 alias pushsshkey=ssh-copy-id
 alias time=ptime
 alias table=table.py
+alias gitbranch=currbranch
 alias ansiblehost=ansiblehelper.py
 
 function git_branch {

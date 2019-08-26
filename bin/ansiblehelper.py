@@ -4,15 +4,33 @@ import re
 import logging
 import argparse
 
+from table import Table
+
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
 
 class AnsibleHelper(object):
 
   @staticmethod
-  def get_host(name):
+  def find_hosts(root):
     """
-    Extracts host from /etc/ansible/hosts files of the following formats:
+    Traverse a dictionary/list structure finding hosts
+    """
+    ret = {}
+    if isinstance(root, dict):
+      for (name, keys) in root.keys():
+        if 'ansible_host' in root[name]:
+          ret[name] = keys
+        ret.update(AnsibleHelper.find_hosts(keys))
+    elif isinstance(root, list):
+      for datum in root:
+        ret.update(AnsibleHelper.find_hosts(datum))
+    return ret
+
+  @staticmethod
+  def get_hosts():
+    """
+    Extracts all hosts from /etc/ansible/hosts files of the following formats:
     
       INI:
         remotehost ansible_user=centos ansible_host=100.101.102.103 ansible_ssh_private_key_file=/home/foo/bar.pem
@@ -23,13 +41,11 @@ class AnsibleHelper(object):
           ansible_host: 100.101.102.103
           ansible_ssh_private_key_file: /home/foo/bar.pem
 
-    @param name: Name of the host as a string
-    @param depth: Recursion depth, typically entered defaulted to 0 caller.  This is used for Yaml processing to know when we've processed everything
-    @return: A dictionary containing keys such as 'ansible_user' and 'ansible_host' having string values
-    @raise Exception: Host not found, ansible_user or ansible_host not defined
+    @return: A dictionary of dictionaries.  The top level keys are host and their values contain keys such as
+    'ansible_user' and 'ansible_host' having string values
     """
 
-    ret = {}
+    hosts = {}
     
     with open('/etc/ansible/hosts') as stream:
       data = stream.read()
@@ -41,30 +57,54 @@ class AnsibleHelper(object):
       log.debug('Ignoring {e!s} from parsing /etc/ansible/hosts as YAML'.format(**locals()))
     else:
       log.info('Processing /etc/ansible/hosts as YAML')
-      ret = AnsibleHelper.get_host_using_yaml(name, root)
+      hosts = AnsibleHelper.find_hosts(root)
 
-    if not ret:
+    if not hosts:
       # handle file as INI lines
-      regexp = re.compile('(\S+)=(\S+)')
+      name_regexp = re.compile('^(\w+)')
+      key_regexp = re.compile('(\S+)=(\S+)')
     
       for line in data.splitlines():
-        tokens = line.split()
-        if tokens and (tokens[0] == name):
-          for hit in regexp.findall(line):
-            log.debug('ret: {ret}, hit: {hit}'.format(**locals()))
-            ret[hit[0]] = hit[1]
-          break
-    
-    if not ret:
+        match = name_regexp.search(line)
+        if match:
+          name = match.group(1)
+          hosts[name] = {}
+          for hit in key_regexp.findall(line):
+            hosts[name][hit[0]] = hit[1]
+          log.debug('host: {}'.format(hosts))
+
+    return hosts
+
+  @staticmethod
+  def get_host(name):
+    """
+    Extracts host from /etc/ansible/hosts files of the following formats:
+
+      INI:
+        remotehost ansible_user=centos ansible_host=100.101.102.103 ansible_ssh_private_key_file=/home/foo/bar.pem
+
+      Yaml:
+        remotehost:
+          ansible_user: centos
+          ansible_host: 100.101.102.103
+          ansible_ssh_private_key_file: /home/foo/bar.pem
+
+    @param name: Name of the host as a string
+    @return: A dictionary containing keys such as 'ansible_user' and 'ansible_host' having string values
+    @raise Exception: Host not found, ansible_user or ansible_host not defined
+    """
+    hosts = AnsibleHelper.get_hosts()
+
+    if name not in hosts:
       raise Exception('Could not find host {name!r}'.format(**locals()))
 
-    if 'ansible_user' not in ret:
-      raise Exception('Could not find `ansible_user` key in {ret}'.format(**locals()))
+    if 'ansible_user' not in hosts[name]:
+      raise Exception('Could not find `ansible_user` key in {host}'.format(host=hosts[name]))
 
-    if 'ansible_host' not in ret:
-      raise Exception('Could not find `ansible_host` key in {ret}'.format(**locals()))
+    if 'ansible_host' not in hosts[name]:
+      raise Exception('Could not find `ansible_host` key in {host}'.format(host=hosts[name]))
 
-    return ret
+    return hosts[name]
 
   @staticmethod
   def get_host_using_yaml(name, root):
@@ -90,10 +130,20 @@ class AnsibleHelper(object):
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='ssh to ansible target ansible host')
-  parser.add_argument('host', help='The name of the target host')
+
+  group = parser.add_mutually_exclusive_group(required=True)
+  group.add_argument('-l', '--list', action='store_true', help='List all hosts')
+  group.add_argument('host', nargs='?', help='The name of the target host')
+
   parser.add_argument('-q', '--quiet', dest='quiet', action='store_true', help='Enable ssh quiet mode')
   parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
   args = parser.parse_args()
   log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-  print AnsibleHelper.get_host(args.host)
+  if args.list:
+    table = Table(['host', 'user', 'ip'])
+    for (name, keys) in AnsibleHelper.get_hosts().items():
+      table.add(name, keys.get('ansible_host', ''), keys.get('ansible_user', ''))
+    print str(table)
+  else:
+    print AnsibleHelper.get_host(args.host)
