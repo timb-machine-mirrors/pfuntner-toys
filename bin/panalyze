@@ -24,19 +24,20 @@ def whatis(src, depth=0):
     return
 
   print '{indent}{obj_type}: {obj!r}'.format(indent=' '*(depth*2), obj_type=typer(obj), obj=obj)
+  depth += 1
   if isinstance(obj, list):
     for (pos, datum) in enumerate(obj):
-      print '{indent}{pos}'.format(indent=' '*(depth*2+1), pos=pos)
+      print '{indent}{pos}'.format(indent=' '*(depth*2), pos=pos)
       whatis(repr(obj[pos]), depth+1)
   elif isinstance(obj, dict):
     for (key, datum) in obj.items():
-      print '{indent}{key}'.format(indent=' '*(depth*2+1), key=key)
+      print '{indent}{key}'.format(indent=' '*(depth*2), key=key)
       whatis(repr(obj[key]), depth+1)
   elif isinstance(obj, basestring):
     lines = obj.splitlines()
     if len(lines) > 1:
       for line in lines:
-        print '{indent}{line}'.format(indent=' '*(depth*2+2), line=line)
+        print '{indent}{line}'.format(indent=' '*(depth*2), line=line)
   
 parser = argparse.ArgumentParser(description='Analyze a chunk of data')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
