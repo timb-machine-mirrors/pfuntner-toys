@@ -1,10 +1,10 @@
 #! /usr/bin/env python
 
-import sys
+import re
 import os
-import os.path
-
-assert len(sys.argv) > 1, "Syntax: %s file1 [...]" % sys.argv[0]
+import sys
+import logging
+import argparse
 
 class File:
   def __init__(self, filename):
@@ -45,7 +45,9 @@ def dive(filename):
   global files
 
   try:
-    if os.path.exists(filename):
+    basename = os.path.basename(filename)
+    if os.path.exists(filename) and not any([exclude.search(basename) for exclude in args.exclude]):
+
       f = File(filename)
       if f not in files:
         files.append(f)
@@ -100,8 +102,24 @@ with open("/etc/mtab", 'r') as f:
 # for mount in mounts:
 #   print "%08x %s" % (mount, mounts[mount])
 
-os.statvfs(filename)
-for filename in sys.argv[1:]:
+# assert len(sys.argv) > 1, "Syntax: %s file1 [...]" % sys.argv[0]
+
+parser = argparse.ArgumentParser(description='Plumb files in trees, reporting number of files, bytes used, etc')
+parser.add_argument('-x', '--exclude', dest='exclude', action='append', help='Specify a file name pattern to exclude')
+parser.add_argument('files', metavar='file', nargs='+', help='Zero or more files')
+parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
+log.debug('args.exclude: {args.exclude}'.format(**locals()))
+args.exclude = args.exclude or []
+for (pos, pattern) in enumerate(args.exclude):
+  args.exclude[pos] = re.compile(pattern)
+
+for filename in args.files:
   devs = {}
   files = []
   dive(filename)
