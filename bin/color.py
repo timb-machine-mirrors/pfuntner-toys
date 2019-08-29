@@ -13,7 +13,7 @@ class Color(object):
     log = logging.getLogger()
 
     log.debug('arg: {arg!r}'.format(**locals()))
-    normalized_arg = re.sub(r'[-_ ]', '', arg).lower()
+    normalized_arg = re.sub(r'[-_ ]', '', arg).lower().replace('grey', 'gray')
     log.debug('normalized_arg: {normalized_arg!r}'.format(**locals()))
 
     log.debug('colors: {Color.colors}'.format(**globals()))
@@ -53,6 +53,7 @@ class Color(object):
     'brown': '0;33',
     'green': '0;32',
     'yellow': '1;33',
+    'gray': '1;30',
     'darkgray': '1;30',
     'lightred': '1;31',
     'lightgreen': '1;32',
