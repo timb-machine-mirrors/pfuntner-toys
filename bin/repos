@@ -1,0 +1,69 @@
+#! /usr/bin/env python
+
+import re
+import os
+import logging
+import argparse
+import subprocess
+
+from table import Table
+
+def run(cmd):
+  if isinstance(cmd, basestring):
+    cmd = cmd.split()
+  log.info('Running {cmd}'.format(**locals()))
+  p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  (stdout, stderr) = p.communicate()
+  rc = p.wait()
+
+  bad = (rc != 0) or stderr
+  log.log(logging.ERROR if bad else logging.DEBUG, 'Running {cmd}'.format(**locals()))
+  if bad:
+    exit(rc or 1)
+  return (rc, stdout, stderr)
+
+def process(root):
+  if os.path.exists(root):
+    if os.path.isdir(os.path.join(root, '.git')):
+      prev = os.getcwd()
+      os.chdir(root)
+
+      (rc, stdout, stderr) = run('git branch')
+      match = re.search(r'^\*\s+(.*)$', stdout, re.MULTILINE)
+      if match:
+        branch = match.group(1)
+      else:
+        branch = '?'
+
+      (rc, stdout, stderr) = run('git log -1')
+      match = re.search(r'^commit\s+(\S+).*^Date:\s+(\S{3}\s\S{3}\s\d{1,2}\s\d{2}:\d{2}:\d{2}\s\d{4})\s', stdout,
+                        re.MULTILINE + re.DOTALL)
+      if match:
+        commit = match.group(1)
+        tiemstamp = match.group(2)
+      else:
+        branch = '?'
+
+      os.chdir(prev)
+      table.add(root, branch, commit[:7])
+    if os.path.isdir(root):
+      for filename in os.listdir(root):
+        process(os.path.join(root, filename))
+  else:
+    log.warn('Not found: {root!r}'.format(**locals()))
+
+parser = argparse.ArgumentParser(description='Display git repos')
+parser.add_argument('roots', metavar='root', nargs='*', help='Zero or more roots in which to look for repos')
+parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
+if not args.roots:
+  args.roots = [os.path.join(os.environ['HOME'], 'repos')]
+
+table = Table('Path', 'Branch', 'Commit')
+map(process, args.roots)
+print str(table)
