@@ -21,6 +21,7 @@ alias time=ptime
 alias table=table.py
 alias gitbranch=currbranch
 alias ansiblehost=ansiblehelper.py
+alias color=color.py
 
 # some aliases for headingsort since i will try to call it various names
 alias headingsort=headingsort
