@@ -542,20 +542,24 @@ class Table(object):
   This class can be used by other scripts to produce fixed column output.  It provides an add() method so the caller
   can provide input in a different way
   """
-  def __init__(self, headings=None, desiredSep=None, numeric_justify=False):
+  # def __init__(self, headings=None, desiredSep=None, numeric_justify=False):
+  def __init__(self, *arg_list, **kwargs):
     """
     The constructor prepares the caller to provide data.
-    :param headings: A list of column names as strings.  Can be None if no headings are present
-    :param desiredSep: The optional desired separator - the default separator is used if one is not specified by the
-    caller
-    :param numeric_justify: Boolean indicating whether to right-justify numeric columns
+    :param arg_list: The list of headings.  This could be:
+      - One element consisting of a list of strings to be used as headings
+      - No elements => no headings
+    :param kwargs: A dictionary supporting these keys:
+      desiredSep: The optional desired separator - the default separator is used if one is not specified by the caller
+      numeric_justify: Boolean indicating whether to right-justify numeric columns
     """
     self.root = []
-    self.headings = headings
-    if desiredSep:
-      args.separator = desiredSep
-    if numeric_justify:
-      args.numeric_justify = numeric_justify
+    if (len(arg_list) == 1) and isinstance(arg_list[0], list):
+      self.headings = arg_list[0]
+    else:
+      self.headings = arg_list
+    args.separator = kwargs.get('desiredSep') or args.separator
+    args.numeric_justify = kwargs.get('numeric_justify', False)
 
   def add(self, *args):
     """

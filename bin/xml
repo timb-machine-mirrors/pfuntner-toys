@@ -76,10 +76,22 @@ def readNode(reader):
 
   log.debug('readNode() starting with {where}'.format(where=reader.where()))
 
-  c = reader.nextNonSpace()
-  if c != '<':
-    log.error('Unexpected character {c!r} at {where} when trying to find beginning tag'.format(where=reader.where(), **locals()))
-    exit(1)
+  c = None
+  while c != '<':
+    c = reader.nextNonSpace()
+    if c != '<':
+      log.error('Unexpected character {c!r} at {where} when trying to find beginning tag'.format(where=reader.where(), **locals()))
+      exit(1)
+
+    # skip over "<! ...>" tag
+    c = reader.nextNonSpace()
+    if c == '!':
+      log.info('Skipping over <! ... > at {}'.format(reader.where()))
+      while (c != '>') and (c != ''):
+        c = reader.read()
+    else:
+      reader.push(c)
+      c = '<'
 
   tag = ''
   while True:
@@ -175,15 +187,34 @@ def readNode(reader):
         if child:
           node.children.append(child)
     else:
+      # process text element
       child = Node(text=c)
       while True:
         c = reader.read()
-        if (not c) or (c == '<'):
-          break
+        if not c:
+          break # eof?!
+        if (c == '<'):
+          if node.tag == 'script':
+            # content of <script> must terminate with </script>
+            c = reader.read()
+            if c == '/':
+              reader.push('/')
+              c = '<'
+              break
+            else:
+              reader.push(c)
+              c = '<'
+          else:
+            break
         child.text += c
+
+      child.text = child.text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
       reader.push(c)
       node.children.append(child)
 
+  log.info('node: {node.tag} {node.attrs} {node.text!r}'.format(**locals()))
+
+  # We've consumed the content of a tag.  Now let's Consume the ending tag, if it's there.
   tag = ''
   while True:
     c = reader.read()

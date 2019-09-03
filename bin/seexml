@@ -2,18 +2,15 @@
 
 import sys
 import re
-import getopt
+import logging
+import argparse
 import xml.etree.ElementTree as ET
-
-def syntax():
-  sys.stderr.write("Syntax: %s [xml_file_name]\n" % sys.argv[0])
-  exit(1)
 
 simplifyingRegexp = re.compile("\{[^{}]+\}(.+)$")
 
 def simplify(s):
   ret = s
-  if simple:
+  if args.simple:
     match = simplifyingRegexp.match(s)
     if match:
       s = match.group(1)
@@ -25,42 +22,47 @@ def unravel(attribs):
     ret = " %s" % ' '.join(["%s=%s" % (key, repr(attribs[key])) for key in sorted(attribs.keys())])
   return ret
 
-def visit(node, depth=0):
+def visit(node, tags=[]):
   if node is not None:
-    sys.stdout.write("%s<%s%s>" % (' ' * (depth*2), simplify(node.tag), unravel(node.attrib)))
+    if args.flatten:
+      print '/{tags}/{tag} {attrib} {text!r}'.format(tags='/'.join(tags), tag=node.tag, attrib=node.attrib, text=node.text.encode('utf-8') if node.text else '')
+    else:
+      sys.stdout.write("%s<%s%s>" % (' ' * (len(tags)*2), simplify(node.tag), unravel(node.attrib)))
 
     if len(node):
-      sys.stdout.write('\n')
+      if not args.flatten:
+        sys.stdout.write('\n')
       for child in node:
-        visit(child, depth+1)
+        visit(child, tags+[node.tag])
     elif node.text == None:
-      sys.stdout.write('\n')
+      if not args.flatten:
+        sys.stdout.write('\n')
 
-    if node.text != None:
-      sys.stdout.write(node.text)
-    else:
-      sys.stdout.write("%s" % (' ' * (depth*2)))
-    sys.stdout.write("</%s>\n" % simplify(node.tag))
+    if not args.flatten:
+      if node.text != None:
+        sys.stdout.write(node.text.encode('utf-8'))
+      else:
+        sys.stdout.write("%s" % (' ' * (len(tags)*2)))
+      sys.stdout.write("</%s>\n" % simplify(node.tag))
 
 def process(f):
   visit(ET.fromstring(f.read()))
 
-simple = False
-(opts,args) = getopt.getopt(sys.argv[1:], "", ["simple"])
-for (opt,arg) in opts:
-  if opt == "--simple":
-    simple = not simple
-  else:
-    sys.stderr.write("I don't know how to handle `%s`" % opts)
-    syntax()
+parser = argparse.ArgumentParser(description='See XML')
+parser.add_argument('-s', '--simple', dest='simple', action='store_true', help='Simplify XML tag')
+parser.add_argument('-f', '--flatten', dest='flatten', action='store_true', help='Flatten XML')
+parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+parser.add_argument('filename', nargs='?', help='Specify file from which to read')
+args = parser.parse_args()
 
-if len(args) > 1:
-  syntax()
-elif len(args) == 1:
-  with open(args[0], "r") as f:
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
+if args.filename:
+  with open(filename, "r") as f:
     process(f)
 elif sys.stdin.isatty():
-  sys.stderr.write("%s does not read from the terminal\n" % sys.argv[0])
-  syntax()
+  parser.error('stdin must be directed if filename is not provided')
 else:
   process(sys.stdin)
