@@ -134,6 +134,7 @@ for arg in args.args:
       log.debug(formats[0][1])
       columns.append(datetime.datetime.strftime(timestamp, formats[0][1]))
   else:
+    columns.append('')
     columns += ['' for format in date_formats]
     columns.append(comment)
 
