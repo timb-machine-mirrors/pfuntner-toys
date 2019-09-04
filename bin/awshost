@@ -21,17 +21,49 @@ def get(root, path):
   else:
     return get(root.get(path[0], {}), path[1:])
 
-"""
-  Display information on an AWS instance
+def getuser(instance):
+  imageid = instance['Instances'][0]['ImageId']
 
-    /Reservations/23/Instances/0/PublicIpAddress '34.201.117.107'
+  cmd = 'aws ec2 {profile} describe-images --image-ids {imageid}'.format(profile=('--profile ' + args.profile) if args.profile else '', **locals())
+  log.info('cmd: {cmd!r}'.format(**locals()))
+  p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  (stdout, stderr) = p.communicate()
+  rc = p.wait()
 
-"""
+  if rc or stderr:
+    log.setLevel(logging.DEBUG)
+  log.debug('CLI: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
+
+  if rc or stderr:
+    parser.error('CLI failure')
+
+  images = json.loads(stdout)
+  if len(images['Images']) == 1:
+    description = images['Images'][0]['Description'].lower()
+    log.info('image description: {description!r}'.format(**locals()))
+    if 'amazon linux' in description:
+      return 'ec2-user'
+    elif 'ubuntu' in description:
+      return 'ubuntu'
+    elif 'debian' in description:
+      return 'admin'
+    elif 'red hat' in description:
+      return 'ec2-user'
+    elif 'centos' in description:
+      return 'centos'
+    else:
+      parser.error('Could not determine AWS user from {description!r}'.format(**locals()))
+  else:
+    parser.error('Could not get single instance information')
 
 parser = argparse.ArgumentParser(description='List AWS instance inforation')
 parser.add_argument('names', metavar='name', nargs='*', help='One or more AWS hostnames')
 parser.add_argument('-p', '--profile', help='Specify non-default profile')
-parser.add_argument('-i', '--ip', action='store_true', help='Report on IP')
+
+group = parser.add_mutually_exclusive_group()
+group.add_argument('-i', '--ip', action='store_true', help='Report on IP')
+group.add_argument('-u', '--userip', '--ipuser', action='store_true', help='Report on user/IP')
+
 parser.add_argument('-l', '--list', dest='list', action='store_true', help='List host names')
 parser.add_argument('-v', '--verbose', dest='verbose', action='count', help='Add more debugging')
 args = parser.parse_args()
@@ -44,8 +76,8 @@ if args.list and args.names:
   parser.error('-l may not be used with a list of hosts')
 if (not args.list) and (not args.names):
   parser.error('No hosts specified and -l is not used')
-if args.ip and (len(args.names) != 1):
-  parser.error('--ip can only be used with exactly one host')
+if (args.ip and args.userip) and (len(args.names) != 1):
+  parser.error('--ip and --userip can only be used with exactly one host')
 
 cmd = 'aws ec2 {profile} describe-instances'.format(profile=('--profile ' + args.profile) if args.profile else '')
 log.info('cmd: {cmd!r}'.format(**locals()))
@@ -86,7 +118,11 @@ for instance in instances.get('Reservations', []):
 
     if chosen:
       if args.ip:
+        # print instance['Instances'][0]['PublicIpAddress']
+        log.debug(instance)
         print instance['Instances'][0]['PublicIpAddress']
+      elif args.userip:
+        print getuser(instance) + '@' + instance['Instances'][0]['PublicIpAddress']
       else:
         print json.dumps(instance, indent=2, sort_keys=True)
 
