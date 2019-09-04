@@ -17,4 +17,7 @@ if sys.stdin.isatty():
   parser.error('stdin must be redirected')
 
 regexp = re.compile('\x1b\[\d+m')
-sys.stdout.write(regexp.sub('', sys.stdin.read()))
+data = sys.stdin.read()
+if args.verbose:
+  log.info('{} color sequences'.format(len(regexp.findall(data))))
+sys.stdout.write(regexp.sub('', data))
