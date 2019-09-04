@@ -30,6 +30,8 @@ def get(root, path):
 
 parser = argparse.ArgumentParser(description='List AWS instance inforation')
 parser.add_argument('names', metavar='name', nargs='*', help='One or more AWS hostnames')
+parser.add_argument('-p', '--profile', help='Specify non-default profile')
+parser.add_argument('-i', '--ip', action='store_true', help='Report on IP')
 parser.add_argument('-l', '--list', dest='list', action='store_true', help='List host names')
 parser.add_argument('-v', '--verbose', dest='verbose', action='count', help='Add more debugging')
 args = parser.parse_args()
@@ -42,8 +44,12 @@ if args.list and args.names:
   parser.error('-l may not be used with a list of hosts')
 if (not args.list) and (not args.names):
   parser.error('No hosts specified and -l is not used')
+if args.ip and (len(args.names) != 1):
+  parser.error('--ip can only be used with exactly one host')
 
-p = subprocess.Popen('aws ec2 describe-instances'.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+cmd = 'aws ec2 {profile} describe-instances'.format(profile=('--profile ' + args.profile) if args.profile else '')
+log.info('cmd: {cmd!r}'.format(**locals()))
+p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 (stdout, stderr) = p.communicate()
 rc = p.wait()
 
@@ -79,7 +85,10 @@ for instance in instances.get('Reservations', []):
           pass # the argument must not be a valid regular expression - that's ok!
 
     if chosen:
-      print json.dumps(instance, indent=2, sort_keys=True)
+      if args.ip:
+        print instance['Instances'][0]['PublicIpAddress']
+      else:
+        print json.dumps(instance, indent=2, sort_keys=True)
 
 if not args.list:
   for (name, chosen) in names.items():
