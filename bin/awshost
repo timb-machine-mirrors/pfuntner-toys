@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 import re
+import os
 import json
 import logging
 import argparse
@@ -21,7 +22,7 @@ def get(root, path):
   else:
     return get(root.get(path[0], {}), path[1:])
 
-def getuser(instance):
+def get_user(instance):
   imageid = instance['Instances'][0]['ImageId']
 
   cmd = 'aws ec2 {profile} describe-images --image-ids {imageid}'.format(profile=('--profile ' + args.profile) if args.profile else '', **locals())
@@ -56,6 +57,37 @@ def getuser(instance):
   else:
     parser.error('Could not get single instance information')
 
+def get_identify_file(profile):
+  ret = ''
+
+  profile_regexp = re.compile('^\[([^]]+)\]$')
+  var_regexp = re.compile('^(\S+)\s*=\s*(\S+)$')
+
+  creds = {}
+  curr = None
+  with open('{HOME}/.aws/credentials'.format(**os.environ)) as stream:
+    for line in stream.read().splitlines():
+      match = var_regexp.search(line)
+      log.info('{line!r} var_regexp: {groups}'.format(groups=match.groups() if match else None, **locals()))
+      if match and curr:
+        creds[curr][match.group(1)] = match.group(2)
+      else:
+        match = profile_regexp.search(line)
+        log.info('{line!r} profile_regexp: {groups}'.format(groups=match.groups() if match else None, **locals()))
+        if match:
+          curr = match.group(1)
+          creds[curr] = {}
+        else:
+          curr = None
+
+  log.info('creds: {creds}'.format(**locals()))
+
+  identity_file = creds.get(profile, {}).get('identity_file', None)
+  ret = '-i {identity_file} '.format(**locals()) if identity_file else ''
+
+  log.info('get_identity_file({profile!r}) returning {ret!r}'.format(**locals()))
+  return ret
+
 parser = argparse.ArgumentParser(description='List AWS instance inforation')
 parser.add_argument('names', metavar='name', nargs='*', help='One or more AWS hostnames')
 parser.add_argument('-p', '--profile', help='Specify non-default profile')
@@ -63,6 +95,7 @@ parser.add_argument('-p', '--profile', help='Specify non-default profile')
 group = parser.add_mutually_exclusive_group()
 group.add_argument('-i', '--ip', action='store_true', help='Report on IP')
 group.add_argument('-u', '--userip', '--ipuser', action='store_true', help='Report on user/IP')
+group.add_argument('-s', '--ssh', action='store_true', help='Provide ssh credentials (identify file, user, ip)')
 
 parser.add_argument('-l', '--list', dest='list', action='store_true', help='List host names')
 parser.add_argument('-v', '--verbose', dest='verbose', action='count', help='Add more debugging')
@@ -76,8 +109,8 @@ if args.list and args.names:
   parser.error('-l may not be used with a list of hosts')
 if (not args.list) and (not args.names):
   parser.error('No hosts specified and -l is not used')
-if (args.ip and args.userip) and (len(args.names) != 1):
-  parser.error('--ip and --userip can only be used with exactly one host')
+if (args.ip or args.userip or args.ssh) and (len(args.names) != 1):
+  parser.error('--ssh, --ip, and --userip can only be used with exactly one host')
 
 cmd = 'aws ec2 {profile} describe-instances'.format(profile=('--profile ' + args.profile) if args.profile else '')
 log.info('cmd: {cmd!r}'.format(**locals()))
@@ -127,8 +160,13 @@ for instance in instances.get('Reservations', []):
           log.warning('{curr} is {state}, no IP is available'.format(**locals()))
       elif args.userip:
         if state == 'running':
-          print getuser(instance) + '@' + instance['Instances'][0]['PublicIpAddress']
+          print get_user(instance) + '@' + instance['Instances'][0]['PublicIpAddress']
+        else:
+          log.warning('{curr} is {state}, no user/IP is available'.format(**locals()))
+      elif args.ssh:
         if state == 'running':
+          print get_identify_file(args.profile or 'default') + get_user(instance) + '@' + instance['Instances'][0]['PublicIpAddress']
+        else:
           log.warning('{curr} is {state}, no user/IP is available'.format(**locals()))
       else:
         print json.dumps(instance, indent=2, sort_keys=True)
