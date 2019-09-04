@@ -18,10 +18,12 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-host = AnsibleHelper.get_host(args.host)
-
-log.debug('{args.host}: {host}'.format(**locals()))
-if host:
+try:
+  host = AnsibleHelper.get_host(args.host)
+except Exception as e:
+  parser.error(str(e))
+else:
+  log.debug('{args.host}: {host}'.format(**locals()))
   cmd = ['ssh', '-i', host['ansible_ssh_private_key_file']]
   if args.quiet:
     cmd.append('-q')
@@ -30,5 +32,3 @@ if host:
     cmd += args.cmd
   log.debug(cmd)
   subprocess.Popen(cmd).wait()
-else:
-  log.error('Could not find {args.host!r}'.format(**locals()))
