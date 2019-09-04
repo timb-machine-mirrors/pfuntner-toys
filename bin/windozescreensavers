@@ -25,12 +25,17 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 if 'win' not in sys.platform:
   parser.error('This script is only meant to be used on sucky Windoze boxes, you lucky dog!')
 
-dir = os.path.join(os.environ['USERPROFILE'].replace('\\', '/'), 'AppData/Local/Packages/Microsoft.Windows.ContentDeliveryManager_cw5n1h2txyewy/LocalState/Assets/')
+srcdir = os.path.join(os.environ['USERPROFILE'].replace('\\', '/'), 'AppData/Local/Packages/Microsoft.Windows.ContentDeliveryManager_cw5n1h2txyewy/LocalState/Assets/')
+dstdir = os.path.join(os.environ['USERPROFILE'].replace('\\', '/'), 'Pictures/ScreenSavers')
+
+if not os.path.isdir(dstdir):
+  log.info('Creating {dstdir}'.format(**locals()))
+  os.mkdir(dstdir)
 
 regexp = re.compile('\s(\d{4})x(\d{4}),')
-if os.path.isdir(dir):
-  for basename in os.listdir(dir):
-    path = os.path.join(dir, basename)
+if os.path.isdir(srcdir):
+  for basename in os.listdir(srcdir):
+    path = os.path.join(srcdir, basename)
     (rc, stdout, stderr) = run(['file', path], trap=True)
     bytes = os.path.getsize(path)
     size = os.path.getsize(path)
@@ -40,8 +45,8 @@ if os.path.isdir(dir):
       height = int(match.group(2))
       log.info('{basename}: {size} {width}x{height}'.format(**locals()))
       if width > height:
-        run(['cp', '-pv', path, os.path.join('/tmp', basename + '.jpg')])
+        run(['cp', '-pv', path, os.path.join(dstdir, basename + '.jpg')])
     else:
       log.info('{basename}: {size} ?x?'.format(**locals()))
 else:
-  log.warn('Could not find {dir!r}'.format(**locals()))
+  log.warn('Could not find {srcdir!r}'.format(**locals()))
