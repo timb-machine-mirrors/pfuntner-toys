@@ -117,12 +117,19 @@ for instance in instances.get('Reservations', []):
           pass # the argument must not be a valid regular expression - that's ok!
 
     if chosen:
+      log.debug(instance)
+      state = instance['Instances'][0]['State']['Name']
       if args.ip:
         # print instance['Instances'][0]['PublicIpAddress']
-        log.debug(instance)
-        print instance['Instances'][0]['PublicIpAddress']
+        if state == 'running':
+          print instance['Instances'][0]['PublicIpAddress']
+        else:
+          log.warning('{curr} is {state}, no IP is available'.format(**locals()))
       elif args.userip:
-        print getuser(instance) + '@' + instance['Instances'][0]['PublicIpAddress']
+        if state == 'running':
+          print getuser(instance) + '@' + instance['Instances'][0]['PublicIpAddress']
+        if state == 'running':
+          log.warning('{curr} is {state}, no user/IP is available'.format(**locals()))
       else:
         print json.dumps(instance, indent=2, sort_keys=True)
 
