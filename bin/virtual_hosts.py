@@ -152,7 +152,7 @@ class VirtualHosts(object):
             log.info('Could not parse aws cli output: {e!s}'.format(**locals()))
           else:
             description = self.get_value(images, 'Images/0/Description')
-            self.aws_images = description
+            self.aws_images[image_id] = description # cache this image for future use
       if description:
         description = description.lower()
         if 'amazon linux' in description:
