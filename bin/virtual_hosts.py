@@ -72,7 +72,7 @@ class VirtualHosts(object):
         import yaml
         root = yaml.load(data, Loader=yaml.SafeLoader)
       except Exception as e:
-        log.debug('Ignoring {e!s} from parsing {self.ANSIBLE_HOSTS} as YAML'.format(**locals()))
+        log.debug('Ignoring {e!s} from parsing {self.ANSIBLE_HOSTS_FILE} as YAML'.format(**locals()))
       else:
         # process the YAML nodes
         nodes = self.find_nodes(root, 'ansible_host')
