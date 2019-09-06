@@ -47,6 +47,7 @@ class VirtualHosts(object):
   def __init__(self, **kwargs):
     self.profile = kwargs.get('profile')
     self.get_images = kwargs.get('get_images')
+    self.aws_only = kwargs.get('aws_only')
 
   @classmethod
   def find_nodes(cls, root, required_key):
@@ -239,7 +240,7 @@ class VirtualHosts(object):
 
     ret = []
 
-    ansible_hosts = self.get_ansible_hosts()
+    ansible_hosts = [] if self.aws_only else self.get_ansible_hosts()
     aws_hosts = None
     for name in names or ['.']:
       curr = []
@@ -282,6 +283,7 @@ if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Virtual Host Helper')
   parser.add_argument('-p', '--profile', dest='profile', help='Specify AWS configuration profile')
   parser.add_argument('--get-images', action='store_true', help='Get all AWS images for user resolution (slow)')
+  parser.add_argument('--aws-only', action='store_true', help='Ignore Ansible hosts file - use AWS CLI only')
   parser.add_argument('-v', '--verbose', dest='verbose', action='count', help='Enable debugging')
   parser.add_argument('hostnames', metavar='hostname', nargs='*', help='Zero or more host names')
   args = parser.parse_args()
