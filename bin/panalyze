@@ -30,7 +30,7 @@ def whatis(src, depth=0):
       print '{indent}{pos}'.format(indent=' '*(depth*2), pos=pos)
       whatis(repr(obj[pos]), depth+1)
   elif isinstance(obj, dict):
-    for (key, datum) in obj.items():
+    for (key, datum) in sorted(obj.items(), key=lambda datum: datum[0]):
       print '{indent}{key}'.format(indent=' '*(depth*2), key=key)
       whatis(repr(obj[key]), depth+1)
   elif isinstance(obj, basestring):
