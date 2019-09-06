@@ -42,12 +42,14 @@ class VirtualHosts(object):
   AWS_CREDS_FILE = '{HOME}/.aws/credentials'.format(**os.environ)
 
   int_regexp = re.compile('^\d+$')
-  aws_images = {}
+  aws_instance_cache = {}
+  aws_image_cache = {}
 
   def __init__(self, **kwargs):
     self.profile = kwargs.get('profile')
     self.get_images = kwargs.get('get_images')
     self.aws_only = kwargs.get('aws_only')
+    self.shallow = kwargs.get('shallow')
 
   @classmethod
   def find_nodes(cls, root, required_key):
@@ -158,7 +160,7 @@ class VirtualHosts(object):
   def get_image(self, image_id):
     ret = None
     if image_id:
-      image = self.aws_images.get(image_id)
+      image = self.aws_image_cache.get(image_id)
       if image:
         log.info('Using cached image')
       else:
@@ -178,7 +180,7 @@ class VirtualHosts(object):
             log.info('Could not parse aws cli output: {e!s}'.format(**locals()))
           else:
             ret = self.get_value(images, 'Images/0')
-            self.aws_images[image_id] = ret # cache this image for future use
+            self.aws_image_cache[image_id] = ret # cache this image for future use
     return ret
 
   def get_aws_hosts(self):
@@ -205,9 +207,11 @@ class VirtualHosts(object):
             log.info('Could not parse aws cli output')
           else:
             for instance in resp.get('Reservations', []):
+              instance_id = self.get_value(instance, 'Instances/0/InstanceId')
+              self.aws_instance_cache[instance_id] = self.get_value(instance, 'Instances/0')
               state = self.get_value(instance, 'Instances/0/State/Name')
               attrs = {
-                'instance_id': self.get_value(instance, 'Instances/0/InstanceId'),
+                'instance_id': instance_id,
                 'name': self.get_value(instance, 'Instances/0/Tags/0/Value'),
                 'ip': self.get_value(instance, 'Instances/0/PublicIpAddress') if state == 'running' else None,
                 'user': None,
@@ -217,7 +221,7 @@ class VirtualHosts(object):
                 'image_id': self.get_value(instance, 'Instances/0/ImageId'),
                 'image_name': None,
               }
-              self.aws_images[attrs['image_id']] = None
+              self.aws_image_cache[attrs['image_id']] = None
 
               key_name = self.get_value(instance, 'Instances/0/KeyName')
               if key_name:
@@ -236,13 +240,16 @@ class VirtualHosts(object):
     log.debug('aws hosts: {}'.format([str(host) for host in ret]))
     return ret
 
-  def get_hosts(self, names):
+  def get_hosts(self, *names):
 
     ret = []
 
+    if (len(names) == 1) and isinstance(names[0], list):
+      names = names[0] or ['.']
+
     ansible_hosts = [] if self.aws_only else self.get_ansible_hosts()
     aws_hosts = None
-    for name in names or ['.']:
+    for name in names:
       curr = []
       exact = False
       for host in ansible_hosts:
@@ -268,14 +275,16 @@ class VirtualHosts(object):
       else:
         ret += curr
 
-    log.info('There are {count} AWS images that need to be examined to find the userid'.format(count=len(self.aws_images)))
-    if (0 < len(self.aws_images) <= 2) or self.get_images:
+    log.info('There are {count} AWS images that need to be examined to find the userid'.format(count=len(self.aws_image_cache)))
+    if (not self.shallow) and ((0 < len(self.aws_image_cache) <= 2) or self.get_images):
       # complete aws users by looking at the images on which the instances are based
       for host in ret:
         if (host.user is None) and (host.src == 'aws') and (hasattr(host, 'image_id')):
           image = self.get_image(host.image_id)
           host.image_name = self.get_value(image, 'Description')
           host.user = self.get_user(host.image_name)
+
+    log.debug('get_hosts({names}) returning {hosts}'.format(hosts=[str(host) for host in ret], **locals()))
 
     return ret
 

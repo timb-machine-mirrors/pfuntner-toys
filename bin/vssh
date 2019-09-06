@@ -1,16 +1,15 @@
 #! /usr/bin/env python
 
-import json
 import logging
 import argparse
 import subprocess
 from virtual_hosts import VirtualHosts
 
-parser = argparse.ArgumentParser(description='Virtual machine control')
+parser = argparse.ArgumentParser(description='Virtual machine ssh')
 parser.add_argument('-p', '--profile', help='AWS profile')
 parser.add_argument('-v', '--verbose', dest='verbose', action='count', help='Enable debugging')
-parser.add_argument('action', choices=['start', 'stop', 'query', 'show'], help='Virtual machine operation')
 parser.add_argument('hostname', help='Name of host')
+parser.add_argument('cmd', nargs='*', help='Remtoe command and arguments')
 args = parser.parse_args()
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
@@ -19,25 +18,26 @@ log.setLevel(logging.WARNING - 10*(args.verbose or 0))
 
 virtual_args = args.__dict__
 virtual_args['aws_only'] = True
-virtual_args['shallow'] = args.action == 'query' # no need to do `aws ec2 describe-images`
 virtual_hosts = VirtualHosts(**virtual_args)
 hosts = virtual_hosts.get_hosts(args.hostname)
 
 if hosts:
   if len(hosts) == 1:
     host = hosts[0]
-    if args.action == 'query':
-      print '{host.name}: {host.state}'.format(**locals())
-    elif args.action == 'show':
-      print json.dumps(VirtualHosts.aws_instance_cache[host.instance_id], sort_keys=True, indent=2)
-    else:
-      print host
-      cmd = ['aws', 'ec2']
-      if args.profile:
-        cmd += ['--profile', args.profile]
-      cmd += ['{args.action}-instances'.format(**locals()), '--instance-ids', host.instance_id]
-      print(cmd)
-      p = subprocess.Popen(cmd)
-      exit(p.wait())
+    log.info(host)
+    if host.state != 'running':
+      parser('{host.name} is not running'.format(**locals()))
+    if not host.user:
+      parser('No user for {host.name}'.format(**locals()))
+    if not host.ip:
+      parser('No IP for {host.name}'.format(**locals()))
+
+    cmd = ['ssh']
+    if host.key:
+      cmd += ['-i', host.key]
+    cmd.append('{host.user}@{host.ip}'.format(**locals()))
+    cmd += args.cmd
+    log.info(cmd)
+    exit(subprocess.Popen(cmd).wait())
   else:
     parser.error('Multiple hosts found: {}'.format(', '.join(sorted([str(host.name) for host in hosts]))))
