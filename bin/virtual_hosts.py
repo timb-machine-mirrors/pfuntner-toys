@@ -24,14 +24,16 @@ class Host(object):
     log.debug('Created {self!s} from {kwargs}'.format(**locals()))
 
   def __str__(self):
-    remains = set([key for key in dir(self) if '_' not in key]) - Host.required_keys
+    remains = set(dir(self)) - Host.required_keys
     elements = [
       'name: {self.name}'.format(**locals()),
       'ip: {self.ip}'.format(**locals()),
       'user: {self.user}'.format(**locals()),
     ]
-    for key in remains:
-      elements.append('{key}: {value}'.format(value=getattr(self, key), key=key))
+    for key in sorted(remains):
+      value = getattr(self, key)
+      if isinstance(value, basestring) and (not key.startswith('__')):
+        elements.append('{key}: {value}'.format(**locals()))
     return ', '.join(elements)
 
 class VirtualHosts(object):
@@ -42,8 +44,9 @@ class VirtualHosts(object):
   int_regexp = re.compile('^\d+$')
   aws_images = {}
 
-  def __init__(self, profile=None):
-    self.profile = profile
+  def __init__(self, **kwargs):
+    self.profile = kwargs.get('profile')
+    self.get_images = kwargs.get('get_images')
 
   @classmethod
   def find_nodes(cls, root, required_key):
@@ -114,6 +117,9 @@ class VirtualHosts(object):
 
   @classmethod
   def get_value(cls, root, path):
+    if not root:
+      return root
+
     if not path:
       return root or None
 
@@ -129,18 +135,37 @@ class VirtualHosts(object):
     else:
       return cls.get_value(root.get(path[0], {}), path[1:])
 
-  def get_user(self, image_id):
+  def get_user(self, image_name):
+    ret = None
+    if image_name:
+      image_name = image_name.lower()
+      if 'amazon linux' in image_name:
+        ret = 'ec2-user'
+      elif 'ubuntu' in image_name:
+        ret = 'ubuntu'
+      elif 'debian' in image_name:
+        ret = 'admin'
+      elif 'red hat' in image_name:
+        ret = 'ec2-user'
+      elif 'centos' in image_name:
+        ret = 'centos'
+      else:
+        log.info('Could not determine user from image description {image_name!r}'.format(**locals()))
+
+    return ret
+
+  def get_image(self, image_id):
     ret = None
     if image_id:
-      description = self.aws_images.get(image_id)
-      if description:
-        log.info('Using cached image description')
+      image = self.aws_images.get(image_id)
+      if image:
+        log.info('Using cached image')
       else:
-        # get the image description from the aws cli
+        # get the image from the aws cli
         cmd = ['aws' ,'ec2']
         if args.profile:
           cmd += ['--profile', self.profile]
-        cmd += ['describe-images' ,'--image-ids', image_id]
+        cmd += ['describe-images', '--image-ids', image_id]
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         (stdout, stderr) = p.communicate()
         rc = p.wait()
@@ -151,23 +176,8 @@ class VirtualHosts(object):
           except Exception as e:
             log.info('Could not parse aws cli output: {e!s}'.format(**locals()))
           else:
-            description = self.get_value(images, 'Images/0/Description')
-            self.aws_images[image_id] = description # cache this image for future use
-      if description:
-        description = description.lower()
-        if 'amazon linux' in description:
-          ret = 'ec2-user'
-        elif 'ubuntu' in description:
-          ret = 'ubuntu'
-        elif 'debian' in description:
-          ret = 'admin'
-        elif 'red hat' in description:
-          ret = 'ec2-user'
-        elif 'centos' in description:
-          ret = 'centos'
-        else:
-          log.info('Could not determine user from image description {description!r}'.format(**locals()))
-
+            ret = self.get_value(images, 'Images/0')
+            self.aws_images[image_id] = ret # cache this image for future use
     return ret
 
   def get_aws_hosts(self):
@@ -196,10 +206,17 @@ class VirtualHosts(object):
             for instance in resp.get('Reservations', []):
               state = self.get_value(instance, 'Instances/0/State/Name')
               attrs = {
+                'instance_id': self.get_value(instance, 'Instances/0/InstanceId'),
                 'name': self.get_value(instance, 'Instances/0/Tags/0/Value'),
                 'ip': self.get_value(instance, 'Instances/0/PublicIpAddress') if state == 'running' else None,
-                'user': self.get_user(self.get_value(instance, 'Instances/0/ImageId')),
+                'user': None,
+                'zone': self.get_value(instance, 'Instances/0/Placement/AvailabilityZone'),
+                'created': self.get_value(instance, 'Instances/0/LaunchTime'),
+                'state': state,
+                'image_id': self.get_value(instance, 'Instances/0/ImageId'),
+                'image_name': None,
               }
+              self.aws_images[attrs['image_id']] = None
 
               key_name = self.get_value(instance, 'Instances/0/KeyName')
               if key_name:
@@ -207,7 +224,7 @@ class VirtualHosts(object):
                 if os.path.isfile(key_path):
                   attrs['key'] = key_path
                 else:
-                  log.warning('Can\'t find key {key_name!r}'.format(**locals()))
+                  log.info('Can\'t find key {key_name!r}'.format(**locals()))
               else:
                 log.warning('No key for {name}'.format(name=attrs['name']))
 
@@ -249,18 +266,29 @@ class VirtualHosts(object):
         log.warning('No match for {name!r}'.format(**locals()))
       else:
         ret += curr
+
+    log.info('There are {count} AWS images that need to be examined to find the userid'.format(count=len(self.aws_images)))
+    if (0 < len(self.aws_images) <= 2) or self.get_images:
+      # complete aws users by looking at the images on which the instances are based
+      for host in ret:
+        if (host.user is None) and (host.src == 'aws') and (hasattr(host, 'image_id')):
+          image = self.get_image(host.image_id)
+          host.image_name = self.get_value(image, 'Description')
+          host.user = self.get_user(host.image_name)
+
     return ret
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Virtual Host Helper')
   parser.add_argument('-p', '--profile', dest='profile', help='Specify AWS configuration profile')
+  parser.add_argument('--get-images', action='store_true', help='Get all AWS images for user resolution (slow)')
   parser.add_argument('-v', '--verbose', dest='verbose', action='count', help='Enable debugging')
   parser.add_argument('hostnames', metavar='hostname', nargs='*', help='Zero or more host names')
   args = parser.parse_args()
 
   log.setLevel(logging.WARNING - 10*(args.verbose or 0))
 
-  virtual_hosts = VirtualHosts(args.profile)
+  virtual_hosts = VirtualHosts(**args.__dict__)
 
   hosts = virtual_hosts.get_hosts(args.hostnames)
   for host in hosts:
