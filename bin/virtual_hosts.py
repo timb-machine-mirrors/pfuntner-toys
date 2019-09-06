@@ -164,7 +164,7 @@ class VirtualHosts(object):
       else:
         # get the image from the aws cli
         cmd = ['aws' ,'ec2']
-        if args.profile:
+        if self.profile:
           cmd += ['--profile', self.profile]
         cmd += ['describe-images', '--image-ids', image_id]
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
