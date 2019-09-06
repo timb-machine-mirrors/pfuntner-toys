@@ -10,7 +10,7 @@ parser = argparse.ArgumentParser(description='Virtual machine control')
 parser.add_argument('-p', '--profile', help='AWS profile')
 parser.add_argument('-v', '--verbose', dest='verbose', action='count', help='Enable debugging')
 parser.add_argument('action', choices=['start', 'stop', 'query', 'show'], help='Virtual machine operation')
-parser.add_argument('hostname', help='Name of host')
+parser.add_argument('hostnames', metavar='hostname', nargs='+', help='Names of one or more hosts')
 args = parser.parse_args()
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
@@ -21,23 +21,25 @@ virtual_args = args.__dict__
 virtual_args['aws_only'] = True
 virtual_args['shallow'] = args.action == 'query' # no need to do `aws ec2 describe-images`
 virtual_hosts = VirtualHosts(**virtual_args)
-hosts = virtual_hosts.get_hosts(args.hostname)
+hosts = virtual_hosts.get_hosts(args.hostnames)
 
 if hosts:
-  if len(hosts) == 1:
-    host = hosts[0]
-    if args.action == 'query':
+  hosts = sorted(hosts, key=lambda host: host.name)
+  if args.action == 'query':
+    for host in hosts:
       print '{host.name}: {host.state}'.format(**locals())
-    elif args.action == 'show':
+  elif args.action == 'show':
+    for host in hosts:
       print json.dumps(VirtualHosts.aws_instance_cache[host.instance_id], sort_keys=True, indent=2)
-    else:
-      print host
-      cmd = ['aws', 'ec2']
-      if args.profile:
-        cmd += ['--profile', args.profile]
-      cmd += ['{args.action}-instances'.format(**locals()), '--instance-ids', host.instance_id]
-      print(cmd)
-      p = subprocess.Popen(cmd)
-      exit(p.wait())
+  elif len(hosts) == 1:
+    host = hosts[0]
+    print host
+    cmd = ['aws', 'ec2']
+    if args.profile:
+      cmd += ['--profile', args.profile]
+    cmd += ['{args.action}-instances'.format(**locals()), '--instance-ids', host.instance_id]
+    print(cmd)
+    p = subprocess.Popen(cmd)
+    exit(p.wait())
   else:
-    parser.error('Multiple hosts found: {}'.format(', '.join(sorted([str(host.name) for host in hosts]))))
+    parser.error('Multiple hosts found: {}'.format(', '.join([str(host.name) for host in hosts])))
