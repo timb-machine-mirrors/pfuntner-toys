@@ -7,6 +7,7 @@ from virtual_hosts import VirtualHosts
 
 parser = argparse.ArgumentParser(description='Virtual machine ssh')
 parser.add_argument('-p', '--profile', help='AWS profile')
+parser.add_argument('--aws-only', action='store_true', help='Use AWS CLI only and avoid Ansible hosts file (slow)')
 parser.add_argument('-v', '--verbose', dest='verbose', action='count', help='Enable debugging')
 parser.add_argument('hostname', help='Name of host')
 parser.add_argument('cmd', nargs='*', help='Remtoe command and arguments')
@@ -17,7 +18,6 @@ log = logging.getLogger()
 log.setLevel(logging.WARNING - 10*(args.verbose or 0))
 
 virtual_args = args.__dict__
-virtual_args['aws_only'] = True
 virtual_hosts = VirtualHosts(**virtual_args)
 hosts = virtual_hosts.get_hosts(args.hostname)
 
@@ -25,12 +25,12 @@ if hosts:
   if len(hosts) == 1:
     host = hosts[0]
     log.info(host)
-    if host.state != 'running':
-      parser('{host.name} is not running'.format(**locals()))
+    if hasattr(host, 'state') and (host.state != 'running'):
+      parser.error('{host.name} is not running'.format(**locals()))
     if not host.user:
-      parser('No user for {host.name}'.format(**locals()))
+      parser.error('No user for {host.name}'.format(**locals()))
     if not host.ip:
-      parser('No IP for {host.name}'.format(**locals()))
+      parser.error('No IP for {host.name}'.format(**locals()))
 
     cmd = ['ssh']
     if host.key:
