@@ -7,6 +7,7 @@ from virtual_hosts import VirtualHosts
 
 parser = argparse.ArgumentParser(description='Virtual machine ssh')
 parser.add_argument('-p', '--profile', help='AWS profile')
+parser.add_argument('--ansible-only', action='store_true', help='Use Ansible hosts file only and avoid AWS CLI')
 parser.add_argument('--aws-only', action='store_true', help='Use AWS CLI only and avoid Ansible hosts file (slow)')
 parser.add_argument('-v', '--verbose', dest='verbose', action='count', help='Enable debugging')
 parser.add_argument('hostname', help='Name of host')

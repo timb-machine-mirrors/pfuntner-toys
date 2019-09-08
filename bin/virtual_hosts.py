@@ -5,6 +5,7 @@ import re
 import json
 import logging
 import argparse
+import datetime
 import subprocess
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
@@ -42,14 +43,17 @@ class VirtualHosts(object):
   AWS_CREDS_FILE = '{HOME}/.aws/credentials'.format(**os.environ)
 
   int_regexp = re.compile('^\d+$')
-  aws_instance_cache = {}
-  aws_image_cache = {}
 
   def __init__(self, **kwargs):
     self.profile = kwargs.get('profile')
     self.get_images = kwargs.get('get_images')
+    self.ansible_only = kwargs.get('ansible_only')
     self.aws_only = kwargs.get('aws_only')
     self.shallow = kwargs.get('shallow')
+
+    self.aws_instance_cache = {}
+    self.aws_image_cache = {}
+    self.warnings = [] # lists use 4.25x less storage than sets
 
   @classmethod
   def find_nodes(cls, root, required_key):
@@ -183,6 +187,17 @@ class VirtualHosts(object):
             self.aws_image_cache[image_id] = ret # cache this image for future use
     return ret
 
+  def make_elapsed(self, attrs, name):
+    # '2019-09-04T13:35:58.000Z'
+    attrs[name + '_elapsed'] = None
+    if attrs.get(name):
+      try:
+        ts = datetime.datetime.strptime(attrs.get(name)[:-1], '%Y-%m-%dT%H:%M:%S.%f')
+      except Exception as e:
+        log.debug('{e!s} parsing {value}'.format(value=attrs.get(name), **locals()))
+      else:
+        attrs[name + '_elapsed'] = str(datetime.datetime.utcnow() - ts)
+
   def get_aws_hosts(self):
     ret = []
     key_template = '{HOME}/.ssh/{{key_name}}.pem'.format(**os.environ)
@@ -206,6 +221,11 @@ class VirtualHosts(object):
           except Exception as e:
             log.info('Could not parse aws cli output')
           else:
+            """
+            /BlockDeviceMappings/0/Ebs/AttachTime '2019-09-04T13:35:58.000Z'
+            /LaunchTime '2019-09-07T02:43:57.000Z'
+            /NetworkInterfaces/0/Attachment/AttachTime '2019-09-04T13:35:57.000Z'
+            """
             for instance in resp.get('Reservations', []):
               instance_id = self.get_value(instance, 'Instances/0/InstanceId')
               self.aws_instance_cache[instance_id] = self.get_value(instance, 'Instances/0')
@@ -216,11 +236,14 @@ class VirtualHosts(object):
                 'ip': self.get_value(instance, 'Instances/0/PublicIpAddress') if state == 'running' else None,
                 'user': None,
                 'zone': self.get_value(instance, 'Instances/0/Placement/AvailabilityZone'),
-                'created': self.get_value(instance, 'Instances/0/LaunchTime'),
+                'created': self.get_value(instance, 'Instances/0/NetworkInterfaces/0/Attachment/AttachTime'),
+                'controlled': self.get_value(instance, 'Instances/0/LaunchTime'),
                 'state': state,
                 'image_id': self.get_value(instance, 'Instances/0/ImageId'),
                 'image_name': None,
               }
+              self.make_elapsed(attrs, 'created')
+              self.make_elapsed(attrs, 'controlled')
               self.aws_image_cache[attrs['image_id']] = None
 
               key_name = self.get_value(instance, 'Instances/0/KeyName')
@@ -242,7 +265,7 @@ class VirtualHosts(object):
 
   def get_hosts(self, *names):
 
-    ret = []
+    ret = {}
 
     if (len(names) == 1) and isinstance(names[0], list):
       names = names[0] or ['.']
@@ -262,28 +285,38 @@ class VirtualHosts(object):
 
       if (not curr) or (not exact):
         if aws_hosts is None:
-          aws_hosts = self.get_aws_hosts()
+          aws_hosts = [] if self.ansible_only else self.get_aws_hosts()
         for host in aws_hosts:
           if name == host.name:
             curr.append(host)
             break
-          elif re.search(name, host.name):
-            curr.append(host)
+          else:
+            try:
+              match = re.search(name, host.name)
+            except Exception as e:
+              if name not in self.warnings:
+                log.warning('{name!r} has not a valid regular expression: {e!s}'.format(**locals()))
+                self.warnings.append(name)
+            else:
+              curr.append(host)
 
       if not curr:
         log.warning('No match for {name!r}'.format(**locals()))
       else:
-        ret += curr
+        for host in curr:
+          if host.name not in ret.keys():
+            ret[name] = host
 
     log.info('There are {count} AWS images that need to be examined to find the userid'.format(count=len(self.aws_image_cache)))
     if (not self.shallow) and ((0 < len(self.aws_image_cache) <= 2) or self.get_images):
       # complete aws users by looking at the images on which the instances are based
-      for host in ret:
+      for host in ret.values():
         if (host.user is None) and (host.src == 'aws') and (hasattr(host, 'image_id')):
           image = self.get_image(host.image_id)
           host.image_name = self.get_value(image, 'Description')
           host.user = self.get_user(host.image_name)
 
+    ret = sorted([host for host in ret.values()], key=lambda host: host.name)
     log.debug('get_hosts({names}) returning {hosts}'.format(hosts=[str(host) for host in ret], **locals()))
 
     return ret

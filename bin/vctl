@@ -5,6 +5,7 @@ import logging
 import argparse
 import subprocess
 from virtual_hosts import VirtualHosts
+from table import Table
 
 parser = argparse.ArgumentParser(description='Virtual machine control')
 parser.add_argument('-p', '--profile', help='AWS profile')
@@ -19,20 +20,26 @@ log.setLevel(logging.WARNING - 10*(args.verbose or 0))
 
 virtual_args = args.__dict__
 virtual_args['aws_only'] = True
-virtual_args['shallow'] = args.action == 'query' # no need to do `aws ec2 describe-images`
+virtual_args['shallow'] = args.action != 'show' # no need to do `aws ec2 describe-images`
 virtual_hosts = VirtualHosts(**virtual_args)
 hosts = virtual_hosts.get_hosts(args.hostnames)
 
 if hosts:
   hosts = sorted(hosts, key=lambda host: host.name)
   if args.action == 'query':
+    table = Table('Host', 'State', 'Created', 'Controlled', desiredSep=' | ')
     for host in hosts:
-      print '{host.name}: {host.state}'.format(**locals())
+      table.add(host.name, host.state, host.created_elapsed, host.controlled_elapsed)
+    print str(table)
   elif args.action == 'show':
     for host in hosts:
       print json.dumps(VirtualHosts.aws_instance_cache[host.instance_id], sort_keys=True, indent=2)
   elif len(hosts) == 1:
     host = hosts[0]
+    if (args.action == 'start') and (host.state != 'stopped'):
+      parser.error('{host.name} is {host.state}, cannot be started'.format(**locals()))
+    elif (args.action == 'stop') and (host.state != 'running'):
+      parser.error('{host.name} is {host.state}, cannot be stopped'.format(**locals()))
     print host
     cmd = ['aws', 'ec2']
     if args.profile:

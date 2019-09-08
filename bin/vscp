@@ -8,6 +8,7 @@ from virtual_hosts import VirtualHosts
 
 parser = argparse.ArgumentParser(description='Virtual machine scp')
 parser.add_argument('-p', '--profile', help='AWS profile')
+parser.add_argument('--ansible-only', action='store_true', help='Use Ansible hosts file only and avoid AWS CLI')
 parser.add_argument('--aws-only', action='store_true', help='Use AWS CLI only and avoid Ansible hosts file (slow)')
 parser.add_argument('-v', '--verbose', dest='verbose', action='count', help='Enable debugging')
 parser.add_argument('-d', '--dry-run', dest='dry_run', action='store_true', help='Do not actually copy files')
