@@ -1,4 +1,4 @@
-# Ansible pLaybook to set up my tools repo on a remote system
+# Ansible Playbook to set up my tools repo on a remote system
 #
 # Python must be installed on all the target machines:
 #   - Ansible requires Python 2.6+ or Python 3+
