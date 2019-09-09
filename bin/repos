@@ -28,12 +28,16 @@ def process(root):
       prev = os.getcwd()
       os.chdir(root)
 
+      curr_branch = None
+      branches = []
       (rc, stdout, stderr) = run('git branch')
-      match = re.search(r'^\*\s+(.*)$', stdout, re.MULTILINE)
-      if match:
-        branch = match.group(1)
-      else:
-        branch = '?'
+      for line in stdout.splitlines():
+        match = re.search(r'^(.)\s+(.*)$', line)
+        if match:
+          if match.group(1) == '*':
+            curr_branch = match.group(2)
+          else:
+            branches.append(match.group(2))
 
       (rc, stdout, stderr) = run('git log -1')
       match = re.search(r'^commit\s+(\S+).*^Date:\s+(\S{3}\s\S{3}\s\d{1,2}\s\d{2}:\d{2}:\d{2}\s\d{4})\s', stdout,
@@ -44,8 +48,18 @@ def process(root):
       else:
         branch = '?'
 
+      (rc, stdout, stderr) = run('git remote -v')
+      match = re.search('^origin\s+(\S+)\s+\(fetch\)$', stdout, flags=re.MULTILINE)
+      if match:
+        url = match.group(1)
+      else:
+        url = None
+
+      (rc, stdout, stderr) = run('git status')
+      clean = 'Clean' if 'nothing to commit, working directory clean' in stdout else 'Dirty'
+
       os.chdir(prev)
-      table.add(root, branch, commit[:7])
+      table.add(root, url, ','.join([str(curr_branch)] + branches), clean, commit[:7])
     if os.path.isdir(root):
       for filename in os.listdir(root):
         process(os.path.join(root, filename))
@@ -64,6 +78,6 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 if not args.roots:
   args.roots = [os.path.join(os.environ['HOME'], 'repos')]
 
-table = Table('Path', 'Branch', 'Commit')
+table = Table('Path', 'URL', 'Branch', 'Clean', 'Commit')
 map(process, args.roots)
 print str(table)
