@@ -1,0 +1,7 @@
+# Ansible pLaybook to set up my tools repo on a remote system
+
+- tasks:
+   - name: Assure $HOME/repos exists
+     file:
+       name: "{{ HOME }}/repos"
+       sate: directory
