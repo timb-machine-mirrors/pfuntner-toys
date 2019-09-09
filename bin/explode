@@ -13,23 +13,14 @@
 import re
 import os
 import sys
-import getopt
+import logging
+import argparse
 import subprocess
 
 verbose = False
 
-def debug(msg):
-  if verbose:
-    sys.stderr.write('{msg}\n'.format(**locals()))
-
-def syntax(msg=None):
-  if msg:
-    sys.stderr.write('{msg}\n'.format(**locals()))
-  sys.stderr.write('Syntax: {pgm} [--verbose|-v] [--list|-l] [--extract|-x] [--count|-c] [file ...]\n'.format(pgm=sys.argv[0]))
-  exit(1)
-
 def run(cmd):
-  debug(cmd)
+  log.info('Running {cmd}'.format(**locals()))
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   (stdout, stderr) = p.communicate()
   return (p.wait(), stdout, stderr)
@@ -57,32 +48,46 @@ def joinDicts(*dicts):
 def process(path):
   cmd = None
   base = os.path.basename(path)
-  for regexp in regexps:
-    match = regexp[1].search(base)
-    if match:
-      cmd = regexp[0]
-      base = match.group(1)
+
+  if args.zip:
+    cmd = ['unzip']
+    base = '{base}.files'.format(**locals())
+  elif args.tar:
+    cmd = ['tar']
+    base = '{base}.files'.format(**locals())
+  elif args.tgz:
+    cmd = ['tar', '-z']
+    base = '{base}.files'.format(**locals())
+  elif args.jar:
+    cmd = ['jar']
+    base = '{base}.files'.format(**locals())
+  else:
+    for regexp in regexps:
+      match = regexp[1].search(base)
+      if match:
+        cmd = regexp[0]
+        base = match.group(1)
 
   if cmd:
-    if list:
-      (rc, stdout, stderr) = run([cmd, '-l' if cmd == 'unzip' else '-tf', path])
+    if args.list:
+      (rc, stdout, stderr) = run(cmd + ['-l' if cmd == 'unzip' else '-tf', path])
       if (rc == 0) and (not stderr):
         for line in stdout.splitlines():
           print '{path}:{line}'.format(**locals())
       else:
-        sys.stderr.write('Error processing {path}:\n{stderr}'.format(**locals()))
-    elif count:
-      (rc, stdout, stderr) = run([cmd, '-l' if cmd == 'unzip' else '-tf', path])
+        log.warning('Error processing {path}:\n{stderr}'.format(**locals()))
+    elif args.count:
+      (rc, stdout, stderr) = run(cmd + ['-l' if cmd == 'unzip' else '-tf', path])
       if (rc == 0) and (not stderr):
         files = 0
         # sample stdout: "      0  10-04-2018 08:30   toys-master/"
         regexp = re.compile('^\s*\d+\s+\d{2}-\d{2}-\d{4}\s+\d{2}:\d{2}\s+\S')
         for line in stdout.splitlines():
-          if (cmd != 'unzip') or regexp.search(line):
+          if (cmd != ['unzip']) or regexp.search(line):
             files += 1
         print '{files:>8} {path}'.format(**locals())
       else:
-        sys.stderr.write('Error processing {path}:\n{stderr}'.format(**locals()))
+        log.warning('Error processing {path}:\n{stderr}'.format(**locals()))
     else: # --extract
       try:
         os.mkdir(base)
@@ -90,62 +95,56 @@ def process(path):
         sys.stderr.write('Cannot create {base!r}: {e}\n'.format(**locals()))
         return
       os.chdir(base)
-      extractor = [cmd]
-      if cmd != 'unzip':
-        extractor += ['-xvf']
-      extractor += [qualify(path)]
+      extractor = cmd
+      if cmd != ['unzip']:
+        extractor.append('-xvf')
+      extractor.append(qualify(path))
       (rc, stdout, stderr) = run(extractor)
       if (rc == 0) and (not stderr):
         stdout = indent(stdout)
-        sys.stdout.write('Unwound {path} to {cwd}/{base}:\n{stdout}'.format(**joinDicts(globals(), locals())))
+        print 'Unwound {path} to {cwd}/{base}:\n{stdout}'.format(**joinDicts(globals(), locals()))
       else:
         stdout = indent(stdout)
         stderr = indent(stderr)
-        sys.stderr.write('Error unwinding {path} to {cwd}/{base}:\n{stdout}{stderr}'.format(**joinDicts(globals(), locals())))
+        log.warning('Error unwinding {path} to {cwd}/{base}:\n{stdout}{stderr}'.format(**joinDicts(globals(), locals())))
       os.chdir(cwd)
   else:
-    if list:
-      print path
-    else: # --extract
-      sys.stderr.write('--extract is meaningless for {path}\n'.format(**locals()))
+    log.warning('Don\'t know what to do with {path}\n'.format(**locals()))
 
 absoluteRegexp = re.compile('^/')
 
 regexps = [
-  ('jar', re.compile('^(.*)\.jar$')),
-  ('tar', re.compile('^(.*)\.(tar|tar\.gz|tgz)$')),
-  ('unzip', re.compile('^(.*)\.zip$')),
+  (['jar'], re.compile('^(.*)\.jar$')),
+  (['tar'], re.compile('^(.*)\.(tar|tar\.gz|tgz)$')),
+  (['unzip'], re.compile('^(.*)\.zip$')),
 ]
 
-(opts,args) = ([], [])
-try:
-  (opts,args) = getopt.getopt(sys.argv[1:], 'vlxc', ['verbose', 'list', 'extract', 'count'])
-except Exception as e:
-  syntax(str(e))
+parser = argparse.ArgumentParser(description='Perform operations on archive files')
 
-list = False
-extract = False
-count = False
-for (opt,arg) in opts:
-  if opt in ['-l', '--list']:
-    list = not list
-  elif opt in ['-x', '--extract']:
-    extract = not extract
-  elif opt in ['-c', '--count']:
-    count = not count
-  elif opt in ['-v', '--verbose']:
-    verbose = not verbose
-  else:
-    syntax('Unexpected option {opt!r}'.format(**locals()))
+group = parser.add_mutually_exclusive_group(required=True)
+group.add_argument('-l', '--list', dest='list', action='store_true', help='List archive contents')
+group.add_argument('-c', '--count', dest='count', action='store_true', help='Count archive contents')
+group.add_argument('-x', '--extract', dest='extract', action='store_true', help='Extract archive contents')
 
-if len([opt for opt in [list, extract, count] if opt]) != 1:
-  syntax('Specify either --list, --extract, or --count but only one')
+group = parser.add_mutually_exclusive_group()
+group.add_argument('-z', '--zip', action='store_true', help='Treat all files as zip files')
+group.add_argument('-t', '--tar', action='store_true', help='Treat all files as uncompressed tar files')
+group.add_argument('-g', '--tgz', action='store_true', help='Treat all files as gzipped tar files')
+group.add_argument('-j', '--jar', action='store_true', help='Treat all files as jar files')
+
+parser.add_argument('files', metavar='file', nargs='*', help='Zero or more files')
+parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
 if not args:
-  assert not sys.stdin.isatty(), 'stdin must be redirected'
-  args = sys.stdin.read().splitlines()
+  parser.error('Redirect files to stdin if not specified on command line')
+  args.files = sys.stdin.read().splitlines()
 
 cwd = os.getcwd()
 
-for path in args:
+for path in args.files:
   process(path)
