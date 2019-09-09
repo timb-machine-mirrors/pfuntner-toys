@@ -7,16 +7,16 @@
 - hosts: YOUR_HOSTS
   # - hosts: all
   tasks:
-   - name: Assure $HOME/repos exists
-     file:
-       name: "{{ ansible_env.HOME }}/repos"
-       state: directory
-
    - name: Install git
      package:
        name: git
        state: present
      become: true
+
+   - name: Assure $HOME/repos exists
+     file:
+       name: "{{ ansible_env.HOME }}/repos"
+       state: directory
 
    - name: Check for repo
      stat:
