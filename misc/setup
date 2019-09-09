@@ -15,8 +15,6 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-method = 'print' if args.print_to_stdout else 'eval'
-
 script = """import os
 import sys
 import logging
@@ -79,15 +77,15 @@ data = StringIO.StringIO()
 zipper = gzip.GzipFile(fileobj=data, mode='w')
 zipper.write(script)
 zipper.close()
-log.info('raw data is {} bytes'.format(len(data.getvalue())))
+log.info('raw compressed data is {} bytes'.format(len(data.getvalue())))
 data = base64.b64encode(data.getvalue())
-log.info('encoded data is {} bytes'.format(len(data)))
+log.info('encoded compressed data is {} bytes'.format(len(data)))
 
 print
 print '# start'
 print
 
-print """echo '{data}' | base64 -d | gzip -d | python && . $($HOME/repos/toys/bin/bashprofiles) && . $HOME/.bashrc""".format(**locals())
+print """echo '{data}' | base64 -d | gzip -d""".format(**locals()) + ("" if args.print_to_stdout else """ | base64 -d | gzip -d | python && . $($HOME/repos/toys/bin/bashprofiles) && . $HOME/.bashrc""")
 
 print
 print '# end'
