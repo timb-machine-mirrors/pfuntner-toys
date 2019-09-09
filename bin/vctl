@@ -33,7 +33,7 @@ if hosts:
     print str(table)
   elif args.action == 'show':
     for host in hosts:
-      print json.dumps(VirtualHosts.aws_instance_cache[host.instance_id], sort_keys=True, indent=2)
+      print json.dumps(virtual_hosts.aws_instance_cache[host.instance_id], sort_keys=True, indent=2)
   elif len(hosts) == 1:
     host = hosts[0]
     if (args.action == 'start') and (host.state != 'stopped'):

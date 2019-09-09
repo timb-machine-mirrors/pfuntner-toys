@@ -244,7 +244,6 @@ class VirtualHosts(object):
               }
               self.make_elapsed(attrs, 'created')
               self.make_elapsed(attrs, 'controlled')
-              self.aws_image_cache[attrs['image_id']] = None
 
               key_name = self.get_value(instance, 'Instances/0/KeyName')
               if key_name:
@@ -287,25 +286,32 @@ class VirtualHosts(object):
         if aws_hosts is None:
           aws_hosts = [] if self.ansible_only else self.get_aws_hosts()
         for host in aws_hosts:
+          log.debug('Comparing {host.name} against {name}'.format(**locals()))
           if name == host.name:
             curr.append(host)
             break
           else:
             try:
               match = re.search(name, host.name)
+              log.debug('Regexp: {}'.format(bool(match)))
             except Exception as e:
               if name not in self.warnings:
                 log.warning('{name!r} has not a valid regular expression: {e!s}'.format(**locals()))
                 self.warnings.append(name)
             else:
-              curr.append(host)
+              if match:
+                curr.append(host)
 
       if not curr:
         log.warning('No match for {name!r}'.format(**locals()))
       else:
         for host in curr:
           if host.name not in ret.keys():
-            ret[name] = host
+            ret[host.name] = host
+
+    for host in ret.values():
+      if host.src == 'aws':
+        self.aws_image_cache[host.image_id] = None
 
     log.info('There are {count} AWS images that need to be examined to find the userid'.format(count=len(self.aws_image_cache)))
     if (not self.shallow) and ((0 < len(self.aws_image_cache) <= 2) or self.get_images):
