@@ -31,7 +31,11 @@ function git_branch {
   git branch 2>/dev/null | awk '/^\*/ { print " " $2 }'
 }
 export CURRBRANCH=$(which currbranch)
-if [ "X$currbranch" = X ]
+if [ "X$CURRBRANCH" != X ]
+then
+  CURRBRANCH=$(truepath.py "$CURRBRANCH")
+fi
+if [ "X$CURRBRANCH" = X ]
 then
   CURRBRANCH=true
   banner --color red 'Warning: Could not find the currbranch script' >&2
