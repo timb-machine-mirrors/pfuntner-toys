@@ -5,6 +5,8 @@ import sys
 import logging
 import argparse
 
+from table import Table
+
 class Color(object):
   @staticmethod
   def get_color(arg):
@@ -38,9 +40,13 @@ class Color(object):
     return rets.keys()[0]
 
   @staticmethod
+  def get_color_code(color):
+    return '\x1b[{}m'.format(Color.colors.get(color) or color) if color else ''
+
+  @staticmethod
   def print_color(color):
     if color:
-      sys.stdout.write('\x1b[{}m'.format(Color.colors.get(color) or color))
+      sys.stdout.write(Color.get_color_code(color))
 
   colors = {
     'black': '0;30',
@@ -70,16 +76,28 @@ if __name__ == '__main__':
   # log.setLevel(logging.DEBUG) # uncomment this to enable debugging in get_color() method
 
   parser = argparse.ArgumentParser(description='Print text in the specified color')
-  parser.add_argument('color', type=Color.get_color,
+
+  group = parser.add_mutually_exclusive_group(required=True)
+  group.add_argument('color', type=Color.get_color, nargs='?',
                       help='Choose a color: {colors}'.format(colors=', '.join(Color.colors.keys())))
+  group.add_argument('--test', action='store_true', required=False, help='Test all colors')
+
   parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
   parser.add_argument('text', nargs='*', help='Text to display')
 
   args = parser.parse_args()
 
+  if args.test and args.text:
+    parser.error('--test is mutually exclusive with text')
+
   log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-  if args.text:
+  if args.test:
+    table = Table([])
+    for color in Color.colors.keys():
+      table.add(color, Color.get_color_code(color) + color + Color.get_color_code('0'))
+    print str(table)
+  elif args.text:
     Color.print_color(Color.get_color(args.color))
     sys.stdout.write(' '.join(args.text) + '\n')
     Color.print_color('0')
