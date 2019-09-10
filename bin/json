@@ -282,4 +282,5 @@ excludes = [Filter(filter) for filter in (args.excludes or [])]
 if includes or excludes:
   root = applyFilters(root)
 
-writer(root)
+if root:
+  writer(root)
