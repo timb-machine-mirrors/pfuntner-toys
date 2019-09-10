@@ -85,7 +85,7 @@ print
 print '# start'
 print
 
-print """echo '{data}' | base64 -d | gzip -d""".format(**locals()) + ("" if args.print_to_stdout else """ | base64 -d | gzip -d | python && . $($HOME/repos/toys/bin/bashprofiles) && . $HOME/.bashrc""")
+print """echo '{data}' | base64 -d | gzip -d""".format(**locals()) + ("" if args.print_to_stdout else """ | python && . $($HOME/repos/toys/bin/bashprofiles) && . $HOME/.bashrc""")
 
 print
 print '# end'
