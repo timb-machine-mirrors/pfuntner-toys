@@ -76,19 +76,23 @@ for (pos, pathname) in enumerate([os.path.realpath(arg) for arg in args.files]):
   for comp_pos in range(len(components))[-1::-1]:
     path = '/' + os.path.join(*components[:comp_pos + 1])
     log.debug('comp_pos: {comp_pos} {path!r}'.format(**locals()))
-    stats = os.stat(path)
-    perms = get_perms(stats.st_mode)
-    timestamp = datetime.datetime.fromtimestamp(os.path.getmtime(path))
-    table.add(
-      perms,
-      str(stats.st_nlink),
-      get_user(stats.st_uid),
-      get_group(stats.st_gid),
-      str(stats.st_size),
-      timestamp.strftime('%b'),
-      str(timestamp.day),
-      timestamp.strftime('%H:%M') if six_months_ago < timestamp < now else str(timestamp.year),
-      path
-    )
+    try:
+      stats = os.stat(path)
+    except Exception as e:
+      log.warning('Can\'t find {path!r}: {e!s}'.format(**locals()))
+    else:
+      perms = get_perms(stats.st_mode)
+      timestamp = datetime.datetime.fromtimestamp(os.path.getmtime(path))
+      table.add(
+        perms,
+        str(stats.st_nlink),
+        get_user(stats.st_uid),
+        get_group(stats.st_gid),
+        str(stats.st_size),
+        timestamp.strftime('%b'),
+        str(timestamp.day),
+        timestamp.strftime('%H:%M') if six_months_ago < timestamp < now else str(timestamp.year),
+        path
+      )
 
 print str(table)

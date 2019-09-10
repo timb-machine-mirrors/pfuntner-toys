@@ -30,7 +30,12 @@ alias sortheadings=headingsort
 function git_branch {
   git branch 2>/dev/null | awk '/^\*/ { print " " $2 }'
 }
-export PS1='[\u@\h \W`git_branch`]\$ '
+export CURRBRANCH=$(which currbranch)
+if [ "X$currbranch" = X ]
+then
+  CURRBRANCH=true
+fi
+export PS1='[\u@\h \W`'$CURRBRANCH' -q`]\$ '
 
 # My git frontend is not needed if you authenticate with an sshkey and use the ssh-style URL
 # for the repo such as git@github.com:USER/REPO.git
