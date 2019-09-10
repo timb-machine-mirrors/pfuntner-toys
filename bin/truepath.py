@@ -35,7 +35,8 @@ def process(rawpath, log=None):
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Get `true` path - useful on Windoze')
-  parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+  parser.add_argument('-v', '--verbose', action='store_true', help='Enable debugging')
+  parser.add_argument('-u', '--unix-style', action='store_true', help='Use Unix style slashes')
   parser.add_argument('paths', metavar='path', nargs='+', help='One or more paths')
   args = parser.parse_args()
   
@@ -44,4 +45,7 @@ if __name__ == '__main__':
   log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
   
   for path in args.paths:
-    print process(path, log)
+    curr = process(path, log)
+    if args.unix_style:
+      curr = curr.replace('\\', '/')
+    print curr

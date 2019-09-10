@@ -33,7 +33,7 @@ function git_branch {
 export CURRBRANCH=$(which currbranch)
 if [ "X$CURRBRANCH" != X ]
 then
-  CURRBRANCH=$(truepath.py "$CURRBRANCH")
+  CURRBRANCH=$(truepath.py -u "$CURRBRANCH")
 fi
 if [ "X$CURRBRANCH" = X ]
 then
