@@ -55,44 +55,39 @@ def load(stream):
     log.debug('Loaded {ret}'.format(**locals()))
     return ret
 
-  ansible_regexp = re.compile(r'^(\S+)\s+\|\s+(\S+)\s+(?:=>|>>)\s+(\{)')
-  ansible_host = None
-  ansible_result = None
-
-  buf = ''
   ret = []
+  data = data.splitlines()
+  first_unprocessed = 0
+  last_unprocessed = 0
 
-  for line in data.splitlines():
-    if args.ansible and (buf == ''):
-      match = ansible_regexp.search(line)
-      if match:
-        ansible_host = match.group(1)
-        ansible_result = match.group(2)
-        line = line[match.start(3):]
-        log.info('ansible_host: {ansible_host}, ansible_result: {ansible_result}, {buf!r}'.format(**locals()))
+  # read what we can, trashing the rest
 
-    buf += ('\n' if buf else '') + line
-    try:
-      datum = json.loads(buf)
-    except Exception as e:
-      pass
-    else:
-      if args.ansible and ansible_host:
-        datum['host'] = ansible_host
-        ansible_host = None
-        datum['result'] = ansible_result
-        ansible_result = None
-      log.info('Parsed item {pos}'.format(pos=len(ret)))
-      log.debug('Loaded {datum}'.format(**locals()))
-      ret.append(datum)
-      buf = ''
+  while first_unprocessed < len(data):
+    log.debug('top of loop: first_unprocessed={first_unprocessed}, last_unprocessed={last_unprocessed}'.format(**locals()))
+    top = first_unprocessed
+    while top <= last_unprocessed:
+      buf = '\n'.join(data[top:last_unprocessed+1])
+      try:
+        log.debug('Processing: {buf!r}'.format(**locals()))
+        datum = json.loads(buf)
+      except Exception as e:
+        top += 1
+      else:
+        log.debug('processed: {datum}'.format(**locals()))
+        for curr in range(first_unprocessed, top):
+          log.debug('curr: {curr}'.format(**locals()))
+          log.warning('Ignoring: line {curr} {line!r}'.format(line=data[curr], **locals()))
+        ret.append(datum)
+        first_unprocessed = last_unprocessed+1
+        break
 
-  if buf:
-    total = len(data)
-    sys.stderr.write('Failed to load entire file\n')
-    sys.stderr.write('{count:,} objects were loaded\n'.format(count=len(ret)))
-    sys.stderr.write('{processed:,} bytes out of {total:,} were loaded\n'.format(processed=total-len(buf), **locals()))
-    exit(1)
+    last_unprocessed += 1
+    log.debug('bottom of loop: first_unprocessed={first_unprocessed}, last_unprocessed={last_unprocessed}'.format(**locals()))
+    if last_unprocessed == len(data):
+      break
+
+  for curr in range(first_unprocessed, len(data)):
+    log.warning('Ignoring: line {curr} {line!r}'.format(line=data[curr], **locals()))
 
   return ret
 
@@ -244,7 +239,6 @@ group.add_argument('-l', '--linear', dest='linear', action='store_true', help='P
 parser.add_argument('-y', '--yaml', dest='yaml', action='store_true', help='Read input yaml file')
 parser.add_argument('-p', '--python', dest='python', action='store_true', help='Treat input as Python source')
 
-parser.add_argument('-A', '--ansible', dest='ansible', action='store_true', help='Process Ansible output')
 parser.add_argument('-a', '--all', dest='all', action='store_true',
                     help='Show "directories" of the JSON with --flatten')
 parser.add_argument('-F', '--file', dest='file', help='Input file')
