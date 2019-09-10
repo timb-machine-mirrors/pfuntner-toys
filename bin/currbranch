@@ -1,14 +1,13 @@
 curr=$(git branch 2>/dev/null | awk '/^\*/ { print $2 }')
 if [ "X$curr" = X ]
 then
-  if [ "X$1" != X-q ] && [ "X$1" != X-quiet ]
+  if [ "X$1" != X--ps1 ]
   then
     banner --color red 'No branch available - are you in a git repo?' >&2
   fi
 else
-  if ! test -t 1
+  if [ "X$1" = X--ps1 ]
   then
-    # including leading blank if stdout is redirected
     echo -n ' '
   fi
   echo $curr
