@@ -34,6 +34,7 @@ export CURRBRANCH=$(which currbranch)
 if [ "X$currbranch" = X ]
 then
   CURRBRANCH=true
+  banner --color red 'Warning: Could not find the currbranch script' >&2
 fi
 export PS1='[\u@\h \W`'$CURRBRANCH' -q`]\$ '
 
