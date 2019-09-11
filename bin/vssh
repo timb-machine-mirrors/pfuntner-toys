@@ -1,9 +1,71 @@
 #! /usr/bin/env python
 
+import os
+import sys
 import logging
+import platform
 import argparse
 import subprocess
 from virtual_hosts import VirtualHosts
+
+def see(name):
+  assert isinstance(name, basestring)
+  try:
+    value = repr(eval(name))
+  except Exception as e:
+    value = 'evaluation error: ' + str(e)
+
+  log.info('{name}: {value}'.format(**locals()))
+
+def set_mintty_title(title):
+  """
+    Set Cygwin mintty title.  This is a "no-op" if you're on Linux, not using Cygwin, etc.
+
+    I got the technique for actually changing the title from https://superuser.com/questions/362227/how-to-change-the-title-of-the-mintty-window but I did the logic that leads up to that from scratch.
+  """
+
+  is_mintty = False
+  see('sys.platform')
+  if 'win' in sys.platform.lower():
+    try:
+      p = subprocess.Popen(['ps'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except Exception as e:
+      parser.error('Error executing `ps`: {e!s}'.format(**locals()))
+    (stdout, stderr) = p.communicate()
+    rc = p.wait()
+    log.info('ps: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
+    lines = stdout.splitlines()
+    see('lines')
+    if lines:
+      headings = lines[0].split()
+      see('headings')
+      processes = {}
+      for line in lines[1:]:
+        tokens = line.split()
+        see('tokens')
+        pid = tokens[0]
+        if len(tokens) <= len(headings):
+          see('pid')
+          processes[pid] = {}
+          for (pos, heading) in enumerate(headings):
+            processes[pid][heading] = tokens[pos]
+      see('processes')
+      process = processes.get(str(os.getpid()))
+      while True:
+        see('process')
+        if process:
+          if process['COMMAND'] == '/usr/bin/mintty':
+            is_mintty = True
+            break
+          else:
+            process = processes.get(process['PPID'])
+        else:
+          break
+  see('is_mintty')
+
+  if is_mintty:
+    log.info('changing mintty title to: {title!r}'.format(**locals()))
+    sys.stdout.write('\x1b]0;{title}\x07'.format(**locals()))
 
 parser = argparse.ArgumentParser(description='Virtual machine ssh')
 parser.add_argument('-p', '--profile', help='AWS profile')
@@ -47,6 +109,9 @@ if hosts:
 
     log.info(cmd)
     if not args.dry_run:
-      exit(subprocess.Popen(cmd).wait())
+      set_mintty_title('{host.user}@{host.ip}'.format(**locals()))
+      rc = subprocess.Popen(cmd).wait()
+      set_mintty_title(platform.node())
+      exit(rc)
   else:
     parser.error('Multiple hosts found: {}'.format(', '.join(sorted([str(host.name) for host in hosts]))))
