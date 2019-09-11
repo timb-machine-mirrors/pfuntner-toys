@@ -25,5 +25,8 @@ fi
 #   source $HOME/bruno/setup
 # fi
 
+# For Windoze Cygwin only, set the mintty window title:
+# echo -ne "\e]0;$(hostname)\a"
+
 # This `true` statement must be last and will make sure that the this script returns with success regardless of what the previous command was.
 true
