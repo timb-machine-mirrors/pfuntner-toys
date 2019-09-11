@@ -36,6 +36,7 @@ class Filter(object):
       parser.error('Filter {filter!r} is invalid'.format(**locals()))
 
 def load(stream):
+  json_regexp = re.compile(r'^(\[|\]|\{|\}|\s)')
   data = stream.read()
 
   if args.python:
@@ -57,39 +58,84 @@ def load(stream):
 
   ret = []
   data = data.splitlines()
-  first_unprocessed = 0
-  last_unprocessed = 0
+
+  if args.ignore_nonjson:
+    pos = 0
+    while pos < len(data):
+      line = data[pos]
+      if json_regexp.search(line):
+        pos += 1
+      else:
+        log.info('Ignoring: {line!r}'.format(**locals()))
+        del data[pos]
+
+  top = 0
 
   # read what we can, trashing the rest
 
-  while first_unprocessed < len(data):
-    log.debug('top of loop: first_unprocessed={first_unprocessed}, last_unprocessed={last_unprocessed}'.format(**locals()))
-    top = first_unprocessed
-    while top <= last_unprocessed:
-      buf = '\n'.join(data[top:last_unprocessed+1])
+  while top < len(data):
+    log.debug('top of outer loop: top={top}'.format(**locals()))
+    bottom = top
+    while bottom < len(data):
+      log.debug('top of inner loop: top={top}, bottom={bottom}'.format(**locals()))
+      buf = '\n'.join(data[top:bottom+1])
       try:
-        log.debug('Processing: {buf!r}'.format(**locals()))
+        log.debug('Trying to parse: {buf!r}'.format(**locals()))
         datum = json.loads(buf)
       except Exception as e:
-        top += 1
+        bottom += 1
+        if bottom >= len(data):
+          log.warning('Ignoring: line {top} {line!r}'.format(line=data[top], **locals()))
+          top += 1
+          break
       else:
         log.debug('processed: {datum}'.format(**locals()))
-        for curr in range(first_unprocessed, top):
-          log.debug('curr: {curr}'.format(**locals()))
-          log.warning('Ignoring: line {curr} {line!r}'.format(line=data[curr], **locals()))
+        top = bottom + 1
         ret.append(datum)
-        first_unprocessed = last_unprocessed+1
         break
 
-    last_unprocessed += 1
-    log.debug('bottom of loop: first_unprocessed={first_unprocessed}, last_unprocessed={last_unprocessed}'.format(**locals()))
-    if last_unprocessed == len(data):
-      break
-
-  for curr in range(first_unprocessed, len(data)):
-    log.warning('Ignoring: line {curr} {line!r}'.format(line=data[curr], **locals()))
-
   return ret
+
+def describe_datum(datum):
+  if type(datum) == str:
+    datum_type = 'string'
+  elif type(datum) == unicode:
+    datum_type = 'unicode string'
+  elif type(datum) == int:
+    datum_type = 'integer'
+  elif type(datum) == float:
+    datum_type = 'float'
+  elif type(datum) == bool:
+    datum_type = 'bool'
+  elif type(datum) == list:
+    datum_type = 'list'
+  elif type(datum) == dict:
+    datum_type = 'dict'
+  else:
+    datum_type = str(type(root))
+  return datum_type
+
+def describe_root(root):
+  root_type = describe_datum(root)
+  if isinstance(root, dict) or isinstance(root, list):
+    print 'Root is a dict with {} elements'.format(len(root))
+    if isinstance(root, dict):
+      values = root.values()
+    else:
+      values = root
+
+    value_types = {}
+    for value in values:
+      value_type = describe_datum(value)
+      if value_type not in value_types:
+        value_types[value_type] = 1
+      else:
+        value_types[value_type] += 1
+    for value_type in sorted(value_types.keys()):
+      count = value_types[value_type]
+      print '{count} elements are {value_type}'.format(**locals())
+  else:
+    print 'Root is a {root_type}'.format(**locals())
 
 def defaultWriter(root):
   print json.dumps(root, indent=2, sort_keys=True)
@@ -235,12 +281,13 @@ parser = argparse.ArgumentParser(description='JSON tool')
 group = parser.add_mutually_exclusive_group()
 group.add_argument('-f', '--flatten', dest='flatten', action='store_true', help='Flatten elements')
 group.add_argument('-l', '--linear', dest='linear', action='store_true', help='Print elements linearly')
+group.add_argument('-d', '--describe', dest='describe', action='store_true', help='Describe root element')
 
 parser.add_argument('-y', '--yaml', dest='yaml', action='store_true', help='Read input yaml file')
 parser.add_argument('-p', '--python', dest='python', action='store_true', help='Treat input as Python source')
+parser.add_argument('--ignore-nonjson', action='store_true', help='Discard lines that are don\'t appear to be JSON')
 
-parser.add_argument('-a', '--all', dest='all', action='store_true',
-                    help='Show "directories" of the JSON with --flatten')
+parser.add_argument('-a', '--all', dest='all', action='store_true', help='Show "directories" of the JSON with --flatten')
 parser.add_argument('-F', '--file', dest='file', help='Input file')
 parser.add_argument('-i', '--include', dest='includes', action='append', help='Specify required attributes')
 parser.add_argument('-x', '--exclude', dest='excludes', action='append', help='Specify unwanted attributes')
@@ -258,7 +305,9 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
-if args.flatten:
+if args.describe:
+  writer = describe_root
+elif args.flatten:
   writer = flatWriter
 elif args.linear:
   writer = linearWriter

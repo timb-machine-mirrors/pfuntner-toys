@@ -19,15 +19,15 @@ def write(stream, stream_name, msg):
     lock.release()
 
 class Redirect(threading.Thread):
-  def __init__(self, stream_name, in_stream, out_stream):
+  def __init__(self, stream_name, in_stream, out_stream, filename):
     self.stream_name = stream_name
     self.in_stream = in_stream
     self.out_stream = out_stream
+    self.filename = filename
+    self.file = open(filename, 'w') if filename else None
     super(Redirect, self).__init__()
 
   def run(self):
-    global lock
-
     buf = ''
     stream_name = self.stream_name
     read_list = [self.in_stream]
@@ -39,6 +39,8 @@ class Redirect(threading.Thread):
       if read_ready:
         c = self.in_stream.read(1)
         if c:
+          if self.file:
+            self.file.write(c)
           if c == '\n':
             write(self.out_stream, stream_name, buf)
             buf = ''
@@ -56,17 +58,21 @@ class Redirect(threading.Thread):
         write(self.out_stream, stream_name, buf)
         buf = ''
 
+    if self.file:
+      self.file.close()
+
 def syntax(msg=None):
   if msg:
     sys.stderr.write('{msg}\n'.format(**locals()))
   sys.stderr.write('{pgm} cmd ...\n'.format(pgm=sys.argv[0]))
   exit(1)
 
-def redirect(p, stream_name):
+def redirect(p, stream_name, filename):
   global threads
-  threads.append(Redirect(stream_name, getattr(p, stream_name), getattr(sys, stream_name)))
+  threads.append(Redirect(stream_name, getattr(p, stream_name), getattr(sys, stream_name), filename))
   threads[-1].start() 
 
+"""
 past_options = False
 options = []
 for arg in sys.argv[1:]:
@@ -80,36 +86,44 @@ for arg in sys.argv[1:]:
       past_options = True
       options.append('--')
     options.append(arg)
+"""
 
 parser = argparse.ArgumentParser(description='Capture output from a command')
+parser.add_argument('-o', '--out', '--stdout', dest='stdout', help='Redirect stdout to a file')
+parser.add_argument('-e', '--err', '--stderr', dest='stderr', help='Redirect stderr to a file')
+parser.add_argument('-v', '--verbose', action='store_true', help='Enable debugging')
 parser.add_argument('cmd', help='Command to execute')
 parser.add_argument('args', metavar='arg', nargs='*', help='Arguments for command')
-parser.add_argument('-v', '--verbose', action='store_true', help='Enable debugging')
-args = parser.parse_args(options)
+# args = parser.parse_args(options)
+args = parser.parse_args()
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-log.debug('options: {options}'.format(**locals()))
+# log.debug('options: {options}'.format(**locals()))
 log.debug('args: {args}'.format(**locals()))
 
 threads = []
 lock = threading.Lock()
 
 start = datetime.datetime.now()
+print 'Started: {start}'.format(**locals())
 command = [args.cmd] + args.args
 try:
   p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 except Exception as e:
   log.error('Caught {e!s} executing {command}'.format(**locals()))
   exit(1)
-redirect(p, 'stdout')
-redirect(p, 'stderr')
+redirect(p, 'stdout', args.stdout)
+redirect(p, 'stderr', args.stderr)
 rc = p.wait()
+
 finish = datetime.datetime.now()
+print 'rc: {rc}'.format(**locals())
 
 while any([thread.isAlive() for thread in threads]):
   time.sleep(.1)
 
-print 'Elapsed time: {elapsed}s'.format(elapsed=finish-start)
+print 'Stopped: {finish}'.format(**locals())
+print 'Elapsed: {elapsed}s'.format(elapsed=finish-start)
