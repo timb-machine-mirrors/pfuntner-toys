@@ -23,8 +23,9 @@ alias gitbranch=currbranch
 alias ansiblehost=ansiblehelper.py
 alias color=color.py
 
-# some aliases for headingsort since i will try to call it various names
-alias headingsort=headingsort
+alias tools-setup="$HOME/repos/toys/misc/setup"
+
+# alias for headingsort since i will try to call it various names
 alias sortheadings=headingsort
 
 function git_branch {
