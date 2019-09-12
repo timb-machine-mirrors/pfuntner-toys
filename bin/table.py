@@ -315,13 +315,17 @@ class SeparatorMethod(MethodBase):
 
       if leading_sep:
         if tokens[0]:
-          parser.error('Unexpected token under empty leading heading')
-        del tokens[0]
+          # parser.error('Unexpected token under empty leading heading')
+          pass
+        # del tokens[0]
+        pass
 
       if trailing_sep:
         if tokens[-1]:
-          parser.error('Unexpected token under empty trailing heading')
-        del tokens[-1]
+          # parser.error('Unexpected token under empty trailing heading')
+          pass
+        # del tokens[-1]
+        pass
 
       if args.headings and (pos == 0):
         if not tokens:
