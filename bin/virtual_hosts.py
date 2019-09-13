@@ -207,6 +207,7 @@ class VirtualHosts(object):
       if self.profile:
         cmd += ['--profile', self.profile]
       cmd += ['describe-instances']
+      log.debug('Running: {cmd}'.format(**locals()))
       try:
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
       except Exception as e:
