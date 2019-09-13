@@ -46,7 +46,7 @@ def process(filename):
       t2 = datetime.datetime.now()
       bytes2 = os.path.getsize(filename)
       measured_rate = '{:.2f}b/sec'.format((bytes2-bytes1) / (t2-t1).total_seconds())
-      log.debug('Measured {count:,} bytes over {duration} seconds'.format(count=bytes2-bytes1, duration=(t2-t1).total(seconds)))
+      log.debug('Measured {count:,} bytes over {duration} seconds'.format(count=bytes2-bytes1, duration=(t2-t1).total_seconds()))
     else:
       measured_rate = 'n/a'
 
