@@ -64,4 +64,4 @@ if hosts:
       cmd += ['--profile', args.profile]
     cmd += ['{args.action}-instances'.format(**locals()), '--instance-ids'] + [host.instance_id for host in hosts]
     print(cmd)
-    p = subprocess.Popen(cmd)
+    subprocess.Popen(cmd).wait()
