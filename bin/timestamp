@@ -57,13 +57,21 @@ log = logging.getLogger()
 
 parser = argparse.ArgumentParser(description='Display time in various styles')
 parser.add_argument('-g', '-u', '--gmt', '--uct', '--utc', dest='gmt', action='store_true', help='Use Universal Coordinated Time/Greenwich Mean Time')
-parser.add_argument('-a', '--all', action='store_true', help='Display all formats')
 parser.add_argument('-t', '--time', help='Specify time on which to base output')
-parser.add_argument('-s', '--style', dest='styles', action='append', help='Specify style on which to render output: {styles}'.format(styles=styles.keys()))
+
+group = parser.add_mutually_exclusive_group()
+group.add_argument('-a', '--all', action='store_true', help='Display all formats')
+group.add_argument('-s', '--style', dest='styles', action='append', help='Specify style on which to render output: {styles}'.format(styles=styles.keys()))
+
 parser.add_argument('-v', '--verbose', action='store_true', help='Enable debugging')
 args = parser.parse_args()
 
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
+log.debug(args)
+
+if args.all:
+  args.styles = styles.keys()
 
 for (pos, style) in enumerate(args.styles or []):
   keys = []
