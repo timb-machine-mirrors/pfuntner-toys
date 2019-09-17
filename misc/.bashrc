@@ -23,6 +23,12 @@ alias gitbranch=currbranch
 alias ansiblehost=ansiblehelper.py
 alias color=color.py
 
+# windoze aliases
+if expr match "$(uname -s)" '.*[Ww][Ii][Nn]' >/dev/null 2>&1
+then
+  alias date=unixdate
+fi
+
 alias tools-setup="$HOME/repos/toys/misc/setup"
 
 # alias for headingsort since i will try to call it various names
