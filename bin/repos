@@ -59,7 +59,7 @@ def process(root):
       clean = 'Clean' if 'nothing to commit, working directory clean' in stdout else 'Dirty'
 
       os.chdir(prev)
-      table.add(root, url, ','.join([str(curr_branch)] + branches), clean, commit[:7])
+      table.add(root, url, curr_branch, clean, commit[:7])
     if os.path.isdir(root):
       for filename in os.listdir(root):
         process(os.path.join(root, filename))
