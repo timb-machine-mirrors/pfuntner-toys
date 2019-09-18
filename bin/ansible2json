@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python2
 
 """
    Turn Ansible output into full JSON.  It's pretty close to JSON but

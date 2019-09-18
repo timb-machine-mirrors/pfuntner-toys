@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python2
 
 """
    Reports `wc` and `md5sum` information on files together on the same line

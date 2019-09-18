@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python2
 
 """
    Compare the current working directory on the local machine with the contents of a directory on a remote machine.

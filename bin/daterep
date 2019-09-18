@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python2
 
 """
    Replace a timestamp expressed as seconds second the epoch with a more meaningful string of 

@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python2
 
 # this is similar to the tail command but it reads from the very beginning of the stdin and keeps reading
 
