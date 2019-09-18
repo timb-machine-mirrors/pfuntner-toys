@@ -1,4 +1,4 @@
-curr=$(git branch 2>/dev/null | awk '/^\*/ { print $2 }')
+curr=$(git branch 2>/dev/null | awk '/^\*/ { gsub("^\\* ", ""); print $0 }')
 if [ "X$curr" = X ]
 then
   if [ "X$1" != X--ps1 ]
