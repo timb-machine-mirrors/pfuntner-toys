@@ -11,7 +11,7 @@ from table import Table
 parser = argparse.ArgumentParser(description='Virtual machine control')
 parser.add_argument('-p', '--profile', help='AWS profile')
 parser.add_argument('-v', '--verbose', dest='verbose', action='count', help='Enable debugging')
-parser.add_argument('action', choices=['start', 'stop', 'query', 'show'], help='Virtual machine operation')
+parser.add_argument('action', choices=['start', 'stop', 'query', 'show', 'userhost'], help='Virtual machine operation')
 parser.add_argument('hostnames', metavar='hostname', nargs='+', help='Names of one or more hosts')
 args = parser.parse_args()
 
@@ -21,7 +21,7 @@ log.setLevel(logging.WARNING - 10*(args.verbose or 0))
 
 virtual_args = args.__dict__
 virtual_args['aws_only'] = True
-virtual_args['shallow'] = args.action != 'show' # no need to do `aws ec2 describe-images`
+virtual_args['shallow'] = args.action not in ['show', 'userhost'] # no need to do `aws ec2 describe-images`
 virtual_hosts = VirtualHosts(**virtual_args)
 hosts = virtual_hosts.get_hosts(args.hostnames)
 
@@ -35,6 +35,18 @@ if hosts:
   elif args.action == 'show':
     for host in hosts:
       print json.dumps(virtual_hosts.aws_instance_cache[host.instance_id], sort_keys=True, indent=2)
+  elif args.action == 'userhost':
+    if len(hosts) == 1:
+      host = hosts[0]
+      if host.ip:
+        if host.user:
+          print '{host.user}@{host.ip}'.format(**locals())
+        else:
+          parser.error('No host for {host}'.format(**locals()))
+      else:
+        parser.error('No user for {host}'.format(**locals()))
+    else:
+      parser.error('Exactly one host expected but found: {}'.format([str(host) for host in hosts]))
   else:
     # remove hosts if they're not in a proper state
     pos = 0
