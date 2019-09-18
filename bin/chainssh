@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python2
 
 """
    ssh to one or more systems in a chain of one or more remote systems

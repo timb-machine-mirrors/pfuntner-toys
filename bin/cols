@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python2
 
 """
    Print lines to identify the columns, keyed off the width of the screen.  Useful to know how long lines are, what column a character/field is in, etc.

@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python2
 
 """
 A kind of quick-and-dirty script to kill all of my processes on a system *except* for those connected with the script and its ancestors:

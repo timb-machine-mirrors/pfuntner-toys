@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python2
 
 """
   Runs a shell command, capturing stdout and stderr to a file; reporting on start time, stop time, and duration; reporting on exit status; reporting on CPU time

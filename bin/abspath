@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python2
 
 description='Return absolute paths of files, especially Cygwin domain to Windoze domain when appropriate'
 
