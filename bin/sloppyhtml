@@ -1,0 +1,193 @@
+#! /usr/bin/env python2
+
+import sys
+import re
+import string
+import logging
+import argparse
+
+class Node(object):
+  def __init__(self, tag):
+    global stack
+
+    log.info('Creating {tag} node'.format(**locals()))
+    stack.append(tag)
+
+    self.tag = tag
+    if tag == 'text':
+      self.text = ''
+      self.attrs = None
+      self.children = None
+      self.self_end = None
+    else:
+      self.text = None
+      self.attrs = {}
+      self.children = []
+      self.self_end = False
+
+  def attr(self, name, value):
+    log.debug('Adding {name}={value!r} to {self.tag}'.format(**locals()))
+    self.attrs[name] = value
+
+  def append(self, child):
+    log.debug('Adding {child!s} to {self!s}'.format(**locals()))
+    self.children.append(child)
+
+  def __str__(self):
+    return '{self.tag} {self.attrs} {count} children {self.text!r}'.format(count=len(self.children) if self.children else None, **locals())
+
+def read(skip=False):
+  global buf, cursor
+
+  if skip:
+    skip_white_space()
+  if buf:
+    ret = buf.pop(0)
+  else:
+    ret = sys.stdin.read(1)
+  if ret:
+    cursor += 1
+  return ret
+
+def push(s):
+  global buf, cursor
+  cursor -= len(s)
+  buf += [c for c in s]
+
+def visit(root, depth=0):
+  if root:
+    print '{indent}{root!s}'.format(indent=' '*(depth*2), **locals())
+    for child in root.children or []:
+      visit(child, depth+1)
+  else:
+    log.warning('Empty document')
+
+def skip_white_space():
+  while True:
+    c = read()
+    if (not c) or (c not in string.whitespace):
+      break
+  push(c)
+
+def parse():
+  global stack
+
+  root = None
+  c = read(skip=True)
+  if c:
+    if c == '<':
+      tag = ''
+      while True:
+        c = read()
+        if (not c) or (c in '/>' + string.whitespace):
+          break
+        tag += c
+      if tag:
+        push(c)
+        root = Node(tag)
+        while True:
+          c = read(skip=True)
+          if (not c) or (c in '/>'):
+            break
+          push(c)
+          name = ''
+          while True:
+            c = read()
+            if (not c) or (c == '='):
+              break
+            name += c
+          if name:
+            c = read()
+            if c in '\'"':
+              quote = c
+            else:
+              quote = None
+              push(c)
+            value = ''
+            while True:
+              c = read()
+              if (not c) or (c == quote):
+                break
+              if (quote is None) or (c in '/>' + string.whitespace):
+                break
+              value += c
+            root.attr(name, value)
+        if c:
+          if c == '/':
+            root.self_end = True
+            c = read()
+          if c == '>':
+            if root.self_end:
+              if stack and (stack[-1] == root.tag):
+                stack.pop()
+              else:
+                log.warning('Self-ending <{root.tag}> but stack is {stack}'.format(stack=stack, **locals()))
+            else:
+              while True:
+                child = parse()
+                if child:
+                  node.append(child)
+                else:
+                  break
+              c = read(skip=True)
+              if c:
+                if c == '<':
+                  c = read(skip=True)
+                  if c == '/':
+                    tag = ''
+                    skip_white_space()
+                    while True:
+                      c = read()
+                      if (not c) or (c in '>' + string.white_space):
+                        break
+                      tag += tag
+                    if tag == root.tag:
+                      if tag == stack[-1]:
+                        stack.pop()
+                      else:
+                        log.warning('</{root.tag}> but stack is {stack}'.format(stack=stack, **locals()))
+                        push('<{/tag}>'.format(**locals()))
+                    else:
+                      log.warning('</{tag}> found when processing end of <{root.tag}>'.format(**locals()))
+                      push('<{/tag}>'.format(**locals()))
+                  else:
+                    push('<' + c)
+                else:
+                  push(c)
+              else:
+                log.warning('EOF with stack: {stack}'.format(stack=stack))
+          else:
+            log.warning('Expected end of tag at {}'.format(cursor))
+      else:
+        log.warning('No tag at {}'.format(cursor))
+    else:
+      root = Node('text')
+      push(c)
+      while True:
+        c = read()
+        if (not c) or (c == '<'):
+          break
+        root.text += c
+      if stack and (stack[-1] == root.tag):
+        stack.pop()
+      else:
+        log.warning('End of text but stack is {stack}'.format(**locals()))
+
+  return root
+
+parser = argparse.ArgumentParser(description=sys.argv[0])
+parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
+if sys.stdin.isatty():
+  parser.error('stdin must be redirected')
+
+buf = []
+stack = []
+cursor = 0
+root = parse()
+visit(root)
