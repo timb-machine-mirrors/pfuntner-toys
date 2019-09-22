@@ -7,6 +7,17 @@ import logging
 import argparse
 import traceback
 
+class Text(object):
+  def __init__(self):
+    self.text = ''
+
+  def append(self, c):
+    self.text += c
+
+  def __str__(self):
+    return '{self.text!r}'.format(**locals())
+
+
 class Node(object):
   def __init__(self, tag):
     global stack
@@ -15,16 +26,9 @@ class Node(object):
     stack.append(tag)
 
     self.tag = tag
-    if tag == 'text':
-      self.text = ''
-      self.attrs = None
-      self.children = None
-      self.self_end = None
-    else:
-      self.text = None
-      self.attrs = {}
-      self.children = []
-      self.self_end = False
+    self.attrs = {}
+    self.children = []
+    self.self_end = False
 
   def attr(self, name, value):
     log.debug('Adding {name}={value!r} to {self.tag}'.format(**locals()))
@@ -35,21 +39,21 @@ class Node(object):
     self.children.append(child)
 
   def __str__(self):
-    return '{self.tag} {self.attrs} {count} children {self.text!r}'.format(count=len(self.children) if self.children else None, **locals())
+    return '{self.tag} {self.attrs} {count} children'.format(count=len(self.children) if self.children else None, **locals())
 
 def where(depth):
   tb = traceback.extract_stack()
   return '{file}:{line}'.format(file=tb[depth][0], line=tb[depth][1])
 
 def read(skip=False):
-  global buf, cursor
+  global stream, buf, cursor
 
   if skip:
     skip_white_space()
   if buf:
     ret = buf.pop(0)
   else:
-    ret = sys.stdin.read(1)
+    ret = stream.read(1)
   if ret:
     cursor += 1
   log.debug('read() ({where}) returning: {ret!r}, cursor={cursor}'.format(where=where(2), ret=ret, cursor=cursor))
@@ -58,13 +62,14 @@ def read(skip=False):
 def push(s):
   global buf, cursor
   cursor -= len(s)
-  buf += [c for c in s]
+  for c in s[::-1]:
+    buf.insert(0, c)
   log.debug('after push() ({where}): {buf!r}, cursor={cursor}'.format(where=where(2), buf=buf, cursor=cursor))
 
 def visit(root, depth=0):
   if root:
     print '{indent}{root!s}'.format(indent=' '*(depth*2), **locals())
-    for child in root.children or []:
+    for child in root.children if isinstance(root, Node) else []:
       visit(child, depth+1)
   else:
     log.warning('Empty document')
@@ -89,9 +94,13 @@ def parse():
         if (not c) or (c in '/>' + string.whitespace):
           break
         tag += c
+      if (not tag) and (c == '/'):
+        push('</')
+        return None
       if tag:
         push(c)
         root = Node(tag)
+        # parse tag attributes
         while True:
           c = read(skip=True)
           if (not c) or (c in '/>'):
@@ -113,9 +122,12 @@ def parse():
             value = ''
             while True:
               c = read()
-              if (not c) or (c == quote):
+              if not c:
                 break
-              if (quote is None) or (c in '/>' + string.whitespace):
+              elif c == quote:
+                break
+              elif (quote is None) and (c in '/>' + string.whitespace):
+                push(c)
                 break
               value += c
             root.attr(name, value)
@@ -147,19 +159,20 @@ def parse():
                     skip_white_space()
                     while True:
                       c = read()
-                      if (not c) or (c in '>' + string.white_space):
+                      if (not c) or (c in '>' + string.whitespace):
                         break
-                      tag += tag
+                      tag += c
                     log.info('</{tag}'.format(**locals()))
                     if tag == root.tag:
                       if tag == stack[-1]:
                         stack.pop()
                       else:
                         log.warning('</{root.tag}> but stack is {stack}'.format(stack=stack, **locals()))
-                        push('<{/tag}>'.format(**locals()))
+                        push('</{tag}>'.format(**locals()))
                     else:
                       log.warning('</{tag}> found when processing end of <{root.tag}>'.format(**locals()))
-                      push('<{/tag}>'.format(**locals()))
+                      stack.pop()
+                      push('</{tag}>'.format(**locals()))
                   else:
                     push('<' + c)
                 else:
@@ -171,21 +184,20 @@ def parse():
       else:
         log.warning('No tag at {}'.format(cursor))
     else:
-      root = Node('text')
+      root = Text()
       push(c)
       while True:
         c = read()
         if (not c) or (c == '<'):
           break
-        root.text += c
-      if stack and (stack[-1] == root.tag):
-        stack.pop()
-      else:
-        log.warning('End of text but stack is {stack}'.format(**locals()))
+        root.append(c)
+      if c:
+        push(c)
 
   return root
 
 parser = argparse.ArgumentParser(description=sys.argv[0])
+parser.add_argument('filename', nargs='?', help='Name of file to parse')
 parser.add_argument('-v', '--verbose', dest='verbose', action='count', help='Enable more debugging')
 args = parser.parse_args()
 
@@ -194,11 +206,20 @@ log = logging.getLogger()
 log.setLevel(logging.WARNING - 10*(args.verbose or 0))
 log.info('args: {args}'.format(**locals()))
 
-if sys.stdin.isatty():
-  parser.error('stdin must be redirected')
+if args.filename:
+  stream = open(args.filename)
+elif sys.stdin.isatty():
+  parser.error('stdin must be redirected if filename isn\'t specified')
+else:
+  stream = sys.stdin
 
 buf = []
 stack = []
 cursor = 0
 root = parse()
+if stack:
+  log.warning('Stack remains: {stack}'.format(**locals()))
+c = read(skip=True)
+if c:
+  log.warning('Cursor@{cursor} remains: {c!r}'.format(**locals()))
 visit(root)
