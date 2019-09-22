@@ -17,7 +17,6 @@ class Text(object):
   def __str__(self):
     return '{self.text!r}'.format(**locals())
 
-
 class Node(object):
   def __init__(self, tag):
     global stack
@@ -81,10 +80,34 @@ def skip_white_space():
       break
   push(c)
 
+def skip_nonsense():
+  chars = ''
+  skip_white_space()
+  while True:
+    match = False
+    ignorable = False
+    c = read()
+    if not c:
+      break
+    chars += c
+    for (start, end) in IGNORE_TUPLES:
+      if chars.lower().startswith(start) and chars.lower().endswith(end):
+        match = True
+        break
+      if chars.lower()[:min(len(chars),len(start))] == start[:min(len(chars),len(start))]:
+        ignorable = True
+    if match:
+      log.warning('Ignoring: {chars!r}'.format(**locals()))
+      chars = ''
+    elif not ignorable:
+      break
+  push(chars)
+
 def parse():
   global stack
 
   root = None
+  skip_nonsense()
   c = read(skip=True)
   if c:
     if c == '<':
@@ -232,6 +255,11 @@ elif sys.stdin.isatty():
   parser.error('stdin must be redirected if filename isn\'t specified')
 else:
   stream = sys.stdin
+
+IGNORE_TUPLES = (
+  ('<meta ', '\n'), # ignore meta tags
+  ('<!--', '-->'),  # ignore comments
+)
 
 buf = []
 stack = []
