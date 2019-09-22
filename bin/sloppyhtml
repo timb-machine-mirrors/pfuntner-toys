@@ -109,27 +109,31 @@ def parse():
           name = ''
           while True:
             c = read()
-            if (not c) or (c == '='):
+            if (not c) or (c in string.whitespace + '>='):
               break
             name += c
           if name:
-            c = read()
-            if c in '\'"':
-              quote = c
-            else:
-              quote = None
-              push(c)
-            value = ''
-            while True:
+            if c == '=':
               c = read()
-              if not c:
-                break
-              elif c == quote:
-                break
-              elif (quote is None) and (c in '/>' + string.whitespace):
+              if c in '\'"':
+                quote = c
+              else:
+                quote = None
                 push(c)
-                break
-              value += c
+              value = ''
+              while True:
+                c = read()
+                if not c:
+                  break
+                elif c == quote:
+                  break
+                elif (quote is None) and (c in '/>' + string.whitespace):
+                  push(c)
+                  break
+                value += c
+            else:
+              push(c)
+              value = '1'
             root.attr(name, value)
         log.info('After tags: {root!s}'.format(**locals()))
         if c:
@@ -196,9 +200,25 @@ def parse():
 
   return root
 
+def render(root, depth=0):
+  indent = '  '*depth if args.indent else ''
+  if isinstance(root, Node):
+    sys.stdout.write('{indent}<{root.tag}'.format(**locals()))
+    for (name, value) in root.attrs.items():
+      sys.stdout.write(' {name}={value!r}'.format(**locals()))
+    sys.stdout.write('>\n')
+    for child in root.children:
+      render(child, depth+1)
+    sys.stdout.write('{indent}</{root.tag}>\n'.format(**locals()))
+  else:
+    for line in root.text.splitlines():
+      print '{indent}{line}'.format(**locals())
+
 parser = argparse.ArgumentParser(description=sys.argv[0])
 parser.add_argument('filename', nargs='?', help='Name of file to parse')
-parser.add_argument('-v', '--verbose', dest='verbose', action='count', help='Enable more debugging')
+parser.add_argument('--visit', action='store_true', help='Render with visit() method for debugging')
+parser.add_argument('--indent', action='store_true', help='Render with indentation')
+parser.add_argument('-v', dest='verbose', action='count', help='Enable more debugging')
 args = parser.parse_args()
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
@@ -222,4 +242,8 @@ if stack:
 c = read(skip=True)
 if c:
   log.warning('Cursor@{cursor} remains: {c!r}'.format(**locals()))
-visit(root)
+
+if args.visit:
+  visit(root)
+else:
+  render(root)
