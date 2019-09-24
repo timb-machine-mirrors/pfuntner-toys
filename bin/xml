@@ -262,9 +262,20 @@ def dump(root):
     # sys.stdout.write('{root.text!r}'.format(**locals())[1:-1])
     sys.stdout.write(root.text)
 
+def flatten(root, stack=[]):
+  if root.tag:
+    tags = [tag for tag in stack]
+    tags.append(root.tag)
+    print '/'.join(tags)
+    for child in root.children:
+      flatten(child, tags)
+  else:
+    print '{} {!r}'.format('/'.join(stack), root.text)
+
 parser = argparse.ArgumentParser(description='Bruno\'s homegrown xml parser')
-parser.add_argument('-l', '--lazy', dest='lazy', action='store_true', help='Forgive some malformed documents')
-parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+parser.add_argument('--flatten', action='store_true', help='Render in flattened form')
+parser.add_argument('-l', '--lazy', action='store_true', help='Forgive some malformed documents')
+parser.add_argument('-v', '--verbose', action='store_true', help='Enable debugging')
 args = parser.parse_args()
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
@@ -283,5 +294,8 @@ if c:
   log.error('Unexpected data {c!r} at {where} after root is complete'.format(where=reader.where(), **locals()))
   exit(1)
 
-dump(root)
-print ''
+if args.flatten:
+  flatten(root)
+else:
+  dump(root)
+  print ''

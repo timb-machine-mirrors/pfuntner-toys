@@ -46,7 +46,12 @@ def visit(node, tags=[]):
       sys.stdout.write("</%s>\n" % simplify(node.tag))
 
 def process(f):
-  visit(ET.fromstring(f.read()))
+  visit(ET.fromstring(supply_entities(f.read())))
+
+def supply_entities(s):
+  for (entity_name, entity_value) in ENTITIES:
+    s = s.replace('&{entity_name};'.format(**locals()), entity_value)
+  return s
 
 parser = argparse.ArgumentParser(description='See XML')
 parser.add_argument('-s', '--simple', dest='simple', action='store_true', help='Simplify XML tag')
@@ -58,6 +63,13 @@ args = parser.parse_args()
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
+ENTITIES = (
+  ('nbsp', ' '),
+  ('lt', '<'),
+  ('gt', '>'),
+  ('amper', '&'),
+)
 
 if args.filename:
   with open(filename, "r") as f:
