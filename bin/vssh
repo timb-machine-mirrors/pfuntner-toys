@@ -99,8 +99,10 @@ if hosts:
       parser.error('No IP for {host.name}'.format(**locals()))
 
     cmd = ['ssh']
-    if host.key:
+    if hasattr(host, 'key') and host.key:
       cmd += ['-i', host.key]
+    else:
+      log.info('no key for {host.name}'.format(**locals()))
     cmd += unknown
     cmd.append('{host.user}@{host.ip}'.format(**locals()))
     cmd += args.cmd
