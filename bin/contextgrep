@@ -1,0 +1,53 @@
+#! /usr/bin/env python2
+
+import re
+import os
+import logging
+import argparse
+
+def process(filename):
+  if os.path.isfile(filename):
+    lines = []
+    try:
+      with open(filename) as stream:
+        lines = stream.read().splitlines()
+    except Exception as e:
+      log.error('Cannot find: {filename!r}: {e!s}'.format(**locals()))
+
+    pos = 0
+    while pos < len(lines):
+      if regexp.search(lines[pos]):
+        while True:
+          if (pos == 0) or blanks.search(lines[pos-1]):
+            break
+          pos -= 1
+        while True:
+          print '{filename}:{pos:>08}: {line}'.format(
+            filename=filename,
+            pos=pos+1,
+            line=lines[pos]
+          )
+          pos += 1
+          if (pos >= len(lines)) or blanks.search(lines[pos]):
+            break
+        print ''
+      else:
+        pos += 1
+
+  else:
+    log.warning('Cannot find: {filename!r}'.format(**locals()))
+
+parser = argparse.ArgumentParser(description='Context grep')
+parser.add_argument('-v', '--verbose', action='store_true', help='Enable debugging')
+parser.add_argument('regexp', help='Regular expression to search for')
+parser.add_argument('files', metavar='file', nargs='+', help='Zero or more files to search')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
+regexp = re.compile(args.regexp)
+blanks = re.compile('^\s*$')
+
+map(process, args.files)
