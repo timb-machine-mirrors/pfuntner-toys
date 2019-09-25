@@ -37,7 +37,7 @@ alias sortheadings=headingsort
 function git_branch {
   git branch 2>/dev/null | awk '/^\*/ { print " " $2 }'
 }
-export CURRBRANCH=$(which currbranch 2>&1)
+export CURRBRANCH=$(which currbranch 2>/dev/null)
 if [ "X$CURRBRANCH" != X ]
 then
   CURRBRANCH=$(truepath.py -u "$CURRBRANCH")
