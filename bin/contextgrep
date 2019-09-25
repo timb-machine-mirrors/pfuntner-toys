@@ -2,38 +2,48 @@
 
 import re
 import os
+import string
 import logging
 import argparse
 
+def is_text(data):
+  total = len(data)*1.0
+  binary = len([c for c in data if c not in string.printable])
+  return (binary/total) <= 0.05 if total else True
+  
 def process(filename):
   log.info('Processing {filename!r}'.format(**locals()))
   if os.path.isfile(filename):
-    lines = []
+    data = ''
     try:
       with open(filename) as stream:
-        lines = stream.read().splitlines()
+        data = stream.read()
     except Exception as e:
       log.error('Cannot find: {filename!r}: {e!s}'.format(**locals()))
 
-    pos = 0
-    while pos < len(lines):
-      if regexp.search(lines[pos]):
-        while True:
-          if (pos == 0) or blanks.search(lines[pos-1]):
-            break
-          pos -= 1
-        while True:
-          print '{filename}:{pos:>08}: {line}'.format(
-            filename=filename,
-            pos=pos+1,
-            line=lines[pos]
-          )
+    if is_text(data):
+      pos = 0
+      lines = data.splitlines()
+      while pos < len(lines):
+        if regexp.search(lines[pos]):
+          while True:
+            if (pos == 0) or blanks.search(lines[pos-1]):
+              break
+            pos -= 1
+          while True:
+            print '{filename}:{pos:>08}: {line!r}'.format(
+              filename=filename,
+              pos=pos+1,
+              line=lines[pos]
+            )
+            pos += 1
+            if (pos >= len(lines)) or blanks.search(lines[pos]):
+              break
+          print ''
+        else:
           pos += 1
-          if (pos >= len(lines)) or blanks.search(lines[pos]):
-            break
-        print ''
-      else:
-        pos += 1
+    else:
+      log.info('Ignoring binary file {filename!r}'.format(**locals()))
   elif os.path.isdir(filename):
     for child in os.listdir(filename):
       process(os.path.join(filename, child))
