@@ -37,16 +37,18 @@ alias sortheadings=headingsort
 function git_branch {
   git branch 2>/dev/null | awk '/^\*/ { print " " $2 }'
 }
-export CURRBRANCH=$(which currbranch)
+export CURRBRANCH=$(which currbranch 2>&1)
 if [ "X$CURRBRANCH" != X ]
 then
   CURRBRANCH=$(truepath.py -u "$CURRBRANCH")
-fi
-if [ "X$CURRBRANCH" = X ]
-then
+else
   CURRBRANCH=true
-  banner --color red 'Warning: Could not find the currbranch script' >&2
 fi
+# if [ "X$CURRBRANCH" = X ]
+# then
+#   CURRBRANCH=true
+#   banner --color red 'Warning: Could not find the currbranch script' >&2
+# fi
 export PS1='[\u@\h \W`'$CURRBRANCH' --ps1`]\$ '
 
 # My git frontend is not needed if you authenticate with an sshkey and use the ssh-style URL
