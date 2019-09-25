@@ -6,6 +6,7 @@ import logging
 import argparse
 
 def process(filename):
+  log.info('Processing {filename!r}'.format(**locals()))
   if os.path.isfile(filename):
     lines = []
     try:
@@ -33,14 +34,16 @@ def process(filename):
         print ''
       else:
         pos += 1
-
+  elif os.path.isdir(filename):
+    for child in os.listdir(filename):
+      process(os.path.join(filename, child))
   else:
     log.warning('Cannot find: {filename!r}'.format(**locals()))
 
 parser = argparse.ArgumentParser(description='Context grep')
 parser.add_argument('-v', '--verbose', action='store_true', help='Enable debugging')
 parser.add_argument('regexp', help='Regular expression to search for')
-parser.add_argument('files', metavar='file', nargs='+', help='Zero or more files to search')
+parser.add_argument('files', metavar='file', nargs='*', help='Zero or more files to search')
 args = parser.parse_args()
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
@@ -50,4 +53,6 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 regexp = re.compile(args.regexp)
 blanks = re.compile('^\s*$')
 
+if not args.files:
+  args.files = ['.']
 map(process, args.files)
