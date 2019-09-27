@@ -73,7 +73,7 @@ for (pos, filename) in enumerate(args.files):
     if len(lines) > 10:
       print '\n'.join(['       .']*3)
 
-    start = max(6, len(lines)-5)
+    start = max(5, len(lines)-5)
     for (pos, line) in enumerate(lines[start:]):
       print '{pos:>6} {line!r}'.format(pos=start+pos+1, line=line)
 
