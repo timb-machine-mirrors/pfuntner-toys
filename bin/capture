@@ -24,7 +24,7 @@ class Redirect(threading.Thread):
     self.in_stream = in_stream
     self.out_stream = out_stream
     self.filename = filename
-    self.file = open(filename, 'w') if filename else None
+    self.file = open(filename, 'w', 0) if filename else None
     super(Redirect, self).__init__()
 
   def run(self):
