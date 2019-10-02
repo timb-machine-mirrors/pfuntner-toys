@@ -19,18 +19,32 @@ def formatTime(secs=None):
   return time.strftime("%Y-%m-%d %H:%M:%S.%s", time.localtime(secs))
 
 parser = argparse.ArgumentParser(description='dowhile')
-parser.add_argument('-d', '--debug', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
-parser.add_argument('-v', '--negate', dest='negate', action='store_true', help='Stop when output has the regular expression')
-parser.add_argument('-i', '--ignorerc', dest='ignorerc', action='store_true', help='Ignore command exit status')
-parser.add_argument('regexp', help='Regular expression with which to search')
-parser.add_argument('cmd', nargs='+', help='COmmand to execute')
+parser.add_argument('-d', '--delay', type=int, default=15, help='Number of sections between execution (default: 15 seconds)')
+parser.add_argument('-v', '--debug', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+
+group = parser.add_mutually_exclusive_group()
+group.add_argument('-i', '--include', help='Execute as long as the output contains regular expression')
+group.add_argument('-x', '--exclude', help='Execute as long as the output does not contain regular expression')
+
+group = parser.add_mutually_exclusive_group()
+group.add_argument('-s', '--successful', action='store_true', help='Execute as long as the command is successful')
+group.add_argument('-f', '--fail', action='store_true', help='Execute as long as the command fails')
+
+parser.add_argument('cmd', nargs='+', help='Command to execute')
 args = parser.parse_args()
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-regexp = re.compile(args.regexp)
+if not any([bool(args.include), bool(args.exclude), bool(args.successful), bool(args.fail)]):
+  parser.error('At least -i/-x or -s/-f must be specified')
+
+if args.include:
+  args.include = re.compile(args.include)
+
+if args.exclude:
+  args.exclude = re.compile(args.exclude)
 
 done = False
 while not done:
@@ -43,14 +57,17 @@ while not done:
   sys.stdout.write(stdout)
   sys.stderr.write(stderr)
   print ''
-  if (not args.ignorerc) and (rc != 0):
-    log.debug("Stopping due to rc=%d" % rc)
-    done = True
-  elif (not args.negate) and ((not regexp.search(stdout)) and (not regexp.search(stderr))):
-    log.debug("Stopping due to {regexp.pattern!r} not being in output".format(**locals()))
-    done = True
-  elif args.negate and ((regexp.search(stdout) or regexp.search(stderr))):
-    log.debug("Stopping due to {regexp.pattern!r} being in output".format(**locals()))
-    done = True
-  else:
-    time.sleep(15)
+  if args.include and not args.include.search(stdout + stderr):
+    log.info('Command does not have {args.include.pattern!r}'.format(**locals()))
+    break
+  elif args.exclude and args.exclude.search(stdout + stderr):
+    log.info('Command has {args.exclude.pattern!r}'.format(**locals()))
+    break
+  elif args.successful and rc != 0:
+    log.info('Command exited with {rc}'.format(**locals()))
+    break
+  elif args.fail and rc == 0:
+    log.info('Command exited with {rc}'.format(**locals()))
+    break
+
+  time.sleep(args.delay)
