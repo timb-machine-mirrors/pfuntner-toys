@@ -37,7 +37,7 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-if not any([bool(args.include), bool(args.exclude), bool(args.successful), bool(args.fail)]):
+if not any([bool(args.include != None), bool(args.exclude != None), bool(args.successful), bool(args.fail)]):
   parser.error('At least -i/-x or -s/-f must be specified')
 
 if args.include:
