@@ -23,6 +23,15 @@ alias gitbranch=currbranch
 alias ansiblehost=ansiblehelper.py
 alias color=color.py
 
+# This is a nice command to ping all the machines in /etc/ansible/hosts
+#
+# Example output:
+#   host    result  ansible_facts                                                       changed ping
+#   centos8 SUCCESS {u'discovered_interpreter_python': u'/usr/libexec/platform-python'} False   pong
+#   rhel8   SUCCESS {u'discovered_interpreter_python': u'/usr/libexec/platform-python'} False   pong
+#
+# alias pingall='ansible all -m ping | ansible2json | table --in json --out fixed --order host,result | headingsort'
+
 # windoze aliases
 if expr match "$(uname -s)" '.*[Ww][Ii][Nn]' >/dev/null 2>&1
 then
