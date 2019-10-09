@@ -10,6 +10,11 @@ import argparse
 import datetime
 import subprocess
 
+def ping(host):
+  p = subprocess.Popen(['ansible', host, '-m', 'ping'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  (stdout, stderr) = p.communicate()
+  return ((p.wait() == 0) and (not stderr), stdout, stderr)
+
 parser = argparse.ArgumentParser(description='Use Ansible adhoc comment to reboot a machine')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 parser.add_argument('host', help='Target host')
@@ -37,33 +42,44 @@ except Exception as e:
   print 'No reboot'
   exit(1)
 
+(ret, stdout, stderr) = ping(args.host)
+log.debug('ping: {ret}, {stdout!r}, {stderr!r}'.format(**locals()))
+if ret is False:
+  sys.stderr.write('Could not ping {args.host!r}\n'.format(**locals()))
+  sys.stdout.write(stdout)
+  sys.stderr.write(stderr)
+  exit(1)
+
 reboot_p = subprocess.Popen(['ansible', args.host, '-m', 'reboot'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 start = datetime.datetime.now()
 print '{start!s} Rebooting {args.host}'.format(**locals())
 
 time.sleep(15)
 
-ping_p = None
+stdout = ''
+stderr = ''
+
 print '{start!s} Polling {args.host}'.format(**locals())
 while True:
-  ping_p = subprocess.Popen(['ansible', args.host, '-m', 'ping'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  (stdout, stderr) = ping_p.communicate()
-  rc = ping_p.wait()
-  log.debug('ping: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
-  if rc == 0:
-    log.info('successful ping')
-    break
-  elif reboot_p.poll() is not None:
+  if reboot_p.poll() is not None:
     log.info('reboot module is complete')
+    break
+  (ret, stdout, stderr) = ping(args.host)
+  log.debug('ping: {ret}, {stdout!r}, {stderr!r}'.format(**locals()))
+  if ret is True:
+    log.info('successful ping')
     break
   else:
     sys.stdout.write('.')
     time.sleep(5)
 
-if ping_p:
-  sys.stdout.write(ping_p.stdout)
-  sys.stderr.write(ping_p.stderr)
+sys.stdout.write(stdout)
+sys.stderr.write(stderr)
 
-  sys.stdout.write(reboot_p.stdout)
-  sys.stderr.write(reboot_p.stderr)
-  reboot_p.wait()
+sys.stdout.write(reboot_p.stdout.read())
+sys.stderr.write(reboot_p.stderr.read())
+reboot_p.wait()
+stop = datetime.datetime.now()
+
+elapsed = stop - start
+print '{start!s} Done, elapsed time: {elapsed!s}'.format(**locals())
