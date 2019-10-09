@@ -1,0 +1,69 @@
+#! /usr/bin/env python2
+
+import re
+import sys
+import time
+import json
+import random
+import logging
+import argparse
+import datetime
+import subprocess
+
+parser = argparse.ArgumentParser(description='Use Ansible adhoc comment to reboot a machine')
+parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+parser.add_argument('host', help='Target host')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
+if args.host == 'localhost':
+  parser.error('Cannot reboot localhost')
+
+x = random.randint(1,10)
+y = random.randint(1,10)
+sys.stdout.write('What is {x} + {y}? '.format(**locals()))
+ans = sys.stdin.readline()
+try:
+  if (x + y) == int(ans.strip()):
+    log.debug('Congratulations, you passed the test')
+  else:
+    print 'No reboot'
+    exit(1)
+except Exception as e:
+  log.debug('Caught: {e!s}'.format(**locals()))
+  print 'No reboot'
+  exit(1)
+
+reboot_p = subprocess.Popen(['ansible', args.host, '-m', 'reboot'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+start = datetime.datetime.now()
+print '{start!s} Rebooting {args.host}'.format(**locals())
+
+time.sleep(15)
+
+ping_p = None
+print '{start!s} Polling {args.host}'.format(**locals())
+while True:
+  ping_p = subprocess.Popen(['ansible', args.host, '-m', 'ping'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  (stdout, stderr) = ping_p.communicate()
+  rc = ping_p.wait()
+  log.debug('ping: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
+  if rc == 0:
+    log.info('successful ping')
+    break
+  elif reboot_p.poll() is not None:
+    log.info('reboot module is complete')
+    break
+  else:
+    sys.stdout.write('.')
+    time.sleep(5)
+
+if ping_p:
+  sys.stdout.write(ping_p.stdout)
+  sys.stderr.write(ping_p.stderr)
+
+  sys.stdout.write(reboot_p.stdout)
+  sys.stderr.write(reboot_p.stderr)
+  reboot_p.wait()
