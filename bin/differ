@@ -1,0 +1,54 @@
+#! /usr/bin/env python2
+
+import re
+import logging
+import argparse
+import subprocess
+
+def get_second_filename(line):
+  filename = ''
+
+  if line[-1] == '"':
+    pos = len(line)-2
+    while True:
+      c = line[pos]
+      if (c == '"'):
+        if (line[pos-1] == '\\'):
+          pos -= 1   
+        else:
+          break
+      filename = c + filename
+      pos -= 1
+  else:
+    # the filename was not quoted so no special characters - just return last word
+    filename = line.split()[-1]
+
+  assert filename
+  return filename
+
+parser = argparse.ArgumentParser(description='Show new file changes (right side) from recursive diff')
+parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+parser.add_argument('oldfile', help='Old file/dir')
+parser.add_argument('newfile', help='New file/dir')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
+p = subprocess.Popen(['diff', '-r', args.oldfile, args.newfile], stdout=subprocess.PIPE)
+
+trailing_white_space = re.compile('\s*$')
+
+while True:
+  line = p.stdout.readline()
+  if line:
+    log.debug('Read: {line!r}'.format(**locals()))
+    line = trailing_white_space.sub('', line)
+    if line.startswith('diff -r '):
+      filename = get_second_filename(line)
+    elif line.startswith('> '):
+      print "{filename!r}: {substr}".format(substr=line[2:], **locals())
+  else:
+    break
+exit(p.wait())
