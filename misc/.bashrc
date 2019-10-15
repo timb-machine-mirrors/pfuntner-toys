@@ -23,7 +23,7 @@ alias gitbranch=currbranch
 alias ansiblehost=ansiblehelper.py
 alias color=color.py
 
-# This is a nice command to ping all the machines in /etc/ansible/hosts
+# This is a nice command to ping all the machines in /etc/ansible/hosts.  I've since replaced it by bin/pingall but it's a good example of my tools
 #
 # Example output:
 #   host    result  ansible_facts                                                       changed ping
