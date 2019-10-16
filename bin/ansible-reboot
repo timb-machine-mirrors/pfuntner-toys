@@ -59,7 +59,8 @@ time.sleep(15)
 stdout = ''
 stderr = ''
 
-print '{start!s} Polling {args.host}'.format(**locals())
+now = datetime.datetime.now()
+print '{now!s} Polling {args.host}'.format(**locals())
 while True:
   if reboot_p.poll() is not None:
     log.info('reboot module is complete')
@@ -82,4 +83,5 @@ reboot_p.wait()
 stop = datetime.datetime.now()
 
 elapsed = stop - start
-print '{start!s} Done, elapsed time: {elapsed!s}'.format(**locals())
+now = datetime.datetime.now()
+print '{now!s} Done, elapsed time: {elapsed!s}'.format(**locals())
