@@ -71,6 +71,12 @@ def load(stream):
 
   top = 0
 
+  if args.ansible:
+    for (pos, ansible_line) in enumerate(data):
+      if ansible_regexp.search(ansible_line):
+        log.info('Removing {ansible_line!r}'.format(**locals()))
+        data[pos] = '{'
+
   # read what we can, trashing the rest
 
   while top < len(data):
@@ -286,6 +292,7 @@ group.add_argument('-d', '--describe', dest='describe', action='store_true', hel
 parser.add_argument('-y', '--yaml', dest='yaml', action='store_true', help='Read input yaml file')
 parser.add_argument('-p', '--python', dest='python', action='store_true', help='Treat input as Python source')
 parser.add_argument('--ignore-nonjson', action='store_true', help='Discard lines that are don\'t appear to be JSON')
+parser.add_argument('--ansible', action='store_true', help='Discard Ansible overhead')
 
 parser.add_argument('-a', '--all', dest='all', action='store_true', help='Show "directories" of the JSON with --flatten')
 parser.add_argument('-F', '--file', dest='file', help='Input file')
@@ -313,6 +320,9 @@ elif args.linear:
   writer = linearWriter
 else:
   writer = defaultWriter
+
+# when args.ansible is on, use this regular expression turn "rhel7 | SUCCESS => {" into "{"
+ansible_regexp = re.compile(r'^\S+\s+\|\s+\S+\s+=>\s+\{$')
 
 root = None
 if args.file:
