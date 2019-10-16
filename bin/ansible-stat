@@ -37,13 +37,35 @@ log = logging.getLogger()
 log.setLevel(logging.WARNING - 10*(args.verbose or 0))
 
 header_regexp = re.compile('^(\S+)\s+\|\s+(\S+)\s+=>\s+{')
+"""
+Get ansible inventory
+[jpfuntne@JPFUNTNE-GCEYJ ~]$ ansible-inventory --list | json --flatten
+/_meta/hostvars/rhel7/ansible_host '54.82.12.156'
+/_meta/hostvars/rhel7/ansible_ssh_private_key_file 'c:/sto/pfuntner-aws.pem'
+/_meta/hostvars/rhel7/ansible_user 'ec2-user'
+/_meta/hostvars/rhel8_hardened/ansible_host '3.84.165.114'
+/_meta/hostvars/rhel8_hardened/ansible_ssh_private_key_file 'c:/sto/pfuntner-aws.pem'
+/_meta/hostvars/rhel8_hardened/ansible_user 'ec2-user'
+/_meta/hostvars/runon/ansible_host 'pfuntner1.cisco.com'
+/_meta/hostvars/runon/ansible_ssh_private_key_file 'c:/sto/pfuntner-runon.pem'
+/_meta/hostvars/runon/ansible_user 'centos'
+/all/children/0 'ungrouped'
+/ungrouped/hosts/0 'rhel7'
+/ungrouped/hosts/1 'rhel8_hardened'
+/ungrouped/hosts/2 'runon'
+[jpfuntne@JPFUNTNE-GCEYJ ~]$
+"""
+p = subprocess.Popen('ansible-inventory --list'.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+(stdout, stderr) = p.communicate()
+rc = p.wait()
+log.debug('inventory: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
+
 cmd = ('ansible {hosts} -m setup'.format(hosts=','.join(args.hosts) if args.hosts else 'all')).split()
 log.debug(cmd)
-
 p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 (stdout, stderr) = p.communicate()
 rc = p.wait()
-log.debug('{rc}, {stdout!r}, {stderr!r}'.format(**locals()))
+log.debug('setup: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
 if (not stdout) and stderr:
   sys.stderr.write(stderr)
   exit(1)
