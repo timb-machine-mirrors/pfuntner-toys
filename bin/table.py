@@ -734,7 +734,7 @@ args = parser.parse_args() if __name__ == '__main__' else parser.parse_args(['-i
 
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-args.separator = args.separator or (' ' if args.output == 'fixed' else '|')
+args.separator = args.separator or ('  ' if args.output == 'fixed' else '|')
 
 args.input = get_method(args.input)
 args.output = get_method(args.output)
