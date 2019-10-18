@@ -1,5 +1,6 @@
 #! /usr/bin/env python2
 
+import re
 import sys
 import logging
 import argparse
@@ -19,6 +20,8 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
 if args.branch is None:
   args.branch = 'HEAD'
+elif re.match('-\d+$', args.branch):
+  args.branch = 'HEAD~{}'.format(args.branch[1:])
 
 cmd = ['git', 'cat-file', '-p', '{args.branch}:{args.filename}'.format(**locals())]
 log.debug('cmd: {cmd}'.format(**locals()))
