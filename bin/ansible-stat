@@ -49,6 +49,9 @@ def get_ip():
 
   return ret
 
+def distro_translate(s):
+  return distro_translations.get(s, s)
+
 parser = argparse.ArgumentParser(description='Get stats on Ansible hosts')
 parser.add_argument('hosts', metavar='host', nargs='*', help='List of hosts to query')
 parser.add_argument('-v', '--verbose', action='count', help='Enable more debugging')
@@ -95,6 +98,11 @@ if (not stdout) and stderr:
   sys.stderr.write(stderr)
   exit(1)
 
+distro_translations = {
+  'Amazon (Karoo)': 'Amazon Linux 2',
+  'Amazon 2018.03': 'Amazon Linux 1',
+}
+
 buf = ''
 hosts = []
 
@@ -124,7 +132,7 @@ for line in stdout.splitlines():
       hosts.append((
         host, 
         get(resp, 'ansible_facts/ansible_fqdn'), 
-        get(resp, 'ansible_facts/ansible_distribution') + ' ' + get(resp, 'ansible_facts/ansible_distribution_version'),
+        distro_translate(get(resp, 'ansible_facts/ansible_distribution') + ' ' + get(resp, 'ansible_facts/ansible_distribution_version')),
 
         # get(resp, 'ansible_facts/ansible_all_ipv4_addresses', isList=True),
         ip,
