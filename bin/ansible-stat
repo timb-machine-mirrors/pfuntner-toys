@@ -131,13 +131,13 @@ for line in stdout.splitlines():
 
       hosts.append((
         host, 
-        get(resp, 'ansible_facts/ansible_fqdn'), 
-        distro_translate(get(resp, 'ansible_facts/ansible_distribution') + ' ' + get(resp, 'ansible_facts/ansible_distribution_version')),
+        get(resp, 'ansible_facts/ansible_fqdn') or 'n/a', 
+        distro_translate(get(resp, 'ansible_facts/ansible_distribution') + ' ' + get(resp, 'ansible_facts/ansible_distribution_version')).strip() or 'n/a',
 
         # get(resp, 'ansible_facts/ansible_all_ipv4_addresses', isList=True),
-        ip,
+        ip or 'n/a',
 
-        elapsed,
+        elapsed or 'n/a',
       ))
       buf = ''
 
