@@ -164,8 +164,8 @@ class VirtualHosts(object):
   def get_image(self, image_id):
     ret = None
     if image_id:
-      image = self.aws_image_cache.get(image_id)
-      if image:
+      ret = self.aws_image_cache.get(image_id)
+      if ret:
         log.info('Using cached image')
       else:
         # get the image from the aws cli
@@ -315,9 +315,10 @@ class VirtualHosts(object):
         self.aws_image_cache[host.image_id] = None
 
     log.info('There are {count} AWS images that need to be examined to find the userid'.format(count=len(self.aws_image_cache)))
-    if (not self.shallow) and ((0 < len(self.aws_image_cache) <= 2) or self.get_images):
+    if (not self.shallow) and ((0 < len(self.aws_image_cache)) or self.get_images):
       # complete aws users by looking at the images on which the instances are based
       for host in ret.values():
+        log.debug('Before determining user: {}'.format(host.__dict__))
         if (host.user is None) and (host.src == 'aws') and (hasattr(host, 'image_id')):
           image = self.get_image(host.image_id)
           host.image_name = self.get_value(image, 'Description')

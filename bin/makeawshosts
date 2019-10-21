@@ -67,7 +67,8 @@ log.info('virtual_hosts: {}'.format([str(host) for host in hosts]))
 """
 for host in hosts:
   log.debug(host.__dict__)
-  if host.state == 'stopped':
+  host.name = re.sub(args.hostexpr, '', host.name)
+  if host.state != 'running':
     log.warn('{host.name} is stopped'.format(**locals()))
   else:
     print '{host.name} ansible_host={host.ip} ansible_user={host.user} ansible_ssh_private_key_file={host.key}'.format(**locals())
