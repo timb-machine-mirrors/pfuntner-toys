@@ -123,9 +123,13 @@ for line in stdout.splitlines():
 
       ip = ''
       if host in inventory:
-        socket_info = socket.gethostbyname_ex(inventory[host]['ansible_host'])
-        log.info('socket: {host}: {socket_info}'.format(**locals()))
-        ip = ', '.join(socket_info[2])
+        try:
+          socket_info = socket.gethostbyname_ex(inventory[host]['ansible_host'])
+        except Exception as e:
+          log.debug('Caught {e!s}')
+        else:
+          log.info('socket: {host}: {socket_info}'.format(**locals()))
+          ip = ', '.join(socket_info[2])
       elif host == 'localhost':
         ip = get_ip()
 
