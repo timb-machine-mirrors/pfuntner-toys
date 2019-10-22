@@ -9,15 +9,6 @@ import datetime
 import threading
 import subprocess
 
-def write(stream, stream_name, msg):
-  if msg:
-    msg = msg.strip('\n')
-    lock.acquire()
-    now = datetime.datetime.now()
-    elapsed = now - start
-    stream.write('{now} +{elapsed} {stream_name} {msg!r}\n'.format(**locals()))
-    lock.release()
-
 class Redirect(threading.Thread):
   def __init__(self, stream_name, in_stream, out_stream, filename):
     self.stream_name = stream_name
@@ -25,11 +16,22 @@ class Redirect(threading.Thread):
     self.out_stream = out_stream
     self.filename = filename
     self.file = open(filename, 'w', 0) if filename else None
+    self.prev = datetime.datetime.now()
     super(Redirect, self).__init__()
+
+  def write(self, msg):
+    if msg:
+      msg = msg.strip('\n')
+      lock.acquire()
+      now = datetime.datetime.now()
+      elapsed = now - start
+      sincelast = int((now - self.prev).total_seconds()*1000)
+      self.prev = now
+      self.out_stream.write('{now} +{elapsed} {sincelast:6} {self.stream_name} {msg!r}\n'.format(**locals()))
+      lock.release()
 
   def run(self):
     buf = ''
-    stream_name = self.stream_name
     read_list = [self.in_stream]
     write_list = []
     excp_list = write_list
@@ -42,20 +44,20 @@ class Redirect(threading.Thread):
           if self.file:
             self.file.write(c)
           if c == '\n':
-            write(self.out_stream, stream_name, buf)
+            self.write(buf)
             buf = ''
           else:
             buf += c
           last_c = c
         else:
-          write(self.out_stream, stream_name, buf)
+          self.write(buf)
           break
       elif last_c not in [None, '\n']:
         """
         The select() timed out.  If the command printed out some data without a newline, it likely printed out a prompt
         and we would like to display it.
         """
-        write(self.out_stream, stream_name, buf)
+        self.write(buf)
         buf = ''
 
     if self.file:
