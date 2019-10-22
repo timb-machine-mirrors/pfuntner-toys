@@ -26,4 +26,4 @@ if os.path.isdir(args.directory):
   log.debug('Executing {cmd}'.format(**locals()))
   subprocess.Popen(cmd).wait()
 else:
-  parser.error('{args.directory!r} is not a directory'.format(lastarg=args.args[-1]))
+  parser.error('{args.directory!r} is not a directory'.format(**locals()))
