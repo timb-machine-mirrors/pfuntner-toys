@@ -309,6 +309,8 @@ class VirtualHosts(object):
         for host in curr:
           if host.name not in ret.keys():
             ret[host.name] = host
+          else:
+            log.warn('Note: There are multiple machines called {host.name!r}'.format(**locals()))
 
     for host in ret.values():
       if host.src == 'aws':
