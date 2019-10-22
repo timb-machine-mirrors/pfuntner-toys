@@ -321,8 +321,10 @@ elif args.linear:
 else:
   writer = defaultWriter
 
-# when args.ansible is on, use this regular expression turn "rhel7 | SUCCESS => {" into "{"
-ansible_regexp = re.compile(r'^\S+\s+\|\s+\S+\s+=>\s+\{$')
+# when args.ansible is on, use these regular expressions to turn lines into "{":
+# "rhel7 | SUCCESS => {"
+# "ok: [centos8] => {"
+ansible_regexp = re.compile(r'^((\S+\s+\|\s+\S+)|(\S+:\s+\[\S+\]))\s+=>\s+\{$')
 
 root = None
 if args.file:
