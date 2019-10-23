@@ -20,11 +20,22 @@ def lookfor(*paths):
 parser = argparse.ArgumentParser(description='Append basic logging/argparse template to a file')
 parser.add_argument('file', help='File to `basicfy`')
 parser.add_argument('-v', '--verbose', action='store_true', help='Enable debugging')
+parser.add_argument('-f', '--force', action='store_true', help='Add template even if the file already has them')
 args = parser.parse_args()
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(funcName)s:%(lineno)d %(msg)s')
 log = logging.getLogger('basicfy')
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
+if not args.force:
+  try:
+    with open(args.file) as stream:
+      data = stream.read()
+  except e as Exception:
+    log.info('Ignoring {e!s}'.format(**locals()))
+  else:
+    if ('import logging' in data) and ('import argparse' in data):
+      parser.error('{args.file!r} already imports the logging and argparse modules'.format(**locals()))
 
 basic = lookfor(
   '{HOME}/python/basic'.format(**os.environ),
