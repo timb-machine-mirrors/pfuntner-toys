@@ -23,6 +23,7 @@ def set_mintty_title(title):
 
     I got the technique for actually changing the title from https://superuser.com/questions/362227/how-to-change-the-title-of-the-mintty-window but I did the logic that leads up to that from scratch.
   """
+  global is_mintty
 
   is_mintty = False
   see('sys.platform')
