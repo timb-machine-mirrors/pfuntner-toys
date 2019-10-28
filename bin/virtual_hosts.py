@@ -231,9 +231,10 @@ class VirtualHosts(object):
               instance_id = self.get_value(instance, 'Instances/0/InstanceId')
               self.aws_instance_cache[instance_id] = self.get_value(instance, 'Instances/0')
               state = self.get_value(instance, 'Instances/0/State/Name')
+              log.info('Tags: {}'.format(self.get_value(instance, 'Instances/0/Tags')))
               attrs = {
                 'instance_id': instance_id,
-                'name': self.get_value(instance, 'Instances/0/Tags/0/Value'),
+                'name': ''.join([tag['Value'] for tag in self.get_value(instance, 'Instances/0/Tags') if tag['Key'] == 'Name']),
                 'ip': self.get_value(instance, 'Instances/0/PublicIpAddress') if state == 'running' else None,
                 'user': None,
                 'zone': self.get_value(instance, 'Instances/0/Placement/AvailabilityZone'),
