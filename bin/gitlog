@@ -74,7 +74,7 @@ rc = p.wait()
 if (rc != 0) or stderr or verbose:
   sys.stderr.write("%s returned %d, %s, %s\n" % (cmd, rc, repr(limit(stdout, 25)), repr(stderr)))
 
-assert (rc == 0) and (not stderr), "%s failed"
+assert (rc == 0) and (not stderr), "%s failed" % cmd
 
 commitRegexp = re.compile("^commit (\S+)$")
 
