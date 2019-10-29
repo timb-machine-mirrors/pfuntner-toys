@@ -3,7 +3,8 @@
 import os
 import sys
 import time
-import getopt
+import logging
+import argparse
 import datetime
 import subprocess
 
@@ -26,24 +27,20 @@ def exitGracefullyForCtrlC(rc=None):
     print '' # force a newline so the shell prompt starts on a new line
     exit(rc)
 
-(opts, args) = ([], [])
-try:
-  (opts, args) = getopt.getopt(sys.argv[1:], 'v', ['verbose'])
-except Exception as e:
-  syntax('Caught `{e!s}`'.format(**locals()))
+parser = argparse.ArgumentParser(description='Monitor availability of a host via ping or ssh')
+parser.add_argument('-s', '--ssh', action='store_true', help='Use ssh instead of ping')
+parser.add_argument('-v', '--verbose', action='store_true', help='Enable debugging')
+parser.add_argument('host', help='Host to ping (hostname or IP)')
+args = parser.parse_args()
 
-for (opt, arg) in opts:
-  if opt in ['-v', '--verbose']:
-    verbose = not verbose
-  else:
-    syntax('Unexpected option: {opt!r}')
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-if len(args) != 1:
-  syntax('Specify a host or IP address')
-  exit(1)
-
-host = args[0]
-cmd = ['ping', '-w', '5', '-n' if 'win' in sys.platform else '-c', '1', host]
+if args.ssh:
+  cmd = ['ssh', '-o', 'ConnectTimeout=5', args.host, 'true']
+else:
+  cmd = ['ping', '-w', '5', '-n' if 'win' in sys.platform else '-c', '1', args.host]
 
 last_time = None
 last_state = None
@@ -67,7 +64,7 @@ while True:
   elif last_state:
     sys.stdout.write('\r')
   elapsed = (now if last_state else datetime.datetime.now()) - (last_time if last_state else now)
-  sys.stdout.write('{now} {host} {state:<4} {elapsed}'.format(**locals()))
+  sys.stdout.write('{now} {args.host} {state:<4} {elapsed}'.format(**locals()))
   last_state = state
 
   time.sleep(5)
