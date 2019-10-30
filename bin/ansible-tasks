@@ -1,0 +1,62 @@
+#! /usr/bin/env python2
+
+import re
+import sys
+import logging
+import argparse
+
+from table import Table
+
+class Task(object):
+  def __init__(self, task_type, role, name):
+    self.type = task_type.lower()
+    self.role = re.sub('\s:\s$', '', role or '')
+    self.name = name
+    self.hosts = {}
+
+  def __str__(self):
+    return '{self.type} {self.name} {self.hosts}'.format(**locals())
+
+parser = argparse.ArgumentParser(description='Scrape info from Ansible playbook task output')
+parser.add_argument('-v', '--verbose', action='store_true', help='Enable debugging')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
+if sys.stdin.isatty():
+  parser.error('stdin must be redirected')
+
+task_regexp = re.compile('^(?:RUNNING\s+)?(\S+)\s+\[([^:]*\s:\s)?(.*)\]\s+\*{5,}$')
+host_regexp = re.compile('^(\S+):\s+\[(.*)\]$')
+
+tasks = []
+
+for line in sys.stdin.read().splitlines():
+  match = task_regexp.search(line)
+  if match:
+    if tasks:
+      log.info(tasks[-1])
+    tasks.append(Task(*match.groups()))
+  else:
+    match = host_regexp.search(line)
+    if match:
+      assert tasks
+      tasks[-1].hosts[match.group(2)] = match.group(1)
+if tasks:
+  log.info(tasks[-1])
+
+hosts = set()
+for task in tasks:
+  for host in task.hosts.keys():
+    hosts.add(host)
+hosts = sorted(list(hosts))
+
+table = Table('Task type', 'Role', 'Task', *hosts)
+for task in tasks:
+  row = [task.type, task.role, task.name]
+  for host in hosts:
+    row.append(task.hosts.get(host, ''))
+  table.add(row)
+sys.stdout.write(str(table))
