@@ -37,13 +37,16 @@ if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Get `true` path - useful on Windoze')
   parser.add_argument('-v', '--verbose', action='store_true', help='Enable debugging')
   parser.add_argument('-u', '--unix-style', action='store_true', help='Use Unix style slashes')
-  parser.add_argument('paths', metavar='path', nargs='+', help='One or more paths')
+  parser.add_argument('paths', metavar='path', nargs='*', help='Zero or more paths')
   args = parser.parse_args()
   
   logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
   log = logging.getLogger()
   log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
   
+  if not args.paths:
+    args.paths = ['.']
+
   for path in args.paths:
     curr = process(path, log)
     if args.unix_style:
