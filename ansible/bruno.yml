@@ -49,3 +49,5 @@
     desired_lines:
       - "set -o vi"
       - "export EDITOR=vi"
+      - "alias r='fc -s'"
+      - "alias br='vi -R'"
