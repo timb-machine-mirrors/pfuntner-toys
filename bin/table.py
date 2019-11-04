@@ -196,7 +196,7 @@ class CsvMethod(MethodBase):
     rows = [row for row in csv.reader(stream)]
     if args.headings and rows:
       """
-        Turn the list of list into a list of dictionaries making use of the heading row
+        Turn the list of lists into a list of dictionaries making use of the heading row
       """
       ret = []
       order = rows[0]
@@ -228,6 +228,80 @@ class CsvMethod(MethodBase):
         else:
           parser.error('Cannot write a dictionary without an order for columns')
 
+
+class FlatMethod(MethodBase):
+  """
+  Handle I/O for "flat" format
+  """
+  name = 'flat'
+
+  def read(self, stream):
+    """
+    Read a list of lists or dictionaries in flat format:
+       datum1-1
+       datum1-2
+       .
+       .
+       datum1-n
+
+       datum2-1
+       datum2-2
+       .
+       .
+       datum2-n
+       .
+       .
+
+    :param stream: The input stream (eg sys.stdin)
+    :return: A two-element tuple: (the list of lists or dictionaries, a list of named column headings)
+    """
+    lines = [line.rstrip() for line in stream.read().splitlines()]
+    log.info('{count} lines read'.format(count=len(lines)))
+    ret = []
+    order = []
+    pos = 0
+    if args.headings:
+      while pos < len(lines) and lines[pos]:
+        order.append(lines[pos])
+        pos += 1
+
+    pos += 1
+    while pos < len(lines):
+      row = {} if args.headings else []
+      ret.append(row)
+      log.info('Starting to read data row at line {pos}'.format(**locals()))
+      while (pos < len(lines)) and lines[pos]:
+        log.info('{pos}: {line!r}'.format(pos=pos, line=lines[pos]))
+        if args.headings:
+          inner_pos = len(row)
+          if inner_pos >= len(order):
+            parser.error('Column {inner_pos} encountered when only {count} headings'.format(inner_pos=inner_pos, count=count(order)))
+          row[order[inner_pos]] = lines[pos]
+        else:
+          row.append(lines[pos])
+        pos += 1
+      pos += 1
+
+    return (ret, order)
+
+  def write(self, stream, root, order):
+    """
+    Write the list of lists or dictionaries in flat format.
+    :param stream: The output stream (eg. sys.stdout)
+    :param root: The list of lists or dictionaries
+    :param order: The order of named columns if order is important
+    :return: None
+    """
+    need_newline = False
+    for row in root:
+      if need_newline:
+        stream.write('\n')
+      need_newline = True
+      if isinstance(row, list):
+        stream.write('\n'.join(row) + '\n')
+      else:
+        for column in order:
+          stream.write(row[column] + '\n')
 
 class JsonMethod(MethodBase):
   """
