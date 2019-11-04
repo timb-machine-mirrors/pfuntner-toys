@@ -1,0 +1,24 @@
+#! /usr/bin/env python2
+
+import re
+import sys
+import logging
+import argparse
+
+parser = argparse.ArgumentParser(description='Perform re.findall on stdin')
+parser.add_argument('-v', '--verbose', action='store_true', help='Enable debugging')
+parser.add_argument('regexp', help='Regular expression with which to search')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
+if sys.stdin.isatty():
+  parser.error('stdin must be redirected')
+
+regexp = re.compile(args.regexp)
+for line in sys.stdin.read().splitlines():
+  hits = regexp.findall(line)
+  for hit in hits:
+    print repr(hit) 
