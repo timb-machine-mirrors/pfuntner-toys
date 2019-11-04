@@ -16,8 +16,13 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 if sys.stdin.isatty():
   parser.error('stdin must be redirected')
 
-regexp = re.compile('\x1b\[\d+m')
+regexps = [
+  re.compile('\x1b\[\d+m', flags=re.MULTILINE),
+  re.compile('\x1b\[\d+;\d+m', flags=re.MULTILINE),
+]
 data = sys.stdin.read()
 if args.verbose:
-  log.info('{} color sequences'.format(len(regexp.findall(data))))
-sys.stdout.write(regexp.sub('', data))
+  log.info('{} color sequences'.format(sum([len(regexp.findall(data)) for regexp in regexps])))
+for regexp in regexps:
+  data = regexp.sub('', data)
+sys.stdout.write(data)
