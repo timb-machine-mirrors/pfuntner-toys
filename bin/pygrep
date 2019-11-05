@@ -2,7 +2,8 @@
 
 import re
 import sys
-import getopt
+import logging
+import argparse
 
 ignoreCase = False
 negate = False
@@ -22,46 +23,40 @@ def process(filename=None):
     for exclude in excludes:
       tmp = exclude.sub("", tmp)
     match = regexp.search(tmp)
-    if (match and (not negate)) or ((not match) and negate):
+    if (match and (not args.negate)) or ((not match) and args.negate):
       if filename:
         sys.stdout.write(filename)
-        if numbers: sys.stdout.write(' ')
-      if numbers:
+        if args.line_numbers: sys.stdout.write(' ')
+      if args.line_numbers:
         sys.stdout.write(str(lineno))
-      if filename or numbers:
+      if filename or args.line_numbers:
         sys.stdout.write(':')
       sys.stdout.write("%s\n" % line)
     
   if filename:
     f.close()
 
-excludes = []
+parser = argparse.ArgumentParser(description='Do a Python-style grep')
+parser.add_argument('-x', '--exclude', action='append', help='Specify regular expression to exclude')
+parser.add_argument('-v', '--negate', action='store_true', help='Negate the search')
+parser.add_argument('-i', '--ignore-case', action='store_true', help='Perform case-insensitive search')
+parser.add_argument('-n', '--line-numbers', action='store_true', help='Include line numbers')
+parser.add_argument('--verbose', action='store_true', help='Enable debugging')
+parser.add_argument('regexp', help='Regular expression to search for')
+parser.add_argument('files', metavar='files', nargs='*', help='Zero or more files to search')
+args = parser.parse_args()
 
-(opts,args) = getopt.getopt(sys.argv[1:], "x:nvi", [])
-for (opt,arg) in opts:
-  if opt == "-v":
-    negate = not negate
-  elif opt == "-i":
-    ignoreCase = not ignoreCase
-  elif opt == "-n":
-    numbers = not numbers
-  elif opt == "-x":
-    excludes.append(re.compile(arg, flags=re.IGNORECASE if ignoreCase else 0))
-  else:
-    sys.stderr.write("Unhandled option: `%s`\n" % opt)
-    exit(1)
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-if not args:
-  sys.stderr.write("Syntax: %s [-ivn] regexp [file ...]\n" % sys.argv[0])
-  exit(1)
+regexp = re.compile(args.regexp, flags=re.IGNORECASE if args.ignore_case else 0)
+excludes = [re.compile(pattern, flags=re.IGNORECASE if args.ignore_case else 0) for pattern in (args.exclude or [])]
 
-regexp = re.compile(args.pop(0), flags=re.IGNORECASE if ignoreCase else 0)
-
-if args:
-  for filename in args:
+if args.files:
+  for filename in args.files:
     process(filename)
 elif sys.stdin.isatty():
-  sys.stderr.write("stdin must be redirected\n")
-  exit(1)
+  parser.error('stdin must be redirected if no files are specified on the command line')
 else:
   process()
