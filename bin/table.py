@@ -303,6 +303,60 @@ class FlatMethod(MethodBase):
         for column in order:
           stream.write(row[column] + '\n')
 
+class FormMethod(MethodBase):
+  """
+  Handle I/O for "form" format
+  """
+  name = 'form'
+
+  def read(self, stream):
+    """
+    Read a dictionary for a single row:
+       key1
+       value1
+       key2
+       value2
+       .
+       .
+       .
+       keyN
+       valueN
+
+    :param stream: The input stream (eg sys.stdin)
+    :return: A two-element tuple: (the list of lists or dictionaries, a list of named column headings)
+    """
+    lines = [line.rstrip() for line in stream.read().splitlines()]
+    log.info('{count} lines read'.format(count=len(lines)))
+    ret = [{}]
+    order = []
+    pos = 0
+    while pos < len(lines):
+      key = lines[pos]
+      order.append(key)
+      pos += 1
+      if pos >= len(lines):
+        parser.error('Read key {key!r} without a value'.format(**locals()))
+      ret[0][key] = lines[pos]
+      pos += 1
+
+    return (ret, order)
+
+  def write(self, stream, root, order):
+    """
+    Write the list of lists or dictionaries in form format.
+    :param stream: The output stream (eg. sys.stdout)
+    :param root: The list of lists or dictionaries
+    :param order: The order of named columns if order is important
+    :return: None
+    """
+    if not isinstance(root, dictionary):
+      parser.error('Form format requires a dictionary')
+    if len(root) != 1:
+      parser.error('A {count} element dictionary cannot be processed in form format'.format(count=len(root)))
+    for column in order:
+      stream.write(column + '\n')
+      stream.write(root[0][column] + '\n')
+
 class JsonMethod(MethodBase):
   """
   Handle I/O for JSON format
@@ -502,6 +556,17 @@ class FixedMethod(MethodBase):
     :param order: The order of named columns if order is important
     :return: None
     """
+
+    log.info('args.rotate: {}, order: {}'.format(args.rotate, order))
+    if args.rotate and order:
+      new_root = []
+      if order:
+        for heading in order:
+          new_root.append([heading])
+          for row in root:
+            new_root[-1].append(row.get(heading, ''))
+      root = new_root
+
     widths = []
     for (row_num, row) in enumerate(root):
       if isinstance(row, dict):
@@ -801,6 +866,7 @@ parser.add_argument('--sort', help='Sort rows by one or more columns')
 parser.add_argument('-n', '--numeric_justify', action='store_true',
                     help='Right-justify numeric columns during fixed format output')
 parser.add_argument('--style', choices=['flow', 'block'], help='Specify an yaml output style')
+parser.add_argument('--rotate', action='store_true', help='Rotate so rows are columns, columns are rows')
 parser.add_argument('-f', '--file', help='File from which to read, instead of stdin')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 
