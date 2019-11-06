@@ -1,0 +1,11 @@
+#! /usr/bin/env python2
+
+import sys
+import subprocess
+
+p = subprocess.Popen(['ssh'] + sys.argv[1:])
+rc = p.wait()
+
+subprocess.Popen('windoze_title --self', shell=True).wait()
+
+exit(rc)
