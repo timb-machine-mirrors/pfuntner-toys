@@ -288,15 +288,15 @@ class VirtualHosts(object):
         if aws_hosts is None:
           aws_hosts = [] if self.ansible_only else self.get_aws_hosts()
         for host in aws_hosts:
-          log.debug('Comparing {host.name} against {name}'.format(**locals()))
+          log.debug('Comparing {host!s} against {name!r}'.format(**locals()))
           if name == host.name:
             curr.append(host)
-            break
           else:
             try:
               match = re.search(name, host.name)
               log.debug('Regexp: {}'.format(bool(match)))
             except Exception as e:
+              log.debug('Caught {e!s}'.format(**locals()))
               if name not in self.warnings:
                 log.warning('{name!r} has not a valid regular expression: {e!s}'.format(**locals()))
                 self.warnings.append(name)
