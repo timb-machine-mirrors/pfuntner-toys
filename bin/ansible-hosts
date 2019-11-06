@@ -1,0 +1,69 @@
+#! /usr/bin/env python2
+
+import sys
+import json
+import logging
+import argparse
+import subprocess
+
+from table import Table
+
+parser = argparse.ArgumentParser(description='List ansible hosts')
+parser.add_argument('-v', '--verbose', action='store_true', help='Enable debugging')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
+"""
+[centos@pfuntner1 bin master]$ ansible-inventory --list
+{
+    "_meta": {
+        "hostvars": {
+            "centos8": {
+                "ansible_host": "3.81.52.228",
+                "ansible_ssh_private_key_file": "/home/centos/.ssh/pfuntner-aws.pem",
+                "ansible_user": "centos"
+            },
+            "rhel8": {
+                "ansible_host": "3.86.248.172",
+                "ansible_ssh_private_key_file": "/home/centos/.ssh/pfuntner-aws.pem",
+                "ansible_user": "ec2-user"
+            },
+            "rhel8-alt": {
+                "ansible_host": "54.162.94.67",
+                "ansible_ssh_private_key_file": "/home/centos/.ssh/pfuntner-aws.pem",
+                "ansible_user": "ec2-user"
+            }
+        }
+    },
+    "all": {
+        "children": [
+            "targets",
+            "ungrouped"
+        ]
+    },
+    "targets": {
+        "hosts": [
+            "centos8",
+            "rhel8",
+            "rhel8-alt"
+        ]
+    }
+}
+"""
+
+p = subprocess.Popen(['ansible-inventory', '--list'], stdout=subprocess.PIPE)
+(stdout, stderr) = p.communicate()
+rc = p.wait()
+if rc == 0:
+  table = Table('host', 'ip', 'user', 'key')
+  hosts = json.loads(stdout).get('_meta', {}).get('hostvars', {})
+  for name in sorted(hosts.keys()):
+   host = hosts[name]
+   table.add(name, host['ansible_host'], host['ansible_user'], host['ansible_ssh_private_key_file'])
+
+  sys.stdout.write(str(table))
+    
+exit(rc)
