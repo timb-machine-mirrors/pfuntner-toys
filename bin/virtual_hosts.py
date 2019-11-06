@@ -152,7 +152,7 @@ class VirtualHosts(object):
         ret = 'ubuntu'
       elif 'debian' in image_name:
         ret = 'admin'
-      elif 'red hat' in image_name:
+      elif ('red hat' in image_name) or ('rhel' in image_name):
         ret = 'ec2-user'
       elif 'centos' in image_name:
         ret = 'centos'
