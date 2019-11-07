@@ -28,9 +28,9 @@ hosts = virtual_hosts.get_hosts(args.hostnames)
 if hosts:
   hosts = sorted(hosts, key=lambda host: host.name)
   if args.action == 'query':
-    table = Table('Host', 'State', 'Created', 'Controlled', desiredSep=' | ')
+    table = Table('Host', 'State', 'Instance ID', 'Created', 'Controlled', desiredSep=' | ')
     for host in hosts:
-      table.add(host.name, host.state, host.created_elapsed, host.controlled_elapsed)
+      table.add(host.name, host.state, host.instance_id, host.created_elapsed, host.controlled_elapsed)
     print str(table)
   elif args.action == 'show':
     for host in hosts:
