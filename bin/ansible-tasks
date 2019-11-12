@@ -17,6 +17,13 @@ class Task(object):
   def __str__(self):
     return '{self.type} {self.name} {self.hosts}'.format(**locals())
 
+def remove_packer_overhead(s):
+  match = packer_regexp.search(s)
+  if match:
+    return match.group(1)
+  else:
+    return s
+
 parser = argparse.ArgumentParser(description='Scrape info from Ansible playbook task output')
 parser.add_argument('-v', '--verbose', action='store_true', help='Enable debugging')
 args = parser.parse_args()
@@ -31,9 +38,16 @@ if sys.stdin.isatty():
 task_regexp = re.compile('^(?:RUNNING\s+)?(\S+)\s+\[([^:]*\s:\s)?(.*)\]\s+\*{5,}$')
 host_regexp = re.compile('^(\S+):\s+\[(.*)\]$')
 
+# Remove packer overhead if necessary
+packer_regexp = re.compile('^\x1b\[\d+;\d+2m\s+\S+:\s(.*)\x1b\[\d+m$')
+
+# Simplify host: [foo -> bar] => [foo]
+host_simplifier_regexp = re.compile('^(\S+)\s+->\s+\S+$')
+
 tasks = []
 
 for line in sys.stdin.read().splitlines():
+  line = remove_packer_overhead(line)
   match = task_regexp.search(line)
   if match:
     if tasks:
@@ -43,7 +57,12 @@ for line in sys.stdin.read().splitlines():
     match = host_regexp.search(line)
     if match:
       assert tasks
-      tasks[-1].hosts[match.group(2)] = match.group(1)
+      host = match.group(2)
+      host_match = host_simplifier_regexp.search(host)
+      if host_match:
+        host = host_match.group(1)
+      tasks[-1].hosts[host] = match.group(1)
+
 if tasks:
   log.info(tasks[-1])
 
