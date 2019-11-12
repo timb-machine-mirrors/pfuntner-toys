@@ -7,13 +7,18 @@ import logging
 import argparse
 import subprocess
 
+def banner(msg):
+  border = '*' * (len(msg) + 4)
+  print border
+  print '* {msg} *'.format(**locals())
+  print border
+
 def see(name):
   value = eval(name)
   log.debug('{name}: {value!r}'.format(**locals()))
 
 parser = argparse.ArgumentParser(description='Run my bruno.yml Ansible playbook on one or more systems')
 parser.add_argument('hosts', metavar='host', nargs='+', help='One or more hosts')
-parser.add_argument('-b', '--become', action='store_true', help='Become root')
 parser.add_argument('-v', '--verbose', action='store_true', help='Enable debugging')
 args = parser.parse_args()
 
@@ -34,7 +39,9 @@ variables = {
   'verbose': bool(args.verbose),
 }
 
-cmd = ['ansible-playbook', '-e', json.dumps(variables)] + (['-b'] if args.become else []) + [playbook]
-see('cmd')
-
-exit(subprocess.Popen(cmd).wait())
+for become in [False, True]:
+  banner('become: {become}'.format(**locals()))
+  cmd = ['ansible-playbook', '-e', json.dumps(variables)] + (['-b'] if become else []) + [playbook]
+  see('cmd')
+  
+  rc = subprocess.Popen(cmd).wait()
