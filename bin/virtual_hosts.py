@@ -15,6 +15,8 @@ class Host(object):
   required_keys = set(['name', 'ip', 'user'])
 
   def __init__(self, src, **kwargs):
+    if 'ip' not in kwargs.keys() and 'external_ip' in kwargs.keys():
+      kwargs['ip'] = kwargs['external_ip']
     missing_keys = Host.required_keys - set(kwargs.keys())
     if missing_keys:
       log.error('{kwargs} is missing {missing_keys}'.format(expected=list(Host.required_keys), **locals()))
@@ -69,6 +71,57 @@ class VirtualHosts(object):
         ret += cls.find_nodes(node, required_key)
     return ret
 
+  def get_gcp_hosts(self):
+    """
+      [centos@pfuntner1 tmp]$ gcloud compute instances list
+      NAME                                                    ZONE        MACHINE_TYPE   PREEMPTIBLE  INTERNAL_IP  EXTERNAL_IP      STATUS
+      .
+      .
+      .
+      pfuntner-gcp-centos8                                    us-east1-b  n1-standard-1               10.142.0.83  35.237.197.196   RUNNING
+      .
+      .
+      .
+    """
+    ret = []
+    cmd = ['gcloud', 'compute', 'instances', 'list']
+    try:
+      p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except Exception as e:
+      log.info('{cmd} failed: {e!s}'.format(**locals()))
+    else:
+      (stdout, stderr) = p.communicate()
+      rc = p.wait()
+      log.info('{cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
+      if stdout:
+        lines = stdout.splitlines()
+        headings = re.findall('\S+\s+', lines[0] + ' ')
+        log.debug('headings: {headings}'.format(**locals()))
+        attrs = [heading.lower().strip() for heading in headings]
+        log.debug('attrs: {attrs}'.format(**locals()))
+        for line in lines[1:]:
+          if line:
+            pos = 0
+            kv = {
+              'src': 'gcp',
+              'instance_id': '',
+              'image_id': '',
+            }
+            for (heading_num, heading_text) in enumerate(headings):
+              kv['state' if attrs[heading_num] == 'status' else attrs[heading_num]] = line[pos:pos+len(headings[heading_num]) if heading_num < len(headings) else len(line)].strip()
+              pos += len(heading_text)
+
+            log.debug('kv: {kv}'.format(**locals()))
+
+            if 'user' not in kv:
+              kv['user'] = 'centos' if 'centos' in kv['name'].lower() else None
+                
+            if 'key' not in kv:
+              kv['key'] = os.path.join(os.environ['HOME'], '.ssh/google_compute_engine')
+
+            ret.append(Host(**kv))
+    return ret
+    
   def get_ansible_hosts(self):
     ret = []
     if os.path.isfile(self.ANSIBLE_HOSTS_FILE):
@@ -289,6 +342,23 @@ class VirtualHosts(object):
           aws_hosts = [] if self.ansible_only else self.get_aws_hosts()
         for host in aws_hosts:
           log.debug('Comparing {host!s} against {name!r}'.format(**locals()))
+          if name == host.name:
+            curr.append(host)
+          else:
+            try:
+              match = re.search(name, host.name)
+              log.debug('Regexp: {}'.format(bool(match)))
+            except Exception as e:
+              log.debug('Caught {e!s}'.format(**locals()))
+              if name not in self.warnings:
+                log.warning('{name!r} has not a valid regular expression: {e!s}'.format(**locals()))
+                self.warnings.append(name)
+            else:
+              if match:
+                curr.append(host)
+
+      if (not curr) or (not exact):
+        for host in self.get_gcp_hosts():
           if name == host.name:
             curr.append(host)
           else:
