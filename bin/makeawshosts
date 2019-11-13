@@ -27,7 +27,7 @@ if args.quiet:
 else:
   log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
-virtual_hosts = VirtualHosts(aws_only=True)
+virtual_hosts = VirtualHosts()
 hosts = virtual_hosts.get_hosts(args.hostexpr)
 log.info('virtual_hosts: {}'.format([str(host) for host in hosts]))
 
@@ -66,9 +66,10 @@ log.info('virtual_hosts: {}'.format([str(host) for host in hosts]))
 }
 """
 for host in hosts:
-  log.debug(host.__dict__)
-  host.name = re.sub(args.hostexpr, '', host.name)
-  if host.state.lower() != 'running':
-    log.warn('{host.name} is stopped'.format(**locals()))
-  else:
-    print '{host.name} ansible_host={host.ip} ansible_user={host.user} ansible_ssh_private_key_file={host.key}'.format(**locals())
+  if host.src in ['aws', 'gcp']:
+    log.debug(host.__dict__)
+    host.name = re.sub(args.hostexpr, '', host.name)
+    if host.state.lower() != 'running':
+      log.warn('{host.name} is stopped'.format(**locals()))
+    else:
+      print '{host.name} ansible_host={host.ip} ansible_user={host.user} ansible_ssh_private_key_file={host.key}'.format(**locals())
