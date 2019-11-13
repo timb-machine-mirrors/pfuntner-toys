@@ -357,7 +357,7 @@ class VirtualHosts(object):
               if match:
                 curr.append(host)
 
-      if (not curr) or (not exact):
+      if ((not curr) or (not exact)) and (not self.ansible_only) and (not self.aws_only):
         for host in self.get_gcp_hosts():
           if name == host.name:
             curr.append(host)
