@@ -1,0 +1,1 @@
+diff --side-by-side "$@"

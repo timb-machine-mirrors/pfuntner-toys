@@ -1,1 +1,7 @@
-diff --side-by-side "$@"
+#! /usr/bin/env python2
+
+import sys
+import subprocess
+
+cmd = ['diff', '--side-by-side'] + sys.argv[1:]
+exit(subprocess.Popen(cmd).wait())
