@@ -57,13 +57,19 @@ def distro_translate(s):
   return distro_translations.get(s, s)
 
 parser = argparse.ArgumentParser(description='Get stats on Ansible hosts')
+
 parser.add_argument('hosts', metavar='host', nargs='*', help='List of hosts to query')
+parser.add_argument('-a', '--all', action='store_true', help='Target localhost and everything in /etc/ansible/hosts')
+
 parser.add_argument('-v', '--verbose', action='count', help='Enable more debugging')
 args = parser.parse_args()
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
 log.setLevel(logging.WARNING - 10*(args.verbose or 0))
+
+if args.all and args.hosts:
+  parser.error('--all and hosts are mutually exclusive')
 
 header_regexp = re.compile('^(\S+)\s+\|\s+(\S+)\s+=>\s+{')
 
@@ -102,7 +108,7 @@ except Exception as e:
 else:
   log.debug('inventory: {inventory}'.format(**locals()))
 
-cmd = ('ansible {hosts} -m setup'.format(hosts=','.join(args.hosts) if args.hosts else 'all')).split()
+cmd = ('ansible {hosts} -m setup'.format(hosts=','.join(args.hosts) if args.hosts else 'all' + (',localhost' if args.all else ''))).split()
 log.debug(cmd)
 (rc, stdout, stderr) = run(cmd)
 if (not stdout) and stderr:
