@@ -28,24 +28,28 @@ if sys.stdin.isatty():
 section_regexp = re.compile(r'^\[(.+)\]$')
 kv_regexp = re.compile('^\s*(\S+)\s*=\s*(.+)\s*$')
 
-comment_regexp = re.compile(r'#.*$')
+comment_regexp = re.compile(r'(#|;).*$')
 
 section = None
 
 data = {}
 
 for line in sys.stdin.read().splitlines():
+  handled = False
   if not isempty(line):
     match = section_regexp.search(line)
     if match:
       section = match.group(1)
       see('section')
       data[section] = {}
+      handled = True
     elif section:
       match = kv_regexp.search(line)
       if match:
         data[section][match.group(1)] = match.group(2)
-      else:
-        parser.error('Don\'t understand: {line!r}'.format(**locals()))
+        handled = True
+
+    if not handled:
+      parser.error('Don\'t understand: {line!r}'.format(**locals()))
 
 print json.dumps(data, indent=2, sort_keys=True)

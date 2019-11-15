@@ -10,19 +10,19 @@
       var: home_ls
     when: "verbose | default(false)"
 
-  - name: "Use {{ ansible_env.HOME }}/bash_profile"
+  - name: "Use {{ ansible_env.HOME }}/.bash_profile"
     set_fact:
       profile: "{{ ansible_env.HOME }}/.bash_profile"
     when:
     - "'.bash_profile' in home_ls.stdout_lines"
 
-  - name: "Use {{ ansible_env.HOME }}/bash_login"
+  - name: "Use {{ ansible_env.HOME }}/.bash_login"
     set_fact:
       profile: "{{ ansible_env.HOME }}/.bash_login"
     when:
     - "'.bash_login' in home_ls.stdout_lines"
 
-  - name: "Use {{ ansible_env.HOME }}/profile"
+  - name: "Use {{ ansible_env.HOME }}/.profile"
     set_fact:
       profile: "{{ ansible_env.HOME }}/.profile"
     when:
