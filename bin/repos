@@ -5,6 +5,7 @@ import os
 import sys
 import logging
 import argparse
+import datetime
 import subprocess
 
 from table import Table
@@ -29,9 +30,22 @@ def banner(msg):
   print '* {msg} *'.format(**locals())
   print border
 
+def isotime(s):
+  """
+  Thu Nov 7 07:53:13 2019
+  """
+  try:
+    t = datetime.datetime.strptime(s, '%a %b %d %H:%M:%S %Y')
+  except Exception as e:
+    log.info('Caught: {e!s}'.format(**locals()))
+  else:
+    s = t.isoformat().replace('T', ' ')
+  return s
+
 def process(root):
   if os.path.exists(root):
     if os.path.isdir(os.path.join(root, '.git')):
+      log.debug('root: {root!r}'.format(**locals()))
       prev = os.getcwd()
       os.chdir(root)
 
@@ -57,9 +71,12 @@ def process(root):
                           re.MULTILINE + re.DOTALL)
         if match:
           commit = match.group(1)
-          tiemstamp = match.group(2)
+          timestamp = match.group(2)
         else:
-          branch = '?'
+          commit = '?'
+          timestamp = '?'
+
+        comment = repr('\n'.join([line.strip() for line in stdout.splitlines()][5:]))[1:45]
   
         (rc, stdout, stderr) = run('git remote -v')
         match = re.search('^origin\s+(\S+)\s+\(fetch\)$', stdout, flags=re.MULTILINE)
@@ -71,7 +88,7 @@ def process(root):
         (rc, stdout, stderr) = run('git status')
         clean = 'Clean' if 'nothing to commit, working directory clean' in stdout else 'Dirty'
   
-        table.add(root, url, curr_branch, clean, commit[:7])
+        table.add(root, url, curr_branch, clean, commit[:7], isotime(timestamp), comment)
       os.chdir(prev)
     if os.path.isdir(root):
       for filename in os.listdir(root):
@@ -93,7 +110,7 @@ if not args.roots:
   args.roots = [os.path.join(os.environ['HOME'], 'repos')]
 
 if not args.diffs:
-  table = Table('Path', 'URL', 'Branch', 'Clean', 'Commit')
+  table = Table('Path', 'URL', 'Branch', 'Clean', 'Commit', 'Time', 'Comment')
 
 map(process, args.roots)
 
