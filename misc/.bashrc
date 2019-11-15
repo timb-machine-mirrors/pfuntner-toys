@@ -40,6 +40,7 @@ alias zip=unzip
 if expr match "$(uname -s)" '.*[Ww][Ii][Nn]' >/dev/null 2>&1
 then
   alias date=unixdate
+  alias uptime=win-uptime
 fi
 
 alias tools-setup="$HOME/repos/toys/misc/setup"
