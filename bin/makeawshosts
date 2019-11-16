@@ -10,11 +10,12 @@ import subprocess
 from virtual_hosts import VirtualHosts
 
 parser = argparse.ArgumentParser(description='Make Ansible hosts file from AWS instances')
-parser.add_argument('hostexpr', help='Regular expression for hostname')
+parser.add_argument('hostexpr', nargs='?', help='Regular expression for hostname')
+parser.add_argument('-a', '--all', action='store_true', help='Extract all instances')
 
 group = parser.add_mutually_exclusive_group()
-group.add_argument('-q', '--quiet', dest='quiet', action='store_true', help='Turn logging level to ERROR, ignoring WARNINGs')
-group.add_argument('-v', '--verbose', dest='verbose', action='count', help='Add more debugging')
+group.add_argument('-q', '--quiet', action='store_true', help='Turn logging level to ERROR, ignoring WARNINGs')
+group.add_argument('-v', '--verbose', action='count', help='Add more debugging')
 
 # parser.add_argument('-d', '--debug', dest='debug', action='store_true', help='Enter Python debugging')
 args = parser.parse_args()
@@ -27,8 +28,11 @@ if args.quiet:
 else:
   log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
-virtual_hosts = VirtualHosts()
-hosts = virtual_hosts.get_hosts(args.hostexpr)
+if not (bool(args.all) ^ bool(args.hostexpr)):
+  parser.error('Specify a host expression or --all but not both')
+
+virtual_hosts = VirtualHosts(no_ansible=True)
+hosts = virtual_hosts.get_hosts('' if args.all else args.hostexpr)
 log.info('virtual_hosts: {}'.format([str(host) for host in hosts]))
 
 """
@@ -68,7 +72,8 @@ log.info('virtual_hosts: {}'.format([str(host) for host in hosts]))
 for host in hosts:
   if host.src in ['aws', 'gcp']:
     log.debug(host.__dict__)
-    host.name = re.sub(args.hostexpr, '', host.name)
+    if not args.all:
+      host.name = re.sub(args.hostexpr, '', host.name)
     if host.state.lower() != 'running':
       log.warn('{host.name} is stopped'.format(**locals()))
     else:

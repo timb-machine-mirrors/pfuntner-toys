@@ -53,6 +53,9 @@ class VirtualHosts(object):
     self.ansible_only = kwargs.get('ansible_only')
     self.aws_only = kwargs.get('aws_only')
     self.shallow = kwargs.get('shallow')
+    self.no_ansible = kwargs.get('no_ansible')
+
+    log.debug('VirtualHosts: {}'.format(self.__dict__))
 
     self.aws_instance_cache = {}
     self.aws_image_cache = {}
@@ -325,7 +328,7 @@ class VirtualHosts(object):
     if (len(names) == 1) and isinstance(names[0], list):
       names = names[0] or ['.']
 
-    ansible_hosts = [] if self.aws_only else self.get_ansible_hosts()
+    ansible_hosts = [] if (self.aws_only or self.no_ansible) else self.get_ansible_hosts()
     aws_hosts = None
     for name in names:
       curr = []
