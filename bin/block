@@ -8,7 +8,7 @@ import argparse
 def vertical_border():
   line = ''
   while len(line) < args.width:
-    line += args.border
+    line += args.border[0]
   print line[:args.width]
 
 def append(s1, s2):
