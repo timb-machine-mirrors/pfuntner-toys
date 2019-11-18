@@ -76,7 +76,7 @@ def process(root):
           commit = '?'
           timestamp = '?'
 
-        comment = repr('\n'.join([line.strip() for line in stdout.splitlines()][5:]))[1:45]
+        comment = repr('\n'.join([line.strip() for line in stdout.splitlines()][4:]))[:-1][1:45]
   
         (rc, stdout, stderr) = run('git remote -v')
         match = re.search('^origin\s+(\S+)\s+\(fetch\)$', stdout, flags=re.MULTILINE)
