@@ -1,0 +1,61 @@
+#! /usr/bin/env python2
+
+import re
+import sys
+import logging
+import argparse
+
+from table import Table
+
+class Test(object):
+  def __init__(self, title):
+    self.title = title
+    self.results = {}
+
+def get_test(title):
+  for test in tests:
+    if test.title == title:
+      return test
+
+  tests.append(Test(title))
+  return tests[-1]
+
+def process(filename=None):
+  stream = open(filename) if filename else sys.stdin
+
+  for line in stream.read().splitlines():
+    match = regexp.search(line)
+    if match:
+      name = match.group(1)
+      title = match.group(2)
+      result = match.group(3)
+      test = get_test(title)
+      test.results[filename or 'Result'] = result
+
+  if filename:
+    stream.close()
+
+parser = argparse.ArgumentParser(description='Summarize pytest activity')
+parser.add_argument('files', metavar='file', nargs='*', help='Enable debugging')
+parser.add_argument('-v', '--verbose', action='store_true', help='Enable debugging')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
+# [CIS_RH8_5.2.3] Ensure permissions on SSH private host key files are configured (Scored) FAILED [ 68%]
+regexp = re.compile(r'\[([^\]]+)\]\s+(.+)\s+(\S+)\s+\[\s*\d+%\]')
+tests = []
+
+if args.files:
+  map(process, args.files)
+else:
+  args.files = ['Result']
+  process()
+
+table = Table(['Test'] + args.files)
+for test in tests:
+  table.add([test.title] + [test.results[result] for result in args.files])
+
+sys.stdout.write(str(table))
