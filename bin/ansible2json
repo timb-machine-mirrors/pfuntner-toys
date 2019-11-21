@@ -1,70 +1,69 @@
 #! /usr/bin/env python2
 
-"""
-   Turn Ansible output into full JSON.  It's pretty close to JSON but
-   not quite.  Here's an example of using it:
-
-     $ docker exec ansible ansible localhost -m ping | ansible2json
-        [WARNING]: provided hosts list is empty, only localhost is available
-     [
-       {
-         "changed": false,
-         "host": "localhost",
-         "ping": "pong",
-         "result": "SUCCESS"
-       }
-     ]
-     $
-
-   In this example, a container called `ansible` is expected to be running - that's why `ansible` appears "twice" on the command line.
-
-   The script adds the `host` and `result` elements - they come from Ansible but are not part of the JSON structure that Ansible prints with the other elements (`ping` and `changed`).
-"""
-
 import re
 import sys
 import json
+import logging
+import argparse
 
-assert not sys.stdin.isatty(), 'stdin must be redirected'
+parser = argparse.ArgumentParser(description='Convert Ansible adhoc comment output to JSON')
+parser.add_argument('-v', '--verbose', action='store_true', help='Enable debugging')
+args = parser.parse_args()
 
-verbose = False
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-def debug(msg):
-  if verbose:
-    sys.stderr.write('{msg}\n'.format(**locals()))
+if sys.stdin.isatty():
+  parser.error('stdin must be redirected')
 
-regexp = re.compile('^(\S+)\s\|\s(\S+)\s=>\s\{$')
+"""
+gcp-rhel8 | CHANGED | rc=0 >>
+  File: /etc/ssh/ssh_host_ed25519_key
+  Size: 419             Blocks: 8          IO Block: 4096   regular file
+Device: 801h/2049d      Inode: 9953        Links: 1
+Access: (0600/-rw-------)  Uid: (    0/    root)   Gid: (    0/    root)
+Context: system_u:object_r:sshd_key_t:s0
+Access: 2019-11-21 12:02:38.407084754 +0000
+Modify: 2019-11-21 12:02:38.112084744 +0000
+Change: 2019-11-21 12:02:38.118084744 +0000
+ Birth: -
+  File: /etc/ssh/ssh_host_ecdsa_key
+  Size: 513             Blocks: 8          IO Block: 4096   regular file
+Device: 801h/2049d      Inode: 9950        Links: 1
+Access: (0600/-rw-------)  Uid: (    0/    root)   Gid: (    0/    root)
+Context: system_u:object_r:sshd_key_t:s0
+Access: 2019-11-21 12:02:38.407084754 +0000
+Modify: 2019-11-21 12:02:38.086084743 +0000
+Change: 2019-11-21 12:02:38.092084743 +0000
+ Birth: -
+  File: /etc/ssh/ssh_host_rsa_key
+  Size: 2610            Blocks: 8          IO Block: 4096   regular file
+Device: 801h/2049d      Inode: 9945        Links: 1
+Access: (0600/-rw-------)  Uid: (    0/    root)   Gid: (    0/    root)
+Context: system_u:object_r:sshd_key_t:s0
+Access: 2019-11-21 12:02:38.405084754 +0000
+Modify: 2019-11-21 12:02:38.046084741 +0000
+Change: 2019-11-21 12:02:38.060084742 +0000
+ Birth: -
+"""
 
-buf = ''
+regexp = re.compile('^(.+)\s+\|\s+(.+)\s+\|\s+rc=(\d+)\s+>>$')
+
+output = {}
 host = None
-result = None
 
-results = []
-while True:
-  line = sys.stdin.readline()
-  if not line:
-    break
-  if buf:
-    buf += line
-    try:
-      results.append(json.loads(buf))
-    except Exception as e: 
-      pass
-    else:
-      results[-1]['host'] = host
-      results[-1]['result'] = result
-      host = None
-      result = None
-      buf = ''
-  else:
-    line = line.strip('\n').strip('\r')
-    match = regexp.search(line)
-    debug('{line!r}: {match}'.format(**locals()))
-    if match:
-      host = match.group(1)
-      result = match.group(2)
-      buf = '{'
+for line in sys.stdin.read().splitlines():
+  match = regexp.search(line)
+  if match:
+    log.debug('regexp groups: {}'.format(match.groups()))
+    (host, status, rc) = match.groups()
+    output[host] = {
+      'rc': rc,
+      'status': status,
+      'output': []
+    }
+  elif host:
+    output[host]['output'].append(line)
 
-assert not buf, 'Unclosed result buffer: {buf!r}'.format(**locals())
-
-print json.dumps(results, indent=2, sort_keys=True)
+print json.dumps(output, indent=2, sort_keys=True)
