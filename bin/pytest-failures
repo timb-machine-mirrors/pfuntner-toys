@@ -6,17 +6,23 @@ import logging
 import argparse
 import subprocess
 
-def getint(cmd, default_value):
+def extract(cmd, pattern, default_value):
   ret = default_value
-  if isinstance(cmd, basestring):
-    cmd = cmd.split()
-  log.debug('Running {cmd}'.format(**locals()))
+  caster = type(ret)
+  if isinstance(cmd, list):
+    cmd = ' '.join(cmd)
+  log.debug('Running {cmd!r}'.format(**locals()))
   try:
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     (stdout, stderr) = p.communicate()
     rc = p.wait()
-    log.debug('{cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
-    ret = int(stdout.splitlines()[0])
+    log.debug('{cmd!r}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
+    match = re.search(pattern, stdout)
+    if match:
+      log.debug('extracted: {}'.format(match.group(1)))
+      ret = caster(match.group(1))
+    else:
+      log.debug('{stdout!r} failed to match {pattern!r}'.format(**locals()))
   except Exception as e:
     log.debug('Caught `{e!s}`'.format(**locals()))
     
@@ -24,7 +30,7 @@ def getint(cmd, default_value):
 
 def finish(filename, failure):
   if failure:
-    print '*' * getint('tput cols', 80)
+    print '*' * extract('stty size < /dev/tty', '\d+\s+(\d+)', 80)
     print ''
     print '\n'.join(['{prefix}{line}'.format(prefix=(filename + ': ') if filename else '', **locals()) for line in failure])
     print ''
