@@ -29,19 +29,19 @@ def process(filename=None):
       name = match.group(1)
       title = match.group(2)
       result = match.group(3)
-      get_test(title)[filename or 'Result'] = result
-
-    match = summary_regexp.search(line)
-    if match:
-      hits = result_regexp.finall(match.group(1))
-      results_dict = {hit[1]: hit[0] for hit in hits}
-      results = [
-        'P: {}'.format(results_dict.get('passed', 0)),
-        'F: {}'.format(results_dict.get('failed', 0)),
-        'S: {}'.format(results_dict.get('skipped', 0)),
-      ]
-      results += ['{c}: {count}'.format(c=key.upper()[0], count=results_dict[key]) for key in results_dict.keys() if key not in ['passed', 'failed', 'skipped']]
-      get_test('Summary')[filename or 'Result'] = ', '.join(results)
+      get_test(title).results[filename or 'Result'] = result
+    else:
+      match = summary_regexp.search(line)
+      if match:
+        hits = result_regexp.findall(match.group(1))
+        results_dict = {hit[1]: hit[0] for hit in hits}
+        results = [
+          'P: {}'.format(results_dict.get('passed', 0)),
+          'F: {}'.format(results_dict.get('failed', 0)),
+          'S: {}'.format(results_dict.get('skipped', 0)),
+        ]
+        results += ['{c}: {count}'.format(c=key.upper()[0], count=results_dict[key]) for key in results_dict.keys() if key not in ['passed', 'failed', 'skipped']]
+        summary.results[filename or 'Result'] = ', '.join(results)
   if filename:
     stream.close()
 
@@ -58,10 +58,12 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 test_regexp = re.compile(r'\[([^\]]+)\]\s+(.+)\s+(\S+)\s+\[\s*\d+%\]')
 
 # [gcp-rhel8] ============ 6 failed, 228 passed, 46 skipped in 421.33s (0:07:01) =============
-summary_regexp = re.compile(r'^\[\S+\]\s+=+\s+(.+)\s+in\s+[0-9.]+s')
+summary_regexp = re.compile(r'=+\s+(.+)\s+in\s+[0-9.]+s')
 result_regexp = re.compile(r'(\d+)\s+([^ ,]+)?')
 
 tests = []
+
+summary = Test('Summary')
 
 if args.files:
   map(process, args.files)
@@ -69,8 +71,11 @@ else:
   args.files = ['Result']
   process()
 
+tests.append(summary)
+
 table = Table(['Test'] + args.files)
 for test in tests:
-  table.add([test.title] + [test.results[result] for result in args.files])
+  log.debug('Generating row for {test.title!r}: {test.results}'.format(**locals()))
+  table.add([test.title] + [test.results.get(result) for result in args.files])
 
 sys.stdout.write(str(table))
