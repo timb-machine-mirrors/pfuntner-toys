@@ -51,7 +51,7 @@ def process(filename=None):
   finish(filename, failure)
 
   if filename:
-    close(stream)
+    stream.close()
 
 parser = argparse.ArgumentParser(description='Print failures from pytest output')
 parser.add_argument('files', metavar='file', nargs='*', help='Zero or more files')
