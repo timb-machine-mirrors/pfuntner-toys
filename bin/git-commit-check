@@ -36,9 +36,15 @@ def hunt(dir):
   if (dir != original_real_dir) and (os.path.basename(dir) == repo_name):
     log.info('Examining {dir}'.format(**locals()))
     os.chdir(dir)
+
     (rc, stdout, stderr) = run('git log')
-    commits = regexp.findall(stdout)
-    table.add(dir, required_commit in commits)
+    commits = commit_regexp.findall(stdout)
+
+    (rc, stdout, stderr) = run('git branch')
+    match = branch_regexp.search(stdout)
+    branch = match.group(1) if match else None
+
+    table.add(dir, branch, required_commit in commits)
   for child in children(dir):
     path = os.path.join(dir, child)
     if os.path.isdir(path) and not os.path.islink(path):
@@ -61,9 +67,10 @@ Date:   Mon Nov 25 07:18:16 2019 -0500
     Fixing a typo
 """
 
-regexp = re.compile('^commit\s+([0-9a-f]{40})', flags=re.MULTILINE)
+commit_regexp = re.compile('^commit\s+([0-9a-f]{40})', flags=re.MULTILINE)
+branch_regexp = re.compile('^\*\s+(.*)', flags=re.MULTILINE)
 
-table = Table('Path', 'Commit present?')
+table = Table('Path', 'Branch', 'Commit present?')
 
 original_dir = os.getcwd()
 repo_name = os.path.basename(original_dir)
@@ -73,7 +80,7 @@ original_real_dir = os.path.realpath(original_dir)
 if (rc == 0) and stdout:
   print 'Last commit for {original_dir} ({original_real_dir}):'.format(**locals())
   print stdout
-  match = regexp.search(stdout)
+  match = commit_regexp.search(stdout)
   if match:
     required_commit = match.group(1)
     say('required_commit')
