@@ -76,9 +76,16 @@ original_dir = os.getcwd()
 repo_name = os.path.basename(original_dir)
 say('repo_name')
 original_real_dir = os.path.realpath(original_dir)
+
+(rc, stdout, stderr) = run('git branch')
+match = branch_regexp.search(stdout)
+if not match:
+  parser.error('Could not determine branch of {original_dir}'.format(**locals()))
+branch = match.group(1)
+
 (rc, stdout, stderr) = run('git log -1')
 if (rc == 0) and stdout:
-  print 'Last commit for {original_dir} ({original_real_dir}):'.format(**locals())
+  print 'Last commit in {branch} for {original_dir} ({original_real_dir}):'.format(**locals())
   print stdout
   match = commit_regexp.search(stdout)
   if match:
