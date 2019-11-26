@@ -8,8 +8,12 @@ import argparse
 import subprocess
 
 def echo(host, data):
-  for line in data.splitlines():
-    print '{host}: {line}'.format(**locals())
+  if args.raw:
+    if data:
+      print '{host}: {data!r}'.format(**locals())
+  else:
+    for line in data.splitlines():
+      print '{host}: {line}'.format(**locals())
   
 parser = argparse.ArgumentParser(description='ssh to multiple machines')
 parser.add_argument('hosts', help='One or more comma-separated hosts')
@@ -18,7 +22,11 @@ parser.add_argument('args', metavar='arg', nargs='*', help='Command arguments')
 parser.add_argument('-e', '--encode', action='store_true', help='Use base64 encoding to protect command')
 parser.add_argument('-b', '--become', action='store_true', help='Use sudo on remote system')
 parser.add_argument('-q', '--quiet', action='store_true', help='Use ssh -q')
-parser.add_argument('-j', '--json', action='store_true', help='Produce JSON output')
+
+group = parser.add_mutually_exclusive_group()
+group.add_argument('-j', '--json', action='store_true', help='Produce JSON output')
+group.add_argument('-r', '--raw', action='store_true', help='Produce raw output')
+
 parser.add_argument('-v', '--verbose', action='store_true', help='Enable debugging')
 args = parser.parse_args()
 
