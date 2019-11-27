@@ -5,15 +5,41 @@
   - name: "Create {{ ansible_env.HOME }}/bin symlink"
     file:
       path: "{{ ansible_env.HOME }}/bin"
-      state: link
       src: "{{ ansible_env.HOME }}/repos/toys/bin"
+      state: link
+      force: true
+
+  - name: Install python2
+    package:
+      name: python2
+      state: present
+    become: true
+
+  - name: "Check for python symlink"
+    stat:
+      path: /usr/bin/python
+    register: python_stat
+
+  - name: "Create python symlink"
+    file:
+      path: /usr/bin/python
+      src: /usr/bin/python2
+      state: link
+    become: true
+    when: not python_stat.stat.exists
+
+  - name: "Check for python2 symlink"
+    stat:
+      path: /usr/bin/python2
+    register: python2_stat
 
   - name: "Create python2 symlink"
     file:
       path: /usr/bin/python2
-      state: link
       src: /usr/bin/python
+      state: link
     become: true
+    when: not python2_stat.stat.exists
 
   - name: Install git
     package:
