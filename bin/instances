@@ -89,10 +89,10 @@ if ret['stdout']:
   for instances in json.loads(ret['stdout']).get('Reservations', []):
     for instance in instances.get('Instances', []):
       name = keyhunt(instance.get('Tags', []), 'Key', 'Name', 'Value')
-
-      # image ID stands in for image name until have seen all of the images and can query AWS about them
-      table.add(name, 'AWS', instance['ImageId'], instance['State']['Name'].capitalize())
-      images.append(instance['ImageId'])
+      if match(name):
+        # image ID stands in for image name until have seen all of the images and can query AWS about them
+        table.add(name, 'AWS', instance['ImageId'], instance['State']['Name'].capitalize())
+        images.append(instance['ImageId'])
 
 # query AWS about images and backfill their names
 if images:
