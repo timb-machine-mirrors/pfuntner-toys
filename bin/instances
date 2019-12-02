@@ -16,32 +16,26 @@ def keyhunt(keys, key_type_name, key_type, key_value_name):
   parser.error('Could not find {key_type} from {keys}'.format(**locals()))
   
 def run(cmd):
-  global cache
 
   if isinstance(cmd, basestring):
     cmd = cmd.split()
   key = ' '.join(cmd)
-  if cache.get(key):
-    ret = cache[key]
-    log.info('Got {key!r} result from cache'.format(**locals()))
+  ret = {
+    'rc': None,
+    'stdout': '',
+    'stderr': '',
+  }
+  log.info('Executing {cmd}'.format(**locals()))
+  try:
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  except Exception as e:
+    ret['exception'] = str(e)
   else:
-    ret = {
-      'rc': None,
-      'stdout': '',
-      'stderr': '',
-    }
-    log.info('Executing {cmd}'.format(**locals()))
-    try:
-      p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    except Exception as e:
-      ret['exception'] = str(e)
-    else:
-      (stdout, stderr) = p.communicate()
-      ret['stdout'] = stdout
-      ret['stderr'] = stderr
-      ret['rc'] = p.wait()
+    (stdout, stderr) = p.communicate()
+    ret['stdout'] = stdout
+    ret['stderr'] = stderr
+    ret['rc'] = p.wait()
       
-    cache[key] = ret
   log.debug('{cmd}: {ret}'.format(**locals()))
   return ret
   
@@ -65,7 +59,7 @@ def extract(cmd, *element_names):
         root = root.get(element_names[element_pos], {})
         element_pos += 1
   # log.debug('extract({cmd!r}, {element_names}) = {root}'.format(**locals()))
-  return str(root)
+  return root
   
 parser = argparse.ArgumentParser(description='Manage AWS & GCP instances')
 parser.add_argument('regexp', nargs='?', help='Specify regular expression with which to match instance names')
@@ -78,7 +72,6 @@ log = logging.getLogger()
 log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 regexp = re.compile(args.regexp) if args.regexp else None
-cache = {}
 
 table = Table('Instance Name', 'Provider', 'Image Name', 'State')
 ret = run('gcloud compute instances list --format json')
@@ -87,17 +80,31 @@ if ret['stdout']:
     name = instance['name']
     if match(name):
       log.debug('Examining {instance}'.format(**locals()))
-      image_name = get_token(extract(['gcloud', 'compute', 'disks', 'describe', name, '--zone', get_token(instance.get('zone'), '/', -1), '--format', 'json'], 'sourceImage'), '/', -1)
+      image_name = get_token(str(extract(['gcloud', 'compute', 'disks', 'describe', name, '--zone', get_token(instance.get('zone'), '/', -1), '--format', 'json'], 'sourceImage')), '/', -1)
       table.add(name, 'GCP', image_name, instance['status'].capitalize())
 
+images = []
 ret = run('aws ec2 describe-instances')
 if ret['stdout']:
   for instances in json.loads(ret['stdout']).get('Reservations', []):
     for instance in instances.get('Instances', []):
       name = keyhunt(instance.get('Tags', []), 'Key', 'Name', 'Value')
-      if match(name):
-        log.debug('Examining {instance}'.format(**locals()))
-        image_name = extract(['aws', 'ec2', 'describe-images', '--image-id', instance['ImageId']], 'Images', 'Name')
-        table.add(name, 'AWS', image_name, instance['State']['Name'].capitalize())
+
+      # image ID stands in for image name until have seen all of the images and can query AWS about them
+      table.add(name, 'AWS', instance['ImageId'], instance['State']['Name'].capitalize())
+      images.append(instance['ImageId'])
+
+# query AWS about images and backfill their names
+if images:
+  images = extract(['aws', 'ec2', 'describe-images', '--image-id', json.dumps(images)], 'Images')
+  for instance in table.root:
+    if instance['Provider'] == 'AWS':
+      log.debug('instance: {instance}'.format(**locals()))
+      for image in images:
+        log.debug('image: {image}'.format(**locals()))
+        if instance['Image Name'] == image['ImageId']:
+          # replace image ID with image name
+          instance['Image Name'] = image['Name']
+          break
 
 sys.stdout.write(str(table))
