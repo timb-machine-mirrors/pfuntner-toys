@@ -1,13 +1,29 @@
 #! /usr/bin/env python2
 
+import re
 import sys
 import string
+import logging
+import argparse
 
-if len(sys.argv) == 1:
-  sys.stderr.write("Syntax: %s separator [str ...]\n", sys.argv[0])
-  exit(1)
+parser = argparse.ArgumentParser(description='Join strings together with a separator')
+parser.add_argument('separator', help='Specify string separator')
+parser.add_argument('-a', '--all', action='store_true', help='Replace all whitespace with the separator')
+parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
+args = parser.parse_args()
 
 if sys.stdin.isatty():
-  print sys.argv[1].join(sys.argv[2:])
+  parser.error('stdin must be redirected')
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+# log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+log.setLevel(logging.WARNING - (args.verbose or 0)*10)
+
+data = sys.stdin.read()
+if args.all:
+  tokens = re.split('[{string.whitespace}]+'.format(**locals()), data.strip())
 else:
-  print sys.argv[1].join(string.replace(sys.stdin.read(), '\r', '').strip('\n').split('\n'))
+  tokens = data.splitlines()
+
+print args.separator.join(tokens)
