@@ -49,13 +49,15 @@ tasks = []
 for line in sys.stdin.read().splitlines():
   line = remove_packer_overhead(line)
   match = task_regexp.search(line)
+  log.debug('task match: {groups} {line!r}'.format(groups=match.groups() if match else None, **locals()))
   if match:
     if tasks:
       log.info(tasks[-1])
     tasks.append(Task(*match.groups()))
   else:
     match = host_regexp.search(line)
-    if match:
+    log.debug('host match: {groups} {line!r}'.format(groups=match.groups() if match else None, **locals()))
+    if match and tasks:
       assert tasks
       host = match.group(2)
       host_match = host_simplifier_regexp.search(host)
