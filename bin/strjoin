@@ -8,22 +8,26 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Join strings together with a separator')
 parser.add_argument('separator', help='Specify string separator')
+parser.add_argument('tokens', metavar='token', nargs='*', help='Zero or more tokens to join')
 parser.add_argument('-a', '--all', action='store_true', help='Replace all whitespace with the separator')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
-
-if sys.stdin.isatty():
-  parser.error('stdin must be redirected')
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
 # log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
-data = sys.stdin.read()
-if args.all:
-  tokens = re.split('[{string.whitespace}]+'.format(**locals()), data.strip())
+if args.tokens:
+  tokens = args.tokens
 else:
-  tokens = data.splitlines()
+  if sys.stdin.isatty():
+    parser.error('stdin must be redirected if no tokens are present on the command line')
+
+  data = sys.stdin.read()
+  if args.all:
+    tokens = re.split('[{string.whitespace}]+'.format(**locals()), data.strip())
+  else:
+    tokens = data.splitlines()
 
 print args.separator.join(tokens)
