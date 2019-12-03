@@ -17,15 +17,17 @@ def ping(host):
 
 parser = argparse.ArgumentParser(description='Use Ansible adhoc comment to reboot a machine')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
-parser.add_argument('host', help='Target host')
+parser.add_argument('hosts', metavar='host', nargs='+', help='One or more hosts to target')
 args = parser.parse_args()
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-if args.host == 'localhost':
+if 'localhost' in args.hosts:
   parser.error('Cannot reboot localhost')
+
+hosts = ','.join(args.hosts)
 
 x = random.randint(1,10)
 y = random.randint(1,10)
@@ -42,17 +44,17 @@ except Exception as e:
   print 'No reboot'
   exit(1)
 
-(ret, stdout, stderr) = ping(args.host)
+(ret, stdout, stderr) = ping(hosts)
 log.debug('ping: {ret}, {stdout!r}, {stderr!r}'.format(**locals()))
 if ret is False:
-  sys.stderr.write('Could not ping {args.host!r}\n'.format(**locals()))
+  sys.stderr.write('Could not ping {hosts}\n'.format(**locals()))
   sys.stdout.write(stdout)
   sys.stderr.write(stderr)
   exit(1)
 
-reboot_p = subprocess.Popen(['ansible', args.host, '-b', '-m', 'reboot'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+reboot_p = subprocess.Popen(['ansible', hosts, '-b', '-m', 'reboot'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 start = datetime.datetime.now()
-print '{start!s} Rebooting {args.host}'.format(**locals())
+print '{start!s} Rebooting {hosts}'.format(**locals())
 
 time.sleep(15)
 
@@ -60,12 +62,12 @@ stdout = ''
 stderr = ''
 
 now = datetime.datetime.now()
-print '{now!s} Polling {args.host}'.format(**locals())
+print '{now!s} Polling {hosts}'.format(**locals())
 while True:
   if reboot_p.poll() is not None:
     log.info('reboot module is complete')
     break
-  (ret, stdout, stderr) = ping(args.host)
+  (ret, stdout, stderr) = ping(hosts)
   log.debug('ping: {ret}, {stdout!r}, {stderr!r}'.format(**locals()))
   if ret is True:
     log.info('successful ping')
