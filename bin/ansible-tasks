@@ -36,7 +36,7 @@ if sys.stdin.isatty():
   parser.error('stdin must be redirected')
 
 task_regexp = re.compile('^(?:RUNNING\s+)?(\S+)\s+\[([^:]*\s:\s)?(.*)\]\s+\*{5,}$')
-host_regexp = re.compile('^(\S+):\s+\[(.*)\]$')
+host_regexp = re.compile('^([a-z]+):\s+\[([^\]]*)\]')
 
 # Remove packer overhead if necessary
 packer_regexp = re.compile('^\x1b\[\d+;\d+2m\s+\S+:\s(.*)\x1b\[\d+m$')
