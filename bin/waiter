@@ -12,7 +12,7 @@ import datetime
 basename = os.path.basename(sys.argv[0])
 DEFAULT_CONFIG_FILENAME = '{HOME}/.{basename}-config.json'.format(HOME=os.environ['HOME'], **locals())
 
-parser = argparse.ArgumentParser(description='Wait a certain amount of time.  Useful for loops')
+parser = argparse.ArgumentParser(description='Wait a certain amount of time.  Useful for loops', formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument('duration', help='Duration (Nd)(Nm)(Nh)(Ns)')
 parser.add_argument('-r', '--reset', action='store_true', help='Reset a pending time limit')
 parser.add_argument('-c', '--config', help='Specify config file (default: {DEFAULT_CONFIG_FILENAME!r})'.format(**locals()))
@@ -60,16 +60,30 @@ except Exception as e:
 else:
   log.info('Read {config} from {config_filename}'.format(**locals()))
 
-waiting = bool(config.get('expiry'))
+waiting = bool(config.get('expiry'))                              # if we have been waiting for a period
+duration = str(config.get('duration', args.duration))             # using str() to avoid a unicode string
+expiry = config.get('expiry', now)                                # seconds since Epoch (an int)
+expiry_timestamp = str(config.get('expiry_timestamp', now))       # using str() to avoid a unicode string
+start_timestamp = str(config.get('start_timestamp'))              # using str() to avoid a unicode string
+
+if args.reset:
+  if waiting:
+    if duration == args.duration:
+      sys.stdout.write('Do you really want to reset {config_filename}, waiting for {duration} until {expiry_timestamp}? '.format(**locals()))
+      ans = sys.stdin.readline()
+      if re.match('y(e(s)?)?$', ans, flags=re.IGNORECASE):
+        print 'Resetting {config_filename}'.format(**locals())
+        config_file.truncate(0)
+      else:
+        print '{config_filename} was not reset'.format(**locals())
+    else:
+      parser.error('{config_filename} is waiting for {duration!r}, not {args.duration!r}'.format(**locals()))
+  else:
+    parser.error('--reset is not necessary: {config_filename} is not not waiting for anything'.format(**locals()))
 
 if waiting:
-  duration = str(config.get('duration', args.duration))
   if duration != args.duration:
     parser.error('Pending time {duration!r} at {expiry_timestamp} has not yet expired, cannot switch to {args.duration!r}'.format(**locals()))
-
-  expiry = config.get('expiry', now) # seconds since Epoch (an int)
-  expiry_timestamp = str(config.get('expiry_timestamp', now))
-  start_timestamp = str(config.get('start_timestamp'))
 
   if expiry_timestamp >= str(now):
     # time has not yet expired
