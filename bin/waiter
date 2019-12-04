@@ -15,6 +15,7 @@ DEFAULT_CONFIG_FILENAME = '{HOME}/.{basename}-config.json'.format(HOME=os.enviro
 parser = argparse.ArgumentParser(description='Wait a certain amount of time.  Useful for loops', formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument('duration', help='Duration (Nd)(Nm)(Nh)(Ns)')
 parser.add_argument('-r', '--reset', action='store_true', help='Reset a pending time limit')
+parser.add_argument('--remain', action='store_true', help='Print time remaining')
 parser.add_argument('-c', '--config', help='Specify config file (default: {DEFAULT_CONFIG_FILENAME!r})'.format(**locals()))
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
@@ -89,6 +90,8 @@ if waiting:
     # time has not yet expired
     remain = datetime.datetime.fromtimestamp(expiry) - now
     log.info('{remain!s} left in {duration!r}, ending at {expiry_timestamp}'.format(**locals()))
+    if args.remain:
+      print 'Time remaining: {remain!s}'.format(**locals())
     exit(0)
   else:
     # time has expired
@@ -98,6 +101,9 @@ if waiting:
     exit(1)
 
 expiry = now + datetime.timedelta(seconds=curr_duration)
+remain = expiry - now
+if args.remain:
+  print 'Time remaining: {remain!s}'.format(**locals())
 config = {
   'expiry': (expiry - datetime.datetime.fromtimestamp(0)).total_seconds(),
   'expiry_timestamp': str(expiry),
