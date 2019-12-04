@@ -9,6 +9,7 @@ import subprocess
 from table import Table
 
 parser = argparse.ArgumentParser(description='List ansible hosts')
+parser.add_argument('-n', '--names-only', action='store_true', help='Report names only, not even headings')
 parser.add_argument('-v', '--verbose', action='store_true', help='Enable debugging')
 args = parser.parse_args()
 
@@ -58,12 +59,16 @@ p = subprocess.Popen(['ansible-inventory', '--list'], stdout=subprocess.PIPE)
 (stdout, stderr) = p.communicate()
 rc = p.wait()
 if rc == 0:
-  table = Table('host', 'ip', 'user', 'key')
   hosts = json.loads(stdout).get('_meta', {}).get('hostvars', {})
+  table = None if args.names_only else Table('host', 'ip', 'user', 'key')
   for name in sorted(hosts.keys()):
    host = hosts[name]
-   table.add(name, host['ansible_host'], host['ansible_user'], host['ansible_ssh_private_key_file'])
+   if args.names_only:
+     print name
+   else:
+     table.add(name, host['ansible_host'], host['ansible_user'], host['ansible_ssh_private_key_file'])
 
-  sys.stdout.write(str(table))
+  if table:
+    sys.stdout.write(str(table))
     
 exit(rc)
