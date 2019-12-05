@@ -100,7 +100,7 @@ except Exception as e:
 log.debug('desiredFields: {desiredFields}'.format(**locals()))
 
 for line in stream:
-  line = line.strip('\n').strip('\r')
+  line = line.rstrip()
   output = []
   if regexp:
     match = regexp.search(line)
