@@ -86,7 +86,7 @@ branch = match.group(1)
 (rc, stdout, stderr) = run('git log -1')
 if (rc == 0) and stdout:
   print 'Last commit in {branch} for {original_dir} ({original_real_dir}):'.format(**locals())
-  print stdout
+  print '\n'.join(stdout.splitlines()[:10])
   match = commit_regexp.search(stdout)
   if match:
     required_commit = match.group(1)
