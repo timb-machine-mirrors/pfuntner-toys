@@ -102,7 +102,7 @@ if os.path.exists(args.root):
         (rc, stdout, stderr) = run('git pull', readonly=False)
         sys.stdout.write(stdout)
         sys.stderr.write(stderr)
-        if not args.dry_run:
+        if not args.dry_run and (stdout != 'Already up-to-date.\n'):
           (date, sha1, text) = get_last_commit()
           print '{path!r} {realpath!r} {branch} {sha1} {date!s} {text!r}'.format(**locals())
         print ''
