@@ -107,12 +107,16 @@ if os.path.exists(args.root):
         branch = get_branch()
         (date, sha1, text) = get_last_commit()
         banner('{path!r}\n{realpath!r}\n{branch}\n{sha1}\n{date!s}\n{text!r}'.format(**locals()))
-        (rc, stdout, stderr) = run('git pull', readonly=False)
-        sys.stdout.write(stdout)
-        sys.stderr.write(stderr)
-        if not args.dry_run and (stdout != 'Already up-to-date.\n'):
-          (date, sha1, text) = get_last_commit()
-          print '{path!r} {realpath!r} {branch} {sha1} {date!s} {text!r}'.format(**locals())
+        if not args.dry_run:
+          if branch == 'master':
+            (rc, stdout, stderr) = run('git pull', readonly=False)
+            sys.stdout.write(stdout)
+            sys.stderr.write(stderr)
+            if stdout != 'Already up-to-date.\n':
+              (date, sha1, text) = get_last_commit()
+              print '{path!r} {realpath!r} {branch} {sha1} {date!s} {text!r}'.format(**locals())
+          else:
+            log.warning('Cowardly avoiding `git pull` of {branch!r} for {path!r}'.format(**locals()))
         print ''
         os.chdir(cwd)
       else:
