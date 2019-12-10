@@ -8,6 +8,14 @@ import argparse
 import datetime
 import subprocess
 
+def banner(s):
+  lines = s.splitlines()
+  width = max([len(line) for line in lines])
+  print '*' * (width+4)
+  for line in lines:
+    print '* ' + line.ljust(width) + ' *'
+  print '*' * (width+4)
+
 def run(cmd, readonly=True):
   (rc, stdout, stderr) = (None, '', '')
   if (not args.dry_run) or readonly:
@@ -98,7 +106,7 @@ if os.path.exists(args.root):
         os.chdir(path)
         branch = get_branch()
         (date, sha1, text) = get_last_commit()
-        print '{path!r} {realpath!r} {branch} {sha1} {date!s} {text!r}'.format(**locals())
+        banner('{path!r}\n{realpath!r}\n{branch}\n{sha1}\n{date!s}\n{text!r}'.format(**locals()))
         (rc, stdout, stderr) = run('git pull', readonly=False)
         sys.stdout.write(stdout)
         sys.stderr.write(stderr)
