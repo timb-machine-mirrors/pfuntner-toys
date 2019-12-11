@@ -118,7 +118,8 @@ class VirtualHosts(object):
             log.debug('kv: {kv}'.format(**locals()))
 
             if 'user' not in kv:
-              kv['user'] = 'centos' if 'centos' in kv['name'].lower() else (getpass.getuser() if 'rhel' in kv['name'] else None)
+              # kv['user'] = 'centos' if 'centos' in kv['name'].lower() else (getpass.getuser() if 'rhel' in kv['name'] else None)
+              kv['user'] = os.environ.get('CEC_ID') or getpass.getuser()
                 
             if 'key' not in kv:
               kv['key'] = os.path.join(os.environ['HOME'], '.ssh/google_compute_engine')
