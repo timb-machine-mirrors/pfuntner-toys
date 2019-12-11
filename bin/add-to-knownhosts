@@ -1,0 +1,134 @@
+#! /usr/bin/env python2
+
+import os
+import re
+import socket
+import logging
+import argparse
+import subprocess
+
+parser = argparse.ArgumentParser(description='Add an SSH fingerprint to ~/.ssh/known_hosts')
+parser.add_argument('hosts', metavar='host', nargs='+', help='One or more hosts to add')
+parser.add_argument('--dry-run', action='store_true', help='Do everything except updating ~/.ssh/known_hosts')
+parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+# log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+log.setLevel(logging.WARNING - (args.verbose or 0)*10)
+
+preferred_methods = [
+  'ecdsa-sha2-nistp256',
+  'ssh-rsa',
+]
+
+config_host_regexp = re.compile(r'^Host\s+(\S+)')
+config_ip_regexp = re.compile(r'^\s+Hostname\s+(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
+
+known_hosts_filename = os.path.expanduser('~/.ssh/known_hosts')
+if not os.path.isfile(known_hosts_filename):
+  parser.error('Could not find {known_hosts_filename!r}'.format(**locals()))
+with open(known_hosts_filename) as stream:
+  known_hosts = stream.read().splitlines()
+print '{count} fingerprints from {known_hosts_filename!r}'.format(count=len(known_hosts), **locals())
+log.debug('known_hosts: {known_hosts}'.format(**locals()))
+
+"""
+  Host aws-rhel8
+          Hostname 54.86.140.193
+          User ec2-user
+          IdentityFile /home/centos/.ssh/pfuntner-aws.pem
+"""
+config = {}
+config_filename = os.path.expanduser('~/.ssh/config')
+if os.path.isfile(config_filename):
+  log.debug('Processing {config_filename!r}'.format(**locals()))
+  host = None
+  with open(config_filename) as stream:
+    for line in stream.read().splitlines():
+      log.debug('Read {line!r}'.format(**locals()))
+      match = config_host_regexp.search(line)
+      if match:
+        new_host = match.group(1)
+        if host:
+          log.warning('Found host {new_host!r} in {config_filename!r} before completing {host!r}'.format(**locals()))
+        host = new_host
+        log.debug('Found host {host!r} in {config_filename!r}'.format(**locals()))
+      else:
+        match = config_ip_regexp.search(line)
+        if match:
+          ip = match.group(1)
+          if host:
+            log.debug('Found ip {ip!r} for {host!r} in {config_filename!r}'.format(**locals()))
+            config[host] = ip
+          else:
+            log.warning('Found ip {ip!r} without host in {config_filename!r}'.format(**locals()))
+          host = None
+          ip = None
+log.info('{count} hosts from {config_filename!r}'.format(count=len(config), **locals()))
+log.debug('config: {config}'.format(**locals()))
+
+for host in args.hosts:
+  ip = None
+  log.debug('Processing host {host!r}'.format(**locals()))
+  if host in config.keys():
+    ip = config[host]
+    log.info('Based on {config_filename}, the IP of {host} is {ip}'.format(**locals()))
+  else:
+    try:
+      ip = socket.gethostbyname(host)
+    except Exception as e:
+      log.critical('socket.gethostbyname threw {e!s} for {host!r}'.format(**locals()))
+      exit(1)
+    log.info('Based on socket.gethostbyname, the IP for {host} is {ip}'.format(**locals()))
+
+  # remove current fingerprint
+  pos = 0
+  while pos < len(known_hosts):
+    fingerprint = known_hosts[pos]
+    if [ip] == fingerprint.split()[0:1]:
+      print 'Removing fingerprint {fingerprint!r} from {known_hosts_filename} for {host}'.format(**locals())
+      del known_hosts[pos]
+    else:
+      pos += 1
+
+  # get new SSH fingerprint
+  cmd = ['ssh-keyscan', '-H', ip]
+  p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  (stdout, stderr) = p.communicate()
+  rc = p.wait()
+  log.debug('{cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
+
+  if (rc != 0) or (not stdout):
+    log.error('ssh-keyscan failed: {stderr!r}'.format(**locals()))
+    exit(1)
+
+  fingerprint = None
+  for preferred_method in preferred_methods:
+    for line in stdout.splitlines():
+      if [preferred_method] == line.split()[1:2]:
+        fingerprint = line
+        log.debug('Found fingerprint {fingerprint!r}'.format(**locals()))
+        break
+    if fingerprint:
+      break
+
+  if not fingerprint:
+    log.error('No preferred fingerprint not found for {host}'.format(**locals()))
+    exit(1)
+
+  fingerprint = ' '.join([ip] + fingerprint.split()[1:])
+  print 'Adding SSH fingerprint {fingerprint!r}'.format(**locals())
+  known_hosts.append(fingerprint)
+
+print 'New known_hosts has {count} fingerprints'.format(count=len(known_hosts))
+
+if args.dry_run:
+  print 'Because you used --dry-run, {known_hosts_filename} will not be updated'.format(**locals())
+else:
+  if subprocess.Popen('cp -pv {known_hosts_filename} {known_hosts_filename}.backup'.format(**locals()).split()).wait() == 0:
+    with open(known_hosts_filename, 'w') as stream:
+      stream.write('\n'.join(known_hosts) + '\n')
+  else:
+    log.warning('Unable to backup {known_hosts_filename}, file was not changed'.format(**locals()))
