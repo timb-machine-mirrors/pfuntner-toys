@@ -101,7 +101,7 @@ for host in args.hosts:
   log.debug('{cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
 
   if (rc != 0) or (not stdout):
-    log.error('ssh-keyscan failed: {stderr!r}'.format(**locals()))
+    log.error('ssh-keyscan failed for {ip}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
     exit(1)
 
   fingerprint = None
@@ -119,7 +119,7 @@ for host in args.hosts:
     exit(1)
 
   fingerprint = ' '.join([ip] + fingerprint.split()[1:])
-  print 'Adding SSH fingerprint {fingerprint!r}'.format(**locals())
+  print 'Adding SSH fingerprint {fingerprint!r} for {host}'.format(**locals())
   known_hosts.append(fingerprint)
 
 print 'New known_hosts has {count} fingerprints'.format(count=len(known_hosts))
