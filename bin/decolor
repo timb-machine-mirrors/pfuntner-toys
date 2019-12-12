@@ -20,9 +20,11 @@ regexps = [
   re.compile('\x1b\[\d+m', flags=re.MULTILINE),
   re.compile('\x1b\[\d+;\d+m', flags=re.MULTILINE),
 ]
-data = sys.stdin.read()
-if args.verbose:
-  log.info('{} color sequences'.format(sum([len(regexp.findall(data)) for regexp in regexps])))
-for regexp in regexps:
-  data = regexp.sub('', data)
-sys.stdout.write(data)
+while True:
+  line = sys.stdin.readline()
+  if not line:
+    break
+  line = line.rstrip()
+  for regexp in regexps:
+    line = regexp.sub('', line)
+  print line
