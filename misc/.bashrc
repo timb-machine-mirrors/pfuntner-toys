@@ -27,6 +27,12 @@ alias truepath=truepath.py
 
 alias zip=unzip
 
+# set up docker alias if docker is not available but podman is
+if podman --version >/dev/null 2>&1 && ! docker --version >/dev/null 2>&1
+then
+  alias docker=podman
+fi
+
 # This is a nice command to ping all the machines in /etc/ansible/hosts.  I've since replaced it by bin/pingall but it's a good example of my tools
 #
 # Example output:
