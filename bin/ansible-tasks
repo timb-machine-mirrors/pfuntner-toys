@@ -17,6 +17,9 @@ class Task(object):
   def __str__(self):
     return '{self.type} {self.name} {self.hosts}'.format(**locals())
 
+  def __eq__(self, other):
+    return (self.type == other.type) and (self.role == other.role) and (self.name == other.name)
+
 def remove_packer_overhead(s):
   match = packer_regexp.search(s)
   if match:
@@ -24,16 +27,45 @@ def remove_packer_overhead(s):
   else:
     return s
 
+def process(filename=None):
+  stream = open(filename) if filename else sys.stdin
+  host_prefix = (filename + ' ') if filename else ''
+
+  task = None
+  for line in stream.read().splitlines():
+    line = remove_packer_overhead(line)
+    match = task_regexp.search(line)
+    log.debug('task match: {groups} {line!r}'.format(groups=match.groups() if match else None, **locals()))
+    if match:
+      task = Task(*match.groups())
+      for old_task in tasks:
+        if old_task == task:
+          task = old_task
+          break
+      else:
+        tasks.append(task)
+    else:
+      match = host_regexp.search(line)
+      log.debug('host match: {groups} {line!r}'.format(groups=match.groups() if match else None, **locals()))
+      if match and tasks:
+        assert task
+        host = match.group(2)
+        host_match = host_simplifier_regexp.search(host)
+        if host_match:
+          host = host_match.group(1)
+        task.hosts[host_prefix + host] = match.group(1)
+
+  if filename:
+    stream.close()
+
 parser = argparse.ArgumentParser(description='Scrape info from Ansible playbook task output')
+parser.add_argument('files', metavar='file', nargs='*', help='Zero or more Ansible output files')
 parser.add_argument('-v', '--verbose', action='store_true', help='Enable debugging')
 args = parser.parse_args()
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
-
-if sys.stdin.isatty():
-  parser.error('stdin must be redirected')
 
 task_regexp = re.compile('^(?:RUNNING\s+)?(\S+)\s+\[([^:]*\s:\s)?\s*(.*)\]\s+\*{5,}$')
 host_regexp = re.compile('^([a-z]+):\s+\[([^\]]*)\]')
@@ -46,24 +78,12 @@ host_simplifier_regexp = re.compile('^(\S+)\s+->\s+\S+$')
 
 tasks = []
 
-for line in sys.stdin.read().splitlines():
-  line = remove_packer_overhead(line)
-  match = task_regexp.search(line)
-  log.debug('task match: {groups} {line!r}'.format(groups=match.groups() if match else None, **locals()))
-  if match:
-    if tasks:
-      log.info(tasks[-1])
-    tasks.append(Task(*match.groups()))
-  else:
-    match = host_regexp.search(line)
-    log.debug('host match: {groups} {line!r}'.format(groups=match.groups() if match else None, **locals()))
-    if match and tasks:
-      assert tasks
-      host = match.group(2)
-      host_match = host_simplifier_regexp.search(host)
-      if host_match:
-        host = host_match.group(1)
-      tasks[-1].hosts[host] = match.group(1)
+if args.files:
+  map(process, args.files)
+else:
+  if sys.stdin.isatty():
+    parser.error('stdin must be redirected if no files are specified')
+  process()
 
 if tasks:
   log.info(tasks[-1])
