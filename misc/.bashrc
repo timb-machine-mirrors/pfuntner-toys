@@ -31,6 +31,10 @@ alias zip=unzip
 if podman --version >/dev/null 2>&1 && ! docker --version >/dev/null 2>&1
 then
   alias docker=podman
+  export DOCKER=podman
+elif docker --version >/dev/null 2>&1
+then
+  export DOCKER=docker
 fi
 
 # This is a nice command to ping all the machines in /etc/ansible/hosts.  I've since replaced it by bin/pingall but it's a good example of my tools
