@@ -27,6 +27,7 @@ alias truepath=truepath.py
 
 alias zip=unzip
 
+unalias docker 2>/dev/null
 # set up docker alias if docker is not available but podman is
 if podman --version >/dev/null 2>&1 && ! docker --version >/dev/null 2>&1
 then
