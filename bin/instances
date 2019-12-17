@@ -63,6 +63,7 @@ def extract(cmd, *element_names):
   
 parser = argparse.ArgumentParser(description='Manage AWS & GCP instances')
 parser.add_argument('regexp', nargs='?', help='Specify regular expression with which to match instance names')
+parser.add_argument('-a', '--all', action='store_true', help='Display all instances')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -70,6 +71,9 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 # log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 log.setLevel(logging.WARNING - (args.verbose or 0)*10)
+
+if not (args.all or args.regexp):
+  parser.error('Use a regular expression to limit instances or --all to report all instances')
 
 regexp = re.compile(args.regexp) if args.regexp else None
 
