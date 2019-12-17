@@ -91,6 +91,7 @@ else:
 sha1_regexp = re.compile('commit ([0-9a-f]{40})$')
 date_regexp = re.compile('^Date:\s*([a-z]{3} [a-z]{3} \d{1,2} \d{2}:\d{2}:\d{2} \d{4})', flags=re.IGNORECASE)
 text_regexp = re.compile('^\s+(\S?.*)$')
+up_to_date_regexp = re.compile('^Already up[- ]to[- ]date\.$')
 
 if not args.root:
   args.root = os.path.join(os.environ['HOME'], 'repos')
@@ -112,7 +113,7 @@ if os.path.exists(args.root):
             (rc, stdout, stderr) = run('git pull', readonly=False)
             sys.stdout.write(stdout)
             sys.stderr.write(stderr)
-            if stdout != 'Already up-to-date.\n':
+            if not up_to_date_regexp.search(stdout.strip()):
               (date, sha1, text) = get_last_commit()
               print '{path!r} {realpath!r} {branch} {sha1} {date!s} {text!r}'.format(**locals())
           else:
