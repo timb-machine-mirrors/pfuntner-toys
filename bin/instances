@@ -13,7 +13,8 @@ def keyhunt(keys, key_type_name, key_type, key_value_name):
   for key in keys:
     if key.get(key_type_name) == key_type:
       return key[key_value_name]
-  parser.error('Could not find {key_type} from {keys}'.format(**locals()))
+  log.info('Could not find {key_type} from {keys}'.format(**locals()))
+  return None
   
 def run(cmd):
 
@@ -40,7 +41,7 @@ def run(cmd):
   return ret
   
 def match(name):
-  return bool(regexp.search(name)) if args.regexp else True
+  return name and (bool(regexp.search(name)) if args.regexp else True)
 
 def get_token(s, sep, pos):
   return (s or '').split(sep)[pos]
@@ -92,6 +93,7 @@ ret = run('aws ec2 describe-instances')
 if ret['stdout']:
   for instances in json.loads(ret['stdout']).get('Reservations', []):
     for instance in instances.get('Instances', []):
+      log.debug('Examining {instance}'.format(**locals()))
       name = keyhunt(instance.get('Tags', []), 'Key', 'Name', 'Value')
       if match(name):
         # image ID stands in for image name until have seen all of the images and can query AWS about them
