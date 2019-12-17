@@ -45,14 +45,21 @@ def debug(s):
   if s:
     log.info(s)
 
+def truncate(s):
+  s = s.strip()
+  if not args.long:
+    s = s[:50]
+  return repr(s)
+
 def report():
   if commit:
     assert date and author and text, "At line %d, previous commit (%s) was not closed" % (lineno, commit)
-    table.add([commit, author, str(date), repr(text.strip('\n')[:50])])
+    table.add([commit, author, str(date), truncate(text)])
 
 
 parser = argparse.ArgumentParser(description='Summary git log')
 parser.add_argument('targets', metavar='target', nargs='*', help='Zero or more targets (files, etc)')
+parser.add_argument('-l', '--long', action='store_true', help='Do not truncate commit text')
 parser.add_argument('-o', '--origin', action='store_true', help='Examine remote repo')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
