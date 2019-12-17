@@ -1,6 +1,7 @@
 #! /usr/bin/env python2
 
 import re
+import sys
 import logging
 import argparse
 import datetime
@@ -15,7 +16,8 @@ def run(cmd):
   rc = p.wait()
   log.debug('Executed {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
   if (rc != 0) or stderr:
-    log.error('{cmd} failed: {rc}, {stderr!r}'.format(**locals()))
+    log.error('{cmd} failed'.format(**locals()))
+    sys.stdout.write(stderr)
     exit(1)
   return (rc, stdout, stderr)
 
