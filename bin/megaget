@@ -24,8 +24,9 @@ else:
 
 basename = os.path.basename(args.path)
 for node in args.nodes:
-  print node
-  cmd = ['scp'] + (['-q'] if args.quiet else []) + ['{node}:{args.path}'.format(**locals()), '{node}-{basename}'.format(**locals())]
+  dest = '{node}-{basename}'.format(**locals())
+  print dest
+  cmd = ['scp'] + (['-q'] if args.quiet else []) + ['{node}:{args.path}'.format(**locals()), dest]
   log.info(cmd)
   if not args.dry_run:
     subprocess.Popen(cmd).wait()
