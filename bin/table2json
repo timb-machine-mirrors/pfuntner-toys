@@ -55,7 +55,7 @@ import sys
 import json
 import getopt
 import string
-import StringIO
+import io
 
 def syntax(msg=None):
   if msg:
@@ -91,7 +91,7 @@ for (opt, arg) in opts:
     syntax('Unrecognized option: {opt!r}'.format(**locals())) 
 
 if sample:
-  stream = StringIO.StringIO(sample_data)
+  stream = io.StringIO(sample_data)
 else:
   assert not sys.stdin.isatty(), 'stdin must be redirected'
   stream = sys.stdin

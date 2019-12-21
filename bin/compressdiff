@@ -4,7 +4,7 @@ import re
 import gzip
 import logging
 import argparse
-import StringIO
+import io
 import subprocess
 
 from table import Table
@@ -17,7 +17,7 @@ class Gzipper(object):
     return bool(self.regexp.match(str(file_name)))
 
   def compress(self, data):
-    s = StringIO.StringIO()
+    s = io.StringIO()
     gzip_file = gzip.GzipFile(fileobj=s, mode='w')
     gzip_file.write(data)
     gzip_file.close()
@@ -26,7 +26,7 @@ class Gzipper(object):
     return compressed_data
     
   def uncompress(self, data):
-    clear_data = gzip.GzipFile(fileobj=StringIO.StringIO(data), mode='r').read()
+    clear_data = gzip.GzipFile(fileobj=io.StringIO(data), mode='r').read()
     log.debug('clear_data: {clear_data!r}'.format(**locals()))
     return clear_data
 

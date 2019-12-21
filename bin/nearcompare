@@ -7,7 +7,7 @@ import string
 import tarfile
 import logging
 import argparse
-import StringIO
+import io
 import subprocess
 
 
@@ -163,7 +163,7 @@ def tar_count(data):
   setattr(ret, 'files', 0)
   setattr(ret, 'others', 0)
 
-  tarball = tarfile.open(fileobj=StringIO.StringIO(data))
+  tarball = tarfile.open(fileobj=io.StringIO(data))
   for member in tarball.getmembers():
     log.debug('member: {type} {member.name}'.format(
       type='-' if member.isfile() else ('d' if member.isdir() else '?'),

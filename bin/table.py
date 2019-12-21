@@ -7,7 +7,7 @@ import json
 import string
 import logging
 import argparse
-import StringIO
+import io
 import xml.etree.ElementTree as ET
 
 
@@ -732,7 +732,7 @@ class Table(object):
     Convert the table into fixed column format.
     :return: A single string with newlines to present the table with fixed columns
     """
-    buf = StringIO.StringIO()
+    buf = io.StringIO()
     args.output.write(buf, self.root, self.headings)
     return buf.getvalue()
 
