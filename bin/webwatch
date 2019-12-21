@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import os
 import sys
@@ -59,7 +59,7 @@ for watch in watches:
   resp = requests.get(watch["url"])
   if (resp.status_code == 200):
     md5 = hashlib.md5()
-    md5.update(resp.text)
+    md5.update(resp.text.encode('utf-8'))
     digest = md5.hexdigest()
     if digest != watch["md5"]:
       changes = True
@@ -69,10 +69,10 @@ for watch in watches:
     else:
       notifications.append("{name}: not changed".format(name=watch["name"]))
   else:
-    print "{name}: ERROR".format(name=watch["name"])
+    print("{name}: ERROR".format(name=watch["name"]))
     sys.stderr.write(resp.text + "\n")
 
-print "\n".join(notifications)
+print("\n".join(notifications))
 
 if changes or ("--force" in sys.argv[1:]):
   if changes and notify:

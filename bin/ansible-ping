@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -43,7 +43,7 @@ log.debug(cmd)
 
 buf = ''
 while True:
-  print str(datetime.datetime.now())
+  print(str(datetime.datetime.now()))
   hosts = []
   all_success = True
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -71,12 +71,12 @@ while True:
   table = Table('host', 'status', 'message')
   for host in sorted(hosts, key=lambda host_tuple: host_tuple[0]):
     table.add(host)
-  print str(table)  
+  print(str(table))
 
   if args.wait:
     if all_success:
       break
   elif not args.continuous:
     break
-  print ''
+  print('')
   time.sleep(15)

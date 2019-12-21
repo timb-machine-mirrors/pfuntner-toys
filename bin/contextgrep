@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import os
@@ -25,21 +25,21 @@ def process(filename):
       pos = 0
       lines = data.splitlines()
       while pos < len(lines):
-        if regexp.search(lines[pos]):
+        if regexp.search(str(lines[pos])):
           while True:
-            if (pos == 0) or blanks.search(lines[pos-1]):
+            if (pos == 0) or blanks.search(str(lines[pos-1])):
               break
             pos -= 1
           while True:
-            print '{filename}:{pos:>08}: {line!r}'.format(
+            print('{filename}:{pos:>08}: {line!r}'.format(
               filename=filename,
               pos=pos+1,
               line=lines[pos]
-            )
+            ))
             pos += 1
-            if (pos >= len(lines)) or blanks.search(lines[pos]):
+            if (pos >= len(lines)) or blanks.search(str(lines[pos])):
               break
-          print ''
+          print('')
         else:
           pos += 1
     else:
@@ -65,4 +65,4 @@ blanks = re.compile('^\s*$')
 
 if not args.files:
   args.files = ['.']
-map(process, args.files)
+list(map((process, args.files))

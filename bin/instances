@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -18,7 +18,7 @@ def keyhunt(keys, key_type_name, key_type, key_value_name):
   
 def run(cmd):
 
-  if isinstance(cmd, basestring):
+  if isinstance(cmd, str):
     cmd = cmd.split()
   key = ' '.join(cmd)
   ret = {
@@ -41,7 +41,7 @@ def run(cmd):
   return ret
   
 def match(name):
-  return name and (bool(regexp.search(name)) if args.regexp else True)
+  return name and (bool(regexp.search(str(name))) if args.regexp else True)
 
 def get_token(s, sep, pos):
   return (s or '').split(sep)[pos]

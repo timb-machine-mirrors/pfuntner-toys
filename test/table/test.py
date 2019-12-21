@@ -8,7 +8,7 @@ import argparse
 import subprocess
 
 def run(cmd, stdin=None, forgive=False):
-  if isinstance(cmd, basestring):
+  if isinstance(cmd, str):
     cmd = cmd.split()
   p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   (stdout, stderr) = p.communicate(stdin or '')

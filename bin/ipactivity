@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -124,7 +124,7 @@ while continuous or (iterations == 0):
     match = None
   
     if not interface:
-      match = ifPat.match(line)
+      match = ifPat.match(str(line))
   
       if match:
         interface = match.group(1)
@@ -132,13 +132,13 @@ while continuous or (iterations == 0):
         if args:
           found = False
           for arg in args:
-            if re.search(arg, interface):
+            if re.search(arg, str(interface)):
               found = True
               break
           if not found:
             interface = None
     else:
-      match = bytesPat.search(line)
+      match = bytesPat.search(str(line))
       if match:
         debug("%s matched %s" % (repr(line), repr(bytesPat.pattern)), 2)
         rx = int(match.group(1))
@@ -146,15 +146,15 @@ while continuous or (iterations == 0):
         if continuous:
           ret = emit()
           now = datetime.datetime.now()
-          print "%s: %s" % (now, ret)
+          print("%s: %s" % (now, ret))
           lastTime = now
           lastRx = int(match.group(1))
           lastTx = int(match.group(2))
           time.sleep(5)
         else:
-          print emit()
+          print(emit())
       else:
-        match = bytes2Pat.search(line)
+        match = bytes2Pat.search(str(line))
         if match:
           debug("%s matched %s" % (repr(line), repr(bytes2Pat.pattern)), 2)
           if match.group(1) == "RX":
@@ -166,13 +166,13 @@ while continuous or (iterations == 0):
             if continuous:
               ret = emit()
               now = datetime.datetime.now()
-              print "%s: %s" % (now, ret)
+              print("%s: %s" % (now, ret))
               lastTime = now
               lastRx = int(match.group(1))
               lastTx = int(match.group(2))
               time.sleep(5)
             else:
-              print emit()
+              print(emit())
         else:
           debug("%s failed matched %s and %s" % (repr(line), repr(bytesPat.pattern), repr(bytes2Pat.pattern)), 2)
   

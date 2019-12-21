@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 # date '+%Y-%m-%dT%H:%M:%S.%N'
 
@@ -139,4 +139,4 @@ for style in args.styles:
   if '%' in curr:
     curr = datetime.datetime.strftime(now, curr)
 
-  print curr
+  print(curr)

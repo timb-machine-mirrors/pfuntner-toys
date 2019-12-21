@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import os
@@ -45,13 +45,13 @@ def quit(tokens):
 def list_databases(tokens):
   global mongo
 
-  print '\n'.join(mongo.database_names())
+  print('\n'.join(mongo.database_names()))
 
 def list_collections(tokens):
   global mongo
 
   if args.db_name:
-    print '\n'.join(mongo[args.db_name].collection_names())
+    print('\n'.join(mongo[args.db_name].collection_names()))
   else:
     log.error('No database selected -- `use DATABASE_NAME`')
 
@@ -61,7 +61,7 @@ def select_from(tokens):
   if args.db_name:
     ret = prepDocs([doc for doc in mongo[args.db_name][tokens[0]].find({})])
     json.dump(ret, sys.stdout, indent=2, sort_keys=True)
-    print ''
+    print('')
     # print ret
   else:
     log.error('No database selected -- `use DATABASE_NAME`')
@@ -70,7 +70,7 @@ def create_database(tokens):
   global mongo
 
   if args.db_name:
-    print 'work in progress: create database {tokens}'.format(**locals())
+    print('work in progress: create database {tokens}'.format(**locals()))
   else:
     log.error('No database selected -- `use DATABASE_NAME`')
 
@@ -95,7 +95,7 @@ def create_document(tokens):
 
 def objectify(s):
   id = None
-  match = re.search('"_id":\s*(ObjectId\("([0-9a-f]{24})"\))', s)
+  match = re.search('"_id":\s*(ObjectId\("([0-9a-f]{24})"\))', str(s))
   log.debug('objectify groups: {}'.format(match.groups() if match else None))
   if match:
     s = s[:match.start(1)] + 'null' + s[match.end(1)]
@@ -135,7 +135,7 @@ def use_database(tokens):
   args.db_name = tokens[1]
 
 def help(tokens):
-  print '\n'.join([action[0].pattern for action in actions[1:]])
+  print('\n'.join([action[0].pattern for action in actions[1:]]))
 
 parser = argparse.ArgumentParser(description='mongoDB cloud CLI')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
@@ -192,7 +192,7 @@ while True:
 
   matched = False
   for action in actions:
-    match = action[0].search(cmd)
+    match = action[0].search(str(cmd))
     if match:
       matched = True
       try:

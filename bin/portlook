@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import sys
 import socket
@@ -12,4 +12,4 @@ except Exception as e:
   sys.stderr.write('Caught `{e!s}`\n'.format(**locals()))
   exit(1)
 else:
-  print 'Done'
+  print('Done')

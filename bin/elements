@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 """
   assuming stdin is a json list of dictionaries, this script prints selected elements of a json list in a table
@@ -82,4 +82,4 @@ table = Table(keys)
 for datum in data:
   table.add([get(datum, key) for key in keys])
 
-print str(table)
+print(str(table))

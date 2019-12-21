@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 import sys
 import os
 import getopt
@@ -21,12 +21,12 @@ class Orient:
     return self.value == self.vertical
 
 def usage():
-  print >> sys.stderr, "Syntax: %s [-w num|--width=num] [-v|--vertical] [-h|--horizontal] [-x|--verbose] [--sep CHAR] [-?|--help]" % sys.argv[0]
+  sys.stderr.write("Syntax: %s [-w num|--width=num] [-v|--vertical] [-h|--horizontal] [-x|--verbose] [--sep CHAR] [-?|--help]\n" % sys.argv[0])
 
 def debug(msg):
   global verbose, deferred_msgs
   if verbose:
-    print str(msg)
+    print(str(msg))
   else:
     deferred_msgs.append(msg)
 
@@ -70,7 +70,7 @@ def get(row, col):
 try:
   opts, args = getopt.getopt(sys.argv[1:], "s:hvxw:?", ["separator=", "horizontal", "vertical", "verbose", "width=", "help"])
 except getopt.GetoptError as err:
-  print str(err)
+  print(str(err))
   usage()
   sys.exit(2)
 
@@ -79,7 +79,7 @@ for opt, arg in opts:
     verbose = not verbose
     if verbose and len(deferred_msgs) > 0:
       for msg in deferred_msgs:
-        print msg
+        print(msg)
   elif opt in ["-h", "--horizontal"]:
     orientation = Orient(Orient.horizontal)
   elif opt in ["-v", "--vertical"]:
@@ -88,7 +88,7 @@ for opt, arg in opts:
     try:
       width = int(arg)
     except Exception as e:
-      print >> sys.stderr, "Invalid width arg %s: %s" % (arg, str(e))
+      sys.stderr.write("Invalid width arg %s: %s\n" % (arg, str(e)))
       usage()
       sys.exit(1)
   elif opt in ["-s", "--separator"]:
@@ -107,7 +107,7 @@ data = []
 
 if len(args) == 0:
   if os.isatty(sys.stdin.fileno()):
-    print >> sys.stderr, "Cowardly refusing to read from the terminal!"
+    sys.stderr.write("Cowardly refusing to read from the terminal!\n")
     usage()
     sys.exit(1)
 

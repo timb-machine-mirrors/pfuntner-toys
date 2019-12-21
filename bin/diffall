@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import sys
 
@@ -11,8 +11,8 @@ while True:
   char_set = set(chars)
   if char_set == set(['']):
     break
-  print '{bytes:>12} {equal:<5} {chars}'.format(
+  print('{bytes:>12} {equal:<5} {chars}'.format(
     bytes=bytes,
     equal='True' if len(char_set) == 1 else 'False',
     chars=' '.join(['{char:<02x}'.format(char=ord(char)) for char in chars]),
-  )
+  ))

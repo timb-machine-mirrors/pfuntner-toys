@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import os
 import pwd
@@ -45,11 +45,11 @@ for line in lines[1:]:
   # print 'store > {process}'.format(**locals())
   processes[process.pid] = process
 
-print headings
+print(headings)
 for (pid, process) in processes.items():
   if process.isZombie():
     if process.ppid in processes:
-      print processes[process.ppid].line
+      print(processes[process.ppid].line)
     else:
       sys.stderr.write('No parent\n')
-    print process.line
+    print(process.line)

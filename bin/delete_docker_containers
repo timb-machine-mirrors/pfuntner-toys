@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -7,7 +7,7 @@ import argparse
 import subprocess
 
 def run(cmd, capture=True):
-  if isinstance(cmd, basestring):
+  if isinstance(cmd, str):
     cmd = cmd.split()
   log.debug('Running: {cmd}'.format(**locals()))
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE if capture else None, stderr=subprocess.PIPE if capture else None)
@@ -37,4 +37,4 @@ if len(lines) > 1:
     (rc, stderr, stderr) = run(['docker', 'rm', '-f'] + [line.split()[0] for line in lines[1:]], capture=False)
     exit(rc)
 else:
-  print 'No docker containers'
+  print('No docker containers')

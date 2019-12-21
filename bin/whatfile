@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import os
@@ -34,4 +34,4 @@ cwd = os.getcwd()
 regexp = re.compile("/")
 
 for filename in sys.argv[1:]:
-  print "%s@%s:%s" % (user, node, filename if regexp.match(filename) else os.path.abspath(os.path.join(cwd, filename)))
+  print("%s@%s:%s" % (user, node, filename if regexp.match(filename) else os.path.abspath(os.path.join(cwd, filename))))

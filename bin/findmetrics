@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import subprocess
 import datetime
@@ -130,4 +130,4 @@ except Exception as e:
   sys.stderr.write("Caught %s, rc: %d, stdout: %s, stderr: %s\n" % (repr(e), rc, repr(stdout), repr(stderr)))
   exit(1)
 
-print json.dumps([metric["id"] for metric in metrics], indent=2)
+print(json.dumps([metric["id"] for metric in metrics], indent=2))

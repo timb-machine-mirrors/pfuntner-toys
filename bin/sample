@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -55,17 +55,17 @@ for iteration in range(groups):
     count =  len([num for num in nums if (low <= num) and (num <= high)])
     if zeros or count:
       if floats:
-        print "%*.2f %*.2f %8d %s" % (maxwidth, low, maxwidth, high, count, ratio(count, len(nums)))
+        print("%*.2f %*.2f %8d %s" % (maxwidth, low, maxwidth, high, count, ratio(count, len(nums))))
       else:
-        print "%*d %*d %8d %s" % (maxwidth, low, maxwidth, high, count, ratio(count, len(nums)))
+        print("%*d %*d %8d %s" % (maxwidth, low, maxwidth, high, count, ratio(count, len(nums))))
   else:
     high = min(nums) + (size*(iteration+1))
     count =  len([num for num in nums if (low <= num) and (num < high)])
     if zeros or count:
       if floats:
-        print "%*.2f %*.2f %8d %s" % (maxwidth, low, maxwidth, high, count, ratio(count, len(nums)))
+        print("%*.2f %*.2f %8d %s" % (maxwidth, low, maxwidth, high, count, ratio(count, len(nums))))
       else:
-        print "%*d %*d %8d %s" % (maxwidth, low, maxwidth, high, count, ratio(count, len(nums)))
+        print("%*d %*d %8d %s" % (maxwidth, low, maxwidth, high, count, ratio(count, len(nums))))
 
   if (not floats) and (high > max(nums)):
     break

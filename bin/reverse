@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -42,4 +42,4 @@ else:
     if args.words:
       print (' '.join(line.split()[-1::-1]))
     else:
-      print line
+      print(line)

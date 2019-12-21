@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 """
    Find and display git repos
@@ -69,4 +69,4 @@ if home:
 else:
   log.critical('No $HOME defined!')
 
-print str(table)
+print(str(table))

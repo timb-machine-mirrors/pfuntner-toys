@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import sys
 import time
@@ -110,7 +110,7 @@ threads = []
 lock = threading.Lock()
 
 start = datetime.datetime.now()
-print 'Started: {start}'.format(**locals())
+print('Started: {start}'.format(**locals()))
 command = [args.cmd] + args.args
 try:
   p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -122,10 +122,10 @@ redirect(p, 'stderr', args.stderr)
 rc = p.wait()
 
 finish = datetime.datetime.now()
-print 'rc: {rc}'.format(**locals())
+print('rc: {rc}'.format(**locals()))
 
 while any([thread.isAlive() for thread in threads]):
   time.sleep(.1)
 
-print 'Stopped: {finish}'.format(**locals())
-print 'Elapsed: {elapsed}s'.format(elapsed=finish-start)
+print('Stopped: {finish}'.format(**locals()))
+print('Elapsed: {elapsed}s'.format(elapsed=finish-start))

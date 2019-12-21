@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import sys
 import logging
@@ -27,4 +27,4 @@ log.debug('exprs: {args.exprs}'.format(**locals()))
 
 for expression in args.exprs:
   log.debug('Evaluating {expression!r}'.format(**locals()))
-  print eval(expression)
+  print(eval(expression))

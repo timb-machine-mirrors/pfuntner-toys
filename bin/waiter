@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import os
@@ -73,10 +73,10 @@ if args.reset:
       sys.stdout.write('Do you really want to reset {config_filename}, waiting for {duration} until {expiry_timestamp}? '.format(**locals()))
       ans = sys.stdin.readline()
       if re.match('y(e(s)?)?$', ans, flags=re.IGNORECASE):
-        print 'Resetting {config_filename}'.format(**locals())
+        print('Resetting {config_filename}'.format(**locals()))
         config_file.truncate(0)
       else:
-        print '{config_filename} was not reset'.format(**locals())
+        print('{config_filename} was not reset'.format(**locals()))
     else:
       parser.error('{config_filename} is waiting for {duration!r}, not {args.duration!r}'.format(**locals()))
   else:
@@ -91,7 +91,7 @@ if waiting:
     remain = datetime.datetime.fromtimestamp(expiry) - now
     log.info('{remain!s} left in {duration!r}, ending at {expiry_timestamp}'.format(**locals()))
     if args.remain:
-      print 'Time remaining: {remain!s}'.format(**locals())
+      print('Time remaining: {remain!s}'.format(**locals()))
     exit(0)
   else:
     # time has expired
@@ -103,7 +103,7 @@ if waiting:
 expiry = now + datetime.timedelta(seconds=curr_duration)
 remain = expiry - now
 if args.remain:
-  print 'Time remaining: {remain!s}'.format(**locals())
+  print('Time remaining: {remain!s}'.format(**locals()))
 config = {
   'expiry': (expiry - datetime.datetime.fromtimestamp(0)).total_seconds(),
   'expiry_timestamp': str(expiry),

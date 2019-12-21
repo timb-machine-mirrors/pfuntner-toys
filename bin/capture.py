@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 """
   Runs a shell command, capturing stdout and stderr to a file; reporting on start time, stop time, and duration; reporting on exit status; reporting on CPU time
@@ -138,7 +138,7 @@ def signalHandler(signum, stack):
     # p.kill()
     time.sleep(1)
 
-  print "Goodbye, cruel world"
+  print("Goodbye, cruel world")
   os._exit(1)
 
 (opts,args) = ([],[])
@@ -173,7 +173,7 @@ if not captureFilename:
   captureFilename = os.path.join(captureDir, "{base}-{now:%Y%m%d%H%M%S%f}.out".format(base=os.path.basename(sys.argv[0]), now=datetime.datetime.now()))
 
 captureFile = open(captureFilename, "w", 0)
-print "Writing to %s" % repr(captureFilename)
+print("Writing to %s" % repr(captureFilename))
 
 stdoutCapture = Capture(sys.stdout, captureFile)
 stderrCapture = Capture(sys.stderr, captureFile)
@@ -198,6 +198,6 @@ stdoutCapture.write("User: {user:.2f}s, System: {system:.2f}s\n".format(user=sta
 stdoutCapture.close()
 stderrCapture.close()
 
-print "Wrote to %s" % repr(captureFilename)
+print("Wrote to %s" % repr(captureFilename))
 
 exit(status/256)

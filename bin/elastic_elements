@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -55,7 +55,7 @@ if args:
   del query["query"]["match_all"]
   query["query"]["match"] = {}
   for curr in args:
-    match = re.match("([^=]+)=(.*)$", curr)
+    match = re.match("([^=]+)=(.*)$", str(curr))
     assert match, "Could not parse %s" % curr
     query["query"]["match"][match.group(1)] = match.group(2)
 
@@ -100,4 +100,4 @@ while not done:
 
   resp = None
 
-print json.dumps(ret)
+print(json.dumps(ret))

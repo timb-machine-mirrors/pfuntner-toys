@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import os
@@ -23,10 +23,10 @@ def process(filename):
           text = paragraph.text
           if regexp.search(text):
             if args.list:
-              print filename
+              print(filename)
               break
             else:
-              print '{filename}: {text!r}'.format(**locals())
+              print('{filename}: {text!r}'.format(**locals()))
 
 parser.add_argument('regexp', help='Regular expression with which to search')
 parser.add_argument('files', metavar='file', nargs='+', help='One or more files')
@@ -40,4 +40,4 @@ log = logging.getLogger()
 log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 regexp = re.compile(args.regexp)
-map(process, args.files)
+list(map((process, args.files))

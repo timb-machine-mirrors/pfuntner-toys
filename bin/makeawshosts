@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import os
@@ -77,4 +77,4 @@ for host in hosts:
     if host.state.lower() != 'running':
       log.warn('{host.name} is stopped'.format(**locals()))
     else:
-      print '{host.name} ansible_host={host.ip} ansible_user={host.user} ansible_ssh_private_key_file={host.key}'.format(**locals())
+      print('{host.name} ansible_host={host.ip} ansible_user={host.user} ansible_ssh_private_key_file={host.key}'.format(**locals()))

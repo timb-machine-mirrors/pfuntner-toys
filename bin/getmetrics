@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import subprocess
 import datetime
@@ -52,7 +52,7 @@ class Relative:
     ret = None
     if verbose:
       sys.stderr.write("Trying %s against %s\n" % (repr(s), repr(Relative.pattern)))
-    match = Relative.regexp.search(s)
+    match = Relative.regexp.search(str(s))
     if match:
       value = float(match.group(1))
       if match.group(2) == 'm':
@@ -259,6 +259,6 @@ if format == "json":
     if verbose:
       sys.stderr.write("Null removal has disposed of %d out of %d total data points\n" % (removed, total))
      
-  print json.dumps(metrics, indent=2)
+  print(json.dumps(metrics, indent=2))
 elif format == "raw":
   sys.stdout.write(json.dumps(json.loads(stdout), indent=2))

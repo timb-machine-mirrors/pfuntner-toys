@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import time
 import json
@@ -10,10 +10,10 @@ import subprocess
 def echo(host, data):
   if args.raw:
     if data:
-      print '{host}: {data!r}'.format(**locals())
+      print('{host}: {data!r}'.format(**locals()))
   else:
     for line in data.splitlines():
-      print '{host}: {line}'.format(**locals())
+      print('{host}: {line}'.format(**locals()))
   
 parser = argparse.ArgumentParser(description='ssh to multiple machines')
 parser.add_argument('hosts', help='One or more comma-separated hosts')
@@ -87,4 +87,4 @@ while processes:
       log.debug('{host} still running'.format(**locals()))
 
 if args.json:
-  print json.dumps(output, indent=2, sort_keys=True)
+  print(json.dumps(output, indent=2, sort_keys=True))

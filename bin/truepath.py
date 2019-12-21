@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import os
 import re
@@ -51,4 +51,4 @@ if __name__ == '__main__':
     curr = process(path, log)
     if args.unix_style:
       curr = curr.replace('\\', '/')
-    print curr
+    print(curr)

@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 """
   Takes a json object and dumps out all of the values (one per line)
@@ -21,5 +21,5 @@ def process(root, path):
     for key in sorted(root.keys()):
       process(root[key], path + [key])
   else:
-    print "%s\t%s" % ('/'.join(path), repr(root))
+    print("%s\t%s" % ('/'.join(path), repr(root)))
 process(json.load(sys.stdin), [""])

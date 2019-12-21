@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -70,6 +70,6 @@ else:
     (t1, t2) = (t2, t1)
 
 if sys.argv[2] == "+":
-  print t1 + t2
+  print(t1 + t2)
 else:
-  print t1 - t2
+  print(t1 - t2)

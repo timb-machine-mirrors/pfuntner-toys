@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 """
    Turn Ansible output into full JSON.  It's pretty close to JSON but
@@ -58,7 +58,7 @@ while True:
       buf = ''
   else:
     line = line.strip('\n').strip('\r')
-    match = regexp.search(line)
+    match = regexp.search(str(line))
     debug('{line!r}: {match}'.format(**locals()))
     if match:
       host = match.group(1)
@@ -67,4 +67,4 @@ while True:
 
 assert not buf, 'Unclosed result buffer: {buf!r}'.format(**locals())
 
-print json.dumps(results, indent=2, sort_keys=True)
+print(json.dumps(results, indent=2, sort_keys=True))

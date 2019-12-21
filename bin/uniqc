@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import sys
 import math
@@ -46,7 +46,7 @@ elif sys.stdin.isatty():
 else:
   process(sys.stdin)
 
-print "%d total items" % total
+print("%d total items" % total)
 if total:
   digits = math.log(total, 10)
   if (digits % 1) == 0:
@@ -67,4 +67,4 @@ if total:
     
   # for token in sorted(tokens.keys(), key=lambda token: tokens[token], reverse=True):
   for token in order if args.fifo else sorted(tokens.keys(), cmp=comparator, reverse=True):
-    print "%*d %6.2f%% %s" % (digits, tokens[token], (tokens[token]*100.0)/total, token)
+    print("%*d %6.2f%% %s" % (digits, tokens[token], (tokens[token]*100.0)/total, token))

@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import logging
@@ -13,7 +13,7 @@ def process(filename):
         if match:
           method = match.group(1)
           if method != 'setLevel':
-            print '{filename}:{linenum} {line}'.format(**locals())
+            print('{filename}:{linenum} {line}'.format(**locals()))
             if method not in logs.keys():
               logs[method] = 1
             else:
@@ -34,5 +34,5 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 regexp = re.compile('^\s*log\.(\w+)\(')
 
 logs = {}
-map(process, args.files)
-print logs
+list(map((process, args.files))
+print(logs)

@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import subprocess
 import sys
@@ -68,8 +68,8 @@ if "linux" in sys.platform:
     exit(rc)
   
   if verbose:
-    print stdout
-    print ""
+    print(stdout)
+    print("")
   
   interface = None
   for line in stdout.split('\n'):
@@ -84,13 +84,13 @@ if "linux" in sys.platform:
         ipaddr = tokens[1][5:]
         bytes = [int(token) for token in ipaddr.split('.')]
         if bytes[0] not in [39, 192, 127, 172]:
-          print "%s%s" % (ipaddr, " (%s)" % interface if verbose else "")
+          print("%s%s" % (ipaddr, " (%s)" % interface if verbose else ""))
         interface = None
       elif tokens[0] == "inet":
         ipaddr = tokens[1]
         bytes = [int(token) for token in ipaddr.split('.')]
         if bytes[0] not in [39, 192, 127, 172]:
-          print "%s%s" % (ipaddr, " (%s)" % interface if verbose else "")
+          print("%s%s" % (ipaddr, " (%s)" % interface if verbose else ""))
         interface = None
 
 elif "win" in sys.platform:
@@ -120,15 +120,15 @@ elif "win" in sys.platform:
   enabled = False
   while lineno < len(lines):
     line = lines[lineno].strip('\r')
-    if re.match("[A-Z]", line) and ("VirtualBox" not in line):
+    if re.match("[A-Z]", str(line)) and ("VirtualBox" not in line):
       lineno += 1
       enabled = True
       # print "Enabled by `%s` (%d)" % (line, lineno)
     elif enabled:
-      if re.match("  ", line):
-        match = re.search("IPv4 Address.*(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})", line)
+      if re.match("  ", str(line)):
+        match = re.search("IPv4 Address.*(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})", str(line))
         if match:
-          print match.group(1)
+          print(match.group(1))
       else:
         enabled = False
         # print "Disabled by `%s` (%d)" % (line, lineno)

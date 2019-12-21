@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import os
 import re
@@ -204,7 +204,7 @@ def find_type(file_name):
 
   for file_type in file_types:
     log.debug('Trying {file_type.name}'.format(**locals()))
-    if file_type.pattern and not file_type.pattern.search(file_name):
+    if file_type.pattern and not file_type.pattern.search(str(file_name)):
       continue
     if file_type.content_method and not file_type.content_method(file_name):
       continue

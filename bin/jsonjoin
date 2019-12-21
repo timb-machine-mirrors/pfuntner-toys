@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import pdb
 
@@ -63,7 +63,7 @@ lines = ""
 linenum = 0
 for line in stream:
   if junk and (not in_struct):
-    match = junk_regexp.search(line)
+    match = junk_regexp.search(str(line))
     if match:
       line = match.group(1)
       in_struct = True
@@ -91,5 +91,5 @@ if all(["timestamp" in datum for datum in objs]):
   debug("sorted in %s" % sortTimer.elapsed())
 
 printTimer = Timer()
-print json.dumps(objs, indent=2, sort_keys=True)
+print(json.dumps(objs, indent=2, sort_keys=True))
 debug("printed in %s" % printTimer.elapsed())

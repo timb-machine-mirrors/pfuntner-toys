@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import os
 import re
@@ -36,7 +36,7 @@ class Host(object):
     ]
     for key in sorted(remains):
       value = getattr(self, key)
-      if isinstance(value, basestring) and (not key.startswith('__')):
+      if isinstance(value, str) and (not key.startswith('__')):
         elements.append('{key}: {value}'.format(**locals()))
     return ', '.join(elements)
 
@@ -188,7 +188,7 @@ class VirtualHosts(object):
     if not path:
       return root or None
 
-    if isinstance(path, basestring):
+    if isinstance(path, str):
       path = path.split('/')
 
     if cls.int_regexp.search(path[0]) and isinstance(root, list):
@@ -422,4 +422,4 @@ if __name__ == '__main__':
 
   hosts = virtual_hosts.get_hosts(args.hostnames)
   for host in hosts:
-    print host
+    print(host)

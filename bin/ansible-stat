@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -13,7 +13,7 @@ import subprocess
 from table import Table
 
 def run(cmd):
-  if isinstance(cmd, basestring):
+  if isinstance(cmd, str):
     cmd = cmd.split()
   log.info('cmd: {cmd}'.format(**locals()))
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -23,7 +23,7 @@ def run(cmd):
   return (rc, stdout, stderr)
   
 def get(root, path, isList=False):
-  if isinstance(path, basestring):
+  if isinstance(path, str):
     path = path.split('/')
   log.info('get({path})'.format(**locals()))
   log.debug('get({root!r})'.format(**locals()))

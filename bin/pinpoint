@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import logging
 import argparse
@@ -19,5 +19,5 @@ with open(args.path) as stream:
     log.debug('{linenum} {bytes} {line!r}'.format(**locals()))
     end = bytes+len(line)
     if [byte for byte in args.bytes if bytes <= byte <= end]:
-      print '{linenum:>6} {bytes:>10} {end:>10} {line!r}'.format(**locals())
+      print('{linenum:>6} {bytes:>10} {end:>10} {line!r}'.format(**locals()))
     bytes = end + 1

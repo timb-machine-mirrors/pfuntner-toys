@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -15,7 +15,7 @@ def process_time():
   timedelta_parms = {}
 
   arg = args.args.pop(0)
-  match = float_regexp.search(arg)
+  match = float_regexp.search(str(arg))
   log.debug('float_regexp: {groups}'.format(groups=match.groups() if match else None))
   if match:
     value = float(match.group(1))

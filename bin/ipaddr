@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import subprocess
 import re
@@ -25,7 +25,7 @@ if (system == "Linux") or (rc == 0):
     match = regexp.search(addr)
     if match:
       if ("--all" in sys.argv[1:]) or (match.group(1) not in ['0', '169', '127', '172', '192']):
-        print addr
+        print(addr)
 else:
   # Alternate method on Windoze
 
@@ -41,4 +41,4 @@ else:
     match = regexp.search(line)
     if ("IPv4 Address" in line) and match:
       if ("--all" in sys.argv[1:]) or (match.group(1) not in ['0', '169', '127', '172', '192']):
-        print '.'.join(match.groups())
+        print('.'.join(match.groups()))

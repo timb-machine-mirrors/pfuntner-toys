@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -37,11 +37,11 @@ try:
   if (x + y) == int(ans.strip()):
     log.debug('Congratulations, you passed the test')
   else:
-    print 'No reboot'
+    print('No reboot')
     exit(1)
 except Exception as e:
   log.debug('Caught: {e!s}'.format(**locals()))
-  print 'No reboot'
+  print('No reboot')
   exit(1)
 
 (ret, stdout, stderr) = ping(hosts)
@@ -54,7 +54,7 @@ if ret is False:
 
 reboot_p = subprocess.Popen(['ansible', hosts, '-b', '-m', 'reboot'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 start = datetime.datetime.now()
-print '{start!s} Rebooting {hosts}'.format(**locals())
+print('{start!s} Rebooting {hosts}'.format(**locals()))
 
 time.sleep(15)
 
@@ -62,7 +62,7 @@ stdout = ''
 stderr = ''
 
 now = datetime.datetime.now()
-print '{now!s} Polling {hosts}'.format(**locals())
+print('{now!s} Polling {hosts}'.format(**locals()))
 while True:
   if reboot_p.poll() is not None:
     log.info('reboot module is complete')
@@ -86,4 +86,4 @@ stop = datetime.datetime.now()
 
 elapsed = stop - start
 now = datetime.datetime.now()
-print '{now!s} Done, elapsed time: {elapsed!s}'.format(**locals())
+print('{now!s} Done, elapsed time: {elapsed!s}'.format(**locals()))

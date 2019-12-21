@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -20,4 +20,4 @@ regexp = re.compile('^\s*(#.*)?$')
 
 for line in sys.stdin.read().splitlines():
   if not regexp.search(line):
-    print line
+    print(line)

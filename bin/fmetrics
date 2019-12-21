@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -27,7 +27,7 @@ def process(file_name=None):
     log.debug('{line!r}'.format(**locals()))
     lines += 1
     chars += len(line) + 1
-    words += len(word_regexp.findall(line))
+    words += len(word_regexp.findall(str(line)))
     max_line = max(max_line, len(line))
     min_line = len(line) if min_line is None else min(min_line, len(line))
 
@@ -58,7 +58,7 @@ if args.files:
 p.stdin.write('Chars\tWords\tLines\tMin len\tMax len\tAvg len\n')
 
 if args.files:
-  map(process, args.files)
+  list(map((process, args.files))
 else:
   process()
 

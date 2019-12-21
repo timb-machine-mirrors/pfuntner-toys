@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import sys
 import re
@@ -36,7 +36,7 @@ else:
 regexp = re.compile("//([^/:]+):([^@]+)@") # handle something like "https://user:password@foobar.com/foo"
 
 pos = 0
-match = regexp.search(data, pos)
+match = regexp.search(str(data), pos)
 while match:
   """
     Replace password
@@ -50,6 +50,6 @@ while match:
     data = data[:match.start(1)] + "secret" + data[match.end(1):] 
 
   pos = match.start(1)
-  match = regexp.search(data, pos)
+  match = regexp.search(str(data), pos)
 
-print data
+print(data)

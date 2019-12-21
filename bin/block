@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -9,13 +9,13 @@ def vertical_border():
   line = ''
   while len(line) < args.width:
     line += args.border[0]
-  print line[:args.width]
+  print(line[:args.width])
 
 def append(s1, s2):
   return s1 + (' ' if s1 else '') + s2
     
 def emit(line):
-  match = prefix_regexp.search(line)
+  match = prefix_regexp.search(str(line))
   if line and match:
     indent = match.group(1)
     remainder = match.group(2).split()
@@ -30,9 +30,9 @@ def emit(line):
         curr = curr.center(inner_width)
         args.center_first_line = False
 
-      print '{args.border} {curr:{inner_width}} {right_border}'.format(curr=curr, **globals())
+      print('{args.border} {curr:{inner_width}} {right_border}'.format(curr=curr, **globals()))
   else:
-    print '{args.border} {spaces} {right_border}'.format(**globals())
+    print('{args.border} {spaces} {right_border}'.format(**globals()))
   
 parser = argparse.ArgumentParser(description='Generate block comment')
 parser.add_argument('-b', '--border', default='#', help='Specify border string')

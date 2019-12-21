@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import sys
 import json
@@ -34,21 +34,21 @@ def whatis(src, depth=0):
     log.error('Could not interpret {src!r}: {e!s}'.format(**locals()))
     return
 
-  print '{indent}{obj_type}: {obj!r}'.format(indent=' '*(depth*2), obj_type=typer(obj), obj=obj)
+  print('{indent}{obj_type}: {obj!r}'.format(indent=' '*(depth*2), obj_type=typer(obj), obj=obj))
   depth += 1
   if isinstance(obj, list):
     for (pos, datum) in enumerate(obj):
-      print '{indent}{pos}'.format(indent=' '*(depth*2), pos=pos)
+      print('{indent}{pos}'.format(indent=' '*(depth*2), pos=pos))
       whatis(repr(obj[pos]), depth+1)
   elif isinstance(obj, dict):
     for (key, datum) in sorted(obj.items(), key=lambda datum: datum[0]):
-      print '{indent}{key}'.format(indent=' '*(depth*2), key=key)
+      print('{indent}{key}'.format(indent=' '*(depth*2), key=key))
       whatis(repr(obj[key]), depth+1)
-  elif isinstance(obj, basestring):
+  elif isinstance(obj, str):
     lines = obj.splitlines()
     if len(lines) > 1:
       for line in lines:
-        print '{indent}{line}'.format(indent=' '*(depth*2), line=line)
+        print('{indent}{line}'.format(indent=' '*(depth*2), line=line))
   
 parser = argparse.ArgumentParser(description='Analyze a chunk of data')
 parser.add_argument('-j', '--json', action='store_true', help='Try to process as JSON first')

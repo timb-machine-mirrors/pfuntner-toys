@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import sys
 import getopt
@@ -36,7 +36,7 @@ class TimestampPattern:
       try:
         ret = datetime.datetime.strptime(match.group(1), self.pat)
       except Exception as e:
-        print "Caught %s parsing %s with %s" % (repr(e), repr(match.group(1)), repr(self.pat))
+        print("Caught %s parsing %s with %s" % (repr(e), repr(match.group(1)), repr(self.pat)))
 
     return ret
 

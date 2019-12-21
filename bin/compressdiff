@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import gzip
@@ -14,7 +14,7 @@ class Gzipper(object):
     self.regexp = re.compile('.\.t?gz$')
 
   def match(self, file_name):
-    return bool(self.regexp.match(file_name))
+    return bool(self.regexp.match(str(file_name)))
 
   def compress(self, data):
     s = StringIO.StringIO()
@@ -35,7 +35,7 @@ class Xzipper(object):
     self.regexp = re.compile('.\.xz$')
 
   def match(self, file_name):
-    return bool(self.regexp.match(file_name))
+    return bool(self.regexp.match(str(file_name)))
 
   def compress(self, data):
     p = subprocess.Popen(['xz', '--stdout'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
@@ -67,10 +67,10 @@ def process(file_name):
     gzip_data = None
     xz_data = None
 
-    if gzipper.match(file_name):
+    if gzipper.match(str(file_name)):
       gzip_data = data
       data = gzipper.uncompress(gzip_data)
-    elif xzipper.match(file_name):
+    elif xzipper.match(str(file_name)):
       xz_data = data
       data = xzipper.uncompress(xz_data)
 
@@ -96,6 +96,6 @@ table = Table(('File name', 'plain', 'gzip', 'gzip savings', 'xz', 'xz savings',
 gzipper = Gzipper()
 xzipper = Xzipper()
 
-map(process, args.files)
+list(map((process, args.files))
 
-print str(table)
+print(str(table))

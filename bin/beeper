@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import sys
 import time
@@ -10,9 +10,9 @@ def handleCntlC(signum, stack):
   done = True
 
 def banner(s):
-  print '*' * (len(s) + 4)
-  print "* %s *" % s
-  print '*' * (len(s) + 4)
+  print('*' * (len(s) + 4))
+  print("* %s *" % s)
+  print('*' * (len(s) + 4))
 
 bellChar = '\a'
 
@@ -28,6 +28,6 @@ while not done:
   # sys.stdout.flush()
   time.sleep(1)
 
-print ""
+print("")
 stop = datetime.datetime.now()
 banner("%s: Beeping ended, %s" % (stop, stop-start))

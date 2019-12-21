@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import os
@@ -23,7 +23,7 @@ class Boxes(object):
     rc = None
     stdout = ''
     stderr = ''
-    if isinstance(cmd, basestring):
+    if isinstance(cmd, str):
       cmd = cmd.split()
     log.debug('Executing {cmd}'.format(**locals()))
     try:
@@ -93,4 +93,4 @@ if __name__ == '__main__':
   args = parser.parse_args()
   log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-  print json.dumps(Boxes().boxes())
+  print(json.dumps(Boxes().boxes()))

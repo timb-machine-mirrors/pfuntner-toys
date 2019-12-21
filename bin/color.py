@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -96,7 +96,7 @@ if __name__ == '__main__':
     table = Table([])
     for color in Color.colors.keys():
       table.add(color, Color.get_color_code(color) + color + Color.get_color_code('0'))
-    print str(table)
+    print(str(table))
   elif args.text:
     Color.print_color(Color.get_color(args.color))
     sys.stdout.write(' '.join(args.text) + '\n')

@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 """
   Purpose: This script helps me manage the `toys` repo on multiple systems and check in existing
@@ -28,7 +28,7 @@ import subprocess
 def md5sum(filename):
   hasher = hashlib.md5()
   with open(filename, 'r') as f:
-    hasher.update(f.read())
+    hasher.update(f.read().encode('utf-8'))
   return hasher.hexdigest()
     
 for filename in sys.argv[1:]:
@@ -42,12 +42,12 @@ for filename in sys.argv[1:]:
     if os.path.isfile(safeFilename):
       sum = md5sum(filename)
       safeSum = md5sum(safeFilename)
-      print "%s %s" % (sum, filename)
-      print "%s %s" % (safeSum, safeFilename)
+      print("%s %s" % (sum, filename))
+      print("%s %s" % (safeSum, safeFilename))
       if sum == safeSum:
           p = subprocess.Popen(["mv", "-v", safeFilename, filename])
           rc = p.wait()
-      print ""
+      print("")
     else:
       sys.stderr.write("Not a file: `%s`\n" % safeFilename)
   else:

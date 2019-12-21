@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 """
   Sniff out metrics from graphite
@@ -33,4 +33,4 @@ for metric in metrics:
     if datum[0] == None:
       nulls += 1
 
-  print "%d metrics (%d nulls) from %s from %s to %s" % (len(metric["datapoints"]), nulls, metric["target"], datetime.datetime.fromtimestamp(metric["datapoints"][0][1]), datetime.datetime.fromtimestamp(metric["datapoints"][-1][1]))
+  print("%d metrics (%d nulls) from %s from %s to %s" % (len(metric["datapoints"]), nulls, metric["target"], datetime.datetime.fromtimestamp(metric["datapoints"][0][1]), datetime.datetime.fromtimestamp(metric["datapoints"][-1][1])))

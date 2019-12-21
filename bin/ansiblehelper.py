@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import logging
@@ -65,11 +65,11 @@ class AnsibleHelper(object):
       key_regexp = re.compile('(\S+)=(\S+)')
     
       for line in data.splitlines():
-        match = name_regexp.search(line)
+        match = name_regexp.search(str(line))
         if match:
           name = match.group(1)
           hosts[name] = {}
-          for hit in key_regexp.findall(line):
+          for hit in key_regexp.findall(str(line)):
             hosts[name][hit[0]] = hit[1]
           log.debug('host: {}'.format(hosts))
 
@@ -144,6 +144,6 @@ if __name__ == '__main__':
     table = Table(['host', 'user', 'ip'])
     for (name, keys) in AnsibleHelper.get_hosts().items():
       table.add(name, keys.get('ansible_host', ''), keys.get('ansible_user', ''))
-    print str(table)
+    print(str(table))
   else:
-    print AnsibleHelper.get_host(args.host)
+    print(AnsibleHelper.get_host(args.host))

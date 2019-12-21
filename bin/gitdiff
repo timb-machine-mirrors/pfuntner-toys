@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -10,9 +10,9 @@ import subprocess
 
 def banner(filename):
   border = '*' * (len(filename)+4)
-  print border
-  print '* {filename} *'.format(**locals())
-  print border
+  print(border)
+  print('* {filename} *'.format(**locals()))
+  print(border)
 
 def see(name):
   value = eval(name)
@@ -23,7 +23,7 @@ def extract(regexp, line):
   return match.group(1) if match else None
 
 def run(cmd):
-  if isinstance(cmd, basestring):
+  if isinstance(cmd, str):
     cmd = cmd.strip()
 
   log.debug('Running: {cmd}'.format(**locals()))
@@ -81,4 +81,4 @@ for line in stdout.splitlines():
     if args.debug:
       pdb.set_trace()
 
-    print ''
+    print('')

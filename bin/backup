@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import sys
 import os
@@ -15,13 +15,13 @@ def listAll(dir):
     path = os.path.join(dir, file)
     # print "Examining %s" % path
     if re.search("\.tgz$", file) and os.path.isfile(path):
-      print path
+      print(path)
       p = subprocess.Popen(["tar", "-tvf", path], stdout=subprocess.PIPE)
       (stdout, stderr) = p.communicate()
       rc = p.wait()
       for line in stdout.strip('\n').split('\n'):
-        print "  %s" % line
-      print ""
+        print("  %s" % line)
+      print("")
     elif os.path.isdir(path):
       listAll(path)
     
@@ -71,9 +71,9 @@ else:
   cmd = "tar --exclude stddbDart.tar.gz -czf %s %s" % (tarball, tarSubjects)
   (status, output) = commands.getstatusoutput(cmd)
   if waitCheck(status):
-    print output
+    print(output)
     (status, output) = commands.getstatusoutput("ls -hl %s" % tarball)
-    print output
+    print(output)
   else:
-    print >> sys.stderr, "%s failed: %s" % (cmd, output)
+    print(>> sys.stderr, "%s failed: %s" % (cmd, output))
     raise Exception("tar command failed")

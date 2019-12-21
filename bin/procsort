@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import sys
 import getopt
@@ -56,8 +56,8 @@ p = subprocess.Popen(["ps", "-e", "-o", "%s,%s" % (sortField, psFields)], stdout
 assert p.wait() == 0, "`ps` returned with %d" % p.returncode
 
 lines = stdout.split('\n')[:-1]
-print lines[0]
+print(lines[0])
 
 data = [Datum(line) for line in lines[1:]]
 for datum in sorted(data, key=lambda datum: datum.key, reverse=True):
-  print datum.line
+  print(datum.line)

@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import sys
 import re
@@ -67,7 +67,7 @@ def push(s):
 
 def visit(root, depth=0):
   if root:
-    print '{indent}{root!s}'.format(indent=' '*(depth*2), **locals())
+    print('{indent}{root!s}'.format(indent=' '*(depth*2), **locals()))
     for child in root.children if isinstance(root, Node) else []:
       visit(child, depth+1)
   else:
@@ -235,7 +235,7 @@ def render(root, depth=0):
     sys.stdout.write('{indent}</{root.tag}>\n'.format(**locals()))
   else:
     for line in root.text.splitlines():
-      print '{indent}{line}'.format(**locals())
+      print('{indent}{line}'.format(**locals()))
 
 parser = argparse.ArgumentParser(description=sys.argv[0])
 parser.add_argument('filename', nargs='?', help='Name of file to parse')

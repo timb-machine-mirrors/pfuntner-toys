@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 """
    Extract all git commits of a file
@@ -18,7 +18,7 @@ def debug(msg):
     sys.stderr.write('{msg}\n'.format(**locals()))
 
 def run(cmd, checkRc=True, checkStderr=True):
-  if isinstance(cmd, basestring):
+  if isinstance(cmd, str):
     cmd = cmd.split()
   debug('cmd: {cmd!r}'.format(**locals()))
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -128,11 +128,11 @@ run(['rm', '-rf', '{baseExtractDir}/*'.format(**locals())])
 if not os.path.isdir(baseExtractDir):
   os.mkdir(baseExtractDir)
 
-print 'Extracting to: {baseExtractDir}'.format(**locals())
+print('Extracting to: {baseExtractDir}'.format(**locals()))
 
 for match in matches:
   (commit, timestamp) = (match.group(1), parseTimestamp(match.group(2))) # ex: 'Wed Nov 1 16:07:15 2017 -0400'
-  print '{commit} {timestamp}'.format(commit=commit, timestamp=datetime.datetime.utcfromtimestamp(timestamp))
+  print('{commit} {timestamp}'.format(commit=commit, timestamp=datetime.datetime.utcfromtimestamp(timestamp)))
   run('git checkout {commit} {path}'.format(**locals()), checkStderr=False)
   dest = '{baseExtractDir}/{commit}'.format(**locals())
   run('cp {path} {dest}'.format(**locals()))

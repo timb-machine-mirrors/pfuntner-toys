@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import sys
 import docker
@@ -22,7 +22,7 @@ def whereami():
   return "%s:%s" % (filename, lineno)
 
 def say(s):
-  print "%s %s: %s" % (datetime.datetime.now(), whereami(), s)
+  print("%s %s: %s" % (datetime.datetime.now(), whereami(), s))
 
 def hostname(style=None):
   cmd = ["hostname"]

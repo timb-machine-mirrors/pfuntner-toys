@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import sys
 import getopt
@@ -13,12 +13,12 @@ for (opt,arg) in opts:
     if sep == '\\t':
       sep = '\t'
 
-print "<table>"
+print("<table>")
 first = True
 for line in sys.stdin:
   tokens = line.strip('\n').strip('\r').split(sep)
   if first:
-    print "<tr><th>%s</th></tr>" % '</th><th>'.join(tokens)
+    print("<tr><th>%s</th></tr>" % '</th><th>'.join(tokens))
     first = False
-  print "<tr><td>%s</td></tr>" % '</td><td>'.join(tokens)
-print "</table>"
+  print("<tr><td>%s</td></tr>" % '</td><td>'.join(tokens))
+print("</table>")

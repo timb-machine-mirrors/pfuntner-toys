@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -48,7 +48,7 @@ if args.exclude:
 
 done = False
 while not done:
-  print formatTime()
+  print(formatTime())
   log.info(args.cmd)
   p = subprocess.Popen(args.cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   stdout = p.stdout.read()
@@ -56,11 +56,11 @@ while not done:
   rc = p.wait()
   sys.stdout.write(stdout)
   sys.stderr.write(stderr)
-  print ''
-  if args.include and not args.include.search(stdout + stderr):
+  print('')
+  if args.include and not args.include.search(str(stdout + stderr)):
     log.info('Command does not have {args.include.pattern!r}'.format(**locals()))
     break
-  elif args.exclude and args.exclude.search(stdout + stderr):
+  elif args.exclude and args.exclude.search(str(stdout + stderr)):
     log.info('Command has {args.exclude.pattern!r}'.format(**locals()))
     break
   elif args.successful and rc != 0:

@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -46,7 +46,7 @@ else:
 for line in sys.stdin:
   line = line.strip('\n')
   while True:
-    match = regexp.search(line)
+    match = regexp.search(str(line))
     if not match:
       break
     groups = match.groups()
@@ -60,4 +60,4 @@ for line in sys.stdin:
       secs /= 1000.0
     line = groups[0] + str(timeMethod(secs)) + groups[-1]
 
-  print line
+  print(line)

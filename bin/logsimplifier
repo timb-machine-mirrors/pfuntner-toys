@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 """
 Simplify log messages
@@ -47,5 +47,5 @@ for line in sys.stdin.read().splitlines():
       linenum = match.group(2)
       msg = match.group(3)
   
-      print msg if args.simple else '{base}:{linenum} {msg}'.format(**locals())
+      print(msg if args.simple else '{base}:{linenum} {msg}'.format(**locals()))
       break

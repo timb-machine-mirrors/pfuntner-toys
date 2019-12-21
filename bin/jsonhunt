@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -37,7 +37,7 @@ class Jsonhunt(object):
             for curr in root.keys():
                 currValue = root[curr]
 
-                keyMatch = True if self.key.search(curr) else False
+                keyMatch = True if self.key.search(str(curr)) else False
                 valueMatch = False
                 if not self.value:
                     valueMatch = True
@@ -52,7 +52,7 @@ class Jsonhunt(object):
                     except Exception as e:
                         pass
                     else:
-                        valueMatch = self.value.search(currValue)
+                        valueMatch = self.value.search(str(currValue))
 
                 if not matched:
                     if self.negate:
@@ -64,7 +64,7 @@ class Jsonhunt(object):
                 ret += self.hunt(root[curr], path + [str(curr)])
 
             if self.negate and (not matched) and (not self.value):
-                matched = all([not self.key.match(curr) for curr in root.keys()])
+                matched = all([not self.key.match(str(curr)) for curr in root.keys()])
 
             if matched:
                 ret += [{"path": "/" + "/".join(path), "tree": root}]
@@ -128,4 +128,4 @@ if __name__ == "__main__":
 
     root = Jsonhunt(key, value, negate).hunt(root)
 
-    print json.dumps(root, indent=2, sort_keys=True)
+    print(json.dumps(root, indent=2, sort_keys=True))

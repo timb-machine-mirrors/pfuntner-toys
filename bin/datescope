@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -20,7 +20,7 @@ class Pattern:
       try:
         ret = datetime.datetime.strptime(match.group(1), self.pat)
       except Exception as e:
-        print "Caught %s parsing %s with %s" % (repr(e), repr(match.group(1)), repr(self.pat))
+        print("Caught %s parsing %s with %s" % (repr(e), repr(match.group(1)), repr(self.pat)))
 
     return ret
 
@@ -133,7 +133,7 @@ for line in sys.stdin:
           diff = timestamp - last
           diffs.append(diff)
           if verbose:
-            print "%s %s %s" % (last, timestamp, diff)
+            print("%s %s %s" % (last, timestamp, diff))
   
         last = timestamp
 
@@ -142,7 +142,7 @@ for line in sys.stdin:
 
 if (not after) and (not before):
   if len(diffs) == 1:
-    print "Two times, difference = %s" % human(diffs[0])
+    print("Two times, difference = %s" % human(diffs[0]))
   elif len(diffs) > 1:
-    print "Over a period of %s and %d samples, the average difference in times was %s" % (human(last-first), len(diffs), human(sum([diff.total_seconds() for diff in diffs])/len(diffs)))
-    print "Max: %s, Min: %s, stddev: %s" % (human(max(diffs)), human(min(diffs)), human(stddev([diff.total_seconds() for diff in diffs])))
+    print("Over a period of %s and %d samples, the average difference in times was %s" % (human(last-first), len(diffs), human(sum([diff.total_seconds() for diff in diffs])/len(diffs))))
+    print("Max: %s, Min: %s, stddev: %s" % (human(max(diffs)), human(min(diffs)), human(stddev([diff.total_seconds() for diff in diffs]))))

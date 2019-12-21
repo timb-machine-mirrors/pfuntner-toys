@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import os
@@ -125,4 +125,4 @@ for filename in args.files:
   dive(filename)
   # print "%s %s" % ([str(file) for file in files], ["%08x:%d" % (dev, devs[dev]) for dev in devs])
   # print devs
-  print "%s: %s" % (filename, '; '.join(["%s, %s, %.2f%%, %d files" % (mounts[dev].mountpoint, bytes(devs[dev].size), 100.0*devs[dev].size/mounts[dev].usable, devs[dev].files) for dev in devs]))
+  print("%s: %s" % (filename, '; '.join(["%s, %s, %.2f%%, %d files" % (mounts[dev].mountpoint, bytes(devs[dev].size), 100.0*devs[dev].size/mounts[dev].usable, devs[dev].files) for dev in devs])))

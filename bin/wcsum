@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 """
    Reports `wc` and `md5sum` information on files together on the same line
@@ -43,7 +43,7 @@ def process(filename):
       else:
         eof = True
 
-      md5.update(c)
+      md5.update(c.encode('utf-8'))
       if c == '\n':
         lines += 1
       last = c
@@ -51,18 +51,18 @@ def process(filename):
     if last == '\n':
       lines += 1
 
-    print '{lines:6} {words:8} {chars:8} {digest} {filename}'.format(
+    print('{lines:6} {words:8} {chars:8} {digest} {filename}'.format(
       chars=chars,
       words=words,
       lines=lines,
       digest=md5.hexdigest(),
       filename=filename if filename is not None else '-'
-    )
+    ))
     if filename is not None:
       stream.close()
 
 args = sys.argv[1:]
 if args:
-  map(process, sys.argv[1:])
+  list(map((process, sys.argv[1:]))
 else:
-  map(process, [None])
+  list(map((process, [None]))

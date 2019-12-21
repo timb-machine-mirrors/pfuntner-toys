@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -10,7 +10,7 @@ import datetime
 import subprocess
 
 def run(cmd):
-  if isinstance(cmd, basestring):
+  if isinstance(cmd, str):
     cmd = cmd.split()
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   (stdout, stderr) = p.communicate()
@@ -55,7 +55,7 @@ for line in stdout.splitlines():
       Creating --version option
   """
   
-  match = commit_regexp.search(line)
+  match = commit_regexp.search(str(line))
   if match:
     new_commit = match.group(1)
     if commit:
@@ -67,7 +67,7 @@ for line in stdout.splitlines():
     else:
       log.debug('Ignoring commit {new_commit} because it is not in the list of desired commits'.format(**locals()))
   else:
-    match = date_regexp.search(line)
+    match = date_regexp.search(str(line))
     if match:
       date = datetime.datetime.strptime(match.group(1), '%a %b %d %H:%M:%S %Y')
       offset_hours = int(match.group(2))
@@ -82,7 +82,7 @@ for line in stdout.splitlines():
             'date': str(date),
           })
         else:
-          print '{commit} {date}'.format(**locals())
+          print('{commit} {date}'.format(**locals()))
         run('git checkout {commit} -b {commit}'.format(**locals()))
         if args.cmd:
           (rc, stdout, stderr) = run([args.cmd] + args.args)
@@ -95,4 +95,4 @@ for line in stdout.splitlines():
         date = None
 
 if args.json:
-  print json.dumps(output, indent=2, sort_keys=True)
+  print(json.dumps(output, indent=2, sort_keys=True))

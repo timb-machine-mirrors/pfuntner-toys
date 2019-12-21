@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import sys
 import json
@@ -7,11 +7,11 @@ assert not sys.stdin.isatty(), "stdin must be redirected"
 
 def explore(obj, path):
   if (obj == None):
-    print "%s\tNone" % ('/'.join(path))
+    print("%s\tNone" % ('/'.join(path)))
   elif (type(obj) == type("")) or (type(obj) == type(u"")):
-    print "%s\t%s" % ('/'.join(path), repr(obj))
+    print("%s\t%s" % ('/'.join(path), repr(obj)))
   elif (type(obj) == type(1)) or (type(obj) == type(1.0)) or (type(obj) == type(True)):
-    print "%s\t%s" % ('/'.join(path), obj)
+    print("%s\t%s" % ('/'.join(path), obj))
   elif type(obj) == type([]):
     # print "processing a list: %s" % repr(obj)
     for curr in range(len(obj)):

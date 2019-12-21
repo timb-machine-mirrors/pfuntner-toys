@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 """
   Download one or more Cloudant documents.
@@ -133,7 +133,7 @@ for arg in args:
       db = client[dbName]
     with open(arg.replace("/", "_"), "w") as f:
       json.dump(db[docName], f, indent=2, sort_keys=True)
-    print arg
+    print(arg)
 
     lastDbName = dbName
     lastDb = db

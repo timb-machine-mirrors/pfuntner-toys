@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -56,15 +56,15 @@ p = subprocess.Popen(["git", "status"], stdout=subprocess.PIPE, stderr=subproces
 assert p.wait() == 0, "`git status` rc=%d, %s, %s" % (p.returncode, stdout, stderr)
 
 for line in stdout.split('\n'):
-  if re.match("\S", line):
+  if re.match("\S", str(line)):
     for section in sections:
-      inSection[section] = re.match(section.title(), line) != None
-  elif re.match("\s+[^ \t(]", line) and ((not noParents) or ("../" not in line)):
+      inSection[section] = re.match(section.title(), str(line)) != None
+  elif re.match("\s+[^ \t(]", str(line)) and ((not noParents) or ("../" not in line)):
     for section in sections:
       if inSection[section] and desired[section]:
         if inSection["changes"]:
-          match = re.search("modified:\s+(\S*)", line)
+          match = re.search("modified:\s+(\S*)", str(line))
           if match:
-            print match.group(1).strip(' \r')
+            print(match.group(1).strip(' \r'))
         else:
-          print line.strip(' \r')
+          print(line.strip(' \r'))

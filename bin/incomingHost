@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import subprocess
 import re
@@ -81,8 +81,8 @@ else:
   exit(1)
 
 if incomingHost:
-  print incomingHost
+  print(incomingHost)
 elif incomingIP and args.ipOk:
-  print incomingIP
+  print(incomingIP)
 else:
   exit(1)

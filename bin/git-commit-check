@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import os
 import re
@@ -15,7 +15,7 @@ def say(name, value=None):
   log.info('{name}: {value!r}'.format(**locals()))
 
 def run(cmd):
-  if isinstance(cmd, basestring):
+  if isinstance(cmd, str):
     cmd = cmd.split()
   log.info('Executing {cmd}'.format(**locals()))
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -85,8 +85,8 @@ branch = match.group(1)
 
 (rc, stdout, stderr) = run('git log -1')
 if (rc == 0) and stdout:
-  print 'Last commit in {branch} for {original_dir} ({original_real_dir}):'.format(**locals())
-  print '\n'.join(stdout.splitlines()[:10])
+  print('Last commit in {branch} for {original_dir} ({original_real_dir}):'.format(**locals()))
+  print('\n'.join(stdout.splitlines()[:10]))
   match = commit_regexp.search(stdout)
   if match:
     required_commit = match.group(1)

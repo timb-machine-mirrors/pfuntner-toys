@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 """
   This solves the problem of pushing commits to a git server when the 
@@ -23,7 +23,7 @@ sys.stderr.write(stderr)
 if (rc != 0) and (not stdout) and nastygram.search(stderr):
   match = suggestion.search(stderr)
   if match:
-    print "Trying to push with git's suggestion..."
+    print("Trying to push with git's suggestion...")
     cmd = match.group(1)
     # print "  " + cmd
     p = subprocess.Popen(cmd.split())

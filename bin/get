@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import os
@@ -46,7 +46,7 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
 regexp = re.compile('^([^/]+):(.+)$')
 for filename in args.files:
-  match = regexp.search(filename)
+  match = regexp.search(str(filename))
   if match:
     data = remote(match.group(1), match.group(2))
   else:

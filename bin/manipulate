@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 """
   Make changes to a stream.  Here's an example:
@@ -34,10 +34,10 @@ regexp = re.compile(args[0])
 
 for line in sys.stdin:
   line = line.strip('\n')
-  match = regexp.search(line)
+  match = regexp.search(str(line))
   if match:
     # print "Groups: %s" % str(match.groups())
     pos = len(match.groups())-1
     hit = match.groups()[pos]
     line = line[:match.start(pos)] + eval(args[1]) + line[match.end(pos):]
-  print line
+  print(line)
