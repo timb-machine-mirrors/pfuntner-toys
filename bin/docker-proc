@@ -126,6 +126,8 @@ for pid in pids:
 
 p = subprocess.Popen("docker ps".split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 (stdout,stderr) = p.communicate()
+stdout = stdout.decode('utf-8')
+stderr = stderr.decode('utf-8')
 rc = p.wait()
 assert (rc == 0) and (not stderr), "`docker ps` rc=%d, %s, %s" % (rc, repr(stdout), repr(stderr))
 

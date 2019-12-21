@@ -63,6 +63,8 @@ sys.stderr.write(json.dumps(query, indent=2) + '\n')
 
 p = subprocess.Popen(["curl", "-d", json.dumps(query), "-X", "GET", "localhost:9200/%s/_search/?scroll=1m" % index], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 (stdout, stderr) = p.communicate()
+stdout = stdout.decode('utf-8')
+stderr = stderr.decode('utf-8')
 rc = p.wait()
 if rc != 0:
   sys.stderr.write("rc: %d, stdout: %s, stderr: %s\n" % (rc, repr(stdout), repr(stderr)))
@@ -80,6 +82,8 @@ while not done:
   if not resp:
     p = subprocess.Popen(["curl", "-d", json.dumps({"scroll": "1m", "scroll_id": scrollID}), "-X", "GET", "localhost:9200/_search/scroll"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (stdout, stderr) = p.communicate()
+    stdout = stdout.decode('utf-8')
+    stderr = stderr.decode('utf-8')
     rc = p.wait()
     if rc == 0:
       resp = json.loads(stdout)

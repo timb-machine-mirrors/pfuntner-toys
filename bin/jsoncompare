@@ -14,6 +14,8 @@ def run(cmd, forgive=False):
   log.debug('Running {cmd}'.format(**locals()))
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   (stdout, stderr) = p.communicate()
+  stdout = stdout.decode('utf-8')
+  stderr = stderr.decode('utf-8')
   rc = p.wait()
   log.log(logging.ERROR if stderr and not forgive else logging.DEBUG, '{cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
   if stderr and not forgive:

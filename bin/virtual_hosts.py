@@ -95,6 +95,8 @@ class VirtualHosts(object):
       log.info('{cmd} failed: {e!s}'.format(**locals()))
     else:
       (stdout, stderr) = p.communicate()
+      stdout = stdout.decode('utf-8')
+      stderr = stderr.decode('utf-8')
       rc = p.wait()
       log.info('{cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
       if stdout:
@@ -233,6 +235,8 @@ class VirtualHosts(object):
         cmd += ['describe-images', '--image-ids', image_id]
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         (stdout, stderr) = p.communicate()
+        stdout = stdout.decode('utf-8')
+        stderr = stderr.decode('utf-8')
         rc = p.wait()
         log.debug('{cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
         if (rc == 0) and (not stderr):
@@ -272,6 +276,8 @@ class VirtualHosts(object):
         log.debug('Caught {e!s} executing {cmd}'.format(**locals()))
       else:
         (stdout, stderr) = p.communicate()
+        stdout = stdout.decode('utf-8')
+        stderr = stderr.decode('utf-8')
         rc = p.wait()
         log.debug('{cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
         if (rc == 0) and (not stderr):

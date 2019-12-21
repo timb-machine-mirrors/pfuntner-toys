@@ -23,6 +23,8 @@ def run(cmd, checkRc=True, checkStderr=True):
   debug('cmd: {cmd!r}'.format(**locals()))
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   (stdout, stderr) = p.communicate()
+  stdout = stdout.decode('utf-8')
+  stderr = stderr.decode('utf-8')
   rc = p.wait()
   if (checkRc and (rc != 0)) or (checkStderr and stderr):
     sys.stderr.write('{cmd!r} failed: {rc}, {stdout!r}, {stderr!r}\n'.format(**locals()))

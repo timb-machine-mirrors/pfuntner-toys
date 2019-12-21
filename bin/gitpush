@@ -17,6 +17,8 @@ suggestion = re.compile("(git push --set-upstream origin \S+)", re.DOTALL)
 
 p = subprocess.Popen(["git", "push"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 (stdout, stderr) = p.communicate()
+stdout = stdout.decode('utf-8')
+stderr = stderr.decode('utf-8')
 rc = p.wait()
 sys.stdout.write(stdout)
 sys.stderr.write(stderr)

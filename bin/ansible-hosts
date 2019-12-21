@@ -57,6 +57,8 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
 p = subprocess.Popen(['ansible-inventory', '--list'], stdout=subprocess.PIPE)
 (stdout, stderr) = p.communicate()
+stdout = stdout.decode('utf-8')
+stderr = stderr.decode('utf-8')
 rc = p.wait()
 if rc == 0:
   hosts = json.loads(stdout).get('_meta', {}).get('hostvars', {})

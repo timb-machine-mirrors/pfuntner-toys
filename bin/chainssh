@@ -123,6 +123,8 @@ def process(hosts):
     p = subprocess.Popen(chain + cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
   (stdout, stderr) = p.communicate()
+  stdout = stdout.decode('utf-8')
+  stderr = stderr.decode('utf-8')
   rc = p.wait()
   emit(hosts if short else None, sys.stdout, stdout)
   emit(hosts if short else None, sys.stderr, stderr)

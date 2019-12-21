@@ -54,6 +54,8 @@ class Table(object):
 
     log.debug('self.lines: {self.lines}'.format(**locals()))
     (stdout, stderr) = p.communicate('\n'.join(self.lines) + '\n')
+    stdout = stdout.decode('utf-8')
+    stderr = stderr.decode('utf-8')
     rc = p.wait()
     if (rc != 0) or stderr:
       log.error('`column` failed: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))

@@ -53,6 +53,8 @@ if sum([desired[section] for section in sections]) == 0:
 
 p = subprocess.Popen(["git", "status"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 (stdout,stderr) = p.communicate()
+stdout = stdout.decode('utf-8')
+stderr = stderr.decode('utf-8')
 assert p.wait() == 0, "`git status` rc=%d, %s, %s" % (p.returncode, stdout, stderr)
 
 for line in stdout.split('\n'):

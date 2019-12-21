@@ -12,6 +12,8 @@ if re.search("win", system, re.IGNORECASE):
 cmd = ["hostname", "--all-ip-addresses"]
 p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 (stdout, stderr) = p.communicate()
+stdout = stdout.decode('utf-8')
+stderr = stderr.decode('utf-8')
 rc = p.wait()
 if (system == "Linux") or (rc == 0):
   assert rc == 0, "%s failed with %d" % (cmd, rc)
@@ -32,6 +34,8 @@ else:
   cmd = "ipconfig"
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
   (stdout, stderr) = p.communicate()
+  stdout = stdout.decode('utf-8')
+  stderr = stderr.decode('utf-8')
   rc = p.wait()
   assert rc == 0, "%s failed with %d" % (cmd, rc)
 

@@ -29,6 +29,8 @@ def remote(location, filename):
   else:
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (ret, stderr) = p.communicate()
+    ret = ret.decode('utf-8')
+    stderr = stderr.decode('utf-8')
     rc = p.wait()
     if (rc != 0) or stderr:
       log.warning('Handled error {stderr!r} while reading {filename!r}'.format(**locals()))

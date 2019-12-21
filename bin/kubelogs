@@ -19,6 +19,8 @@ def run(cmd):
       log.critical('Caught {e!s} executing {cmd}'.format(**locals()))
       exit(1)
     (stdout, stderr) = p.communicate()
+    stdout = stdout.decode('utf-8')
+    stderr = stderr.decode('utf-8')
     rc = p.wait()
     log.info('with sudo={sudo}, {cmd} returned: {rc}, {stdout!r}, {stderr!r}'.format(sudo=sudo, **locals()))
     if rc == 0:

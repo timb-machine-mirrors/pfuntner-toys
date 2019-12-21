@@ -106,6 +106,8 @@ change_regexp = re.compile('^(\+|-| )(.*)$')
 if sys.stdin.isatty() and (len(sys.argv) > 1):
   p = subprocess.Popen(['git', 'diff'] + args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   (stdout, stderr) = p.communicate()
+  stdout = stdout.decode('utf-8')
+  stderr = stderr.decode('utf-8')
   rc = p.wait()
   assert (rc == 0) and stdout and (not stderr), '`git diff` failed: {rc}, {stdout!r}, {stderr!r}'.format(**locals())
 else:

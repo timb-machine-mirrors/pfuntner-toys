@@ -19,6 +19,8 @@ def process(inStream, outStream):
 def shell(cmd):
   p = subprocess.Popen(cmd)
   (stdout, stderr) = p.communicate()
+  stdout = stdout.decode('utf-8')
+  stderr = stderr.decode('utf-8')
   assert p.wait() == 0
 
 if len(sys.argv) == 1:

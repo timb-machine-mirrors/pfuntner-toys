@@ -29,6 +29,8 @@ def get_user(instance):
   log.info('cmd: {cmd!r}'.format(**locals()))
   p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   (stdout, stderr) = p.communicate()
+  stdout = stdout.decode('utf-8')
+  stderr = stderr.decode('utf-8')
   rc = p.wait()
 
   if rc or stderr:
@@ -116,6 +118,8 @@ cmd = 'aws ec2 {profile} describe-instances'.format(profile=('--profile ' + args
 log.info('cmd: {cmd!r}'.format(**locals()))
 p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 (stdout, stderr) = p.communicate()
+stdout = stdout.decode('utf-8')
+stderr = stderr.decode('utf-8')
 rc = p.wait()
 
 if rc or stderr:

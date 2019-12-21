@@ -34,6 +34,8 @@ def getUserID():
 
 p = subprocess.Popen('ps -u {user} -o pid,ppid,stime,etime,cmd'.format(user=getUserID()).split(), stdout=subprocess.PIPE)
 (stdout, stderr) = p.communicate()
+stdout = stdout.decode('utf-8')
+stderr = stderr.decode('utf-8')
 rc = p.wait()
 assert rc == 0, 'Error from ps'
 

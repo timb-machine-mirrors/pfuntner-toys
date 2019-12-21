@@ -27,6 +27,8 @@ cmd = ['git', 'cat-file', '-p', '{args.branch}:{args.filename}'.format(**locals(
 log.debug('cmd: {cmd}'.format(**locals()))
 p = subprocess.Popen(cmd, stderr=subprocess.PIPE)
 (_, stderr) = p.communicate()
+_ = _.decode('utf-8')
+stderr = stderr.decode('utf-8')
 rc = p.wait()
 log.debug('{rc}, {stderr!r}'.format(**locals()))
 if stderr:

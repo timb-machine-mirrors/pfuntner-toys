@@ -21,6 +21,8 @@ def run(cmd, trap=False):
   log.info('cmd: {cmd}'.format(**locals()))
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE if trap else None, stderr=subprocess.PIPE if trap else None)
   (stdout, stderr) = p.communicate()
+  stdout = stdout.decode('utf-8')
+  stderr = stderr.decode('utf-8')
   rc = p.wait()
   return (rc, stdout, stderr)
 

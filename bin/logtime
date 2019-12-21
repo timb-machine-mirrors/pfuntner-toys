@@ -18,6 +18,8 @@ def run(cmd):
     perror('{cmd} threw {e!s}'.format(**locals()))
   else:
     (stdout, stderr) = p.communicate()
+    stdout = stdout.decode('utf-8')
+    stderr = stderr.decode('utf-8')
     rc = p.wait()
     log.log(logging.DEBUG if (rc == 0) and (not stderr) else logging.ERROR, '{cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
     return (rc, stdout, stderr)

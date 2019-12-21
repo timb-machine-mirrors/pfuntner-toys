@@ -118,6 +118,8 @@ for system in systems:
   
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (stdout, stderr) = p.communicate()
+    stdout = stdout.decode('utf-8')
+    stderr = stderr.decode('utf-8')
     rc = p.wait()
     log.debug("rc=%d, `%s`, `%s`\n" % (rc, repr(stdout.strip('\n')), repr(stderr.strip(''))))
     if isSSH and args.json:

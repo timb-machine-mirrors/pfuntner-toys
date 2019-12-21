@@ -30,6 +30,8 @@ def get(name, default=None):
 
 p = subprocess.Popen(["lscpu"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 (stdout, stderr) = p.communicate()
+stdout = stdout.decode('utf-8')
+stderr = stderr.decode('utf-8')
 rc = p.wait()
 assert (rc == 0) and (not stderr), "`lscpu` failed: %d, %s, %s" % (rc, repr(stdout), repr(stderr))
 

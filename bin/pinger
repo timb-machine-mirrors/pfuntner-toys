@@ -114,6 +114,8 @@ while True:
     now = (nowDT-epoch).total_seconds()
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (stdout, stderr) = p.communicate()
+    stdout = stdout.decode('utf-8')
+    stderr = stderr.decode('utf-8')
     rc = p.wait()
     resp = {"host": host["name"], "timestamp": now, "timestamp_hms": str(nowDT), "rc": rc, "stdout": stdout, "stderr": stderr, "count": count}
 

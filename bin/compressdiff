@@ -40,12 +40,16 @@ class Xzipper(object):
   def compress(self, data):
     p = subprocess.Popen(['xz', '--stdout'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     (compressed_data, stderr) = p.communicate(data)
+    compressed_data = compressed_data.decode('utf-8')
+    stderr = stderr.decode('utf-8')
     p.wait()
     return compressed_data
     
   def uncompress(self, data):
     p = subprocess.Popen(['xz', '--decompress', '--stdout'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     (clear_data, stderr) = p.communicate(data)
+    clear_data = clear_data.decode('utf-8')
+    stderr = stderr.decode('utf-8')
     p.wait()
     return clear_data
 

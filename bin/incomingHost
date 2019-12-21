@@ -17,6 +17,8 @@ def run(cmd):
     return ''
 
   (stdout, stderr) = p.communicate()
+  stdout = stdout.decode('utf-8')
+  stderr = stderr.decode('utf-8')
   rc = p.wait()
   log.debug("rc=%d, stdout=%s, sterr=%s" % (rc, repr(stdout), repr(stderr)))
   return stdout

@@ -17,6 +17,8 @@ regexp = re.compile(sys.argv[1])
 
 p = subprocess.Popen(["git", "log"] + sys.argv[2:], stdout=subprocess.PIPE)
 (stdout, stderr) = p.communicate()
+stdout = stdout.decode('utf-8')
+stderr = stderr.decode('utf-8')
 rc = p.wait()
 
 buf = []

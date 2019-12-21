@@ -38,6 +38,8 @@ if args.hosts == 'all':
   try:
     p = subprocess.Popen(['ansible-inventory', '--list'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (stdout, stderr) = p.communicate()
+    stdout = stdout.decode('utf-8')
+    stderr = stderr.decode('utf-8')
     rc = p.wait()
     args.hosts = ','.join(json.loads(stdout)['targets']['hosts'])
   except Exception as e:
@@ -72,6 +74,8 @@ while processes:
         stderr = p.stderr.read()
       else:
         (stdout, stderr) = p.communicate()
+        stdout = stdout.decode('utf-8')
+        stderr = stderr.decode('utf-8')
       rc = p.wait()
       if args.json:
         output[host] = {

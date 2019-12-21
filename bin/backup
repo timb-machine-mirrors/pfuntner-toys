@@ -18,6 +18,8 @@ def listAll(dir):
       print(path)
       p = subprocess.Popen(["tar", "-tvf", path], stdout=subprocess.PIPE)
       (stdout, stderr) = p.communicate()
+      stdout = stdout.decode('utf-8')
+      stderr = stderr.decode('utf-8')
       rc = p.wait()
       for line in stdout.strip('\n').split('\n'):
         print("  %s" % line)

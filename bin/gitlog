@@ -78,6 +78,8 @@ if args.targets:
 debug('cmd is {cmd}'.format(**locals()))
 p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 (stdout, stderr) = p.communicate()
+stdout = stdout.decode('utf-8')
+stderr = stderr.decode('utf-8')
 rc = p.wait()
 log.debug("%s returned %d, %s, %s" % (cmd, rc, repr(limit(stdout, 25)), repr(stderr)))
 

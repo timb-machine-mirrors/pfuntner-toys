@@ -25,6 +25,8 @@ if onWindoze:
   try:
     p = subprocess.Popen('cygpath --windows /'.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (stdout, stderr) = p.communicate()
+    stdout = stdout.decode('utf-8')
+    stderr = stderr.decode('utf-8')
     rc = p.wait()
     if stdout:
       CYGWIN_ROOT = stdout.splitlines()[0]

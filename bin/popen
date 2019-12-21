@@ -28,6 +28,8 @@ except Exception as e:
   output['exception'] = str(e)
 else:
   (stdout, stderr) = p.communicate()
+  stdout = stdout.decode('utf-8')
+  stderr = stderr.decode('utf-8')
   output['rc'] = p.wait()
   output['stdout'] = stdout.splitlines()
   output['stderr'] = stderr.splitlines()

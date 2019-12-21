@@ -35,6 +35,8 @@ class Boxes(object):
         parser.error('Caught `{e!s}` executing {cmd}'.format(**locals()))
     else:
       (stdout, stderr) = p.communicate()
+      stdout = stdout.decode('utf-8')
+      stderr = stderr.decode('utf-8')
       rc = p.wait()
       log.log(logging.DEBUG if forgive or rc == 0 else logging.ERROR, '{rc}, {stdout!r}, {stderr!r}'.format(**locals()))
       if (not forgive) and (rc != 0):

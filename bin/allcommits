@@ -14,6 +14,8 @@ def run(cmd):
     cmd = cmd.split()
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   (stdout, stderr) = p.communicate()
+  stdout = stdout.decode('utf-8')
+  stderr = stderr.decode('utf-8')
   rc = p.wait()
   if rc != 0:
     log.error('{cmd} failed: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))

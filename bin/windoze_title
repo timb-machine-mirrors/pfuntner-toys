@@ -33,6 +33,8 @@ def set_mintty_title(title):
     except Exception as e:
       parser.error('Error executing `ps`: {e!s}'.format(**locals()))
     (stdout, stderr) = p.communicate()
+    stdout = stdout.decode('utf-8')
+    stderr = stderr.decode('utf-8')
     rc = p.wait()
     log.info('ps: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
     lines = stdout.splitlines()

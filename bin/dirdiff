@@ -55,6 +55,8 @@ cmd = ['ssh', args.remote_dest, 'cd {args.remote_dir!r}; find . -type f -print0 
 log.debug('cmd: {cmd}'.format(**locals()))
 p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 (stdout, stderr) = p.communicate()
+stdout = stdout.decode('utf-8')
+stderr = stderr.decode('utf-8')
 rc = p.wait()
 log.debug('remote command returned {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
 

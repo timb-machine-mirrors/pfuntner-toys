@@ -53,6 +53,8 @@ if args:
 
 p = subprocess.Popen(["ps", "-e", "-o", "%s,%s" % (sortField, psFields)], stdout=subprocess.PIPE)
 (stdout, stderr) = p.communicate()
+stdout = stdout.decode('utf-8')
+stderr = stderr.decode('utf-8')
 assert p.wait() == 0, "`ps` returned with %d" % p.returncode
 
 lines = stdout.split('\n')[:-1]

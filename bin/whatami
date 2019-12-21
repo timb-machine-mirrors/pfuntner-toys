@@ -64,6 +64,8 @@ def run(cmd, silent=False, strip_whitespace=False):
     warn('Caught {e!s} from {cmd}'.format(**locals()))
   else:
     (stdout, stderr) = p.communicate()
+    stdout = stdout.decode('utf-8')
+    stderr = stderr.decode('utf-8')
     rc = p.wait()
     log.debug('run({cmd}): {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
     if stdout:

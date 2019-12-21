@@ -13,6 +13,8 @@ import subprocess
 def ping(host):
   p = subprocess.Popen(['ansible', host, '-m', 'ping'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   (stdout, stderr) = p.communicate()
+  stdout = stdout.decode('utf-8')
+  stderr = stderr.decode('utf-8')
   return ((p.wait() == 0) and (not stderr), stdout, stderr)
 
 parser = argparse.ArgumentParser(description='Use Ansible adhoc comment to reboot a machine')

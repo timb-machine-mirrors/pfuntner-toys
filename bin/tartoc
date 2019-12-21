@@ -28,6 +28,7 @@ def process(file_name=None):
   log.debug(cmd)
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
   (stdout, stderr) = p.communicate()
+  stdout = stdout.decode('utf-8')
   if args.anonymize:
     stdout = regexp.sub('#', stdout)
     if file_name:
@@ -36,10 +37,10 @@ def process(file_name=None):
   if args.sort:
     lines.sort()
   for line in lines:
-    print('{filename}{line}'.format()
+    print('{filename}{line}'.format(
       filename='{file_name}: '.format(**locals()) if file_name else '',
       line=line
-    )
+    ))
   p.wait()
 
 parser = argparse.ArgumentParser(description='Display table of contents of tarballs')
