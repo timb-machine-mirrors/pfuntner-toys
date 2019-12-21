@@ -68,7 +68,7 @@ formats = [
 ]
 
 if args.files:
-  list(map((process, args.files))
+  list(map(process, args.files))
 else:
   if sys.stdin.isatty():
     parser.error('stdin must be redirected if no files are present')

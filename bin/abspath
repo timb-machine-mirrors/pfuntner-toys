@@ -48,4 +48,4 @@ def process(path):
 
   print(path)
 
-list(map((process, args.paths))
+list(map(process, args.paths))

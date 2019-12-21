@@ -42,5 +42,5 @@ see('PATH')
 regexp = re.compile(args.regexp)
 
 table = Table('Directory', 'Executables')
-list(map((process, PATH))
+list(map(process, PATH))
 sys.stdout.write(str(table))

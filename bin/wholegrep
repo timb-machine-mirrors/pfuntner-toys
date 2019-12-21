@@ -48,4 +48,4 @@ if not (args.include or args.exclude):
 
 includes = [re.compile(pat, flags=re.MULTILINE + (re.IGNORECASE if args.ignorecase else 0)) for pat in (args.include or [])]
 excludes = [re.compile(pat, flags=re.MULTILINE + (re.IGNORECASE if args.ignorecase else 0)) for pat in (args.exclude or [])]
-list(map((process, args.files))
+list(map(process, args.files))

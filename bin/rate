@@ -65,4 +65,4 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-list(map((process, args.files))
+list(map(process, args.files))

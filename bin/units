@@ -118,7 +118,7 @@ def massage(root):
   """
   # log.debug('massage({root})'.format(**locals()))
   if isinstance(root, list):
-    list(map((massage, root))
+    list(map(massage, root))
   elif isinstance(root, dict):
     for (key, value) in root.items():
       if key in ['name', 'from', 'to']:

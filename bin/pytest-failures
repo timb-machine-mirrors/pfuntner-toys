@@ -75,6 +75,6 @@ leading_whitespace = re.compile('^\s')
 not_test = re.compile('^\S{2}')
 
 if args.files:
-  list(map((process, args.files))
+  list(map(process, args.files))
 else:
   process()

@@ -77,4 +77,4 @@ log = logging.getLogger()
 log.setLevel(logging.WARNING - 10*(args.verbose or 0))
 
 errors = 0
-list(map((process, args.files))
+list(map(process, args.files))

@@ -44,4 +44,4 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 class_regexp = re.compile('^class ([^(: \t]+)\s*(?=[(:])')
 method_regexp = re.compile('^(\s*)def\s+([^( \t]+)\s*(?=\()')
 
-list(map((process, args.files))
+list(map(process, args.files))

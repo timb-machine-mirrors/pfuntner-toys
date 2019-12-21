@@ -63,6 +63,6 @@ def process(filename):
 
 args = sys.argv[1:]
 if args:
-  list(map((process, sys.argv[1:]))
+  list(map(process, sys.argv[1:]))
 else:
-  list(map((process, [None]))
+  list(map(process, [None]))

@@ -51,6 +51,6 @@ if (not args.files) and sys.stdin.isatty():
   parser.error('If no files are specified on command line, data must be redirected to stdin')
 
 if args.files:
-  list(map((process, args.files))
+  list(map(process, args.files))
 else:
   process()

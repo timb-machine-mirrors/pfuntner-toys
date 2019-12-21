@@ -44,4 +44,4 @@ for (opt, arg) in opts:
 if len(sys.argv) == 1:
   visit('.')
 else:
-  list(map((visit, sys.argv[1:]))
+  list(map(visit, sys.argv[1:]))

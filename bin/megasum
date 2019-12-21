@@ -80,4 +80,4 @@ see('useKeys')
 if not args:
   syntax()
 
-list(map((process, args))
+list(map(process, args))

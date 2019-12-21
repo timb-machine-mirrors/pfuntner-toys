@@ -35,7 +35,7 @@ log = logging.getLogger()
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
 if args.files:
-  list(map((process, args.files))
+  list(map(process, args.files))
 else:
   if sys.stdin.isatty():
     parser.error('stdin must be redirected if no files are specified')
