@@ -9,12 +9,14 @@ export PAGER=less
 export EDITOR=vi
 export PYTHONUNBUFFERED=true
 
-# Windoze variables
+# Windoze setup
 if expr match "$(uname -s)" '.*[Ww][Ii][Nn]' >/dev/null 2>&1
 then
   export ROOT=/cygdrive/c
   export GVIM=$ROOT/utils/gVimPortable/gVimPortable.exe
   export HOSTS=$ROOT/Windows/System32/drivers/etc/hosts
+
+  $HOME/bin/windoze_title --self 
 fi
 
 # For shared systems, this is useful for automatically sourcing my personal setup script
@@ -24,9 +26,6 @@ fi
 #   echo "$(hostname) welcomes Bruno"
 #   source $HOME/bruno/setup
 # fi
-
-# For Windoze Cygwin only, set the mintty window title:
-# echo -ne "\e]0;$(hostname)\a"
 
 # This `true` statement must be last and will make sure that the this script returns with success regardless of what the previous command was.
 true

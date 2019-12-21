@@ -16,3 +16,6 @@ rake
 rspec
 serverspec-init
 thor
+
+bin/minikube_1.3.1.deb
+**.retry
