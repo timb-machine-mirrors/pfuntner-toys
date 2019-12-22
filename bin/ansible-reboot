@@ -81,8 +81,8 @@ while True:
 sys.stdout.write(stdout)
 sys.stderr.write(stderr)
 
-sys.stdout.write(reboot_p.stdout.read())
-sys.stderr.write(reboot_p.stderr.read())
+sys.stdout.write(reboot_p.stdout.read().decode('utf-8'))
+sys.stderr.write(reboot_p.stderr.read().decode('utf-8'))
 reboot_p.wait()
 stop = datetime.datetime.now()
 

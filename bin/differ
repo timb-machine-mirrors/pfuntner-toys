@@ -46,7 +46,7 @@ p = subprocess.Popen(['diff', '-r', args.oldfile, args.newfile], stdout=subproce
 trailing_white_space = re.compile('\s*$')
 
 while True:
-  line = p.stdout.readline()
+  line = p.stdout.readline().decode('utf-8')
   if line:
     log.debug('Read: {line!r}'.format(**locals()))
     line = trailing_white_space.sub('', line)
