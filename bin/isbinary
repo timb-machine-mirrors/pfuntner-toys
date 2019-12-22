@@ -22,7 +22,7 @@ def process(file, name):
 
   orig = data
   isEmpty = len(data) == 0
-  data = data.translate(string.maketrans('',''), string.printable) # remove printables and whitespace
+  data = ''.join([c for c in data if c not in string.printable]) # remove printables and whitespace
   if isEmpty:
     status = "empty"
   else:

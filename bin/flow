@@ -114,9 +114,9 @@ if len(args) == 0:
   # data comes from stdin
   decolorizer = Decolorizer()
   for line in sys.stdin:
-    line = decolorizer.process(line)
+    line = decolorizer.process(line.strip())
     if line:
-      line = line.translate(None, "\n")
+      # line = line.translate(None, "\n")
       if len(line) > maxWidth:
         maxWidth = len(line)
       data.append(line)
