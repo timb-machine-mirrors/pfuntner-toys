@@ -163,7 +163,7 @@ class SecureKeyValues:
     else:
       dir = os.path.dirname(self.filename)
       if not os.path.isdir(dir):
-        os.mkdir(dir, 0700)
+        os.mkdir(dir, 0o700)
     log.info('Saving store to {self.filename}'.format(**locals()))
     with open(self.filename, 'w') as f: 
       f.write(self.fernet.encrypt(json.dumps(self.store)))
