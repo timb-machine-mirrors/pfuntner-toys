@@ -81,7 +81,7 @@ signal.signal(signal.SIGTERM, cleanup)
 
 (fd, name) = tempfile.mkstemp()
 log.info("Created %s" % repr(name))
-os.write(fd, add_crs(sys.stdin.read()))
+os.write(fd, add_crs(sys.stdin.read().encode('utf-8')))
 os.close(fd)
 
 with open("/dev/tty", 'r') as tty:
