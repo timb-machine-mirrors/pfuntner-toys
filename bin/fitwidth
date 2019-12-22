@@ -21,7 +21,7 @@ def process(file):
       break
 
     debug('read {line!r}'.format(**locals()))
-    line = string.replace(string.replace(line, '\r', ''), '\n', '')
+    line = line.replace('\r', '').replace('\n', '')
     if len(line) <= width:
       print(line)
     else:

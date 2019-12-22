@@ -16,7 +16,7 @@ if len(sys.argv) == 1:
     sys.stderr.write("stdin is not redirected\n")
     exit(1)
   for line in sys.stdin:
-    process(string.replace(string.replace(line, '\r', ''), '\n', ''))
+    process(line.replace('\r', '').replace('\n', ''))
 else:
   for filename in sys.argv[1:]:
     process(filename)
