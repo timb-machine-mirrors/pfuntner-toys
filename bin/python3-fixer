@@ -67,6 +67,6 @@ log = logging.getLogger()
 log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 print_regexp = re.compile('^(\s*)print\s+([^(].*)$')
-map_regexp = re.compile('^(\s*)map([^)]+)\)$')
+map_regexp = re.compile('^(\s*)map\(([^)]+)\)$')
 
 list(map(process, args.files))
