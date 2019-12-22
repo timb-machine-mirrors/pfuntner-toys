@@ -10,8 +10,9 @@ import subprocess
 def run(cmd, trap=False):
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE if trap else None, stderr=subprocess.PIPE if trap else None)
   (stdout, stderr) = p.communicate()
-  stdout = stdout.decode('utf-8')
-  stderr = stderr.decode('utf-8')
+  if trap:
+    stdout = stdout.decode('utf-8')
+    stderr = stderr.decode('utf-8')
   rc = p.wait()
   log.log(logging.WARN if (rc != 0) or stderr else logging.DEBUG, '{cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
   return (rc, stdout, stderr)
