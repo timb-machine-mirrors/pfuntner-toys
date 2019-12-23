@@ -8,9 +8,13 @@ import argparse
 
 def process(filename):
   if os.path.isfile(filename):
+    try:
+      with open(filename) as stream:
+        lines = stream.read().splitlines()
+    except Exception as e:
+      log.warning(f'Could not open {filename}: {e!s}')
+      return
     sys.stdout.write(f'{filename}: ')
-    with open(filename) as stream:
-      lines = stream.read().splitlines()
 
     done = False
     changed = False
@@ -40,7 +44,14 @@ def process(filename):
             remain = match.group(2)
             lines[pos] = f'{indent}list(map({remain}))'
           else:
-            pass
+            match = communicate_regexp.search(line)
+            if match:
+              sys.stdout.write('c')
+              changed = True
+              indent = match.group(1)
+              lines[pos] = f"{indent}(stdout, stderr) = tuple([s.decode('utf-8') for s in p.communicate()])"
+            else:
+              pass
       if done:
         break
 
@@ -68,5 +79,6 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 print_regexp = re.compile('^(\s*)print\s+([^(].*)$')
 map_regexp = re.compile('^(\s*)map\(([^)]+)\)$')
+communicate_regexp = re.compile('(\s*)\(stdout, stderr\) = p.communicate\(\)$')
 
 list(map(process, args.files))
