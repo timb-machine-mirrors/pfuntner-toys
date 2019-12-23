@@ -52,6 +52,12 @@ def process(filename):
               lines[pos] = f"{indent}(stdout, stderr) = tuple([s.decode('utf-8') for s in p.communicate()])"
             else:
               pass
+
+        if 'basestring' in line:
+          sys.stdout.write('b')
+          changed = True
+          line[pos] = line.replace('basestring', 'str')
+
       if done:
         break
 
