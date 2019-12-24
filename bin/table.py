@@ -532,7 +532,7 @@ class FixedMethod(MethodBase):
     Complete the trailing column
     """
     if any([line[start:].strip() for line in lines]):
-      columns.append((start, sys.maxint))
+      columns.append((start, sys.maxsize))
 
     log.debug('columns: {columns}'.format(**locals()))
 
