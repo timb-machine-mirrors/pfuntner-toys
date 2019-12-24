@@ -95,7 +95,7 @@ rc = p.wait()
 if (rc != 0) or stderr or verbose:
   sys.stderr.write("%s returned %d, %s, %s\n" % (cmd, rc, repr(limit(stdout, 25)), repr(stderr)))
 
-assert ((rc == 0) and (not stderr)) or ignoreError, "%s failed"
+assert ((rc == 0) and (not stderr)) or ignoreError, f"{cmd} failed"
 
 commitRegexp = re.compile("^commit (\S+)$")
 authorRegexp = re.compile("^Author:\s+([^<]+)\s+<")
