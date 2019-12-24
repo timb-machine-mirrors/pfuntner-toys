@@ -27,12 +27,14 @@ group = parser.add_mutually_exclusive_group()
 group.add_argument('-j', '--json', action='store_true', help='Produce JSON output')
 group.add_argument('-r', '--raw', action='store_true', help='Produce raw output')
 
-parser.add_argument('-v', '--verbose', action='store_true', help='Enable debugging')
+parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
-log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+log.setLevel(logging.WARNING - 10*(args.verbose or 0))
+
+log.info(f'args: {args}')
 
 if args.hosts == 'all':
   try:
@@ -43,11 +45,12 @@ if args.hosts == 'all':
     rc = p.wait()
     args.hosts = ','.join(json.loads(stdout)['targets']['hosts'])
   except Exception as e:
-    log.debug('Ignoring {e!s} from ansible-inventory'.format(**locals()))
+    log.debug(f'Ignoring {e!s} from ansible-inventory')
 
+remote_cmd = [args.cmd] + (args.args if args.args else [])
 processes = {}
 for host in args.hosts.split(','):
-  remote_cmd = [args.cmd] + (args.args if args.args else [])
+  log.info(f'Creating {remote_cmd} for {host}')
   cmd = ['ssh'] + (['-q'] if args.quiet else []) + [host]
   if args.encode:
     cmd += ['bash -c "base64 -d | {sudo} bash"'.format(sudo='sudo' if args.become else '')]
@@ -64,9 +67,12 @@ output = {}
 secs = .1
 while processes:
   time.sleep(secs)
-  secs = 1
-  hosts = processes.keys()
+  secs = .25
+
+  hosts = list(processes.keys())
+  log.info(f'hosts: {hosts}')
   for host in hosts:
+    log.info(f'host: {host}')
     p = processes[host]
     if p.poll() is not None:
       if args.encode:
@@ -88,7 +94,7 @@ while processes:
         echo(host, stderr)  
       del processes[host]
     else:
-      log.debug('{host} still running'.format(**locals()))
+      log.debug(f'{host} still running')
 
 if args.json:
   print(json.dumps(output, indent=2, sort_keys=True))
