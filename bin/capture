@@ -15,7 +15,7 @@ class Redirect(threading.Thread):
     self.in_stream = in_stream
     self.out_stream = out_stream
     self.filename = filename
-    self.file = open(filename, 'w', 0) if filename else None
+    self.file = open(filename, 'wb', 0) if filename else None
     self.prev = datetime.datetime.now()
     super(Redirect, self).__init__()
 
@@ -39,10 +39,10 @@ class Redirect(threading.Thread):
     while True:
       (read_ready, write_ready, excp_ready) = select.select(read_list, write_list, excp_list, 1)
       if read_ready:
-        c = self.in_stream.read(1)
+        c = self.in_stream.read(1).decode('utf-8')
         if c:
           if self.file:
-            self.file.write(c)
+            self.file.write(c.encode('utf-8'))
           if c == '\n':
             self.write(buf)
             buf = ''
