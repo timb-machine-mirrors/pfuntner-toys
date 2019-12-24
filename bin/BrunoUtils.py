@@ -38,7 +38,7 @@ import logging
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
-log.setLevel(logging.DEBUG)
+# log.setLevel(logging.DEBUG)
 
 class BrunoUtils:
 
