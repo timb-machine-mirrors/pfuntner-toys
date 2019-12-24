@@ -78,6 +78,7 @@ def get_last_commit():
   
 parser = argparse.ArgumentParser(description='Refresh git repositories')
 parser.add_argument('root', nargs='?', help='Root in which to find repos (default: {HOME}/repos'.format(**os.environ))
+parser.add_argument('-b', '--branch', action='store_true', help='Do not require master branch')
 parser.add_argument('-d', '--dry-run', action='store_true', help='Perform no git operations')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
@@ -111,7 +112,7 @@ if os.path.exists(args.root):
         (date, sha1, text) = get_last_commit()
         banner('{path!r}\n{realpath!r}\n{branch}\n{sha1}\n{date!s}\n{text!r}'.format(**locals()))
         if not args.dry_run:
-          if branch == 'master':
+          if (branch == 'master') or args.branch:
             (rc, stdout, stderr) = run('git pull', readonly=False)
             sys.stdout.write(stdout)
             sys.stderr.write(stderr)
