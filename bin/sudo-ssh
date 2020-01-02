@@ -18,5 +18,5 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 cmd = ['ssh'] + (['-q'] if args.quiet else []) + [args.host, 'sudo', 'bash']
 log.info(cmd)
 p = subprocess.Popen(cmd, stdin=subprocess.PIPE)
-p.communicate(' '.join(args.cmd))
+p.communicate(' '.join(args.cmd).encode('utf-8'))
 exit(p.wait())
