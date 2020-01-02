@@ -9,9 +9,9 @@
       state: link
       force: true
 
-  - name: Install python2
+  - name: Install python3
     package:
-      name: python2
+      name: python3
       state: present
     become: true
 
