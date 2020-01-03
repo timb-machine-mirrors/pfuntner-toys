@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import docker
 import time
@@ -10,7 +10,7 @@ import sys
 import traceback
 
 def say(msg):
-  print "%s: %s" % (datetime.datetime.now(), msg)
+  print("%s: %s" % (datetime.datetime.now(), msg))
 
 def get(containerName):
   ret = None
@@ -48,7 +48,7 @@ def expose(lst):
   with open(filename, "r") as f:
     lines = f.read().strip('\n').split('\n')
     for offset in lst:
-      print lines[lineno + offset - 1]
+      print(lines[lineno + offset - 1])
 
 assert os.uname()[-1] == "x86_64", "I don't support your platform: %s" % os.uname()
 

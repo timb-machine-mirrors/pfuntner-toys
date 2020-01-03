@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import sys
 import random
@@ -64,7 +64,7 @@ if __name__ == "__main__":
   data = Data()
 
   if len(sys.argv) == 1:
-    print json.dumps({
+    print(json.dumps({
       "numbers": [data.getNumber() for iter in iterations],
       "integers": [data.getInteger() for iter in iterations],
       "names": [data.getName() for iter in iterations],
@@ -72,10 +72,10 @@ if __name__ == "__main__":
       "uids": [data.getUuid() for iter in iterations],
       "booleans":  [data.getBoolean() for iter in iterations],
       "listOfDicts": data.getListOfDicts(),
-    })
+    }))
   elif len(sys.argv) == 2:
     if sys.argv[1] == "getListOfDicts":
-      print json.dumps(data.getListOfDicts())
+      print(json.dumps(data.getListOfDicts()))
     else:
       try:
         pos = data.values.index(sys.argv[1])
@@ -86,4 +86,4 @@ if __name__ == "__main__":
         ))
         exit(1)
       else:
-        print json.dumps(getattr(data, data.values[pos])())
+        print(json.dumps(getattr(data, data.values[pos])()))

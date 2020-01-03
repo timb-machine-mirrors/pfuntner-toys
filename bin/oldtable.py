@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import sys
 import re
@@ -99,7 +99,7 @@ if __name__ == "__main__":
     table.add(["Float", "4."])
     table.add(["Data", "2017-05-09 14:12:46,619 [myid:3] - INFO"])
     table.dump()
-    print str(table)
+    print(str(table))
   else:
     desiredSep = None
     (opts,args) = getopt.getopt(sys.argv[1:], "F:", ["field="])
@@ -118,4 +118,4 @@ if __name__ == "__main__":
         else:
           done = True
 
-      print str(table)
+      print(str(table))

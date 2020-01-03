@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -124,7 +124,7 @@ def describe_datum(datum):
 def describe_root(root):
   root_type = describe_datum(root)
   if isinstance(root, dict) or isinstance(root, list):
-    print 'Root is a dict with {} elements'.format(len(root))
+    print('Root is a dict with {} elements'.format(len(root)))
     if isinstance(root, dict):
       values = root.values()
     else:
@@ -139,17 +139,17 @@ def describe_root(root):
         value_types[value_type] += 1
     for value_type in sorted(value_types.keys()):
       count = value_types[value_type]
-      print '{count} elements are {value_type}'.format(**locals())
+      print('{count} elements are {value_type}'.format(**locals()))
   else:
-    print 'Root is a {root_type}'.format(**locals())
+    print('Root is a {root_type}'.format(**locals()))
 
 def defaultWriter(root):
-  print json.dumps(root, indent=2, sort_keys=True)
+  print(json.dumps(root, indent=2, sort_keys=True))
 
 def linearWriter(root):
   if isinstance(root, list):
     for datum in root:
-      print json.dumps(datum)
+      print(json.dumps(datum))
   else:
     sys.stderr.write('Can only use --linear on lists\n')
     exit(1)
@@ -181,7 +181,7 @@ def flatWriter(root, path=[]):
     ret.append('/{path} {root}'.format(path='/'.join(path), root=see(root)))
 
   if path == []:
-    print '\n'.join(sorted(ret, key=path_sorter))
+    print('\n'.join(sorted(ret, key=path_sorter)))
   return ret
 
 def findpath(root, path_pattern, path=[]):

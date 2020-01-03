@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import logging
 import argparse
@@ -26,6 +26,8 @@ log.setLevel(logging.DEBUG)
 
 p = subprocess.Popen([args.pgm] + args.args, stdout=subprocess.PIPE if args.stdout else None, stderr=subprocess.PIPE if args.stderr else None)
 (stdout, stderr) = p.communicate()
+stdout = stdout.decode('utf-8')
+stderr = stderr.decode('utf-8')
 rc = p.wait()
 
 dump('stdout')

@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import sys
 import logging
@@ -23,7 +23,7 @@ while True:
     break
 
   column += 1
-  print '{line:8} {column:8} {c!r}'.format(**locals())
+  print('{line:8} {column:8} {c!r}'.format(**locals()))
 
   if c == '\n':
     line += 1

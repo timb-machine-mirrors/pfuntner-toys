@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import os
 import pwd
@@ -81,7 +81,7 @@ def get_group(gid):
 
 
 def show(label, text):
-  print '{label:10} {text}'.format(**locals())
+  print('{label:10} {text}'.format(**locals()))
 
 parser = argparse.ArgumentParser(description='Full ls - lots of information about a file')
 parser.add_argument('files', metavar='file', nargs='+', help='One or more files')
@@ -106,23 +106,23 @@ with open('/etc/mtab') as stream:
 
 for (pos, filename) in enumerate(args.files):
   if pos > 0:
-    print ''
+    print('')
   if os.path.exists(filename):
-    print filename
+    print(filename)
     stats = os.stat(filename)
 
     if stat.S_ISREG(stats.st_mode):
-      print 'Regular file'
+      print('Regular file')
     elif stat.S_ISDIR(stats.st_mode):
-      print 'Directory'
+      print('Directory')
     elif stat.S_ISCHR(stats.st_mode):
-      print 'Character-special file'
+      print('Character-special file')
     elif stat.S_ISFIFO(stats.st_mode):
-      print 'FIFO'
+      print('FIFO')
     elif stat.S_ISSOCK(stats.st_mode):
-      print 'Socket'
+      print('Socket')
     else:
-      print 'Unknown type of file'
+      print('Unknown type of file')
 
     show(
       'Dev',
@@ -137,7 +137,7 @@ for (pos, filename) in enumerate(args.files):
     show('Mode', '{perm_string} {stats.st_mode:04o}'.format(perm_string=get_perms(stats.st_mode), **locals()))
 
     if stat.S_ISVTX & stats.st_mode:
-      print 'Sticky bit'
+      print('Sticky bit')
 
     show('User', '{user}{setuid}'.format(
       user=get_user(stats.st_uid), setuid=', setuid bit' if stats.st_mode & stat.S_ISUID else ''))
@@ -149,4 +149,4 @@ for (pos, filename) in enumerate(args.files):
     show('Changed', '{}'.format(datetime.datetime.fromtimestamp(stats.st_ctime)))
     show('Accessed', '{}'.format(datetime.datetime.fromtimestamp(stats.st_atime)))
   else:
-    print 'Not found: {filename}'.format(**locals())
+    print('Not found: {filename}'.format(**locals()))

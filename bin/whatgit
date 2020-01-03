@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 """
    Find location of the nearest `.git` file in the file structure - this will tell us the root directory of this local git repository.
@@ -35,9 +35,9 @@ def process(path):
       git_path = path
       break
 
-  print '{orig_path}\t{git_path}'.format(**locals())
+  print('{orig_path}\t{git_path}'.format(**locals()))
 
 if len(sys.argv) > 1:
-  map(process, sys.argv[1:])
+  list(map(process, sys.argv[1:]))
 else:
   process(os.getcwd())

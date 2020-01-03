@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -23,6 +23,8 @@ if sys.stdin.isatty():
   log.debug('Executing {cmd}'.format(**locals()))
   p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   (data, stderr) = p.communicate()
+  data = data.decode('utf-8')
+  stderr = stderr.decode('utf-8')
   rc = p.wait()
   log.debug('{cmd}: {rc}, {data!r}, {stderr!r}'.format(**locals()))
 else:
@@ -40,6 +42,6 @@ for line in data.splitlines():
   if match:
     if (not alias_regexp) or alias_regexp.search(match.group(1)):
       if args.all:
-        print line
+        print(line)
       else:
-        print match.group(2)
+        print(match.group(2))

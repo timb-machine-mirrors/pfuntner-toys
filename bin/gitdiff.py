@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 """
    Do `git diff` and process the output
@@ -63,7 +63,7 @@ def complete():
     oldfile.flush()
     newfile.flush()
 
-    print '\n{filename} {diffs}'.format(**globals())
+    print('\n{filename} {diffs}'.format(**globals()))
     if verbose:
       subprocess.Popen(['ls', '-l', oldfile.name, newfile.name]).wait()
       subprocess.Popen(['head', oldfile.name, newfile.name]).wait()
@@ -77,7 +77,7 @@ def complete():
 def show(expr):
   if verbose:
     value = eval(expr)
-    print '{expr}: {value}'.format(**locals())
+    print('{expr}: {value}'.format(**locals()))
 
 """
 verbose = os.environ.get('VERBOSE')
@@ -106,6 +106,8 @@ change_regexp = re.compile('^(\+|-| )(.*)$')
 if sys.stdin.isatty() and (len(sys.argv) > 1):
   p = subprocess.Popen(['git', 'diff'] + args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   (stdout, stderr) = p.communicate()
+  stdout = stdout.decode('utf-8')
+  stderr = stderr.decode('utf-8')
   rc = p.wait()
   assert (rc == 0) and stdout and (not stderr), '`git diff` failed: {rc}, {stdout!r}, {stderr!r}'.format(**locals())
 else:

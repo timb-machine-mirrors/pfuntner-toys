@@ -1,8 +1,11 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 import platform
 import subprocess
 import os
 import datetime
+
+import re
+import logging
 
 """
   A trick for bootstrapping this module when it's not in the same directory
@@ -33,28 +36,46 @@ import datetime
         exit(1)
 """
 
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+# log.setLevel(logging.DEBUG)
+
 class BrunoUtils:
 
-  @staticmethod
-  def cols():
+  @classmethod
+  def extract(cls, cmd, pattern, default_value):
+    ret = default_value
+    caster = type(ret)
+    if isinstance(cmd, list):
+      cmd = ' '.join(cmd)
+    log.debug('Running {cmd!r}'.format(**locals()))
+    try:
+      p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+      (stdout, stderr) = p.communicate()
+      stdout = stdout.decode('utf-8')
+      stderr = stderr.decode('utf-8')
+      rc = p.wait()
+      log.debug('{cmd!r}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
+      match = re.search(pattern, stdout)
+      if match:
+        log.debug('extracted: {}'.format(match.group(1)))
+        ret = caster(match.group(1))
+      else:
+        log.debug('{stdout!r} failed to match {pattern!r}'.format(**locals()))
+    except Exception as e:
+      log.debug('Caught `{e!s}`'.format(**locals()))
+
+    return ret
+
+  @classmethod
+  def cols(cls):
     """
       This is designed to return the number of columns in the user's display.
 
       Return value: The number of columns as an integer.
     """
 
-    tput_cols=None
-    try:
-      if platform.python_version() >= "2.7":
-        tput_output = subprocess.check_output(["tput", "cols"])
-      else:
-        tput_file = os.popen("tput cols")
-        tput_output = tput_file.read()
-        tput_file.close()
-      tput_cols = int(tput_output)
-    except Exception as e:
-      pass
-    return tput_cols
+    return cls.extract('stty size < /dev/tty', '\d+\s+(\d+)', 80)
 
   @staticmethod
   def divmod(a, b):

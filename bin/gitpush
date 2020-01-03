@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 """
   This solves the problem of pushing commits to a git server when the 
@@ -17,13 +17,15 @@ suggestion = re.compile("(git push --set-upstream origin \S+)", re.DOTALL)
 
 p = subprocess.Popen(["git", "push"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 (stdout, stderr) = p.communicate()
+stdout = stdout.decode('utf-8')
+stderr = stderr.decode('utf-8')
 rc = p.wait()
 sys.stdout.write(stdout)
 sys.stderr.write(stderr)
 if (rc != 0) and (not stdout) and nastygram.search(stderr):
   match = suggestion.search(stderr)
   if match:
-    print "Trying to push with git's suggestion..."
+    print("Trying to push with git's suggestion...")
     cmd = match.group(1)
     # print "  " + cmd
     p = subprocess.Popen(cmd.split())

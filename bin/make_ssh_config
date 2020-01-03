@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import os
 import json
@@ -35,6 +35,8 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
 p = subprocess.Popen(['ansible-inventory', '--list'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 (stdout, stderr) = p.communicate()
+stdout = stdout.decode('utf-8')
+stderr = stderr.decode('utf-8')
 rc = p.wait()
 if (rc == 0) and not stderr:
   log.debug('{rc}, {stdout!r}, {stderr!r}'.format(**locals()))
@@ -43,7 +45,7 @@ if (rc == 0) and not stderr:
     log.debug('hosts: {hosts}'.format(**locals()))
     with open(args.filename, 'w') as stream:
       for (hostname, attrs) in hosts.items():
-        print '{hostname}: {attrs}'.format(**locals())
+        print('{hostname}: {attrs}'.format(**locals()))
         ip = attrs['ansible_host']
         user = attrs['ansible_user']
         key = attrs['ansible_ssh_private_key_file']

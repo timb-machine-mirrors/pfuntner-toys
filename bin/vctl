@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import sys
 import json
@@ -31,16 +31,16 @@ if hosts:
     table = Table('Host', 'State', 'Instance ID', 'Image ID', 'Created', 'Controlled', desiredSep=' | ')
     for host in hosts:
       table.add(host.name, host.state, host.instance_id, host.image_id, host.created_elapsed, host.controlled_elapsed)
-    print str(table)
+    print(str(table))
   elif args.action == 'show':
     for host in hosts:
-      print json.dumps(virtual_hosts.aws_instance_cache[host.instance_id], sort_keys=True, indent=2)
+      print(json.dumps(virtual_hosts.aws_instance_cache[host.instance_id], sort_keys=True, indent=2))
   elif args.action == 'userhost':
     if len(hosts) == 1:
       host = hosts[0]
       if host.ip:
         if host.user:
-          print '{host.user}@{host.ip}'.format(**locals())
+          print('{host.user}@{host.ip}'.format(**locals()))
         else:
           parser.error('No host for {host}'.format(**locals()))
       else:
@@ -66,7 +66,7 @@ if hosts:
       exit(1)
 
     if len(hosts) > 1:
-      print 'Are you sure you want to {action} {hosts}?'.format(action=args.action, hosts=', '.join([host.name for host in hosts]))
+      print('Are you sure you want to {action} {hosts}?'.format(action=args.action, hosts=', '.join([host.name for host in hosts])))
       sys.stdout.write('Enter `yes` to proceed: ')
       if sys.stdin.readline().lower().replace('\n','').replace('\r','') != 'yes':
         exit(1)

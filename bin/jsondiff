@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -34,7 +34,7 @@ def load(filename):
 
 def emit(equal, path, msg):
   if (not equal) or args.report_all:
-    print '/{path} {equal} {msg}'.format(path='/'.join(path), equal='+' if equal else '-', msg=msg)
+    print('/{path} {equal} {msg}'.format(path='/'.join(path), equal='+' if equal else '-', msg=msg))
 
 def type_and_value(obj):
   return '{_type_}{value}'.format(_type_=type(obj), value=(' ' + repr(obj)) if type(obj) in SIMPLE_TYPES else '')

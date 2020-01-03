@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import os
@@ -18,11 +18,11 @@ def process(filename):
     except Exception as e:
       log.warning('Could not read {filename!r}: {e!s}'.format(**locals()))
     else:
-      chosen = all([bool(regexp.search(data)) for regexp in includes]) and not any([bool(regexp.search(data)) for regexp in excludes])
+      chosen = all([bool(regexp.search(str(data))) for regexp in includes]) and not any([bool(regexp.search(str(data))) for regexp in excludes])
       if args.all:
-        print '{status} {filename}'.format(status='+' if chosen else '-', **locals())
+        print('{status} {filename}'.format(status='+' if chosen else '-', **locals()))
       elif chosen:
-        print filename
+        print(filename)
   else:
     log.warning('Not a file: {filename!r}'.format(**locals()))
 
@@ -48,4 +48,4 @@ if not (args.include or args.exclude):
 
 includes = [re.compile(pat, flags=re.MULTILINE + (re.IGNORECASE if args.ignorecase else 0)) for pat in (args.include or [])]
 excludes = [re.compile(pat, flags=re.MULTILINE + (re.IGNORECASE if args.ignorecase else 0)) for pat in (args.exclude or [])]
-map(process, args.files)
+list(map(process, args.files))

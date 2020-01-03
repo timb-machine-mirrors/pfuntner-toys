@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import os
@@ -90,6 +90,8 @@ if to_dest is None:
     to_echo = Echo('TO', to_tar.stdout, sys.stdout)
 
   (to_stdout, to_stderr) = to_tar.communicate()
+  to_stdout = to_stdout.decode('utf-8')
+  to_stderr = to_stderr.decode('utf-8')
 else:
   # we're doing a remote copy
   script = replace_all("""import os
@@ -139,6 +141,8 @@ if from_tar and to_tar:
     time.sleep(0.1)
 
   (from_stdout, from_stderr) = from_tar.communicate()
+  from_stdout = from_stdout.decode('utf-8')
+  from_stderr = from_stderr.decode('utf-8')
   from_rc = from_tar.wait()
   
   to_rc = to_tar.wait()

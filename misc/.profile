@@ -5,6 +5,8 @@
 #   $HOME/.bash_login
 #   $HOME/.profile
 
+export PATH="$PATH:$HOME/bin"
+
 export PAGER=less
 export EDITOR=vi
 export PYTHONUNBUFFERED=true

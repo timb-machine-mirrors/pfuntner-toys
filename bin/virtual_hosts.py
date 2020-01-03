@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import os
 import re
@@ -36,7 +36,7 @@ class Host(object):
     ]
     for key in sorted(remains):
       value = getattr(self, key)
-      if isinstance(value, basestring) and (not key.startswith('__')):
+      if isinstance(value, str) and (not key.startswith('__')):
         elements.append('{key}: {value}'.format(**locals()))
     return ', '.join(elements)
 
@@ -95,6 +95,8 @@ class VirtualHosts(object):
       log.info('{cmd} failed: {e!s}'.format(**locals()))
     else:
       (stdout, stderr) = p.communicate()
+      stdout = stdout.decode('utf-8')
+      stderr = stderr.decode('utf-8')
       rc = p.wait()
       log.info('{cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
       if stdout:
@@ -188,7 +190,7 @@ class VirtualHosts(object):
     if not path:
       return root or None
 
-    if isinstance(path, basestring):
+    if isinstance(path, str):
       path = path.split('/')
 
     if cls.int_regexp.search(path[0]) and isinstance(root, list):
@@ -233,6 +235,8 @@ class VirtualHosts(object):
         cmd += ['describe-images', '--image-ids', image_id]
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         (stdout, stderr) = p.communicate()
+        stdout = stdout.decode('utf-8')
+        stderr = stderr.decode('utf-8')
         rc = p.wait()
         log.debug('{cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
         if (rc == 0) and (not stderr):
@@ -272,6 +276,8 @@ class VirtualHosts(object):
         log.debug('Caught {e!s} executing {cmd}'.format(**locals()))
       else:
         (stdout, stderr) = p.communicate()
+        stdout = stdout.decode('utf-8')
+        stderr = stderr.decode('utf-8')
         rc = p.wait()
         log.debug('{cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
         if (rc == 0) and (not stderr):
@@ -422,4 +428,4 @@ if __name__ == '__main__':
 
   hosts = virtual_hosts.get_hosts(args.hostnames)
   for host in hosts:
-    print host
+    print(host)

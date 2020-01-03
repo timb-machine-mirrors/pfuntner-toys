@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import sys
 import logging
@@ -22,7 +22,7 @@ if sys.stdin.isatty():
 lines = sys.stdin.read().splitlines()
 
 if lines:
-  print lines[0]
+  print(lines[0])
 
 p = subprocess.Popen(['sort'] + sort_args, stdin=subprocess.PIPE)
 p.communicate('\n'.join(lines[1:]))

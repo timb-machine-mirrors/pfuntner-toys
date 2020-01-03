@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -27,7 +27,7 @@ arg = sys.argv[1]
 while arg and allowedSuffixes:
   # print "allowedSuffixes: %s" % allowedSuffixes
   regexp = re.compile("((\d+)([%s]))" % ''.join(list(allowedSuffixes)))
-  match = regexp.search(arg)
+  match = regexp.search(str(arg))
   if match:
     token = match.group(1)
     amt = int(match.group(2))
@@ -61,4 +61,4 @@ if arg:
 
 totalSeconds = seconds + 60*(minutes + 60*(hours + (days*24)))
 # print "totalSeconds: %d" % totalSeconds
-print "%.8f" % ((totalSeconds*1.0) / (60*60*24))
+print("%.8f" % ((totalSeconds*1.0) / (60*60*24)))

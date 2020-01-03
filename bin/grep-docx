@@ -1,4 +1,5 @@
 #! /usr/bin/env python2
+# python-docx supports Python 2.6, 2.7, 3.3, or 3.4 - The versions of Python 3 I've installed are 3.6.x, python-docx isn't working, but it's not supported.  I'm switching this script back to Python 2.
 
 import re
 import os
@@ -23,10 +24,10 @@ def process(filename):
           text = paragraph.text
           if regexp.search(text):
             if args.list:
-              print filename
+              print(filename)
               break
             else:
-              print '{filename}: {text!r}'.format(**locals())
+              print('{filename}: {text!r}'.format(**locals()))
 
 parser.add_argument('regexp', help='Regular expression with which to search')
 parser.add_argument('files', metavar='file', nargs='+', help='One or more files')
@@ -40,4 +41,4 @@ log = logging.getLogger()
 log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 regexp = re.compile(args.regexp)
-map(process, args.files)
+list(map(process, args.files))

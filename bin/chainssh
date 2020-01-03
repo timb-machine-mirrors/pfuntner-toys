@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 """
    ssh to one or more systems in a chain of one or more remote systems
@@ -46,9 +46,9 @@ def debug(msg):
 def banner(s):
   if not short:
     border = '*' * (len(s) + 4)
-    print border
-    print '* %s *' % s
-    print border
+    print(border)
+    print('* %s *' % s)
+    print(border)
 
 def syntax(msg=None):
   if msg:
@@ -96,7 +96,7 @@ def process(hosts):
   global count
 
   if count and not short:
-    print ''
+    print('')
   count += 1
 
   path = []
@@ -123,6 +123,8 @@ def process(hosts):
     p = subprocess.Popen(chain + cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
   (stdout, stderr) = p.communicate()
+  stdout = stdout.decode('utf-8')
+  stderr = stderr.decode('utf-8')
   rc = p.wait()
   emit(hosts if short else None, sys.stdout, stdout)
   emit(hosts if short else None, sys.stderr, stderr)

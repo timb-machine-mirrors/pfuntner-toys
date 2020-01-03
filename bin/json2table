@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 """
    Takes a list of dictionaries in JSON form and converts it to table.
@@ -52,7 +52,7 @@ import sys
 import json
 import getopt
 import string
-import StringIO
+import io
 
 def syntax(msg=None):
   if msg:
@@ -91,7 +91,7 @@ for (opt, arg) in opts:
     syntax('Unrecognized option: {opt!r}'.format(**locals())) 
 
 if sample:
-  stream = StringIO.StringIO(sample_data)
+  stream = io.StringIO(sample_data)
 else:
   assert not sys.stdin.isatty(), 'stdin must be redirected'
   stream = sys.stdin
@@ -109,9 +109,9 @@ for header in headers:
   widths.append(max(len(header), *[len(str(datum.get(header))) for datum in data]))
 
 border = '+-{s}-+'.format(s='-+-'.join([('-' * widths[pos]) for (pos, header) in enumerate(headers)]))
-print border
-print '| {s} |'.format(s=' | '.join(['{0:{width}}'.format(header, width=widths[pos]) for (pos, header) in enumerate(headers)]))
-print border
+print(border)
+print('| {s} |'.format(s=' | '.join(['{0:{width}}'.format(header, width=widths[pos]) for (pos, header) in enumerate(headers)])))
+print(border)
 for datum in data:
-  print '| {s} |'.format(s=' | '.join(['{0:{width}}'.format(str(datum.get(header)), width=widths[pos]) for (pos, header) in enumerate(headers)]))
-print border
+  print('| {s} |'.format(s=' | '.join(['{0:{width}}'.format(str(datum.get(header)), width=widths[pos]) for (pos, header) in enumerate(headers)])))
+print(border)

@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 """
    Turn any text with lines that are made up of tokens separated by some
@@ -27,7 +27,7 @@ def show(expr):
     sys.stderr.write('{expr}: {value}\n'.format(**locals()))
 
 def uniprint(msg):
-  print msg.encode('utf-8')
+  print(msg.encode('utf-8'))
 
 def process(stream):
   widths = []
@@ -125,6 +125,6 @@ if not args:
   process(sys.stdin)
 else:
   for filename in args:
-    print '{filename}:'.format(**locals())
+    print('{filename}:'.format(**locals()))
     with open(filename) as stream:
       process(stream)

@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import os
@@ -23,17 +23,17 @@ def process(filename=None):
     if match:
       empty += 1
     if (not args.summary) and (bool(match) == bool(args.negate)):
-      print '{location}{line}'.format(
+      print('{location}{line}'.format(
         location='{}: '.format(filename) if filename else '',
         line=line,
-      )
+      ))
 
   if args.summary:
-    print '{location}{total} lines, {empty} ({pcent:.2f}%) empty'.format(
+    print('{location}{total} lines, {empty} ({pcent:.2f}%) empty'.format(
       location='{}: '.format(filename) if filename else '',
       pcent=((100.0*empty) / total) if empty else 0,
       **locals()
-    )
+    ))
     
 
   if filename:

@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 description='Return absolute paths of files, especially Cygwin domain to Windoze domain when appropriate'
 
@@ -25,6 +25,8 @@ if onWindoze:
   try:
     p = subprocess.Popen('cygpath --windows /'.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (stdout, stderr) = p.communicate()
+    stdout = stdout.decode('utf-8')
+    stderr = stderr.decode('utf-8')
     rc = p.wait()
     if stdout:
       CYGWIN_ROOT = stdout.splitlines()[0]
@@ -38,12 +40,12 @@ def process(path):
   path = os.path.abspath(path)
 
   if onWindoze:
-    match = re.match('/cygdrive/([a-zA-Z])(/.*)$', path)
+    match = re.match('/cygdrive/([a-zA-Z])(/.*)$', str(path))
     if match:
       path = match.group(1) + ':' + match.group(2)
     else:
       path = CYGWIN_ROOT + path
 
-  print path
+  print(path)
 
-map(process, args.paths)
+list(map(process, args.paths))

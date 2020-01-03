@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import os
 import re
@@ -34,9 +34,9 @@ def announce(name, value, whisperName=False):
     output["pairs"][name] = value
   else:
     if whisperName:
-      print value
+      print(value)
     else:
-      print "%s: %s" % (name, value)
+      print("%s: %s" % (name, value))
 
 def tryHome(name):
   ret = None
@@ -78,7 +78,7 @@ class SecureKeyValues:
       if os.path.isfile(sshFilename):
         log.debug('Reading {sshFilename}'.format(**locals()))
         with open(sshFilename) as stream:
-          key = ''.join([line for line in stream.read().splitlines() if not re.match('---', line)])
+          key = ''.join([line for line in stream.read().splitlines() if not re.match('---', str(line))])
           log.debug('ssh private key is {bytes} bytes long'.format(bytes=len(key)))
 
     if keyPromptForMissingFile or os.path.exists(self.filename):
@@ -91,7 +91,7 @@ class SecureKeyValues:
           self.simpleKey = getpass.getpass("Key for %s: " % repr(self.simpleFilename))
   
         hash = hashlib.md5()
-        hash.update(self.simpleKey)
+        hash.update(self.simpleKey.encode('utf-8'))
         self.key = base64.b64encode(hash.hexdigest())
 
         try:
@@ -163,7 +163,7 @@ class SecureKeyValues:
     else:
       dir = os.path.dirname(self.filename)
       if not os.path.isdir(dir):
-        os.mkdir(dir, 0700)
+        os.mkdir(dir, 0o700)
     log.info('Saving store to {self.filename}'.format(**locals()))
     with open(self.filename, 'w') as f: 
       f.write(self.fernet.encrypt(json.dumps(self.store)))
@@ -208,12 +208,12 @@ if __name__ == "__main__":
 
   if args.operation == "test":
     store = SecureKeyValues("test", "this is a test")
-    print "store file: %s" % store.filename
+    print("store file: %s" % store.filename)
     keys = store.keys()
-    print "keys: %s" % keys
+    print("keys: %s" % keys)
     if keys:
       for key in keys:
-        print "%s: %s" % (key, store.get(key))
+        print("%s: %s" % (key, store.get(key)))
       store.put("runs", [str(datetime.datetime.now())] + store.get("runs"))
     else:
       store.put("one", 1)
@@ -234,11 +234,11 @@ if __name__ == "__main__":
       if not args.args and sys.stdin.isatty():
         args.args = sys.stdin.read().strip('\n').split('\n')
       for arg in args.args:
-        match = keyvalue_regexp.search(arg)
+        match = keyvalue_regexp.search(str(arg))
         if match:
           store.put(match.group(1), match.group(2))
         else:
-          match = key_regexp.search(arg)
+          match = key_regexp.search(str(arg))
           if match:
             store.put(match.group(1), getpass.getpass('Enter value for {name!r}: '.format(name=match.group(1))))
           else:
@@ -250,12 +250,12 @@ if __name__ == "__main__":
       store.write()
     elif args.operation == "get":
       for arg in args.args:
-        match = staticStringRegexp.search(arg)
+        match = staticStringRegexp.search(str(arg))
         if match:
           if (not args.jsonOutput):
-            print match.group(1)
+            print(match.group(1))
         else:
           announce(arg, store.get(arg), whisperName=True)
 
   if args.jsonOutput:
-    print json.dumps(output, indent=2, sort_keys=True)
+    print(json.dumps(output, indent=2, sort_keys=True))

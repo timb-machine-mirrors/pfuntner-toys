@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import time
 import logging
@@ -33,14 +33,16 @@ class Image(object):
     return (s == self.image_id) or (s == '{self.repo}:{self.tag}'.format(**locals()))
 
 def run(cmd, shell=False):
-  if (not shell) and isinstance(cmd, basestring):
+  if (not shell) and isinstance(cmd, str):
     cmd = cmd.split()
-  elif shell and not isinstance(cmd, basestring):
+  elif shell and not isinstance(cmd, str):
     cmd = ' '.join(cmd)
 
   log.info('Running {cmd}'.format(**locals()))
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=shell)
   (stdout, stderr) = p.communicate()
+  stdout = stdout.decode('utf-8')
+  stderr = stderr.decode('utf-8')
   rc = p.wait()
   log.debug('Ran {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
   return (rc, stdout, stderr)
@@ -88,7 +90,7 @@ for desired_image in args.images:
     container_id = list(brand_new_containers)[0]
     (rc, stdout, stderr) = run('docker ps --filter id={container_id}'.format(**locals()))
     if stdout:
-      print stdout
+      print(stdout)
     else:
       log.warning('Could not find container {container_id}'.format(**locals()))
   else:

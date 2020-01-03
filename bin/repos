@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import os
@@ -11,11 +11,13 @@ import subprocess
 from table import Table
 
 def run(cmd):
-  if isinstance(cmd, basestring):
+  if isinstance(cmd, str):
     cmd = cmd.split()
   log.info('Running {cmd}'.format(**locals()))
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   (stdout, stderr) = p.communicate()
+  stdout = stdout.decode('utf-8')
+  stderr = stderr.decode('utf-8')
   rc = p.wait()
 
   bad = (rc != 0) or stderr
@@ -26,9 +28,9 @@ def run(cmd):
 
 def banner(msg):
   border = '*' * (len(msg) + 4)
-  print border
-  print '* {msg} *'.format(**locals())
-  print border
+  print(border)
+  print('* {msg} *'.format(**locals()))
+  print(border)
 
 def isotime(s):
   """
@@ -53,7 +55,7 @@ def process(root):
         banner(root)
         (rc, stdout, stderr) = run('git diff')
         sys.stdout.write(stdout)
-        print ''
+        print('')
       else:
         curr_branch = None
         branches = []
@@ -112,7 +114,7 @@ if not args.roots:
 if not args.diffs:
   table = Table('Path', 'URL', 'Branch', 'Clean', 'Commit', 'Time', 'Comment')
 
-map(process, args.roots)
+list(map(process, args.roots))
 
 if not args.diffs:
-  print str(table)
+  print(str(table))

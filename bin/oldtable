@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import csv
@@ -54,15 +54,15 @@ def readFixed():
   return ret
 
 def emit_tags(start_tag, end_tag, extras={}):
-  print '{start_tag}table{extra}{end_tag}'.format(extra=extras.get('table', ''), **locals())
-  print '{start_tag}tbody{end_tag}'.format(**locals())
+  print('{start_tag}table{extra}{end_tag}'.format(extra=extras.get('table', ''), **locals()))
+  print('{start_tag}tbody{end_tag}'.format(**locals()))
   for (rownum, row) in enumerate(data):
-    print '{start_tag}tr{end_tag}'.format(**locals())
+    print('{start_tag}tr{end_tag}'.format(**locals()))
     for col in row:
-      print '{start_tag}{tag}{end_tag}{col}{start_tag}/{tag}{end_tag}'.format(tag='th' if (rownum == 0) and args.headings else 'td', **locals())
-    print '{start_tag}/tr{end_tag}'.format(**locals())
-  print '{start_tag}/tbody{end_tag}'.format(**locals())
-  print '{start_tag}/table{end_tag}'.format(**locals())
+      print('{start_tag}{tag}{end_tag}{col}{start_tag}/{tag}{end_tag}'.format(tag='th' if (rownum == 0) and args.headings else 'td', **locals()))
+    print('{start_tag}/tr{end_tag}'.format(**locals()))
+  print('{start_tag}/tbody{end_tag}'.format(**locals()))
+  print('{start_tag}/table{end_tag}'.format(**locals()))
 
 def emitHtml():
   emit_tags(
@@ -73,10 +73,10 @@ def emitHtml():
     })
 
 def emitMarkdown():
-  print '| {row} |'.format(row=' | '.join(data[0]))
+  print('| {row} |'.format(row=' | '.join(data[0])))
   if args.headings:
-    print '|' + (' ---- | ' * len(data[0]))
-  print '\n'.join(['| {row} |'.format(row=' | '.join(row)) for row in data[1:]])
+    print('|' + (' ---- | ' * len(data[0])))
+  print('\n'.join(['| {row} |'.format(row=' | '.join(row)) for row in data[1:]]))
 
 def emitBbcode():
   emit_tags(start_tag='[', end_tag=']')
@@ -84,7 +84,7 @@ def emitBbcode():
 def emitRotated():
   for (rownum, row) in enumerate(data[1 if args.headings else 0:]):
     for (colnum, col) in enumerate(row):
-      print '{rownum:>06d} {colnum:>02d} {name}{col}'.format(name=data[0][colnum].ljust(33) if args.headings else '', **locals())
+      print('{rownum:>06d} {colnum:>02d} {name}{col}'.format(name=data[0][colnum].ljust(33) if args.headings else '', **locals()))
     
 def emitJson():
   if args.headings:
@@ -97,7 +97,7 @@ def emitJson():
         obj[-1][heading] = value
   else:
     obj = data
-  print json.dumps(obj, indent=2, sort_keys=True)
+  print(json.dumps(obj, indent=2, sort_keys=True))
 
 parser = argparse.ArgumentParser(description='Turn data into a table')
 

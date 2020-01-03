@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 """
    Replace duplicate "non-essential" characters with a single
@@ -34,4 +34,4 @@ for c in string.punctuation:
   replacements.append((pattern, '{escape}{c}'.format(escape='\\' if c == '\\' else '', c=c)))
 
 for line in sys.stdin.read().splitlines():
-  print fix(line)
+  print(fix(line))

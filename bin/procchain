@@ -17,6 +17,8 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 cmd = ['ps', '-eo', 'pid,ppid,etime,args']
 p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 (stdout, stderr) = p.communicate()
+stdout = stdout.decode('utf-8')
+stderr = stderr.decode('utf-8')
 rc = p.wait()
 log.debug(f'{cmd}: {rc}, {stdout!r}, {stderr!r}')
 

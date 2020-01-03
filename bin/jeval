@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import sys
 import random
@@ -22,6 +22,8 @@ def run(cmd, printStdout=True):
   debug('> {cmd}\n'.format(**locals()), noNewline=True)
   p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   (stdout, stderr) = p.communicate()
+  stdout = stdout.decode('utf-8')
+  stderr = stderr.decode('utf-8')
   rc = p.wait()
 
   if printStdout or verbose:

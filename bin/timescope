@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -18,7 +18,7 @@ class Timestamp:
   longFormat = "%Y%m%d %H%M%S.%f"
 
   def __init__(self, line):
-    match = Timestamp.regex.search(line)
+    match = Timestamp.regex.search(str(line))
     if not match:
       raise Exception("Not a timestamp")
 
@@ -95,7 +95,7 @@ class Timestamp:
   @staticmethod
   def stripLeadingDigits(s):
     while len(s) > 0:
-      if re.match(Timestamp.digit_regex, s):
+      if re.match(Timestamp.digit_regex, str(s)):
         s = s[1:]
       else:
         break
@@ -103,7 +103,7 @@ class Timestamp:
 
   @staticmethod
   def replace(line, secs):
-    match = Timestamp.regex.search(line)
+    match = Timestamp.regex.search(str(line))
     # print "`%s`" % line[match.start(0): match.end(0)]
     first = match.start(0)
     last = match.end(0)
@@ -123,7 +123,7 @@ def process(filename):
   global neighbor
 
   if filename:
-    print "%s:" % filename
+    print("%s:" % filename)
     f = open(filename, "r")
   else:
     f = sys.stdin
@@ -154,15 +154,15 @@ def process(filename):
       sys.stdout.write(line)
 
   if count == 1:
-    print str(first)
+    print(str(first))
   elif count == 2:
-    print "%d timestamps over %s" % (count, Timestamp.see(Timestamp.diff(first, last)))
+    print("%d timestamps over %s" % (count, Timestamp.see(Timestamp.diff(first, last))))
   elif count > 2:
-    print "%d timestamps over %s, average duration %s, %.3f/minute" % (count, Timestamp.see(Timestamp.diff(first, last)), Timestamp.see(total / (count-1)), 60/(total / (count-1)))
+    print("%d timestamps over %s, average duration %s, %.3f/minute" % (count, Timestamp.see(Timestamp.diff(first, last)), Timestamp.see(total / (count-1)), 60/(total / (count-1))))
 
   if filename:
     f.close()
-    print ""
+    print("")
 
 delta = False
 neighbor = False

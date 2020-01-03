@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import subprocess
 import re
@@ -12,6 +12,8 @@ if re.search("win", system, re.IGNORECASE):
 cmd = ["hostname", "--all-ip-addresses"]
 p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 (stdout, stderr) = p.communicate()
+stdout = stdout.decode('utf-8')
+stderr = stderr.decode('utf-8')
 rc = p.wait()
 if (system == "Linux") or (rc == 0):
   assert rc == 0, "%s failed with %d" % (cmd, rc)
@@ -25,13 +27,15 @@ if (system == "Linux") or (rc == 0):
     match = regexp.search(addr)
     if match:
       if ("--all" in sys.argv[1:]) or (match.group(1) not in ['0', '169', '127', '172', '192']):
-        print addr
+        print(addr)
 else:
   # Alternate method on Windoze
 
   cmd = "ipconfig"
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
   (stdout, stderr) = p.communicate()
+  stdout = stdout.decode('utf-8')
+  stderr = stderr.decode('utf-8')
   rc = p.wait()
   assert rc == 0, "%s failed with %d" % (cmd, rc)
 
@@ -41,4 +45,4 @@ else:
     match = regexp.search(line)
     if ("IPv4 Address" in line) and match:
       if ("--all" in sys.argv[1:]) or (match.group(1) not in ['0', '169', '127', '172', '192']):
-        print '.'.join(match.groups())
+        print('.'.join(match.groups()))

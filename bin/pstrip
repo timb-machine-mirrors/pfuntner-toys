@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import sys
 import logging
@@ -17,4 +17,4 @@ if sys.stdin.isatty():
   parser.error('stdin is not redirected')
 
 for line in sys.stdin.read().splitlines():
-  print line.rstrip()
+  print(line.rstrip())

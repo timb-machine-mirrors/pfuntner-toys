@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -7,7 +7,7 @@ import json
 import string
 import logging
 import argparse
-import StringIO
+import io
 import xml.etree.ElementTree as ET
 
 
@@ -532,7 +532,7 @@ class FixedMethod(MethodBase):
     Complete the trailing column
     """
     if any([line[start:].strip() for line in lines]):
-      columns.append((start, sys.maxint))
+      columns.append((start, sys.maxsize))
 
     log.debug('columns: {columns}'.format(**locals()))
 
@@ -732,7 +732,7 @@ class Table(object):
     Convert the table into fixed column format.
     :return: A single string with newlines to present the table with fixed columns
     """
-    buf = StringIO.StringIO()
+    buf = io.StringIO()
     args.output.write(buf, self.root, self.headings)
     return buf.getvalue()
 

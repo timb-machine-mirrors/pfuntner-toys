@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 """
   Compare file trees and report just the names of files that are different
@@ -26,28 +26,28 @@ def filetype(path):
 def md5sum(path):
   sum = hashlib.md5()
   with open(path) as stream:
-    sum.update(stream.read())
+    sum.update(stream.read().encode('utf-8'))
   return sum.digest()
 
 def process(path1, path2):
   if not os.path.exists(path1):
-    print "Does_not_exist: {path1!r}".format(**locals())
+    print("Does_not_exist: {path1!r}".format(**locals()))
   elif not os.path.exists(path2):
-    print "Does_not_exist: {path2!r}".format(**locals())
+    print("Does_not_exist: {path2!r}".format(**locals()))
   else:
     if os.path.samefile(path1, path2):
-      print "Same_files: {path1!r} and {path2!r}".format(**locals())
+      print("Same_files: {path1!r} and {path2!r}".format(**locals()))
       return
     elif os.path.isdir(path1) and os.path.isdir(path2):
       for file in sorted(list(set(os.listdir(path1)) | set(os.listdir(path2)))):
         process(os.path.join(path1, file), os.path.join(path2, file))
     elif os.path.isfile(path1) and os.path.isfile(path2):
       if md5sum(path1) != md5sum(path2):
-        print "Difference: {path1!r} and {path2!r}".format(**locals())
+        print("Difference: {path1!r} and {path2!r}".format(**locals()))
       elif allFiles:
-        print "Equal: {path1!r} and {path2!r}".format(**locals())
+        print("Equal: {path1!r} and {path2!r}".format(**locals()))
     else:
-      print "Type_mismatch: {path1!r} is a {type1!r} and {path2} is a {type2}".format(type1=filetype(path1), type2=filetype(path2), **locals())
+      print("Type_mismatch: {path1!r} is a {type1!r} and {path2} is a {type2}".format(type1=filetype(path1), type2=filetype(path2), **locals()))
 
 (opts,args) = ([], [])
 try:

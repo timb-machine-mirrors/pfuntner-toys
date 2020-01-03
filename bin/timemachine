@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -42,7 +42,7 @@ def getTimedelta(s):
   if len(tokens) in [1,2]:
     if len(tokens) > 1:
       msecString = tokens[1].ljust(6, '0')
-      if re.match("\d{6}$", msecString):
+      if re.match("\d{6}$", str(msecString)):
         components["microseconds"] = int(msecString)
       else:
         valid = False
@@ -114,17 +114,17 @@ if operation == '+':
   delta = getTimedelta(args[2])
   if not delta:
     syntax("%s could not be parsed as a timedelta" % repr(args[2]))
-  print timestamp1 + delta
+  print(timestamp1 + delta)
 else:
   if args[2] == "now":
     timestamp2 = now
   else:
     timestamp2 = getDatetime(args[2])
     if timestamp2:
-      print timestamp1 - timestamp2
+      print(timestamp1 - timestamp2)
     else:
       delta = getTimedelta(args[2])
       if delta:
-        print timestamp1 - delta
+        print(timestamp1 - delta)
       else:
         syntax("Could not parse %s as a timestamp or a timedelta" % repr(args[2]))

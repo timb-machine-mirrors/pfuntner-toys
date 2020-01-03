@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 """
    Perform md5sum against local and remote files (via ssh).  This works best
@@ -47,13 +47,15 @@ def process(filename):
     debug(cmd)
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (data, stderr) = p.communicate()
+    data = data.decode('utf-8')
+    stderr = stderr.decode('utf-8')
     rc = p.wait()
     if rc != 0:
       sys.stderr.write('Cannot read {filename}: {stderr!r}\n'.format(**locals()))
       return
   hash = hashlib.md5()
-  hash.update(data)
-  print '{digest} {filename}'.format(digest=hash.hexdigest(), **locals())
+  hash.update(data.encode('utf-8'))
+  print('{digest} {filename}'.format(digest=hash.hexdigest(), **locals()))
 
 useKeys = True
 verbose = False
@@ -78,4 +80,4 @@ see('useKeys')
 if not args:
   syntax()
 
-map(process, args)
+list(map(process, args))

@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -21,4 +21,4 @@ regexp = re.compile(args.regexp)
 for line in sys.stdin.read().splitlines():
   hits = regexp.findall(line)
   for hit in hits:
-    print repr(hit) 
+    print(repr(hit))

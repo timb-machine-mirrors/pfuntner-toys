@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -96,7 +96,7 @@ def readNode(reader):
   tag = ''
   while True:
     c = reader.read()
-    if c and IDENTIFIER_REGEXP.search(tag + c):
+    if c and IDENTIFIER_REGEXP.search(str(tag + c)):
       tag += c
     else:
       reader.push(c)
@@ -124,7 +124,7 @@ def readNode(reader):
     name = ''
     while True:
       c = reader.read()
-      if c and IDENTIFIER_REGEXP.search(name + c):
+      if c and IDENTIFIER_REGEXP.search(str(name + c)):
         name += c
       else:
         reader.push(c)
@@ -218,7 +218,7 @@ def readNode(reader):
   tag = ''
   while True:
     c = reader.read()
-    if c and IDENTIFIER_REGEXP.search(tag + c):
+    if c and IDENTIFIER_REGEXP.search(str(tag + c)):
       tag += c
     else:
       reader.push(c)
@@ -266,11 +266,11 @@ def flatten(root, stack=[]):
   if root.tag:
     tags = [tag for tag in stack]
     tags.append(root.tag)
-    print '/'.join(tags)
+    print('/'.join(tags))
     for child in root.children:
       flatten(child, tags)
   else:
-    print '{} {!r}'.format('/'.join(stack), root.text)
+    print('{} {!r}'.format('/'.join(stack), root.text))
 
 parser = argparse.ArgumentParser(description='Bruno\'s homegrown xml parser')
 parser.add_argument('--flatten', action='store_true', help='Render in flattened form')
@@ -298,4 +298,4 @@ if args.flatten:
   flatten(root)
 else:
   dump(root)
-  print ''
+  print('')

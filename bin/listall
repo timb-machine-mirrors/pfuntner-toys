@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import sys
 import os
@@ -13,7 +13,7 @@ def run(cmd):
 count=0
 for pathname in sys.argv[1:]:
   if count:
-    print ""
+    print("")
   count += 1
   if pathname[0] != '/':
     pathname = os.path.join(os.getcwd(), pathname)

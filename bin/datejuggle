@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -21,7 +21,7 @@ class Pattern:
         try:
           ret = (match.group(1), datetime.datetime.strptime(match.group(1), self.pat))
         except Exception as e:
-          print "Caught %s parsing %s with %s" % (repr(e), repr(match.group(1)), repr(self.pat))
+          print("Caught %s parsing %s with %s" % (repr(e), repr(match.group(1)), repr(self.pat)))
       else:
         ret = (match.group(1), self.pat(match.group(1)))
 
@@ -40,16 +40,16 @@ def syntax():
 (opts, args) = getopt.getopt(sys.argv[1:], "suo", ["seconds", "unix", "sort"])
 
 def defaultEmitter(originalString, timestamp):
-  print "%s\t%s\t%s\t%f" % (originalString, timestamp, datetime.datetime.strftime(timestamp, "%a %b %d %H:%M:%S %Y"), (timestamp - epoch).total_seconds())
+  print("%s\t%s\t%s\t%f" % (originalString, timestamp, datetime.datetime.strftime(timestamp, "%a %b %d %H:%M:%S %Y"), (timestamp - epoch).total_seconds()))
 
 def unixEmitter(originalString, timestamp):
-  print datetime.datetime.strftime(timestamp, "%a %b %d %H:%M:%S %Y")
+  print(datetime.datetime.strftime(timestamp, "%a %b %d %H:%M:%S %Y"))
 
 def sortEmitter(originalString, timestamp):
-  print "%s" % timestamp
+  print("%s" % timestamp)
 
 def secondsEmitter(originalString, timestamp):
-  print "%f" % (timestamp - epoch).total_seconds()
+  print("%f" % (timestamp - epoch).total_seconds())
 
 emitter = defaultEmitter
 

@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import os
 import re
@@ -118,12 +118,12 @@ def massage(root):
   """
   # log.debug('massage({root})'.format(**locals()))
   if isinstance(root, list):
-    map(massage, root)
+    list(map(massage, root))
   elif isinstance(root, dict):
     for (key, value) in root.items():
       if key in ['name', 'from', 'to']:
         pass # no need to massage these fields - they remain as strings
-      elif isinstance(value, basestring):
+      elif isinstance(value, str):
         root[key] = eval(value)
       elif isinstance(value, dict):
         massage(value)
@@ -131,7 +131,7 @@ def massage(root):
 
 def show(equivs):
   for (units, value) in equivs.items():
-    print '{amt} {units}'.format(amt=value[0], **locals())
+    print('{amt} {units}'.format(amt=value[0], **locals()))
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
@@ -218,10 +218,10 @@ if measurement1:
     if amt > 0:
       results.append('{amt}{final_units}'.format(**locals()))
 
-    print ', '.join(results)
+    print(', '.join(results))
   else:
     measurement2 = measurement1.convert()
-    print '{measurement1.original_amt} {measurement1.original_units} = {measurement2.amt} {measurement2.units}'.format(**locals())
+    print('{measurement1.original_amt} {measurement1.original_units} = {measurement2.amt} {measurement2.units}'.format(**locals()))
     if args.all:
       del measurement1.other_equivs[measurement2.units]
       show(measurement1.home_equivs)

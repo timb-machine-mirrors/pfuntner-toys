@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 """
    Ideally, this will be a script that can take one or more tar or jar files and unwind them.
@@ -23,6 +23,8 @@ def run(cmd):
   log.info('Running {cmd}'.format(**locals()))
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   (stdout, stderr) = p.communicate()
+  stdout = stdout.decode('utf-8')
+  stderr = stderr.decode('utf-8')
   return (p.wait(), stdout, stderr)
 
 def qualify(path):
@@ -73,7 +75,7 @@ def process(path):
       (rc, stdout, stderr) = run(cmd + ['-l' if cmd == 'unzip' else '-tf', path])
       if (rc == 0) and (not stderr):
         for line in stdout.splitlines():
-          print '{path}:{line}'.format(**locals())
+          print('{path}:{line}'.format(**locals()))
       else:
         log.warning('Error processing {path}:\n{stderr}'.format(**locals()))
     elif args.count:
@@ -85,7 +87,7 @@ def process(path):
         for line in stdout.splitlines():
           if (cmd != ['unzip']) or regexp.search(line):
             files += 1
-        print '{files:>8} {path}'.format(**locals())
+        print('{files:>8} {path}'.format(**locals()))
       else:
         log.warning('Error processing {path}:\n{stderr}'.format(**locals()))
     else: # --extract
@@ -102,7 +104,7 @@ def process(path):
       (rc, stdout, stderr) = run(extractor)
       if (rc == 0) and (not stderr):
         stdout = indent(stdout)
-        print 'Unwound {path} to {cwd}/{base}:\n{stdout}'.format(**joinDicts(globals(), locals()))
+        print('Unwound {path} to {cwd}/{base}:\n{stdout}'.format(**joinDicts(globals(), locals())))
       else:
         stdout = indent(stdout)
         stderr = indent(stderr)

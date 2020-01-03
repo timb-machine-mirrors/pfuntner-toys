@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import sys
 import re
@@ -11,7 +11,7 @@ def syntax(msg=None):
 
 def process(filename):
   with open(filename) as stream:
-    print "{result} {filename}".format(result="+" if regexp.search(stream.read()) else "-", **locals())
+    print("{result} {filename}".format(result="+" if regexp.search(str(stream.read())) else "-", **locals()))
 if len(sys.argv) < 3:
   syntax()
 

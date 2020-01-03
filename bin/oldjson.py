@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import sys
 import getopt
@@ -22,33 +22,33 @@ def flatWriter(root, path=[]):
         for curr in range(len(root)):
           flatWriter(root[curr], path + [str(curr)])
       elif empty:
-        print '/%s/' % '/'.join(path)
+        print('/%s/' % '/'.join(path))
     elif type(root) == dict:
       if root:
         for curr in sorted(root.keys()):
           flatWriter(root[curr], path + [str(curr)])
       elif empty:
-        print '/%s/' % '/'.join(path)
+        print('/%s/' % '/'.join(path))
     else:
       if type(root) == unicode:
         root = str(root)
-      print "/%s %s" % ("/".join(path), repr(root))
+      print("/%s %s" % ("/".join(path), repr(root)))
 
 def jsonWriter(root):
-    print json.dumps(root, indent=2, sort_keys=True)
+    print(json.dumps(root, indent=2, sort_keys=True))
 
 def stringWriter(root):
-  print json.dumps(root, sort_keys=True)
+  print(json.dumps(root, sort_keys=True))
 
 def linearWriter(root):
     if isinstance(root, list):
       for datum in root:
-        print json.dumps(datum, sort_keys=True)
+        print(json.dumps(datum, sort_keys=True))
     elif isinstance(root, dict):
       for key in sorted(root.keys()):
-        print json.dumps({key: root[key]}, sort_keys=True)
+        print(json.dumps({key: root[key]}, sort_keys=True))
     else:
-      print json.dumps(root, sort_keys=True)
+      print(json.dumps(root, sort_keys=True))
 
 def stripNulls(items):
     items = list(items)
@@ -95,11 +95,11 @@ def process(root, path):
 
 def describeWriter(root):
     if type(root) == list:
-        print "A %d element list" % len(root)
+        print("A %d element list" % len(root))
     elif type(root) == dict:
-        print "A %d element dictionary with keys: %s" % (len(root.keys()), ', '.join(sorted(root.keys())))
+        print("A %d element dictionary with keys: %s" % (len(root.keys()), ', '.join(sorted(root.keys()))))
     else:
-        print "A %s" % type(root)
+        print("A %s" % type(root))
 
 def lop(root, depth):
     if depth <= 0:

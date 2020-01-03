@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -7,10 +7,12 @@ import argparse
 import subprocess
 
 def run(cmd):
-  if isinstance(cmd, basestring):
+  if isinstance(cmd, str):
     cmd = cmd.split()
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   (stdout, stderr) = p.communicate()
+  stdout = stdout.decode('utf-8')
+  stderr = stderr.decode('utf-8')
   rc = p.wait()
   if rc != 0:
     sys.stderr.write('{cmd} failed: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
@@ -29,9 +31,9 @@ regexp = re.compile('^  ([0-9a-f]{40}$)')
 run('git checkout master')
 (rc, stdout, stderr) = run('git branch')
 for line in stdout.splitlines():
-  match = regexp.search(line)
+  match = regexp.search(str(line))
   log.debug('{line!r} => {groups}'.format(groups=match.groups() if match else None, **locals()))
   if match:
     commit = match.group(1)
-    print 'Removing {commit}'.format(**locals())
+    print('Removing {commit}'.format(**locals()))
     run(['git', 'branch', '-D', commit])

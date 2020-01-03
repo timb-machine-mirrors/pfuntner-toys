@@ -1,13 +1,13 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import sys
 import subprocess
 
 def banner(s):
   s = str(s)
-  print "*" * (len(s) + 4)
-  print "* %s *" % s
-  print "*" * (len(s) + 4)
+  print("*" * (len(s) + 4))
+  print("* %s *" % s)
+  print("*" * (len(s) + 4))
 
 files = sys.argv[1:]
 opts = []
@@ -28,7 +28,9 @@ for file1 in range(len(files)-1):
     banner(cmd)
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (stdout, stderr) = p.communicate()
+    stdout = stdout.decode('utf-8')
+    stderr = stderr.decode('utf-8')
     rc = p.wait()
     sys.stdout.write(stdout)
     sys.stderr.write(stderr)
-    print ""
+    print("")

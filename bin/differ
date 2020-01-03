@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import logging
@@ -46,7 +46,7 @@ p = subprocess.Popen(['diff', '-r', args.oldfile, args.newfile], stdout=subproce
 trailing_white_space = re.compile('\s*$')
 
 while True:
-  line = p.stdout.readline()
+  line = p.stdout.readline().decode('utf-8')
   if line:
     log.debug('Read: {line!r}'.format(**locals()))
     line = trailing_white_space.sub('', line)
@@ -55,7 +55,7 @@ while True:
     elif line.startswith('> '):
       substr = line[2:]
       if ((not include) or include.search(substr)) and ((not exclude) or (not exclude.search(substr))):
-        print "{filename!r}: {substr}".format(**locals())
+        print("{filename!r}: {substr}".format(**locals()))
   else:
     break
 exit(p.wait())

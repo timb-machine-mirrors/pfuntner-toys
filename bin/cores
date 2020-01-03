@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -30,13 +30,15 @@ def get(name, default=None):
 
 p = subprocess.Popen(["lscpu"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 (stdout, stderr) = p.communicate()
+stdout = stdout.decode('utf-8')
+stderr = stderr.decode('utf-8')
 rc = p.wait()
 assert (rc == 0) and (not stderr), "`lscpu` failed: %d, %s, %s" % (rc, repr(stdout), repr(stderr))
 
 config = {}
 for line in stdout.strip('\n').split('\n'):
-  match = re.match("([^:]+):\s+(\S.*)$", line)
+  match = re.match("([^:]+):\s+(\S.*)$", str(line))
   if match:
     config[match.group(1)] = match.group(2)
 
-print get("CPU(s)") * get("Core(s) per socket", default=1)
+print(get("CPU(s)") * get("Core(s) per socket", default=1))

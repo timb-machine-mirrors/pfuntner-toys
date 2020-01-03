@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 """
    Calculate the amount of disk space taken up by a file or directory tree, ignoring symlinks and only counting files once if it's hard-linked more than once in a tree
@@ -98,4 +98,4 @@ for (opt,arg) in opts:
 blocksizes = {}
 
 for path in args:
-  print '{size} {path}'.format(size=bytes2human(dive(path)[0]), **locals())
+  print('{size} {path}'.format(size=bytes2human(dive(path)[0]), **locals()))

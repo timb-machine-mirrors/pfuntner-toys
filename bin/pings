@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import os
 import sys
@@ -24,7 +24,7 @@ def exitGracefullyForCtrlC(rc=None):
   if rc is None:
     signal.signal(signal.SIGINT, lambda signum, stack: exitGracefullyForCtrlC(0))
   else:
-    print '' # force a newline so the shell prompt starts on a new line
+    print('' # force a newline so the shell prompt starts on a new line)
     exit(rc)
 
 parser = argparse.ArgumentParser(description='Monitor availability of a host via ping or ssh')
@@ -54,6 +54,8 @@ while True:
   now = datetime.datetime.now()
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   (stdout, stderr) = p.communicate()
+  stdout = stdout.decode('utf-8')
+  stderr = stderr.decode('utf-8')
   rc = p.wait()
   debug('\n{cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
   state = 'UP' if rc == 0 else 'DOWN'

@@ -1,10 +1,10 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import gzip
 import logging
 import argparse
-import StringIO
+import io
 import subprocess
 
 from table import Table
@@ -14,10 +14,10 @@ class Gzipper(object):
     self.regexp = re.compile('.\.t?gz$')
 
   def match(self, file_name):
-    return bool(self.regexp.match(file_name))
+    return bool(self.regexp.match(str(file_name)))
 
   def compress(self, data):
-    s = StringIO.StringIO()
+    s = io.StringIO()
     gzip_file = gzip.GzipFile(fileobj=s, mode='w')
     gzip_file.write(data)
     gzip_file.close()
@@ -26,7 +26,7 @@ class Gzipper(object):
     return compressed_data
     
   def uncompress(self, data):
-    clear_data = gzip.GzipFile(fileobj=StringIO.StringIO(data), mode='r').read()
+    clear_data = gzip.GzipFile(fileobj=io.StringIO(data), mode='r').read()
     log.debug('clear_data: {clear_data!r}'.format(**locals()))
     return clear_data
 
@@ -35,17 +35,21 @@ class Xzipper(object):
     self.regexp = re.compile('.\.xz$')
 
   def match(self, file_name):
-    return bool(self.regexp.match(file_name))
+    return bool(self.regexp.match(str(file_name)))
 
   def compress(self, data):
     p = subprocess.Popen(['xz', '--stdout'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     (compressed_data, stderr) = p.communicate(data)
+    compressed_data = compressed_data.decode('utf-8')
+    stderr = stderr.decode('utf-8')
     p.wait()
     return compressed_data
     
   def uncompress(self, data):
     p = subprocess.Popen(['xz', '--decompress', '--stdout'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     (clear_data, stderr) = p.communicate(data)
+    clear_data = clear_data.decode('utf-8')
+    stderr = stderr.decode('utf-8')
     p.wait()
     return clear_data
 
@@ -67,10 +71,10 @@ def process(file_name):
     gzip_data = None
     xz_data = None
 
-    if gzipper.match(file_name):
+    if gzipper.match(str(file_name)):
       gzip_data = data
       data = gzipper.uncompress(gzip_data)
-    elif xzipper.match(file_name):
+    elif xzipper.match(str(file_name)):
       xz_data = data
       data = xzipper.uncompress(xz_data)
 
@@ -96,6 +100,6 @@ table = Table(('File name', 'plain', 'gzip', 'gzip savings', 'xz', 'xz savings',
 gzipper = Gzipper()
 xzipper = Xzipper()
 
-map(process, args.files)
+list(map(process, args.files))
 
-print str(table)
+print(str(table))

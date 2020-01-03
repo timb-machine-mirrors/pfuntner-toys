@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import sys
 import re
@@ -11,7 +11,7 @@ simplifyingRegexp = re.compile("\{[^{}]+\}(.+)$")
 def simplify(s):
   ret = s
   if args.simple:
-    match = simplifyingRegexp.match(s)
+    match = simplifyingRegexp.match(str(s))
     if match:
       s = match.group(1)
   return s
@@ -25,7 +25,7 @@ def unravel(attribs):
 def visit(node, tags=[]):
   if node is not None:
     if args.flatten:
-      print '/{tags}/{tag} {attrib} {text!r}'.format(tags='/'.join(tags), tag=node.tag, attrib=node.attrib, text=node.text.encode('utf-8') if node.text else '')
+      print('/{tags}/{tag} {attrib} {text!r}'.format(tags='/'.join(tags), tag=node.tag, attrib=node.attrib, text=node.text.encode('utf-8') if node.text else ''))
     else:
       sys.stdout.write("%s<%s%s>" % (' ' * (len(tags)*2), simplify(node.tag), unravel(node.attrib)))
 

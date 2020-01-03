@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import os
 import re
@@ -7,7 +7,7 @@ import string
 import tarfile
 import logging
 import argparse
-import StringIO
+import io
 import subprocess
 
 
@@ -118,6 +118,8 @@ class Object(object):
 def xz_uncompress(data):
   p = subprocess.Popen('xz --decompress --stdout'.split(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   (stdout, stderr) = p.communicate(data)
+  stdout = stdout.decode('utf-8')
+  stderr = stderr.decode('utf-8')
   rc = p.wait()
   assert (rc == 0) and (not stderr), 'xz uncompress failure: {rc}, {stderr!r}'.format(**locals())
   return stdout
@@ -163,7 +165,7 @@ def tar_count(data):
   setattr(ret, 'files', 0)
   setattr(ret, 'others', 0)
 
-  tarball = tarfile.open(fileobj=StringIO.StringIO(data))
+  tarball = tarfile.open(fileobj=io.StringIO(data))
   for member in tarball.getmembers():
     log.debug('member: {type} {member.name}'.format(
       type='-' if member.isfile() else ('d' if member.isdir() else '?'),
@@ -204,7 +206,7 @@ def find_type(file_name):
 
   for file_type in file_types:
     log.debug('Trying {file_type.name}'.format(**locals()))
-    if file_type.pattern and not file_type.pattern.search(file_name):
+    if file_type.pattern and not file_type.pattern.search(str(file_name)):
       continue
     if file_type.content_method and not file_type.content_method(file_name):
       continue

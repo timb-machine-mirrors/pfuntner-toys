@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import os
@@ -48,4 +48,4 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
 log.debug('pattern: {regexp.pattern}'.format(**locals()))
 
-print '\n'.join(sorted(dive(os.environ['HOME']), reverse=True))
+print('\n'.join(sorted(dive(os.environ['HOME']), reverse=True)))

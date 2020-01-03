@@ -1,11 +1,11 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import sys
 import string
 import re
 import getopt
 import csv
-import StringIO
+import io
 import logging
 import argparse
 
@@ -106,10 +106,10 @@ for line in stream:
     match = regexp.search(line)
     log.debug('{line!r}: {groups}'.format(groups=match.groups() if match else None, **locals()))
     if match:
-      print delimOrBlank().join([match.group(field) for field in desiredFields])
+      print(delimOrBlank().join([match.group(field) for field in desiredFields]))
   else:
     if args.csv:
-      tokens = (csv.reader(StringIO.StringIO(line))).next()
+      tokens = (csv.reader(io.StringIO(line))).next()
     else:
       tokens = delim.split(line)
 
@@ -126,4 +126,4 @@ for line in stream:
         if field < len(tokens):
           output += [tokens[field]]
       if output:
-        print delimOrBlank().join(output)
+        print(delimOrBlank().join(output))

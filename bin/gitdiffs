@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -8,11 +8,13 @@ import datetime
 import subprocess
 
 def run(cmd):
-  if isinstance(cmd, basestring):
+  if isinstance(cmd, str):
     cmd = cmd.split()
   log.info('Executing {cmd}'.format(**locals()))
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   (stdout, stderr) = p.communicate()
+  stdout = stdout.decode('utf-8')
+  stderr = stderr.decode('utf-8')
   rc = p.wait()
   log.debug('Executed {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
   if (rc != 0) or stderr:
@@ -24,10 +26,10 @@ def run(cmd):
 def banner(s):
   lines = s.splitlines()
   width = max([len(line) for line in lines])
-  print '*' * (width + 4)
+  print('*' * (width + 4))
   for line in lines:
-    print '* {} *'.format(line.ljust(width))
-  print '*' * (width + 4)
+    print('* {} *'.format(line.ljust(width)))
+  print('*' * (width + 4))
 
 def watch(*names):
   out = []
@@ -45,7 +47,7 @@ def compare():
   banner('\n'.join(lines))
 
   (rc, stdout, stderr) = run('git diff {commit2} {commit1}'.format(**globals()))
-  print stdout
+  print(stdout)
   if (args.depth != None) and (depth >= args.depth):
     exit(0)
 
@@ -89,7 +91,7 @@ text2 = ''
 
 (rc, stdout, stderr) = run('git log')
 for line in stdout.splitlines():
-  match = commit_regexp.search(line)
+  match = commit_regexp.search(str(line))
   if match:
     if commit1:
       if commit2:
@@ -109,14 +111,14 @@ for line in stdout.splitlines():
       commit1 = match.group(1)
     depth += 1
   else:
-    match = author_regexp.search(line)
+    match = author_regexp.search(str(line))
     if match:
       if author1:
         author2 = match.group(1)
       else:
         author1 = match.group(1)
     else:
-      match = date_regexp.search(line)
+      match = date_regexp.search(str(line))
       if match:
         timestamp = str(datetime.datetime.strptime(match.group(1), '%a %b %d %H:%M:%S %Y'))
         if date1:
@@ -124,7 +126,7 @@ for line in stdout.splitlines():
         else:
           date1 = timestamp
       else:
-        match = text_regexp.search(line)
+        match = text_regexp.search(str(line))
         if match:
           if text1:
             text2 = (text2 + '\n' if text2 else '') + match.group(1)

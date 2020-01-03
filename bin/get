@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import os
@@ -29,6 +29,8 @@ def remote(location, filename):
   else:
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (ret, stderr) = p.communicate()
+    ret = ret.decode('utf-8')
+    stderr = stderr.decode('utf-8')
     rc = p.wait()
     if (rc != 0) or stderr:
       log.warning('Handled error {stderr!r} while reading {filename!r}'.format(**locals()))
@@ -46,7 +48,7 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
 regexp = re.compile('^([^/]+):(.+)$')
 for filename in args.files:
-  match = regexp.search(filename)
+  match = regexp.search(str(filename))
   if match:
     data = remote(match.group(1), match.group(2))
   else:

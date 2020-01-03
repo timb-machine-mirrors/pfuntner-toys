@@ -1,11 +1,11 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
 import gzip
 import getopt
 import os.path
-import StringIO
+import io
 
 import pdb
 
@@ -18,7 +18,7 @@ def debug(msg):
 def match(s):
   ret = False
   for regexp in regexps:
-    ret = regexp.search(s)
+    ret = regexp.search(str(s))
     if ret:
       break
   return ret
@@ -62,7 +62,7 @@ def process(filename):
       else:
         uncompressedSize = os.path.getsize(filename) 
         try:
-          buf = StringIO.StringIO()
+          buf = io.StringIO()
           with open(filename, 'r') as inFile:
             with gzip.GzipFile(fileobj=buf, mode="wb") as outFile:
               outFile.write(inFile.read())
@@ -75,12 +75,12 @@ def process(filename):
     data = sys.stdin.read()
     if decompress:
       compressedSize = len(data)
-      buf = StringIO.StringIO(data)
+      buf = io.StringIO(data)
       with gzip.GzipFile(fileobj=buf, mode="rb") as uncompressor:
         uncompressedSize = len(uncompressor.read())
     else:
       uncompressedSize = len(data)
-      buf = StringIO.StringIO()
+      buf = io.StringIO()
       with gzip.GzipFile(fileobj=buf, mode="wb") as compressor:
         compressor.write(data)
         compressedSize = len(buf.getvalue())

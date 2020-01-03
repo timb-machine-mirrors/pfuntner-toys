@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 """
 Scope out stdin
@@ -15,26 +15,26 @@ def process(item, depth=0):
     data = eval(item)
   except Exception as e:
     log.debug('Caught {e!s} interpreting {item!r}'.format(**locals()))
-    print '{indent}{item!r}'.format(
+    print('{indent}{item!r}'.format()
       indent='  '*depth,
       **locals()
     )
   else:
-    if isinstance(data, basestring):
+    if isinstance(data, str):
       log.debug('{bytes} byte string'.format(bytes=len(data)))
       lines = data.splitlines()
       if len(lines) > 1:
-        print '{indent}['.format(indent='  '*depth)
+        print('{indent}['.format(indent='  '*depth))
         for line in lines:
           process(line, depth+1)
-        print '{indent}]'.format(indent='  '*depth)
+        print('{indent}]'.format(indent='  '*depth))
       else:
-        print '{indent}{item!r}'.format(
+        print('{indent}{item!r}'.format()
           indent='  '*depth,
           **locals()
         )
     elif type(data) in [int, float]:
-      print '{indent}{item}'.format(
+      print('{indent}{item}'.format()
         indent='  '*depth,
         **locals()
       )
@@ -73,7 +73,7 @@ for line in sys.stdin.read().splitlines():
       **locals()
     ))
     if match:
-      print repr(line)
+      print(repr(line))
       if match.groups():
         map(process, match.groups())
       else:

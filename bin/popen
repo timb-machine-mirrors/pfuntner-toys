@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import json
 import logging
@@ -28,8 +28,10 @@ except Exception as e:
   output['exception'] = str(e)
 else:
   (stdout, stderr) = p.communicate()
+  stdout = stdout.decode('utf-8')
+  stderr = stderr.decode('utf-8')
   output['rc'] = p.wait()
   output['stdout'] = stdout.splitlines()
   output['stderr'] = stderr.splitlines()
 
-print json.dumps(output, indent=2, sort_keys=True)
+print(json.dumps(output, indent=2, sort_keys=True))

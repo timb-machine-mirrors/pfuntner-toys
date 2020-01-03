@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 """
 A kind of quick-and-dirty script to kill all of my processes on a system *except* for those connected with the script and its ancestors:
@@ -24,10 +24,12 @@ import argparse
 import subprocess
 
 def run(cmd):
-  if isinstance(cmd, basestring):
+  if isinstance(cmd, str):
     cmd = cmd.split()
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   (stdout, stderr) = p.communicate()
+  stdout = stdout.decode('utf-8')
+  stderr = stderr.decode('utf-8')
   rc = p.wait()
   return (rc, stdout, stderr)
 
@@ -71,7 +73,7 @@ y = random.randint(1,10)
 sys.stdout.write('\nIf you\'re sure you want to kill these processes, what\'s {x} + {y} '.format(**locals()))
 ans = sys.stdin.readline()
 if int(ans) != (x + y):
-  print 'Afraid??  Pshaw'
+  print('Afraid??  Pshaw')
   exit(1)
 
 for pid in to_kill:

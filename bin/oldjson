@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -21,7 +21,7 @@ def safeStr(obj):
     return obj
 
 def regularWriter(root):
-  print json.dumps(root, indent=None if noIndent else 2, sort_keys=True)
+  print(json.dumps(root, indent=None if noIndent else 2, sort_keys=True))
 
 def treeWriter(root, depth=0):
   if type(root) == dict:
@@ -268,10 +268,10 @@ elif excludes:
 
 if describe:
   if type(root) == dict:
-    print "root is a dictionary with %d keys: %s" % (len(root.keys()), ", ".join(sorted(root.keys())))
+    print("root is a dictionary with %d keys: %s" % (len(root.keys()), ", ".join(sorted(root.keys()))))
   elif type(root) == list:
-    print "root is a list with %d elements: %s" % (len(root), root)
+    print("root is a list with %d elements: %s" % (len(root), root))
   else:
-    print "root is a %s" % str(type(root))
+    print("root is a %s" % str(type(root)))
 else:
   writer(root)

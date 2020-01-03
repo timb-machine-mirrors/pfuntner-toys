@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import sys
 import socket
@@ -35,4 +35,4 @@ else:
     sys.stderr.write('socket.connect() threw: {e!s}\n'.format(**locals()))
     exit(1)
   else:
-    print "got socket"
+    print("got socket")

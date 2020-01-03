@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import sys
 import string
@@ -21,18 +21,18 @@ def process(file):
       break
 
     debug('read {line!r}'.format(**locals()))
-    line = string.replace(string.replace(line, '\r', ''), '\n', '')
+    line = line.replace('\r', '').replace('\n', '')
     if len(line) <= width:
-      print line
+      print(line)
     else:
       if beginning:
-        print "%s%s" % (ellipses, line[-(width-len(ellipses)):])
+        print("%s%s" % (ellipses, line[-(width-len(ellipses)):]))
       elif middle:
         prefix = int((width-len(ellipses))/2)
         suffix = width - prefix - len(ellipses)
-        print "%s%s%s" % (line[:prefix], ellipses, line[-suffix:])
+        print("%s%s%s" % (line[:prefix], ellipses, line[-suffix:]))
       elif ending:
-        print "%s%s" % (line[:width-len(ellipses)], ellipses)
+        print("%s%s" % (line[:width-len(ellipses)], ellipses))
 
 beginning = False
 middle = True

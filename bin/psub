@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import sys
 import re
@@ -11,4 +11,4 @@ regexp = re.compile(sys.argv[1])
 
 lines = sys.stdin.read().strip('\n').strip('\r').split('\n')
 for line in lines:
-  print regexp.sub(sys.argv[2], line)
+  print(regexp.sub(sys.argv[2], line))

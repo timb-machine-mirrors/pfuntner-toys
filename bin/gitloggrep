@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -7,8 +7,8 @@ import subprocess
 def process():
   if buf:
     lines = '\n'.join(buf)
-    if regexp.search(lines):
-      print lines
+    if regexp.search(str(lines)):
+      print(lines)
 
 assert len(sys.argv) > 1, "Syntax: %s regexp [git log args ...]" % sys.argv[0]
 
@@ -17,11 +17,13 @@ regexp = re.compile(sys.argv[1])
 
 p = subprocess.Popen(["git", "log"] + sys.argv[2:], stdout=subprocess.PIPE)
 (stdout, stderr) = p.communicate()
+stdout = stdout.decode('utf-8')
+stderr = stderr.decode('utf-8')
 rc = p.wait()
 
 buf = []
 for line in stdout.split('\n'):
-  if commit.search(line):
+  if commit.search(str(line)):
     process()
     buf = []
   buf.append(line)

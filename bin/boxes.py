@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import os
@@ -23,7 +23,7 @@ class Boxes(object):
     rc = None
     stdout = ''
     stderr = ''
-    if isinstance(cmd, basestring):
+    if isinstance(cmd, str):
       cmd = cmd.split()
     log.debug('Executing {cmd}'.format(**locals()))
     try:
@@ -35,6 +35,8 @@ class Boxes(object):
         parser.error('Caught `{e!s}` executing {cmd}'.format(**locals()))
     else:
       (stdout, stderr) = p.communicate()
+      stdout = stdout.decode('utf-8')
+      stderr = stderr.decode('utf-8')
       rc = p.wait()
       log.log(logging.DEBUG if forgive or rc == 0 else logging.ERROR, '{rc}, {stdout!r}, {stderr!r}'.format(**locals()))
       if (not forgive) and (rc != 0):
@@ -93,4 +95,4 @@ if __name__ == '__main__':
   args = parser.parse_args()
   log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-  print json.dumps(Boxes().boxes())
+  print(json.dumps(Boxes().boxes()))

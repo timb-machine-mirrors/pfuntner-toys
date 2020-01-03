@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -54,12 +54,12 @@ def report(brief=False):
             'file': files[-1],
           })
     elif (summary and not brief):
-      print '\t'.join([commit, str(date), repr(limit(text.strip('\n'), 50)), str(files)])
+      print('\t'.join([commit, str(date), repr(limit(text.strip('\n'), 50)), str(files)]))
     elif (brief and not summary):
       if (filesOnly):
-        print files[-1]
+        print(files[-1])
       else:
-        print '\t'.join([commit, str(date), repr(limit(text.strip('\n'), 50)), files[-1]])
+        print('\t'.join([commit, str(date), repr(limit(text.strip('\n'), 50)), files[-1]]))
 
 verbose = False
 summary = False
@@ -89,11 +89,13 @@ for (opt,arg) in opts:
 cmd = "git log --name-only".split() + args
 p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 (stdout, stderr) = p.communicate()
+stdout = stdout.decode('utf-8')
+stderr = stderr.decode('utf-8')
 rc = p.wait()
 if (rc != 0) or stderr or verbose:
   sys.stderr.write("%s returned %d, %s, %s\n" % (cmd, rc, repr(limit(stdout, 25)), repr(stderr)))
 
-assert ((rc == 0) and (not stderr)) or ignoreError, "%s failed"
+assert ((rc == 0) and (not stderr)) or ignoreError, f"{cmd} failed"
 
 commitRegexp = re.compile("^commit (\S+)$")
 authorRegexp = re.compile("^Author:\s+([^<]+)\s+<")
@@ -150,6 +152,6 @@ for line in stdout.splitlines():
           text += "\n"
 
 if jsonReport:
-  print json.dumps(jsonOutput)
+  print(json.dumps(jsonOutput))
 else:
   report()

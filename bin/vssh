@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import os
 import sys
@@ -9,7 +9,7 @@ import subprocess
 from virtual_hosts import VirtualHosts
 
 def see(name):
-  assert isinstance(name, basestring)
+  assert isinstance(name, str)
   try:
     value = repr(eval(name))
   except Exception as e:
@@ -32,6 +32,8 @@ def set_mintty_title(title):
     except Exception as e:
       parser.error('Error executing `ps`: {e!s}'.format(**locals()))
     (stdout, stderr) = p.communicate()
+    stdout = stdout.decode('utf-8')
+    stderr = stderr.decode('utf-8')
     rc = p.wait()
     log.info('ps: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
     lines = stdout.splitlines()

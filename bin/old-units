@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import math
@@ -179,11 +179,11 @@ def convert(amt, suffix):
 
   results = sorted(results, key=lambda result: abs(original_digits - result[2]))
   log.debug('results: {results}'.format(**locals()))
-  print '{original_amt} {original_suffix} = {equiv_amt} {equiv_suffix}'.format(
+  print('{original_amt} {original_suffix} = {equiv_amt} {equiv_suffix}'.format(
     equiv_amt=results[0][0],
     equiv_suffix=results[0][1],
     **locals()
-  )
+  ))
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()

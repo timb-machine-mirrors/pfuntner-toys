@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import os
@@ -15,12 +15,12 @@ def process(filename):
         data = stream.read()
     except Exception as e:
       log.error('Caught `{e!s}` trying to read {filename!r}'.format(**locals()))
-    hits = regexp.findall(data)
+    hits = regexp.findall(str(data))
     log.info('imports for {filename}: {hits}'.format(**locals()))
     for hit in hits:
-      if not re.search('{hit}\.'.format(**locals()), data, re.MULTILINE):
+      if not re.search('{hit}\.'.format(**locals()), str(data), re.MULTILINE):
         log.debug('{filename} does not use {hit}'.format(**locals()))
-        print '{filename} {hit}'.format(**locals())
+        print('{filename} {hit}'.format(**locals()))
   else:
     log.error('{filename!r} is not a file'.format(**locals()))
 
@@ -35,4 +35,4 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
 regexp = re.compile('^(?:from\s+\w+\s+)?import\s+(\w+)', re.MULTILINE)
 
-map(process, args.files)
+list(map(process, args.files))

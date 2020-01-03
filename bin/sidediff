@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import re
 import sys
@@ -15,6 +15,8 @@ def extract(cmd, pattern, default_value):
   try:
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     (stdout, stderr) = p.communicate()
+    stdout = stdout.decode('utf-8')
+    stderr = stderr.decode('utf-8')
     rc = p.wait()
     log.debug('{cmd!r}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
     match = re.search(pattern, stdout)

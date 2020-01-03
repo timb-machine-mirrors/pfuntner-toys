@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import sys
 import os.path
@@ -45,4 +45,4 @@ for filename in sorted(files, key=lambda file: files[file], reverse=True):
     duration = str(duration)
   else:
     duration = '-' + str(datetime.timedelta(seconds=-duration.total_seconds()))
-  print format_string.format(**locals())
+  print(format_string.format(**locals()))
