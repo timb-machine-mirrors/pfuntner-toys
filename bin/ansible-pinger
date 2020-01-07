@@ -8,24 +8,34 @@ import argparse
 import datetime
 import subprocess
 
+def emit(s, level):
+  if (args.verbose or 0) >= level:
+    log.log(logging.INFO if level == 1 else logging.DEBUG, s)
+
+def info(s):
+  emit(s, 1)
+
+def debug(s):
+  emit(s, 2)
+
 def run(cmd):
   if isinstance(cmd, str):
     cmd = cmd.split()
-  log.info('Executing {cmd}'.format(**locals()))
+  info('Executing {cmd}'.format(**locals()))
   start = datetime.datetime.now()
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   while p.poll() == None:
     if args.timeout != None and (datetime.datetime.now()-start).total_seconds() > args.timeout:
-      log.debug('timeout')
+      debug('timeout')
       p.kill()
       return (-9, '', '')
       break
-    log.debug('Sleeping before next poll')
+    debug('Sleeping before next poll')
     time.sleep(.1)
 
   (stdout, stderr) = tuple([s.decode('utf-8') for s in p.communicate()])
   rc = p.wait()
-  log.debug('Executed {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
+  debug('Executed {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
   return (rc, stdout, stderr)
 
 parser = argparse.ArgumentParser(description='Ping with Ansible')
@@ -38,10 +48,9 @@ args = parser.parse_args()
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
-# log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
-log.setLevel(logging.WARNING - (args.verbose or 0)*10)
+log.setLevel(logging.DEBUG if args.verbose else logging.INFO)
 
-log.debug(f'args: {args}')
+debug(f'args: {args}')
 
 if (args.count != None) and (args.count <= 0):
   parser.error(f'`{args.count}` is an invalid count')
@@ -62,10 +71,10 @@ while True:
     break
 
   now = datetime.datetime.now()
-  log.debug(f'now:  {now!s}')
-  log.debug(f'last: {last!s}')
+  debug(f'now:  {now!s}')
+  debug(f'last: {last!s}')
   if (count > 0) and (now-last < datetime.timedelta(seconds=args.delay)):
-    log.debug('Sleeping before next ping')
+    debug('Sleeping before next ping')
     time.sleep(args.delay)
     now = datetime.datetime.now()
 
@@ -82,16 +91,16 @@ while True:
   """
   (rc, stdout, stderr) = run(cmd)
   stdout = regexp.sub('', stdout)
-  log.debug(f'Post substitution: {stdout!r}')
+  debug(f'Post substitution: {stdout!r}')
   try:
     response = json.loads(stdout)
   except Exception as e:
-    log.debug(f'Caught: {e!s}')
+    debug(f'Caught: {e!s}')
     response = {}
   if (rc == 0) and (response.get('ping') == 'pong'):
-    print(f'{args.host} pong')
+    log.info(f'{args.host} pong')
   else:
-    print(f'{args.host} can\'t ping')
+    log.info(f'{args.host} can\'t ping')
 
   last = now
   count += 1
