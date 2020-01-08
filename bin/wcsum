@@ -8,8 +8,10 @@ import sys
 import string
 import hashlib
 import os.path
+import logging
+import argparse
 
-def process(filename):
+def process(filename=None):
   stream = None
   if filename is not None:
     if not os.path.isdir(filename):
@@ -48,6 +50,8 @@ def process(filename):
         lines += 1
       last = c
 
+      log.debug(f'{lines:6} {words:8} {chars:8} {c!r}')
+
     if last == '\n':
       lines += 1
 
@@ -61,8 +65,17 @@ def process(filename):
     if filename is not None:
       stream.close()
 
-args = sys.argv[1:]
-if args:
-  list(map(process, sys.argv[1:]))
+parser = argparse.ArgumentParser(description='Perform wc & cksum on data')
+parser.add_argument('files', metavar='file', nargs='*', help='Zero or more files to process')
+parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+# log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+log.setLevel(logging.WARNING - (args.verbose or 0)*10)
+
+if args.files:
+  list(map(process, args.files))
 else:
-  list(map(process, [None]))
+  process()

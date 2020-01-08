@@ -1,10 +1,16 @@
 #! /usr/bin/env python3
 
+import os
 import sys
 
 assert not sys.stdin.isatty(), "stdin must be redirected"
 
+stream = os.fdopen(0, 'rb')
 pos = 0
-for c in sys.stdin.read():
-  print("%08d 0x%02x %3d 0%03o %s" % (pos, ord(c), ord(c), ord(c), repr(c)))
-  pos += 1
+while True:
+  c = ''.join(map(chr, stream.read(1)))
+  if c:
+    print("%08d 0x%02x %3d 0%03o %s" % (pos, ord(c), ord(c), ord(c), repr(c)))
+    pos += 1
+  else:
+    break
