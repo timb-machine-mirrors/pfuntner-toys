@@ -4,6 +4,7 @@
    Reports `wc` and `md5sum` information on files together on the same line
 """
 
+import os
 import sys
 import string
 import hashlib
@@ -16,13 +17,13 @@ def process(filename=None):
   if filename is not None:
     if not os.path.isdir(filename):
       try:
-        stream = open(filename)
+        stream = open(filename, 'rb')
       except Exception as e:
         sys.stderr.write('Cannot open {filename!r}: {e}'.format(**locals()))
     else:
       sys.stderr.write('{filename!r} is a directory\n'.format(**locals()))
   else:
-    stream = sys.stdin
+    stream = os.fdopen(0, 'wb')
 
   if stream:
     inWord = False
@@ -34,7 +35,7 @@ def process(filename=None):
     eof = False
     last = None
     while not eof:
-      c = stream.read(1)
+      c = ''.join(map(chr, stream.read(1)))
       if c:
         chars += 1
         if inWord and (c in string.whitespace):
@@ -62,8 +63,8 @@ def process(filename=None):
       digest=md5.hexdigest(),
       filename=filename if filename is not None else '-'
     ))
-    if filename is not None:
-      stream.close()
+
+    stream.close()
 
 parser = argparse.ArgumentParser(description='Perform wc & cksum on data')
 parser.add_argument('files', metavar='file', nargs='*', help='Zero or more files to process')
