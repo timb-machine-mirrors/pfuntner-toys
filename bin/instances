@@ -9,6 +9,22 @@ import subprocess
 
 from table import Table
 
+def get(obj, *keys):
+  key = keys[0]
+  keys = keys[1:]
+  if isinstance(obj, list):
+    obj = obj[key] if key < len(obj) else None
+  elif isinstance(obj, dict):
+    obj = obj.get(key)
+  else:
+    obj = None
+  if obj is None:
+    return ''
+  if keys:
+    return get(obj, *keys)
+  else:
+    return obj
+
 def keyhunt(keys, key_type_name, key_type, key_value_name):
   for key in keys:
     if key.get(key_type_name) == key_type:
@@ -78,7 +94,7 @@ if not (args.all or args.regexp):
 
 regexp = re.compile(args.regexp) if args.regexp else None
 
-table = Table('Instance Name', 'Provider', 'Image Name', 'State')
+table = Table('Instance Name', 'Provider', 'Image Name', 'State', 'IP')
 ret = run('gcloud compute instances list --format json')
 if ret['stdout']:
   for instance in json.loads(ret['stdout']):
@@ -86,7 +102,7 @@ if ret['stdout']:
     if match(name):
       log.debug('Examining {instance}'.format(**locals()))
       image_name = get_token(str(extract(['gcloud', 'compute', 'disks', 'describe', name, '--zone', get_token(instance.get('zone'), '/', -1), '--format', 'json'], 'sourceImage')), '/', -1)
-      table.add(name, 'GCP', image_name, instance['status'].capitalize())
+      table.add(name, 'GCP', image_name, instance['status'].capitalize(), get(instance, 'networkInterfaces', 0, 'accessConfigs', 0, 'natIP'))
 
 images = []
 ret = run('aws ec2 describe-instances')
@@ -97,7 +113,7 @@ if ret['stdout']:
       name = keyhunt(instance.get('Tags', []), 'Key', 'Name', 'Value')
       if match(name):
         # image ID stands in for image name until have seen all of the images and can query AWS about them
-        table.add(name, 'AWS', instance['ImageId'], instance['State']['Name'].capitalize())
+        table.add(name, 'AWS', instance['ImageId'], instance['State']['Name'].capitalize(), get(instance, 'NetworkInterfaces', 0, 'Association', 'PublicIp'))
         images.append(instance['ImageId'])
 
 # query AWS about images and backfill their names

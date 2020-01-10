@@ -10,6 +10,7 @@ import subprocess
 parser = argparse.ArgumentParser(description='Add an SSH fingerprint to ~/.ssh/known_hosts')
 parser.add_argument('hosts', metavar='host', nargs='+', help='One or more hosts to add')
 parser.add_argument('-c', '--clean', action='store_true', help='Clean the specified hosts from ~/.ssh/known_hosts')
+parser.add_argument('-f', '--forgive', action='store_true', help='Forgive errors')
 parser.add_argument('--dry-run', action='store_true', help='Do everything except updating ~/.ssh/known_hosts')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
@@ -82,8 +83,12 @@ for host in args.hosts:
     try:
       ip = socket.gethostbyname(host)
     except Exception as e:
-      log.critical('socket.gethostbyname threw {e!s} for {host!r}'.format(**locals()))
-      exit(1)
+      if args.forgive:
+        log.warning('socket.gethostbyname threw {e!s} for {host!r}'.format(**locals()))
+        break
+      else:
+        log.critical('socket.gethostbyname threw {e!s} for {host!r}'.format(**locals()))
+        exit(1)
     log.info('Based on socket.gethostbyname, the IP for {host} is {ip}'.format(**locals()))
 
   # remove current fingerprint
