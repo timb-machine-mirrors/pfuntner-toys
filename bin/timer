@@ -8,45 +8,45 @@ import argparse
 import datetime
 
 parser = argparse.ArgumentParser(description='Run a countdown timer')
-parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
-parser.add_argument('time', help='Duration: INT(s), INTm, INTh')
+parser.add_argument('time', nargs='?', help='Duration: INT(s), INTm, INTh')
+parser.add_argument('-c', '-u', '--count-up', action='store_true', help='Count time from start')
+parser.add_argument('-v', '--verbose', action='store_true', help='Enable debugging')
 args = parser.parse_args()
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-match = re.search('^(\d+)([smh]?)$', args.time)
-if not match:
-  log.critical('{args.time!r} is not a valid elapsed time'.format(**locals()))
-  exit(1)
-log.debug('match: {match}'.format(match=match.groups()))
+if not args.count_up:
+  if not args.time:
+    parser.error('Time is required to count down')
+  match = re.search('^(\d+)([smh]?)$', args.time)
+  if not match:
+    log.critical('{args.time!r} is not a valid elapsed time'.format(**locals()))
+    exit(1)
+  log.debug('match: {match}'.format(match=match.groups()))
 
-secs = int(match.group(1)) * \
-       ((60*60) if match.group(2) == 'h' else \
-       (60 if match.group(2) == 'm' else 1))
-log.debug('secs: {secs}'.format(**locals()))
+  secs = int(match.group(1)) * \
+         ((60*60) if match.group(2) == 'h' else \
+         (60 if match.group(2) == 'm' else 1))
+  log.debug('secs: {secs}'.format(**locals()))
 
 closed = u"\u2612"
 open = u"\u2610"
 bar = u"\u20d2"
 
 start = datetime.datetime.now()
-stop = start + datetime.timedelta(seconds=secs)
-while datetime.datetime.now() < stop:
-  now = datetime.datetime.now()
-  pcent = int(round(10 * ((now-start).total_seconds()/secs)))
-  sys.stdout.write(("\r%s %s%s %6.2f%% %.2f %.2f      " % (now, closed * pcent, open * (10-pcent), (100.0 * (now-start).total_seconds()) / secs, (now-start).total_seconds(), (stop-now).total_seconds())))
-  time.sleep(0.25)
+if args.count_up:
+  while True:
+    now = datetime.datetime.now()
+    sys.stdout.write(("\r%s %.2f      " % (now, (now-start).total_seconds())))
+    time.sleep(0.25)
+else:
+  stop = start + datetime.timedelta(seconds=secs)
+  while datetime.datetime.now() < stop:
+    now = datetime.datetime.now()
+    pcent = int(round(10 * ((now-start).total_seconds()/secs)))
+    sys.stdout.write(("\r%s %s%s %6.2f%% %.2f %.2f      " % (now, closed * pcent, open * (10-pcent), (100.0 * (now-start).total_seconds()) / secs, (now-start).total_seconds(), (stop-now).total_seconds())))
+    time.sleep(0.25)
 
 print("")
-"""
-#! /usr/bin/env python
-
-import argparse
-
-parser = argparse.ArgumentParser()
-parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
-args = parser.parse_args()
-
-"""
