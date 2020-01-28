@@ -2,6 +2,7 @@
 
 import os
 import re
+import pdb
 import json
 import getpass
 import logging
@@ -394,6 +395,10 @@ class VirtualHosts(object):
           else:
             log.warn('Note: There are multiple machines called {host.name!r}'.format(**locals()))
 
+    args = globals().get('args')
+    if args and args.debug:
+      pdb.set_trace()
+
     for host in ret.values():
       if host.src == 'aws':
         self.aws_image_cache[host.image_id] = None
@@ -418,6 +423,7 @@ if __name__ == '__main__':
   parser.add_argument('-p', '--profile', dest='profile', help='Specify AWS configuration profile')
   parser.add_argument('--get-images', action='store_true', help='Get all AWS images for user resolution (slow)')
   parser.add_argument('--aws-only', action='store_true', help='Ignore Ansible hosts file - use AWS CLI only')
+  parser.add_argument('--debug', action='store_true', help='Enable Python interactive debugging')
   parser.add_argument('-v', '--verbose', dest='verbose', action='count', help='Enable debugging')
   parser.add_argument('hostnames', metavar='hostname', nargs='*', help='Zero or more host names')
   args = parser.parse_args()
