@@ -6,76 +6,44 @@
 
 import re
 import sys
+import pdb
 import math
 import getopt
+import logging
+import argparse
 import subprocess
 
-def syntax(msg=None):
-  if msg:
-    sys.stderr.write('{msg}\n'.format(**locals()))
-  sys.stderr.write('Syntax: {pgm} [-v|--verbose|-a|--all] [INT]\n'.format(pgm=sys.argv[0]))
-  exit(1)
+from BrunoUtils import BrunoUtils
 
-def debug(msg, loud=False):
-  if verbose or loud:
-    sys.stderr.write('{msg}\n'.format(**locals()))
- 
-cols = 80
+parser = argparse.ArgumentParser(description='Display columns')
+parser.add_argument('-d', '--debug', action='store_true', help='Launch Python interactive debugger')
+parser.add_argument('-w', '--width', type=int, help='Specific number of columns')
+parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
+args = parser.parse_args()
 
-p = subprocess.Popen(["stty", "size"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-(stdout, stderr) = p.communicate()
-stdout = stdout.decode('utf-8')
-stderr = stderr.decode('utf-8')
-rc = p.wait()
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
-verbose = False
-(opts,args) = ([],[])
-try:
-  (opts,args) = getopt.getopt(sys.argv[1:], 'va', ['verbose', 'all'])
-except Exception as e:
-  syntax('Caught: {e!s}'.format(**locals()))
-
-for (opt,arg) in opts:
-  if opt in ['-v', '--verbose', '-a', '--all']:
-    verbose = not verbose
-  else:
-    syntax('Unexpected option: {opt!r}'.format(**locals()))
-
-if len(args) == 1:
-  cols = int(args[0])
-  assert cols > 0
-  debug('Overriding columns with {cols}'.format(**locals()))
-elif len(args) > 1:
-  syntax('Unexpected arguments: {remain}'.format(remain=args[1:]))
+if args.width:
+  if not sys.stdin.isatty():
+    parser.error('You may not both redirect stdin and specify a specific width')
+  width = args.width
+elif not sys.stdin.isatty():
+  width = 0
+  lines = sys.stdin.read().splitlines()
+  for line in lines:
+    width = max(len(line), width)
+    print(line)
 else:
-  if stdout and (not stderr) and (rc == 0):
-    match = re.search('\d+\s+(\d+)', str(stdout))
-    if stdout:
-      cols = int(match.group(1))
-      debug('cols={cols}, `stty size` returned {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
-    else:
-      debug('defaulting to cols={cols} because `stty size` could not be parsed: {stdout!r}\n'.format(**locals()), loud=True)
-  elif not all:
-    debug('defaulting to cols={cols} because `stty size` returned {rc}, {stdout!r}, {stderr!r}\n'.format(**locals()), loud=True)
+  if args.debug:
+    pdb.set_trace()
+  width = BrunoUtils.cols()
 
-digits = math.log10(cols)
-debug('cols={cols}, digits={digits}, int(digits)={int_digits}'.format(int_digits=int(digits), **locals()))
-if digits == int(digits):
-  debug('power of 10!')
-  digits = int(digits)+1
-else:
-  digits = int(math.ceil(digits))
-debug('digits: {digits}'.format(**locals()))
+if width <= 0:
+  parser.error(f'`{width}` is in invalid width')
 
-"""
-if digits >= 4:
-  print(''.join([str(num)*1000 for num in range(10)] * int(math.ceil(cols/10000+1)))[1:cols+1])
-if digits >= 3:
-  print(''.join([str(num)*100 for num in range(10)] * int(math.ceil(cols/1000+1)))[1:cols+1])
-if digits >= 2:
-  print(''.join([str(num)*10 for num in range(10)] * int(math.ceil(cols/100+1)))[1:cols+1])
-print ('1234567890' * int(math.ceil(cols/10+1)))[:cols]
-"""
+digits = int(math.floor(math.log10(width))+1)
 
 for digit in range(digits, 0, -1):
-  print(''.join([str(num)*int(math.pow(10, digit-1)) for num in range(10)] * int(math.ceil(cols/math.pow(10, digit)+1)))[1:cols+1])
+  print(''.join([str(num)*int(math.pow(10, digit-1)) for num in range(10)] * int(math.ceil(width/math.pow(10, digit)+1)))[1:width+1])

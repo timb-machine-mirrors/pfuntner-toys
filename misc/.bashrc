@@ -14,12 +14,14 @@ alias r='fc -s'
 alias more=less
 alias width='tput cols'
 alias copy=cp
-alias newdir='dir=$(date +%Y%m%d%H%M%S%N) && mkdir -v $dir && cd $dir'
 alias indent="$HOME/bin/indent"
 alias pushsshkey=ssh-copy-id
 alias time=ptime
 alias table=table.py
 alias gitbranch=currbranch
+
+alias newdir='dir=$(date +%Y%m%d%H%M%S%N) && mkdir -v $dir && cd $dir'
+alias oldir='. olddir.sh'
 
 alias ansiblehost=ansiblehelper.py
 alias color=color.py
