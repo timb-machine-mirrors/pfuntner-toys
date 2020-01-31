@@ -1,3 +1,4 @@
+#! /usr/bin/env python2
 #! /usr/bin/env python3
 
 """
@@ -17,13 +18,15 @@ def process(filename=None):
   if filename is not None:
     if not os.path.isdir(filename):
       try:
-        stream = open(filename, 'rb')
+        # stream = open(filename, 'rb')
+        stream = open(filename)
       except Exception as e:
         sys.stderr.write('Cannot open {filename!r}: {e}'.format(**locals()))
     else:
       sys.stderr.write('{filename!r} is a directory\n'.format(**locals()))
   else:
-    stream = os.fdopen(0, 'wb')
+    # stream = os.fdopen(0, 'wb')
+    stream = sys.stdin
 
   if stream:
     inWord = False
@@ -35,7 +38,8 @@ def process(filename=None):
     eof = False
     last = None
     while not eof:
-      c = ''.join(map(chr, stream.read(1)))
+      # c = ''.join(map(chr, stream.read(1)))
+      c = stream.read(1)
       if c:
         chars += 1
         if inWord and (c in string.whitespace):
@@ -51,7 +55,8 @@ def process(filename=None):
         lines += 1
       last = c
 
-      log.debug(f'{lines:6} {words:8} {chars:8} {c!r}')
+      # log.debug(f'{lines:6} {words:8} {chars:8} {c!r}')
+      log.debug('{lines:6} {words:8} {chars:8} {c!r}'.format(**locals()))
 
     if last == '\n':
       lines += 1
@@ -64,7 +69,8 @@ def process(filename=None):
       filename=filename if filename is not None else '-'
     ))
 
-    stream.close()
+    if filename is not None:
+      stream.close()
 
 parser = argparse.ArgumentParser(description='Perform wc & cksum on data')
 parser.add_argument('files', metavar='file', nargs='*', help='Zero or more files to process')
