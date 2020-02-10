@@ -25,6 +25,7 @@
       path: /usr/bin/python
       src: /usr/bin/python2
       state: link
+      force: true
     become: true
     when: not python_stat.stat.exists
 
@@ -38,6 +39,7 @@
       path: /usr/bin/python2
       src: /usr/bin/python
       state: link
+      force: true
     become: true
     when: not python2_stat.stat.exists
 
