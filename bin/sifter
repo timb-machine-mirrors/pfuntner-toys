@@ -1,0 +1,138 @@
+#! /usr/bin/env python3
+
+import re
+import os
+import sys
+import pdb
+import logging
+
+def syntax(msg=None):
+  if msg:
+    log.error(msg)
+  sys.stderr.write(f'Syntax: {pgm} -{{i|x}} [!] regexp ... [file ...]\n')
+  exit(1)
+
+class Action(object):
+  def __init__(self, action, negate, pattern):
+    assert action in ['i', 'x']
+    self.action = action
+    self.negate = bool(negate)
+    self.regexp = re.compile(pattern)
+
+  def apply(self):
+    global data
+
+    for filename in data:
+      for line in data[filename]:
+        initial_state = line.state
+
+        match = bool(self.regexp.search(line.line))
+        if (self.action == 'i') and not line.state:
+          if (self.negate and not match) or (not self.negate and match):
+            line.state = True
+        elif (self.action == 'x') and line.state:
+          if (self.negate and not match) or (not self.negate and match):
+            line.state = False
+
+        log.debug('{action}: {initial_state} => {line.state}'.format(action=str(self), **locals()))
+
+  def __str__(self):
+    return '-{self.action} {negate}{self.regexp.pattern!r}'.format(negate='! ' if self.negate else '', **locals())
+
+class Line(object):
+  def __init__(self, line, initial_state):
+    self.line = line
+    self.state = bool(initial_state)
+
+def read(filename='-'):
+  global data
+  global actions
+
+  if filename != '-':
+    if os.path.isfile(filename):
+      log.error(f'Cannot find {filename!r}')
+    stream = open(filename)
+  else:
+    stream = sys.stdin
+
+  initial_state = actions[0].action == 'x'
+
+  data[filename] = [Line(line, initial_state) for line in stream.read().splitlines()]
+
+  if filename != '-':
+    stream.close()
+
+def dump(filename):
+  global data
+
+  for line in data[filename]:
+    count = 0
+    if line.state:
+      if count:
+        if loud:
+          print('{filename}#### {count} lines excluded  ####'.format(filename=filename+' ' if len(data) > 1 else '', count=count))
+        count = 0
+      print('{filename}{line}'.format(filename=filename+' ' if len(data) > 1 else '', line=line.line))
+    else:
+      count += 1
+
+    if count:
+      if loud:
+        print('{filename}#### {count} lines excluded  ####'.format(filename=filename+' ' if len(data) > 1 else '', count=count))
+
+pgm = sys.argv[0]
+data = {}
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.WARNING)
+
+verbose = False
+loud = False
+actions = []
+while len(sys.argv) > 1:
+  if sys.argv[1] == '--':
+    sys.argv.pop(1)
+    break
+
+  if sys.argv[1].startswith('-'):
+    if sys.argv[1] in ['-i', '--include', '-x', '--exclude']:
+      negate = False
+      if (len(sys.argv) > 2) and (sys.argv[2] == '!'):
+        negate = True
+        sys.argv.pop(2)
+      if len(sys.argv) >= 2:
+        actions.append(Action('i' if 'i' in sys.argv[1] else 'x', negate, sys.argv[2]))
+        sys.argv.pop(1)
+      else:
+        syntax('No operand for {opt!r}'.format(opt=sys.argv[1]))
+    elif sys.argv[1] in ['-l', '--loud']:
+      loud = not loud
+    elif sys.argv[1] in ['-d', '--debug']:
+      pdb.set_trace()
+    elif sys.argv[1] in ['-v', '--verbose']:
+      log.setLevel(log.level - 10)
+    elif sys.argv[1] == '-vv':
+      log.setLevel(log.level - 20)
+    elif sys.argv[1] in ['-?', '-h', '--help']:
+      syntax()
+    else:
+      syntax('Unexpected option: {!r}'.format(sys.argv[1]))
+  sys.argv.pop(1)
+
+files = sys.argv[1:]
+log.debug('actions: [{}]'.format(', '.join([str(action) for action in actions])))
+log.debug(f'files: {files}')
+
+if not actions:
+  syntax('At least one action is required')
+
+if files:
+  list(map(read, files))
+else:
+  read()
+
+for action in actions:
+  action.apply()
+
+list(map(dump, data.keys()))
