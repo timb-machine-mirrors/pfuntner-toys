@@ -30,7 +30,7 @@ def dive(filename, root):
       dive(filename, node)
   elif isinstance(root, dict):
     if contains(root, criteria):
-      print('{filename}: {criteria}'.format(filename=(filename + ': ') if filename else '', criteria=json.dumps(root)))
+      print('{filename}{criteria}'.format(filename=(filename + ': ') if filename else '', criteria=json.dumps(root)))
     for node in root.values():
       dive(filename, node)
 
