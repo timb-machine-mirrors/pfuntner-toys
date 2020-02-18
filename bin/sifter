@@ -118,7 +118,9 @@ while len(sys.argv) > 1:
       syntax()
     else:
       syntax('Unexpected option: {!r}'.format(sys.argv[1]))
-  sys.argv.pop(1)
+    sys.argv.pop(1)
+  else:
+    break
 
 files = sys.argv[1:]
 log.debug('actions: [{}]'.format(', '.join([str(action) for action in actions])))
