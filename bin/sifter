@@ -50,8 +50,11 @@ def read(filename='-'):
 
   if filename != '-':
     if os.path.isfile(filename):
+      log.info(f'Opening {filename!r}')
+      stream = open(filename)
+    else:
       log.error(f'Cannot find {filename!r}')
-    stream = open(filename)
+      return
   else:
     stream = sys.stdin
 
