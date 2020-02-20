@@ -12,6 +12,22 @@ class Test(object):
     self.title = title
     self.results = {}
 
+def get_by_host(host='-'):
+  ret = by_host.get(host)
+  if not ret:
+    by_host[host] = {'PASSED':0, 'FAILED':0, 'SKIPPED':0}
+    ret = by_host.get(host)
+
+  return ret
+
+def get_by_test(test):
+  ret = by_test.get(test)
+  if not ret:
+    by_test[test] = {}
+    ret = by_test.get(test)
+
+  return ret
+
 def get_test(title):
   for test in tests:
     if test.title == title:
@@ -33,6 +49,10 @@ def process(filename=None):
       title = match.group(4)
       result = match.group(5)
       get_test(title).results[distro if args.distro else (filename or 'Result')] = result.strip()
+
+      get_by_host(filename)[result] += 1
+      if result == 'FAILED':
+        get_by_test(title)[filename or '-'] = True
     elif not args.distro:
       match = summary_regexp.search(line)
       if match:
@@ -50,6 +70,7 @@ def process(filename=None):
 
 parser = argparse.ArgumentParser(description='Summarize pytest activity')
 parser.add_argument('files', metavar='file', nargs='*', help='Enable debugging')
+parser.add_argument('-a', '--all', action='store_true', help='Report by test and by host')
 parser.add_argument('-d', '--distro', action='store_true', help='Report by OS distribution')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
@@ -67,6 +88,8 @@ summary_regexp = re.compile(r'=+\s+(.+)\s+in\s+[0-9.]+s')
 result_regexp = re.compile(r'(\d+)\s+([^ ,]+)?')
 
 tests = []
+by_host = {}
+by_test = {}
 
 summary = Test('Summary')
 
@@ -105,3 +128,20 @@ for test in tests:
   table.add([test.title] + [test.results.get(result) for result in columns])
 
 sys.stdout.write(str(table))
+
+if args.all:
+  print('')
+  print('Host|Passed|Failed|Skipped')
+  for host in sorted(args.files or ['-']):
+    print('{host}|{passed}|{failed}|{skipped}'.format(host=host, passed=by_host[host]['PASSED'], failed=by_host[host]['FAILED'], skipped=by_host[host]['SKIPPED']))
+  
+  print('')
+  print('Test', end='')
+  for host in sorted(args.files or ['-']):
+    print(f'|{host}', end='')
+  print('')
+  for test in by_test:
+    print(test, end='')
+    for host in sorted(args.files or ['-']):
+      print('|{}'.format('Failed' if by_test[test].get(host) else ''), end='')
+    print('')
