@@ -93,6 +93,8 @@ while processes:
         echo(host, stdout)  
         echo(host, stderr)  
       del processes[host]
+      if not args.json:
+        print('')
     else:
       log.debug(f'{host} still running')
 
