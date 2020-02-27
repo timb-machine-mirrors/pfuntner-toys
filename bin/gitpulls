@@ -8,13 +8,7 @@ import argparse
 import datetime
 import subprocess
 
-def banner(s):
-  lines = s.splitlines()
-  width = max([len(line) for line in lines])
-  print('*' * (width+4))
-  for line in lines:
-    print('* ' + line.ljust(width) + ' *')
-  print('*' * (width+4))
+from table import Table
 
 def run(cmd, readonly=True):
   (rc, stdout, stderr) = (None, '', '')
@@ -68,13 +62,13 @@ def get_last_commit():
       text.append(s)
 
   if date:
-    date = datetime.datetime.strptime(date, '%a %b %d %H:%M:%S %Y')
+    date = datetime.datetime.strptime(date, '%a %b %d %H:%M:%S %Y').isoformat()
 
   if text:
-    text = '\n'.join(text)[:40]
+    text = '\n'.join(text)[:20]
  
   log.debug('get_last_commit() returning date={date}, sha1={sha1}, text={text}'.format(**locals()))
-  return (date, sha1, text)
+  return (date, sha1[:7], text)
   
 parser = argparse.ArgumentParser(description='Refresh git repositories')
 parser.add_argument('root', nargs='?', help='Root in which to find repos (default: {HOME}/repos'.format(**os.environ))
@@ -102,7 +96,9 @@ if not args.root:
 if os.path.exists(args.root):
   if os.path.isdir(args.root):
     cwd = os.getcwd()
+    table = Table('Path', 'Branch', 'Old SHA1', 'Old Date', 'Old Text', 'New SHA1', 'New Date', 'New Text')
     for filename in os.listdir(args.root):
+      cols = ['']*8
       path = os.path.join(args.root, filename)
       realpath = os.path.realpath(path)
       if os.path.isdir(path) and os.path.isdir(os.path.join(path, '.git')):
@@ -110,7 +106,7 @@ if os.path.exists(args.root):
         os.chdir(path)
         branch = get_branch()
         (date, sha1, text) = get_last_commit()
-        banner('{path!r}\n{realpath!r}\n{branch}\n{sha1}\n{date!s}\n{text!r}'.format(**locals()))
+        cols = [path, branch, sha1, date, text]
         if not args.dry_run:
           if (branch == 'master') or args.branch:
             (rc, stdout, stderr) = run('git pull', readonly=False)
@@ -118,13 +114,19 @@ if os.path.exists(args.root):
             sys.stderr.write(stderr)
             if not up_to_date_regexp.search(stdout.strip()):
               (date, sha1, text) = get_last_commit()
-              print('{path!r} {realpath!r} {branch} {sha1} {date!s} {text!r}'.format(**locals()))
+              cols += [date, sha1, text]
+            else:
+              cols += ['']*3
           else:
-            log.warning('Cowardly avoiding `git pull` of {branch!r} for {path!r}'.format(**locals()))
-        print('')
+            cols += ['']*3
+        else:
+          cols += ['']*3
+        log.info(f'cols: {cols}')
+        table.add(cols)
         os.chdir(cwd)
       else:
         log.info('{path!r} ({realpath!r}) is not a git repository'.format(**locals()))
+    print(str(table), end='')
   else:
     parser.error('{args.root!r} is not a directory'.format(**locals()))
 else:
