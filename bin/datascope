@@ -2,15 +2,35 @@
 
 import os
 import sys
+import logging
+import argparse
 
-assert not sys.stdin.isatty(), "stdin must be redirected"
+parser = argparse.ArgumentParser(description='Data scope')
+parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
+parser.add_argument('-l', '--lines', action='store_true', help='Report by lines')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+# log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+log.setLevel(logging.WARNING - (args.verbose or 0)*10)
+
+if sys.stdin.isatty():
+  parser.error("stdin must be redirected")
 
 stream = os.fdopen(0, 'rb')
 pos = 0
+linenum = 0
 while True:
   c = ''.join(map(chr, stream.read(1)))
   if c:
-    print("%08d 0x%02x %3d 0%03o %s" % (pos, ord(c), ord(c), ord(c), repr(c)))
+    if args.lines:
+      print("%06d %08d 0x%02x %3d 0%03o %s" % (linenum, pos, ord(c), ord(c), ord(c), repr(c)))
+    else:
+      print("%08d 0x%02x %3d 0%03o %s" % (pos, ord(c), ord(c), ord(c), repr(c)))
     pos += 1
+    if c == '\n':
+      linenum += 1
+      pos = 0
   else:
     break

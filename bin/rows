@@ -62,7 +62,7 @@ def parse(arg):
   if pos < 0:
     pos = count + pos
   if (pos < 0) or (pos >= count):
-    syntax('{arg!r} is an invalid position, there are only {count} lines'.format(count=count, **locals()))
+    syntax('f{arg!r} is an invalid position, there are only {count} lines'.format(count=count, **locals()))
   return pos
 
 choices = [negate] * count
@@ -76,7 +76,7 @@ for arg in args:
       stop = start
 
     if stop < start:
-      syntax('{arg!r} doesn\'t make sense with {count} lines'.format(**locals()))
+      syntax(f'{arg!r} doesn\'t make sense with {count} lines'.format(**locals()))
 
     if immediate:
       for pos in range(count):
@@ -101,7 +101,7 @@ for arg in args:
           if match:
             choices[pos] = not negate
     else:
-      syntax('{arg!r} is not recognized')
+      syntax(f'{arg!r} is not recognized')
 
 if not immediate:
   for (pos, chosen) in enumerate(choices):

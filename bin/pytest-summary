@@ -133,7 +133,7 @@ if args.all:
   print('')
   print('Host|Passed|Failed|Skipped')
   for host in sorted(args.files or ['-']):
-    print('{host}|{passed}|{failed}|{skipped}'.format(host=host, passed=by_host[host]['PASSED'], failed=by_host[host]['FAILED'], skipped=by_host[host]['SKIPPED']))
+    print('{host}|{passed}|{failed}|{skipped}'.format(host=host, passed=by_host.get(host, {}).get('PASSED'), failed=by_host.get(host, {}).get('FAILED'), skipped=by_host.get(host, {}).get('SKIPPED')))
   
   print('')
   print('Test', end='')

@@ -25,9 +25,9 @@ class Redirect(threading.Thread):
       lock.acquire()
       now = datetime.datetime.now()
       elapsed = now - start
-      sincelast = int((now - self.prev).total_seconds()*1000)
+      sincelast = (now - self.prev).total_seconds()
       self.prev = now
-      self.out_stream.write('{now} +{elapsed} {sincelast:6} {self.stream_name} {msg!r}\n'.format(**locals()))
+      self.out_stream.write('{now} +{elapsed} {sincelast:9.3f} {self.stream_name} {msg!r}\n'.format(**locals()))
       lock.release()
 
   def run(self):
