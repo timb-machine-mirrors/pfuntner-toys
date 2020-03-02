@@ -37,7 +37,7 @@ class Color(object):
         colors=', '.join(rets.keys())
       ))
 
-    return rets.keys()[0]
+    return list(rets.keys())[0]
 
   @staticmethod
   def get_color_code(color):
