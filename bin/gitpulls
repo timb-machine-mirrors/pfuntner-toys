@@ -114,7 +114,7 @@ if os.path.exists(args.root):
             sys.stderr.write(stderr)
             if not up_to_date_regexp.search(stdout.strip()):
               (date, sha1, text) = get_last_commit()
-              cols += [date, sha1, text]
+              cols += [sha1, date, text]
             else:
               cols += ['']*3
           else:
