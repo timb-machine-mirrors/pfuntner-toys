@@ -47,7 +47,7 @@ class Instances(object):
         self.log.debug(f'config: {self.config}')
     else:
       self.log.warn('Could not find config {self.config_name!r}')
-      config = {}
+      self.config = {}
 
     if 'gcp_user' not in self.config:
       self.config['gcp_user'] = getpass.getuser()
