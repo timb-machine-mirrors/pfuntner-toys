@@ -79,31 +79,57 @@ def backfill_aws_image_info(instances):
   if remaining_instances:
     parser.error(f'Some AWS instances have incomplete image information: {remaining_instances}')
 
-def get_gcp_image_info(disk_name):
-  image_id = None
-  image_name = None
-  distro = None
+def backfill_gcp_image_info(instances):
+
+  gcp_distro_mappings = [
+    (re.compile('^centos-7'),          'centos7'),
+    (re.compile('^centos-8'),          'centos8'),
+    (re.compile('^rhel-7'),            'rhel7'),
+    (re.compile('^rhel-8'),            'rhel8'),
+    (re.compile('^debian-9'),          'debian9'),
+    (re.compile('^debian-10'),         'debian10'),
+    (re.compile('^ubuntu[-a-z]*-16'),  'ubuntu16'),
+    (re.compile('^ubuntu[-a-z]*-18'),  'ubuntu18'),
+  ]
+
   user = config.get('gcp_user')
-  raw = None
 
-  (rc, stdout, stderr) = run(f'gcloud --format json compute disks list --filter {disk_name}')
-  if rc==0 and stdout:
-    raw = json.loads(stdout)
-    if raw:
-      image_id = raw[0].get('id')
-      image_name = os.path.basename(raw[0].get('sourceImage'))
-      for regexp, mapping in gcp_distro_mappings:
-        if regexp.search(image_name):
-          distro = mapping
-          break
+  image_ids = list(set([instance.image_id for instance in instances if instance.provider == 'gcp']))
+  log.debug(f'image_ids to query: {image_ids}')
+  if image_ids:
+    (rc, stdout, stderr) = run(['gcloud', '--format', 'json', 'compute', 'disks', 'list', '--filter', 'name:(' + ' '.join(image_ids) + ')'])
+    if rc == 0 and stdout:
+      for image in json.loads(stdout):
+        log.debug(f'Now processing: {image}')
+        distro = None
 
-  log.debug(f'gcp disk {disk_name} => id: {image_id}, name: {image_name}, distro: {distro}, user: {user}')
+        """
+        There's an `id` field (a long unique integer) that I at first tried to
+        use but it's not available from `gcloud compute instances list`.  The
+        `name` field is better to use in this instance.
+        """
+        image_id = image.get('name')
 
-  if not(image_id and image_name and distro and name):
-    parser.error(f'Could not determine all image information from {raw}')
+        image_name = os.path.basename(image.get('sourceImage'))
+        for regexp, mapping in gcp_distro_mappings:
+          if regexp.search(image_name):
+            distro = mapping
+            break
 
-  return (image_id, image_name, distro, user)
+        log.debug(f'image: {image_id!r} {image_name!r} {distro!r} {user!r}')
+        if distro and user:
+          for instance in instances:
+            if instance.image_id == image_id:
+              log.debug(f'Updating image info for {instance.name}')
+              instance.image_name = image_name
+              instance.distro = distro
+              instance.user = user
+        else:
+          parser.error(f'No distro or user for {image_id}')
 
+  remaining_instances = [instance for instance in instances if instance.provider == 'gcp' and not (instance.image_name and instance.distro and instance.user)]
+  if remaining_instances:
+    parser.error(f'Some GCP instances have incomplete image information: {remaining_instances}')
 
 def run(cmd):
   if isinstance(cmd, str):
@@ -119,6 +145,27 @@ def run(cmd):
   log.debug('Executed {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
   return (rc, stdout, stderr)
 
+def extract(root, path):
+  if isinstance(path, str):
+    path = path.split('/')
+  key = path.pop(0)
+  if isinstance(root, list):
+    if key.isdecimal():
+      key = int(key)
+      if key < len(root):
+        root = root[key]
+      else:
+        root = None
+    else:
+      root = None
+  elif isinstance(root, dict):
+    root = root.get(key)
+  
+  if root and path:
+    return extract(root, path)
+  else:
+    return root
+
 parser = argparse.ArgumentParser(description='Discover AWS/GCP instances')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
@@ -127,17 +174,6 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 # log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 log.setLevel(logging.WARNING - (args.verbose or 0)*10)
-
-gcp_distro_mappings = [
-  (re.compile('^centos-7'),          'centos7'),
-  (re.compile('^centos-8'),          'centos8'),
-  (re.compile('^rhel-7'),            'rhel7'),
-  (re.compile('^rhel-8'),            'rhel8'),
-  (re.compile('^debian-9'),          'debian9'),
-  (re.compile('^debian-10'),         'debian10'),
-  (re.compile('^ubuntu[-a-z]*-16'),  'ubuntu16'),
-  (re.compile('^ubuntu[-a-z]*-18'),  'ubuntu18'),
-]
 
 basename = os.path.basename(sys.argv[0])
 if basename.endswith('.py'):
@@ -174,7 +210,11 @@ if rc == 0 and stdout:
 
       name = None
       image_id = None
-      ip = None
+      image_name = None
+      distro = None
+      user = None
+      ip = extract(instance, 'NetworkInterfaces/0/Association/PublicIp')
+      active = extract(instance, 'State/Name') == 'running'
 
       if not id:
         parser.error(f'No instance ID in {instance}')
@@ -197,7 +237,7 @@ if rc == 0 and stdout:
           image_id = instance.get('ImageId')
           log.debug(f'Instance {name} ({id}) uses image {image_id}')
 
-          instances.append(Instance(provider, name, id, image_id, None, None, None, ip, instance.get('State', {}).get('Name') == 'running'))
+          instances.append(Instance(provider, name, id, image_id, image_name, distro, user, ip, active))
       else:
         log.debug(f'No name for instance {id}')
 
@@ -214,8 +254,8 @@ if rc == 0 and stdout:
     image_name = None
     distro = None
     user = None
-    ip = None
-    active = None
+    ip = extract(instance, 'networkInterfaces/0/accessConfigs/0/natIP')
+    active = instance.get('status') == 'RUNNING'
 
     log.info(f'gcp instance id: {id}')
     name = instance.get('name', '')
@@ -227,8 +267,10 @@ if rc == 0 and stdout:
         log.debug(f'after removing regular expression, instance name is {name}')
         disks = instance.get('disks', [])
         if disks:
-          (image_id, image_name, distro, user) = get_gcp_image_info(disks[0].get('deviceName'))
-          # __init__(self, provider, name, id, image_id, image_name, distro, user, ip, active):
-          instances.append(Instance(provider, name, id, image_id, image_name, distro, user, ip, active))
+          instances.append(Instance(provider, name, id, disks[0].get('deviceName'), image_name, distro, user, ip, active))
+        else:
+          log.info(f'No device name for {id}/{name}')
+
+backfill_gcp_image_info(instances)
 
 log.debug('instances: {}'.format([instance.__dict__ for instance in instances]))
