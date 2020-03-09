@@ -46,7 +46,7 @@ class Instances(object):
           raise Exception(f'Could not parse {self.config_name!r}: "{e!s}"')
         self.log.debug(f'config: {self.config}')
     else:
-      self.log.warn('Could not find config {self.config_name!r}')
+      self.log.warn(f'Could not find config {self.config_name!r}')
       self.config = {}
 
     if 'gcp_user' not in self.config:
@@ -161,14 +161,18 @@ class Instances(object):
   def run(self, cmd):
     if isinstance(cmd, str):
       cmd = cmd.split()
+    rc = None
+    stdout = None
+    stderr = None
     self.log.info('Executing {cmd}'.format(**locals()))
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (stdout, stderr) = tuple([s.decode('utf-8') for s in p.communicate()])
-    # alternately, if trapping is conditional:
-    # if trap:
-    #   stdout = stdout.decode('utf-8')
-    #   stderr = stderr.decode('utf-8')
-    rc = p.wait()
+    try:
+      p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except Exception as e:
+      log.info(f'Caught: {e!s}')
+    else:
+      (stdout, stderr) = tuple([s.decode('utf-8') for s in p.communicate()])
+      rc = p.wait()
+
     self.log.debug('Executed {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
     return (rc, stdout, stderr)
 
