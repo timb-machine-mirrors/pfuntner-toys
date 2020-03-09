@@ -309,7 +309,7 @@ if __name__ == '__main__':
 
     if args.make:
         print('Writing to /etc/ansible/hosts')
-        p = subprocess.Popen(['sudo', 'bash', '-c', 'cat > /etc/ansible/hosts'], stdin=subprocess.PIPE)
+        p = subprocess.Popen(([] if 'win' in sys.platform else ['sudo']) + ['bash', '-c', 'cat > /etc/ansible/hosts'], stdin=subprocess.PIPE)
         p.stdin.write('[targets]\n'.encode())
         for instance in instances:
           p.stdin.write(f'{instance.name} ansible_host={instance.ip} ansible_user={instance.user} ansible_ssh_private_key_file={instance.key_filename}\n'.encode())
