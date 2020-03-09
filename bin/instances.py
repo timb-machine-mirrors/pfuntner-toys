@@ -10,7 +10,7 @@ import argparse
 import subprocess
 
 class Instance(object):
-  def __init__(self, provider, true_name, name, id, image_id, image_name, distro, user, ip, active):
+  def __init__(self, provider, true_name, name, id, image_id, image_name, distro, user, ip, key_filename, active):
     self.provider = provider
     self.true_name = true_name
     self.name = name
@@ -20,6 +20,7 @@ class Instance(object):
     self.distro = distro
     self.user = user
     self.ip = ip
+    self.key_filename = key_filename
     self.active = bool(active)
 
   def __str__(self):
@@ -28,6 +29,9 @@ class Instance(object):
 class Instances(object):
   def __init__(self, log):
     self.log = log
+
+    self.ssh_root = os.path.expandvars("$HOME/.ssh")
+    self.ssh_config_filename = os.path.join(self.ssh_root, 'config')
 
     basename = os.path.basename(inspect.getfile(self.__class__))
     if basename.endswith('.py'):
@@ -189,7 +193,7 @@ class Instances(object):
     else:
       return root
 
-  def get(self):
+  def get_instances(self):
     name_regexp = re.compile(self.config.get('regexp', '.'))
     remove_regexp = bool(self.config.get('remove_regexp', 'false'))
 
@@ -210,6 +214,8 @@ class Instances(object):
           distro = None
           user = None
           ip = self.extract(instance, 'NetworkInterfaces/0/Association/PublicIp')
+          key_name = instance.get('KeyName')
+          key_filename = os.path.join(self.ssh_root, key_name + '.pem') if key_name else None
           active = self.extract(instance, 'State/Name') == 'running'
 
           if not id:
@@ -234,13 +240,14 @@ class Instances(object):
               image_id = instance.get('ImageId')
               self.log.debug(f'Instance {name} ({id}) uses image {image_id}')
 
-              instances.append(Instance(provider, true_name, name, id, image_id, image_name, distro, user, ip, active))
+              instances.append(Instance(provider, true_name, name, id, image_id, image_name, distro, user, ip, key_filename, active))
           else:
             self.log.debug(f'No name for instance {id}')
 
     self.backfill_aws_image_info(instances)
 
     provider = 'gcp'
+    key_filename = os.path.join(self.ssh_root, 'google_compute_engine')
     (rc, stdout, stderr) = self.run('gcloud --format json compute instances list')
     if rc == 0 and stdout:
       raw = json.loads(stdout)
@@ -265,28 +272,51 @@ class Instances(object):
             self.log.debug(f'after removing regular expression, instance name is {name}')
           disks = instance.get('disks', [])
           if disks:
-            instances.append(Instance(provider, true_name, name, id, disks[0].get('deviceName'), image_name, distro, user, ip, active))
+            instances.append(Instance(provider, true_name, name, id, disks[0].get('deviceName'), image_name, distro, user, ip, key_filename, active))
           else:
             self.log.info(f'No device name for {id}/{name}')
 
     self.backfill_gcp_image_info(instances)
 
     self.log.debug('instances: {}'.format([instance.__dict__ for instance in instances]))
-    return instances
+    return sorted(instances, key=lambda instance: instance.name)
 
 if __name__ == '__main__':
+  log = logging.getLogger()
+  logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+  log.setLevel(logging.WARNING)
+
+  instances_class = Instances(log)
+
   parser = argparse.ArgumentParser(description='Discover AWS/GCP instances')
+  parser.add_argument('-m', '--make', action='count', help=f'Refresh /etc/ansible/hosts and {instances_class.ssh_config_filename} with instance information')
   parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
   args = parser.parse_args()
 
-  logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
-  log = logging.getLogger()
   log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
-  instances = sorted(Instances(log).get(), key=lambda instance: instance.name)
-  
-  from table import Table
-  table = Table('name', 'distro', 'user', 'ip')
-  for instance in instances:
-    table.add(instance.name, instance.distro, instance.user, instance.ip)
-  print(str(table), end='')
+  instances = instances_class.get_instances()
+  if instances:
+    from table import Table
+    table = Table('Name', 'Distro', 'User', 'IP', 'Key name')
+    for instance in instances:
+      table.add(instance.name, instance.distro, instance.user, instance.ip, instance.key_filename)
+    print(str(table), end='')
+
+    if args.make:
+        print('Writing to /etc/ansible/hosts')
+        p = subprocess.Popen(['sudo', 'bash', '-c', 'cat > /etc/ansible/hosts'], stdin=subprocess.PIPE)
+        p.stdin.write('[targets]\n'.encode())
+        for instance in instances:
+          p.stdin.write(f'{instance.name} ansible_host={instance.ip} ansible_user={instance.user} ansible_ssh_private_key_file={instance.key_filename}\n'.encode())
+        p.stdin.close()
+        rc = p.wait()
+
+        print(f'Writing to {instances_class.ssh_config_filename}')
+        with open(instances_class.ssh_config_filename, 'w') as stream:
+          for instance in instances:
+            stream.write(f'Host {instance.name}\n\tHostname {instance.ip}\n\tUser {instance.user}\n\tIdentityFile {instance.key_filename}\n')
+        
+        subprocess.Popen(['add-to-knownhosts'] + [instance.name for instance in instances]).wait()
+  else:
+    print('No instances!')

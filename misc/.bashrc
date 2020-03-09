@@ -19,6 +19,7 @@ alias pushsshkey=ssh-copy-id
 alias time=ptime
 alias table=table.py
 alias gitbranch=currbranch
+alias instances=instances.py
 
 alias newdir='dir=$(date +%Y%m%d%H%M%S%N) && mkdir -v $dir && cd $dir'
 alias oldir='. olddir.sh'
