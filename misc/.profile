@@ -18,7 +18,7 @@ then
   export GVIM=$ROOT/utils/gVimPortable/gVimPortable.exe
   export HOSTS=$ROOT/Windows/System32/drivers/etc/hosts
 
-  $HOME/bin/windoze_title --self 
+  $HOME/bin/windoze-title --self 
 fi
 
 # For shared systems, this is useful for automatically sourcing my personal setup script
