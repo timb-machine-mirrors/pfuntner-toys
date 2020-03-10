@@ -197,6 +197,37 @@ class Instances(object):
     else:
       return root
 
+  def openstack_discover(self, openstack):
+    instances = []
+
+    log.debug(f'Processing Openstack {openstack}')
+
+    env_regexp = re.compile(r'^\s*(?:export\s+)?(\w+)\s*=\s*(\S+)')
+    if 'creds' in openstack:
+      env = {}
+      with open(os.path.expanduser(openstack['creds'])) as stream:
+        for line in stream.readlines():
+          match = env_regexp.search(line)
+          if match:
+            ret[match.group(1)] = match.group(2).strip('\'').strip('"')
+      log.debug('env: {env}')
+
+      if 'secure_store' in openstack and 'secure_key' in openstack:
+        password = None
+        (rc, stdout, stderr) = self.run('SecureKeyValues.py --operation read --store {} --ssh --json'.format(openstack['secure_store']))
+        if rc == 0 and stdout:
+          password = json.loads(stdout).get('pairs', []).get(openstack['secure_key'])
+
+        headers = {"Content-Type": "application/json"}
+      else:
+        log.warning(f'`secure_store` and/or `secure_key` keys not in {openstack}')
+    else:
+      log.warning(f'No `creds` key in {openstack}')
+
+    url_regexp = re.compile(r'(http(?:s)?)://([^:/]+)(?::(\d+))?(?:/(.*))?$')
+
+    return instances
+
   def get_instances(self):
     name_regexp = re.compile(self.config.get('regexp', '.'))
     remove_regexp = bool(self.config.get('remove_regexp', 'false'))
@@ -320,12 +351,15 @@ class Instances(object):
       /servers/5/updated '2020-03-05T13:41:01Z'
       /servers/5/user_id '2a9eeb8f8b2b823c45866e52507850db1b509a0284e5f543c28066c21ae64307'
     """
-    # add "constant" instances
-    for instance in self.config.get('instances', []):
-      instances.append(Instance(**instance))
+
+    """
+    # add OpenStack instances
+    for openstack in self.config.get('openstack', []):
+      instances += self.openstack_discover(openstack)
+    """
 
     self.log.debug('instances: {}'.format([instance.__dict__ for instance in instances]))
-    return sorted(instances, key=lambda instance: instance.name)
+    return sorted(instances, key=lambda instance: f'{instance.provider}/{instance.name}')
 
 if __name__ == '__main__':
   log = logging.getLogger()
