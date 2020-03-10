@@ -282,6 +282,44 @@ class Instances(object):
 
     self.backfill_gcp_image_info(instances)
 
+    """
+    Example of OpenStack server detail: {protocol}://{server}:8774/v2/{OS_PROJECT_ID}/servers/detail
+
+      /servers/5/OS-DCF:diskConfig 'AUTO'
+      /servers/5/OS-EXT-AZ:availability_zone 'cloud-rtp-1-b'
+      /servers/5/OS-EXT-STS:power_state 4
+      /servers/5/OS-EXT-STS:task_state None
+      /servers/5/OS-EXT-STS:vm_state 'stopped'
+      /servers/5/OS-SRV-USG:launched_at '2020-01-16T15:37:28.000000'
+      /servers/5/OS-SRV-USG:terminated_at None
+      /servers/5/accessIPv4 ''
+      /servers/5/accessIPv6 ''
+      /servers/5/addresses/tenant-internal-direct-net/0/OS-EXT-IPS-MAC:mac_addr 'fa:16:3e:b5:cb:c3'
+      /servers/5/addresses/tenant-internal-direct-net/0/OS-EXT-IPS:type 'fixed'
+      /servers/5/addresses/tenant-internal-direct-net/0/addr '64.102.233.146'
+      /servers/5/addresses/tenant-internal-direct-net/0/version 4
+      /servers/5/config_drive ''
+      /servers/5/created '2020-01-16T15:34:44Z'
+      /servers/5/flavor/id '10'
+      /servers/5/flavor/links/0/href 'https://cloud-rtp-1.cisco.com:8774/379c2325a80a43098a223c1614a4f74b/flavors/10'
+      /servers/5/flavor/links/0/rel 'bookmark'
+      /servers/5/hostId '36d9e5e924d610520911b5eea5f5d23b7d3be1717a9f168b7f6d73f4'
+      /servers/5/id 'fc5b7684-2f17-42aa-88ea-67b52a55ff12'
+      /servers/5/image/id '8a620e68-97e3-4de2-8ab9-4e1a34b801b5'
+      /servers/5/image/links/0/href 'https://cloud-rtp-1.cisco.com:8774/379c2325a80a43098a223c1614a4f74b/images/8a620e68-97e3-4de2-8ab9-4e1a34b801b5'
+      /servers/5/image/links/0/rel 'bookmark'
+      /servers/5/key_name 'pfuntner-runon'
+      /servers/5/links/0/href 'https://cloud-rtp-1.cisco.com:8774/v2/379c2325a80a43098a223c1614a4f74b/servers/fc5b7684-2f17-42aa-88ea-67b52a55ff12'
+      /servers/5/links/0/rel 'self'
+      /servers/5/links/1/href 'https://cloud-rtp-1.cisco.com:8774/379c2325a80a43098a223c1614a4f74b/servers/fc5b7684-2f17-42aa-88ea-67b52a55ff12'
+      /servers/5/links/1/rel 'bookmark'
+      /servers/5/name 'pfuntner2-runon'
+      /servers/5/security_groups/0/name 'default'
+      /servers/5/status 'SHUTOFF'
+      /servers/5/tenant_id '379c2325a80a43098a223c1614a4f74b'
+      /servers/5/updated '2020-03-05T13:41:01Z'
+      /servers/5/user_id '2a9eeb8f8b2b823c45866e52507850db1b509a0284e5f543c28066c21ae64307'
+    """
     # add "constant" instances
     for instance in self.config.get('instances', []):
       instances.append(Instance(**instance))
