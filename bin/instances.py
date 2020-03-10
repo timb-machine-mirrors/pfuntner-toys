@@ -282,6 +282,10 @@ class Instances(object):
 
     self.backfill_gcp_image_info(instances)
 
+    # add "constant" instances
+    for instance in self.config.get('instances', []):
+      instances.append(Instance(**instance))
+
     self.log.debug('instances: {}'.format([instance.__dict__ for instance in instances]))
     return sorted(instances, key=lambda instance: instance.name)
 
