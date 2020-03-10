@@ -363,6 +363,6 @@ if __name__ == '__main__':
           for instance in instances:
             stream.write(f'Host {instance.name}\n\tHostname {instance.ip}\n\tUser {instance.user}\n\tIdentityFile {instance.key_filename}\n')
         
-        subprocess.Popen(['add-to-knownhosts'] + [instance.name for instance in instances]).wait()
+        subprocess.Popen(['add-to-knownhosts'] + [instance.name for instance in instances if instance.active]).wait()
   else:
     print('No instances!')
