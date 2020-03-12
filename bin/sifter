@@ -12,12 +12,21 @@ def syntax(msg=None):
   sys.stderr.write(f'Syntax: {pgm} -{{i|x}} [!] regexp ... [file ...]\n')
   exit(1)
 
+def opt_match(opt, *possibles):
+  for possible in possibles:
+    if possible.startswith('--') and len(opt) > 2:
+      if opt == possible[:len(opt)]:
+        return True
+    elif opt == possible:
+      return True
+  return False
+
 class Action(object):
-  def __init__(self, action, negate, pattern):
+  def __init__(self, action, negate, ignore_case, pattern):
     assert action in ['i', 'x']
     self.action = action
     self.negate = bool(negate)
-    self.regexp = re.compile(pattern)
+    self.regexp = re.compile(pattern, flags=re.IGNORECASE if ignore_case else 0)
 
   def apply(self):
     global data
@@ -90,6 +99,9 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 log.setLevel(logging.WARNING)
 
+ignore_case = False
+negate = False
+
 verbose = False
 loud = False
 actions = []
@@ -99,25 +111,25 @@ while len(sys.argv) > 1:
     break
 
   if sys.argv[1].startswith('-'):
-    if sys.argv[1] in ['-i', '--include', '-x', '--exclude']:
-      negate = False
-      if (len(sys.argv) > 2) and (sys.argv[2] == '!'):
-        negate = True
-        sys.argv.pop(2)
+    if opt_match(sys.argv[1], '-i', '--include', '-x', '--exclude'):
       if len(sys.argv) >= 2:
-        actions.append(Action('i' if 'i' in sys.argv[1] else 'x', negate, sys.argv[2]))
+        actions.append(Action('i' if 'i' in sys.argv[1] else 'x', negate, ignore_case, sys.argv[2]))
         sys.argv.pop(1)
       else:
         syntax('No operand for {opt!r}'.format(opt=sys.argv[1]))
-    elif sys.argv[1] in ['-l', '--loud']:
+    elif opt_match(sys.argv[1], '--negate'):
+      negate = not negate
+    elif opt_match(sys.argv[1], '--ignorecase', '--ignore-case'):
+      ignore_case = not ignore_case
+    elif opt_match(sys.argv[1], '-l', '--loud'):
       loud = not loud
-    elif sys.argv[1] in ['-d', '--debug']:
+    elif opt_match(sys.argv[1], '-d', '--debug'):
       pdb.set_trace()
-    elif sys.argv[1] in ['-v', '--verbose']:
+    elif opt_match(sys.argv[1], '-v', '--verbose'):
       log.setLevel(log.level - 10)
-    elif sys.argv[1] == '-vv':
+    elif opt_match(sys.argv[1] == '-vv'):
       log.setLevel(log.level - 20)
-    elif sys.argv[1] in ['-?', '-h', '--help']:
+    elif opt_match(sys.argv[1], '-?', '-h', '--help'):
       syntax()
     else:
       syntax('Unexpected option: {!r}'.format(sys.argv[1]))
