@@ -65,6 +65,7 @@ class Instances(object):
       (re.compile('^debian-10'),         'debian10', 'admin'),
       (re.compile('^amzn-'),             'amazon1',  'ec2-user'),
       (re.compile('^amzn2'),             'amazon2',  'ec2-user'),
+      (re.compile('^amazon-eks-node'),   'amazon2',  'ec2-user'),
       (re.compile('^RHEL-6'),            'rhel6',    'ec2-user'),
       (re.compile('^RHEL-7'),            'rhel7',    'ec2-user'),
       (re.compile('^RHEL-8'),            'rhel8',    'ec2-user'),
@@ -233,6 +234,7 @@ class Instances(object):
     remove_regexp = bool(self.config.get('remove_regexp', 'false'))
 
     instances = []
+    eks_instances = {}
 
     provider = 'aws'
     (rc, stdout, stderr) = self.run('aws ec2 describe-instances')
@@ -248,7 +250,7 @@ class Instances(object):
           image_name = None
           distro = None
           user = None
-          ip = self.extract(instance, 'NetworkInterfaces/0/Association/PublicIp')
+          ip = self.extract(instance, 'PublicIpAddress')
           key_name = instance.get('KeyName')
           key_filename = os.path.join(self.ssh_root, key_name + '.pem') if key_name else None
           active = self.extract(instance, 'State/Name') == 'running'
@@ -261,6 +263,11 @@ class Instances(object):
             self.log.debug(f'Examing tag {tag}')
             if tag.get('Key') == 'Name':
               name = tag.get('Value')
+              break
+            if tag.get('Key') == 'eks:cluster-name':
+              name = tag.get('Value')
+              eks_instances[name] = eks_instances.get(name, -1) + 1
+              name = name + '-' + str(eks_instances[name])
               break
           if name:
             self.log.info(f'instance name: {name}')
@@ -369,7 +376,8 @@ if __name__ == '__main__':
   instances_class = Instances(log)
 
   parser = argparse.ArgumentParser(description='Discover AWS/GCP instances')
-  parser.add_argument('-m', '--make', action='count', help=f'Refresh /etc/ansible/hosts and {instances_class.ssh_config_filename} with instance information')
+  parser.add_argument('-m', '--make', action='store_true', help=f'Refresh /etc/ansible/hosts and {instances_class.ssh_config_filename} with instance information')
+  parser.add_argument('-a', '--all', action='store_true', help='Show all columns')
   parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
   args = parser.parse_args()
 
@@ -378,9 +386,12 @@ if __name__ == '__main__':
   instances = instances_class.get_instances()
   if instances:
     from table import Table
-    table = Table('Name', 'Distro', 'User', 'IP', 'Key name')
+    table = Table('Provider', 'True name', 'Name', 'Id', 'Image Id', 'Image Name', 'Distro', 'User', 'Ip', 'Key Filename', 'Active') if args.all else Table('Name', 'Distro', 'User', 'IP', 'Key name')
     for instance in instances:
-      table.add(instance.name, instance.distro, instance.user, instance.ip, instance.key_filename)
+      if args.all:
+        table.add(instance.provider, instance.true_name, instance.name, instance.id, instance.image_id, instance.image_name, instance.distro, instance.user, instance.ip, instance.key_filename, instance.active)
+      else:
+        table.add(instance.name, instance.distro, instance.user, instance.ip, instance.key_filename)
     print(str(table), end='')
 
     if args.make:
@@ -397,6 +408,8 @@ if __name__ == '__main__':
           for instance in instances:
             stream.write(f'Host {instance.name}\n\tHostname {instance.ip}\n\tUser {instance.user}\n\tIdentityFile {instance.key_filename}\n')
         
-        subprocess.Popen(['add-to-knownhosts'] + [instance.name for instance in instances if instance.active]).wait()
+        active_instances = [instance.name for instance in instances if instance.active]
+        if active_instances:
+          subprocess.Popen(['add-to-knownhosts'] + active_instances).wait()
   else:
     print('No instances!')
