@@ -65,7 +65,7 @@ class Instances(object):
       (re.compile('^debian-10'),         'debian10', 'admin'),
       (re.compile('^amzn-'),             'amazon1',  'ec2-user'),
       (re.compile('^amzn2'),             'amazon2',  'ec2-user'),
-      (re.compile('^amazon-eks-node'),   'amazon2',  'ec2-user'),
+      (re.compile('amazon-eks-node'),    'amazon2',  'ec2-user'),
       (re.compile('^RHEL-6'),            'rhel6',    'ec2-user'),
       (re.compile('^RHEL-7'),            'rhel7',    'ec2-user'),
       (re.compile('^RHEL-8'),            'rhel8',    'ec2-user'),
@@ -243,48 +243,50 @@ class Instances(object):
       for raw_reservation in raw.get('Reservations', []):
         for instance in raw_reservation.get('Instances', []):
           id = instance.get('InstanceId')
-
-          true_name = None
-          name = None
-          image_id = None
-          image_name = None
-          distro = None
-          user = None
-          ip = self.extract(instance, 'PublicIpAddress')
-          key_name = instance.get('KeyName')
-          key_filename = os.path.join(self.ssh_root, key_name + '.pem') if key_name else None
-          active = self.extract(instance, 'State/Name') == 'running'
-
-          if not id:
-            raise Exception(f'No instance ID in {instance}')
-          self.log.info(f'aws instance id: {id}')
-          name = None
-          for tag in instance.get('Tags', []):
-            self.log.debug(f'Examing tag {tag}')
-            if tag.get('Key') == 'Name':
-              name = tag.get('Value')
-              break
-            if tag.get('Key') == 'eks:cluster-name':
-              name = tag.get('Value')
-              eks_instances[name] = eks_instances.get(name, -1) + 1
-              name = name + '-' + str(eks_instances[name])
-              break
-          if name:
-            self.log.info(f'instance name: {name}')
-            match = name_regexp.search(name)
-            if match:
-              true_name = name
-              self.log.debug(f'instance {name} is desired')
-              if remove_regexp:
-                name = name[:match.start(0)] + name[match.end(0):]
-                self.log.debug(f'after removing regular expression, instance name is {name}')
-
-              image_id = instance.get('ImageId')
-              self.log.debug(f'Instance {name} ({id}) uses image {image_id}')
-
-              instances.append(Instance(provider, true_name, name, id, image_id, image_name, distro, user, ip, key_filename, active))
+          if self.extract(instance, 'State/Name') == 'terminated':
+            log.info('skipping terminated instance')
           else:
-            self.log.debug(f'No name for instance {id}')
+            true_name = None
+            name = None
+            image_id = None
+            image_name = None
+            distro = None
+            user = None
+            ip = self.extract(instance, 'PublicIpAddress')
+            key_name = instance.get('KeyName')
+            key_filename = os.path.join(self.ssh_root, key_name + '.pem') if key_name else None
+            active = self.extract(instance, 'State/Name') == 'running'
+  
+            if not id:
+              raise Exception(f'No instance ID in {instance}')
+            self.log.info(f'aws instance id: {id}')
+            name = None
+            for tag in instance.get('Tags', []):
+              self.log.debug(f'Examing tag {tag}')
+              if tag.get('Key') == 'Name':
+                name = tag.get('Value')
+                break
+              if tag.get('Key') == 'eks:cluster-name':
+                name = tag.get('Value')
+                eks_instances[name] = eks_instances.get(name, -1) + 1
+                name = name + '-' + str(eks_instances[name])
+                break
+            if name:
+              self.log.info(f'instance name: {name}')
+              match = name_regexp.search(name)
+              if match:
+                true_name = name
+                self.log.debug(f'instance {name} is desired')
+                if remove_regexp:
+                  name = name[:match.start(0)] + name[match.end(0):]
+                  self.log.debug(f'after removing regular expression, instance name is {name}')
+  
+                image_id = instance.get('ImageId')
+                self.log.debug(f'Instance {name} ({id}) uses image {image_id}')
+  
+                instances.append(Instance(provider, true_name, name, id, image_id, image_name, distro, user, ip, key_filename, active))
+            else:
+              self.log.debug(f'No name for instance {id}')
 
     self.backfill_aws_image_info(instances)
 
