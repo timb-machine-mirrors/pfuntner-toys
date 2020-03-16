@@ -235,6 +235,7 @@ class Instances(object):
 
     instances = []
     eks_instances = {}
+    eks_suffix = '-standard-workers-Node'
 
     provider = 'aws'
     (rc, stdout, stderr) = self.run('aws ec2 describe-instances')
@@ -265,6 +266,10 @@ class Instances(object):
               self.log.debug(f'Examing tag {tag}')
               if tag.get('Key') == 'Name':
                 name = tag.get('Value')
+                if name.endswith(eks_suffix):
+                  name = name[:-len(eks_suffix)]
+                  eks_instances[name] = eks_instances.get(name, -1) + 1
+                  name = name + '-' + str(eks_instances[name])
                 break
               if tag.get('Key') == 'eks:cluster-name':
                 name = tag.get('Value')
