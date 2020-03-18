@@ -66,6 +66,7 @@ class Instances(object):
       (re.compile('^amzn-'),             'amazon1',  'ec2-user'),
       (re.compile('^amzn2'),             'amazon2',  'ec2-user'),
       (re.compile('amazon-eks-node'),    'amazon2',  'ec2-user'),
+      (re.compile('AmazonLinux2_'),      'amazon2',  'ec2-user'),
       (re.compile('^RHEL-6'),            'rhel6',    'ec2-user'),
       (re.compile('^RHEL-7'),            'rhel7',    'ec2-user'),
       (re.compile('^RHEL-8'),            'rhel8',    'ec2-user'),
@@ -92,21 +93,23 @@ class Instances(object):
 
             log.debug(f'image: {image_id} {image_name} {distro} {user}')
 
-            if distro and user:
-              for instance in instances:
-                if instance.image_id == image_id:
-                  log.debug(f'Updating image info for {instance.name}')
-                  instance.image_name = image_name
-                  instance.distro = distro
-                  instance.user = user
-            else:
-              raise Exception(f'No distro or user for {image_id}')
+            if not (distro and user):
+              log.warn(f'No distro or user for {image_id}/{image_name}')
+
+            for instance in instances:
+              if instance.image_id == image_id:
+                log.debug(f'Updating image info for {instance.name}')
+                instance.image_name = image_name
+                instance.distro = distro
+                instance.user = user
           else:
             raise Exception(f'No name found for {image_id}')
 
+    """
     remaining_instances = [instance for instance in instances if instance.provider == 'aws' and not (instance.image_name and instance.distro and instance.user)]
     if remaining_instances:
       raise Exception(f'Some AWS instances have incomplete image information: {remaining_instances}')
+    """
 
   def backfill_gcp_image_info(self, instances):
     gcp_distro_mappings = [
@@ -383,7 +386,11 @@ if __name__ == '__main__':
   instances_class = Instances(log)
 
   parser = argparse.ArgumentParser(description='Discover AWS/GCP instances')
-  parser.add_argument('-m', '--make', action='store_true', help=f'Refresh /etc/ansible/hosts and {instances_class.ssh_config_filename} with instance information')
+
+  group = parser.add_mutually_exclusive_group()
+  group.add_argument('-m', '--make', action='store_true', help=f'Refresh /etc/ansible/hosts and {instances_class.ssh_config_filename} with instance information')
+  group.add_argument('-A', '--ansible-make', action='store_true', help=f'Refresh /etc/ansible/hosts only')
+
   parser.add_argument('-a', '--all', action='store_true', help='Show all columns')
   parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
   args = parser.parse_args()
@@ -401,7 +408,9 @@ if __name__ == '__main__':
         table.add(instance.name, instance.distro, instance.user, instance.ip, instance.key_filename)
     print(str(table), end='')
 
-    if args.make:
+    if args.make or args.ansible_make:
+        if any([instance.user is None for instance in instances]):
+          parser.error('A user is not provided for all instances')
         print('Writing to /etc/ansible/hosts')
         p = subprocess.Popen(([] if 'win' in sys.platform else ['sudo']) + ['bash', '-c', 'cat > /etc/ansible/hosts'], stdin=subprocess.PIPE)
         p.stdin.write('[targets]\n'.encode())
@@ -410,6 +419,7 @@ if __name__ == '__main__':
         p.stdin.close()
         rc = p.wait()
 
+    if args.make:
         print(f'Writing to {instances_class.ssh_config_filename}')
         with open(instances_class.ssh_config_filename, 'w') as stream:
           for instance in instances:
