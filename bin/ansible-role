@@ -19,12 +19,15 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 hosts = ','.join(args.hosts)
 log.info(f'host: {hosts!r}')
-playbook = tempfile.NamedTemporaryFile()
+playbook = tempfile.NamedTemporaryFile(mode='w')
 log.info(f'Temporary playbook: {playbook.name!r}')
 playbook.write(f"""- name: Run {args.role}
   hosts: {hosts}
   roles:
-  - role: {args.role}""".encode())
+  - role: {args.role}
+""")
+if args.become:
+  playbook.write('  become: true\n')
 playbook.flush()
 
 if (args.verbose or 0) > 1:
