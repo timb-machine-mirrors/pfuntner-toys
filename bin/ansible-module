@@ -67,6 +67,9 @@ playbook_file.write(f'''- name: Run {args.module}
 for ansible_arg in ansible_args.splitlines():
   playbook_file.write(f'        {ansible_arg}\n')
 
+if args.become:
+  playbook_file.write('  become: true\n')
+
 playbook_file.flush()
 run(f'cat {playbook_file.name}', trap=False)
 

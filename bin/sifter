@@ -9,7 +9,7 @@ import logging
 def syntax(msg=None):
   if msg:
     log.error(msg)
-  sys.stderr.write(f'Syntax: {pgm} -{{i|x}} [!] regexp ... [file ...]\n')
+  sys.stderr.write(f'Syntax: {pgm} [--loud] [--number] [--negate] [--ignore-case] -{{i|x}} regexp ... [file ...]\n')
   exit(1)
 
 def opt_match(opt, *possibles):
@@ -77,14 +77,14 @@ def read(filename='-'):
 def dump(filename):
   global data
 
-  for line in data[filename]:
+  for linenum, line in enumerate(data[filename]):
     count = 0
     if line.state:
       if count:
         if loud:
           print('{filename}#### {count} lines excluded  ####'.format(filename=filename+' ' if len(data) > 1 else '', count=count))
         count = 0
-      print('{filename}{line}'.format(filename=filename+' ' if len(data) > 1 else '', line=line.line))
+      print('{filename}{linenum}{buf}{line}'.format(filename=filename if len(data) > 1 else '', colon=':' if len(data) > 1 and number else '', linenum=f':{linenum}' if number else '', buf=': ' if len(data)> 1 else '', line=line.line))
     else:
       count += 1
 
@@ -101,6 +101,7 @@ log.setLevel(logging.WARNING)
 
 ignore_case = False
 negate = False
+number = False
 
 verbose = False
 loud = False
@@ -117,6 +118,8 @@ while len(sys.argv) > 1:
         sys.argv.pop(1)
       else:
         syntax('No operand for {opt!r}'.format(opt=sys.argv[1]))
+    elif opt_match(sys.argv[1], '-n', '--number'):
+      number = not number
     elif opt_match(sys.argv[1], '--negate'):
       negate = not negate
     elif opt_match(sys.argv[1], '--ignorecase', '--ignore-case'):
