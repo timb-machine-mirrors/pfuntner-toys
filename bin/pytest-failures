@@ -32,7 +32,14 @@ def extract(cmd, pattern, default_value):
 
 def finish(filename, failure):
   if failure:
-    print('*' * extract('stty size < /dev/tty', '\d+\s+(\d+)', 80))
+    print('*' * width)
+
+    match = title_regexp.search('\n'.join(failure))
+    if match:
+      title = match.group(1)
+      if title:
+        print(titles[title])
+
     print('')
     print('\n'.join(['{prefix}{line}'.format(prefix=(filename + ': ') if filename else '', **locals()) for line in failure]))
     print('')
@@ -56,6 +63,10 @@ def process(filename=None):
       elif line and leading_whitespace.search(line):
         failure.append(line)
 
+    match = initial_regexp.search(line)
+    if match:
+      titles[match.group(1)] = line
+
   finish(filename, failure)
 
   if filename:
@@ -69,6 +80,24 @@ args = parser.parse_args()
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
+"""
+[CIS_AMAZON2_1.1.6] Ensure separate partition exists for /var (Scored) FAILED [  2%]
+.
+.
+.
+--
+host = <testinfra.host.Host object at 0x7f5bd9f8f208>
+
+    @pytest.mark.test_pretty_name('Ensure separate partition exists for /var')
+    @pytest.mark.level(2)
+"""
+
+width = extract('stty size < /dev/tty', '\d+\s+(\d+)', 80)
+
+initial_regexp = re.compile('^\[[^]]+\]\s+(.*)\s+\((?:scored|not scored)\)', flags=re.IGNORECASE)
+title_regexp = re.compile('test_pretty_name\([\'"](.*)[\'"]\)', flags=re.MULTILINE)
+titles = {}
 
 failure_start = re.compile('^_+\s+.+\s+_+$')
 leading_whitespace = re.compile('^\s')
