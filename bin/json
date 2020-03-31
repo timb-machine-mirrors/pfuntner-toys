@@ -105,8 +105,8 @@ def load(stream):
 def describe_datum(datum):
   if type(datum) == str:
     datum_type = 'string'
-  elif type(datum) == unicode:
-    datum_type = 'unicode string'
+  # elif type(datum) == unicode:
+  #   datum_type = 'unicode string'
   elif type(datum) == int:
     datum_type = 'integer'
   elif type(datum) == float:
