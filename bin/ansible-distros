@@ -35,7 +35,7 @@ regexp = re.compile('^(\S+)\s+\|\s+SUCCESS\s+=>\s+{$')
 
 (rc, stdout, stderr) = run('ansible {nodes} -m setup'.format(nodes=','.join(args.nodes)))
 if rc == 0 and stdout:
-  table = Table('Node', 'OS Family', 'Distro', 'Version', 'Major Version', 'Package Manager', 'Service Manager')
+  table = Table('Node', 'OS Family', 'Distro', 'Version', 'Major Version', 'Kernel', 'Package Manager', 'Service Manager')
   node = None
   buf = []
   for line in stdout.splitlines():
@@ -56,6 +56,7 @@ if rc == 0 and stdout:
           setup['ansible_facts']['ansible_distribution'],
           setup['ansible_facts']['ansible_distribution_version'],
           setup['ansible_facts']['ansible_distribution_major_version'],
+          setup['ansible_facts']['ansible_kernel'],
           setup['ansible_facts']['ansible_pkg_mgr'],
           setup['ansible_facts']['ansible_service_mgr']
         )
