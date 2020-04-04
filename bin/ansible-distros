@@ -58,13 +58,13 @@ if rc == 0 and stdout:
         # /ansible_facts/ansible_os_family 'Debian'
         table.add(
           node,
-          setup['ansible_facts']['ansible_os_family'],
-          setup['ansible_facts']['ansible_distribution'],
-          setup['ansible_facts']['ansible_distribution_version'],
-          setup['ansible_facts']['ansible_distribution_major_version'],
-          setup['ansible_facts']['ansible_kernel'],
-          setup['ansible_facts']['ansible_pkg_mgr'],
-          setup['ansible_facts']['ansible_service_mgr']
+          setup['ansible_facts'].get('ansible_os_family'),
+          setup['ansible_facts'].get('ansible_distribution'),
+          setup['ansible_facts'].get('ansible_distribution_version'),
+          setup['ansible_facts'].get('ansible_distribution_major_version'),
+          setup['ansible_facts'].get('ansible_kernel'),
+          setup['ansible_facts'].get('ansible_pkg_mgr'),
+          setup['ansible_facts'].get('ansible_service_mgr')
         )
         node = None
         buf = []
