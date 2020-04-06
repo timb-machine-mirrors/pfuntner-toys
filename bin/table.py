@@ -509,10 +509,10 @@ class FixedMethod(MethodBase):
     columns = []
 
     lines = stream.read().splitlines()
-    maxlen = max([len(line) for line in lines])
 
     if args.strict_headings:
       if lines:
+        maxlen = max([len(line) for line in lines])
         delimiters = list(re.finditer('(\s{2,})', lines[0]))
         if delimiters:
           if delimiters[0].start(1) > 0:
