@@ -520,7 +520,7 @@ class FixedMethod(MethodBase):
           else:
             parser.error('Leading columns in heading row no allowed')
           for (pos, delimiter) in enumerate(delimiters):
-            columns.append((delimiter.start(1), maxlen if pos+1 == len(delimiters) else delimiters[pos+1].start(1)))
+            columns.append((delimiter.end(1), maxlen if pos+1 == len(delimiters) else delimiters[pos+1].end(1)))
         else:
           columns = [(0, maxlen)]
       else:
