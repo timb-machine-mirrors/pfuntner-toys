@@ -63,6 +63,7 @@ parser = argparse.ArgumentParser(description='Get stats on Ansible hosts')
 parser.add_argument('hosts', metavar='host', nargs='*', help='List of hosts to query')
 parser.add_argument('-a', '--all', action='store_true', help='Target localhost and everything in /etc/ansible/hosts')
 
+parser.add_argument('-i', '--inventory', default='/etc/ansible/hosts', help='Ansible inventory YAML file.  Default: /etc/ansible/hosts')
 parser.add_argument('-v', '--verbose', action='count', help='Enable more debugging')
 args = parser.parse_args()
 
@@ -110,7 +111,7 @@ except Exception as e:
 else:
   log.debug('inventory: {inventory}'.format(**locals()))
 
-cmd = ('ansible {hosts} -m setup'.format(hosts=','.join(args.hosts) if args.hosts else 'all' + (',localhost' if args.all else ''))).split()
+cmd = ('ansible -i {inventory} {hosts} -m setup'.format(inventory=args.inventory, hosts=','.join(args.hosts) if args.hosts else 'all' + (',localhost' if args.all else ''))).split()
 log.debug(cmd)
 (rc, stdout, stderr) = run(cmd)
 if (not stdout) and stderr:

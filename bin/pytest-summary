@@ -15,7 +15,7 @@ class Test(object):
 def get_by_host(host='-'):
   ret = by_host.get(host)
   if not ret:
-    by_host[host] = {'PASSED':0, 'FAILED':0, 'SKIPPED':0}
+    by_host[host] = {'PASSED':0, 'FAILED':0, 'SKIPPED':0, 'XPASS':0, 'XFAIL':0}
     ret = by_host.get(host)
 
   return ret
@@ -131,9 +131,9 @@ sys.stdout.write(str(table))
 
 if args.all:
   print('')
-  print('Host|Passed|Failed|Skipped')
+  print('Host|Passed|Failed|Skipped|xpassed|xfailed')
   for host in sorted(args.files or ['-']):
-    print('{host}|{passed}|{failed}|{skipped}'.format(host=host, passed=by_host.get(host, {}).get('PASSED'), failed=by_host.get(host, {}).get('FAILED'), skipped=by_host.get(host, {}).get('SKIPPED')))
+    print('{host}|{passed}|{failed}|{skipped}|{xpassed}'.format(host=host, passed=by_host.get(host, {}).get('PASSED'), failed=by_host.get(host, {}).get('FAILED'), skipped=by_host.get(host, {}).get('SKIPPED'), xpassed=by_host.get(host, {}).get('XPASS'), xfailed=by_host.get(host, {}).get('XFAIL')))
   
   print('')
   print('Test', end='')
