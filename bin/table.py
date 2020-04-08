@@ -516,7 +516,8 @@ class FixedMethod(MethodBase):
         delimiters = list(re.finditer('(\s{2,})', lines[0]))
         if delimiters:
           if delimiters[0].start(1) > 0:
-            columns.append((0, delimiters[0].start(1)))
+            log.debug('First delimiter: {}:{} {!r}'.format(delimiters[0].start(1), delimiters[0].end(1), delimiters[0].group(1)))
+            columns.append((0, delimiters[0].end(1)))
           else:
             parser.error('Leading columns in heading row no allowed')
           for (pos, delimiter) in enumerate(delimiters):
