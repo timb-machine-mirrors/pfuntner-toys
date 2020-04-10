@@ -46,7 +46,7 @@ def process(filename=None):
       name = match.group(1)
       distro = match.group(2)
       recommendation = match.group(3)
-      title = match.group(4)
+      title = name + ' ' + match.group(4)
       result = match.group(5)
       get_test(title).results[distro if args.distro else (filename or 'Result')] = result.strip()
 
