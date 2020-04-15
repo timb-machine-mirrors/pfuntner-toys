@@ -20,7 +20,7 @@ def process(filename):
         log.warning('Could not open {filename!r}: {e!s}'.format(**locals()))
       else:
         for paragraph in doc.paragraphs:
-          print(paragraph.text)
+          print(paragraph.text.encode('utf-8'))
 
 parser.add_argument('files', metavar='file', nargs='+', help='One or more files')
 parser.add_argument('-l', '--list', action='store_true', help='List files that match the regular expression')
