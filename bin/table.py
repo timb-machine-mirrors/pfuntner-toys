@@ -510,23 +510,7 @@ class FixedMethod(MethodBase):
 
     lines = stream.read().splitlines()
 
-    if args.strict_headings:
-      if lines:
-        maxlen = max([len(line) for line in lines])
-        delimiters = list(re.finditer('(\s{2,})', lines[0]))
-        if delimiters:
-          if delimiters[0].start(1) > 0:
-            log.debug('First delimiter: {}:{} {!r}'.format(delimiters[0].start(1), delimiters[0].end(1), delimiters[0].group(1)))
-            columns.append((0, delimiters[0].end(1)))
-          else:
-            parser.error('Leading columns in heading row no allowed')
-          for (pos, delimiter) in enumerate(delimiters):
-            columns.append((delimiter.end(1), maxlen if pos+1 == len(delimiters) else delimiters[pos+1].end(1)))
-        else:
-          columns = [(0, maxlen)]
-      else:
-        parser.error('No heading row')
-    else:
+    if (not args.headings) or args.loose_headings:
       """
       Most columns are probably left-justified but some (like numeric data) might be right-justified.  We need to
       examine all the lines to see where each column begins and ends.  We'll consider a column complete when we reach
@@ -550,6 +534,22 @@ class FixedMethod(MethodBase):
       """
       if any([line[start:].strip() for line in lines]):
         columns.append((start, sys.maxsize))
+    else:
+      if lines:
+        maxlen = max([len(line) for line in lines])
+        delimiters = list(re.finditer('(\s{2,})', lines[0]))
+        if delimiters:
+          if delimiters[0].start(1) > 0:
+            log.debug('First delimiter: {}:{} {!r}'.format(delimiters[0].start(1), delimiters[0].end(1), delimiters[0].group(1)))
+            columns.append((0, delimiters[0].end(1)))
+          else:
+            parser.error('Leading columns in heading row no allowed')
+          for (pos, delimiter) in enumerate(delimiters):
+            columns.append((delimiter.end(1), maxlen if pos+1 == len(delimiters) else delimiters[pos+1].end(1)))
+        else:
+          columns = [(0, maxlen)]
+      else:
+        parser.error('No heading row')
 
     log.debug('columns: {columns}'.format(**locals()))
 
@@ -872,7 +872,7 @@ methods = []
 
 parser = argparse.ArgumentParser(description='Process tabulur data in several input and output formats')
 parser.add_argument('-H', '--headings', dest='headings', action='store_true', help='Treat row 1 as headings')
-parser.add_argument('-S', '--strict-headings', dest='strict_headings', action='store_true', help='Use row 1 only for column widths (assumes --headings)')
+parser.add_argument('-l', '--loose-headings', dest='loose_headings', action='store_true', help='Use all rows to determine column widths')
 parser.add_argument('-i', '--input', dest='input', help='Input method', type=method_abbreviator,
                     choices=method_names('read'), required=True)
 parser.add_argument('-o', '--output', dest='output', help='Output method', type=method_abbreviator,
@@ -892,7 +892,7 @@ args = parser.parse_args() if __name__ == '__main__' else parser.parse_args(['-i
 
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-if args.strict_headings:
+if args.loose_headings:
   args.headings = True
 
 args.separator = args.separator or ('  ' if args.output == 'fixed' else '|')
