@@ -213,7 +213,7 @@ class Instances(object):
         for line in stream.readlines():
           match = env_regexp.search(line)
           if match:
-            ret[match.group(1)] = match.group(2).strip('\'').strip('"')
+            env[match.group(1)] = match.group(2).strip('\'').strip('"')
       log.debug('env: {env}')
 
       if 'secure_store' in openstack and 'secure_key' in openstack:
@@ -369,11 +369,9 @@ class Instances(object):
       /servers/5/user_id '2a9eeb8f8b2b823c45866e52507850db1b509a0284e5f543c28066c21ae64307'
     """
 
-    """
     # add OpenStack instances
     for openstack in self.config.get('openstack', []):
       instances += self.openstack_discover(openstack)
-    """
 
     self.log.debug('instances: {}'.format([instance.__dict__ for instance in instances]))
     return sorted(instances, key=lambda instance: f'{instance.provider}/{instance.name}')
