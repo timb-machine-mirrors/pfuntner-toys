@@ -391,6 +391,7 @@ if __name__ == '__main__':
   group.add_argument('-m', '--make', action='store_true', help=f'Refresh /etc/ansible/hosts and {instances_class.ssh_config_filename} with instance information')
   group.add_argument('-A', '--ansible-make', action='store_true', help=f'Refresh /etc/ansible/hosts only')
 
+  parser.add_argument('-u', '--user', help='Default user if cannot be determined from the image, etc')
   parser.add_argument('-o', '--out', default='/etc/ansible/hosts', help='Ansible hosts yaml destination file.  Default: /etc/ansible/hosts')
   parser.add_argument('-a', '--all', action='store_true', help='Show all columns')
   parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
@@ -410,8 +411,14 @@ if __name__ == '__main__':
     print(str(table), end='')
 
     if args.make or args.ansible_make:
+        if args.user:
+          for instance in instances:
+            if instance.user == None:
+              instance.user = args.user
+
         if any([instance.user is None for instance in instances]):
           parser.error('A user is not provided for all instances')
+
         print(f'Writing to {args.out}')
         p = subprocess.Popen(([] if ('win' in sys.platform) or (args.out != '/etc/ansible/hosts') else ['sudo']) + ['bash', '-c', f'cat > {args.out}'], stdin=subprocess.PIPE)
         p.stdin.write('[targets]\n'.encode())
