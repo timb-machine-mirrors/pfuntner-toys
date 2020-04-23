@@ -73,11 +73,11 @@ for path in args.paths:
           else:
             print(f'Update {path!r} to {remote_sha1}')
         else:
-          parser.error('No remote sha1')
+          parser.error(f'No remote sha1 for {path!r}')
       else:
-        parser.error('No remote url')
+        parser.error(f'No remote url for {path!r}')
     else:
-      parser.error('No local SHA1')
+      parser.error(f'No local SHA1 for {path!r}')
     
     os.chdir(original_dir)
   else:
