@@ -69,9 +69,9 @@ for path in args.paths:
           remote_sha1 = match.group(1)
           log.info(f'remote SHA1: {remote_sha1!r}')
           if local_sha1 == remote_sha1:
-            print(f'No updates for {path!r}')
+            print(f'No updates for master branch of {path!r}')
           else:
-            print(f'Update {path!r} to {remote_sha1}')
+            print(f'Update master branch of {path!r} to {remote_sha1}')
         else:
           parser.error(f'No remote sha1 for {path!r}')
       else:
