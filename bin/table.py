@@ -349,7 +349,7 @@ class FormMethod(MethodBase):
     :param order: The order of named columns if order is important
     :return: None
     """
-    if not isinstance(root, dictionary):
+    if not isinstance(root, dict):
       parser.error('Form format requires a dictionary')
     if len(root) != 1:
       parser.error('A {count} element dictionary cannot be processed in form format'.format(count=len(root)))
