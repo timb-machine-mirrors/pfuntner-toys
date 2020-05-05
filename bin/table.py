@@ -508,7 +508,7 @@ class FixedMethod(MethodBase):
     headings = []
     columns = []
 
-    lines = stream.read().splitlines()
+    lines = [line.rstrip() for line in stream.read().splitlines()]
 
     if (not args.headings) or args.loose_headings:
       """
