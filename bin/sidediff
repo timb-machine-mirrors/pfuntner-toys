@@ -36,6 +36,7 @@ group = parser.add_mutually_exclusive_group()
 group.add_argument('-w', '--width', type=int, help='Specify screen width')
 group.add_argument('--wide', action='store_true', help='Use entire screen width')
 
+parser.add_argument('-b', '--ignore-space-change', action='store_true', help='Ignore changes in white space')
 parser.add_argument('file1', help='Path to lefthand file')
 parser.add_argument('file2', help='Path to righthand file')
 
@@ -53,6 +54,10 @@ if args.width:
   cmd += ['--width', str(args.width)]
 elif args.wide:
   cmd += ['--width', str(extract('stty size < /dev/tty', '\d+\s+(\d+)', 80))]
+
+if args.ignore_space_change:
+  cmd += ['-b']
+
 cmd += ['--side-by-side', args.file1, args.file2]
 log.debug('cmd: {cmd}'.format(**locals()))
 exit(subprocess.Popen(cmd).wait())
