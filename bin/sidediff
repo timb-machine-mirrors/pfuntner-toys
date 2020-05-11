@@ -55,4 +55,4 @@ elif args.wide:
   cmd += ['--width', str(extract('stty size < /dev/tty', '\d+\s+(\d+)', 80))]
 cmd += ['--side-by-side', args.file1, args.file2]
 log.debug('cmd: {cmd}'.format(**locals()))
-exit(subprocess.Popen(cmd).wait())
+exit(subprocess.Popen(cmd, close_fds=False).wait())
