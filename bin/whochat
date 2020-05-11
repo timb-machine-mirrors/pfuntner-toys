@@ -39,7 +39,7 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 """
 
 root = os.path.expanduser('~/.config/hexchat/logs')
-regexp = re.compile(args.pattern, flags=re.IGNORE if bool((args.ignore_case or 0) % 2) else 0)
+regexp = re.compile(args.pattern, flags=re.IGNORECASE if bool((args.ignore_case or 0) % 2) else 0)
 now = (datetime.datetime.now() - datetime.datetime.fromtimestamp(0)).total_seconds()
 if args.age:
   args.age *= 24*60*60 # convert to seconds
