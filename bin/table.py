@@ -508,7 +508,7 @@ class FixedMethod(MethodBase):
     headings = []
     columns = []
 
-    lines = stream.read().splitlines()
+    lines = [line.rstrip() for line in stream.read().splitlines()]
 
     if (not args.headings) or args.loose_headings:
       """
@@ -607,10 +607,10 @@ class FixedMethod(MethodBase):
           stream.write(args.separator.join([col.ljust(widths[col_num]) for (col_num, col) in enumerate(order)]))
           stream.write('\n')
         stream.write(args.separator.join([self.justify(row.get(col, ''), widths[col_num])
-                                          for (col_num, col) in enumerate(order)]))
+                                          for (col_num, col) in enumerate(order)]).rstrip())
       else:
         stream.write(args.separator.join([self.justify(row[col_num] if col_num < len(row) else '', width)
-                                          for (col_num, width) in enumerate(widths)]))
+                                          for (col_num, width) in enumerate(widths)]).rstrip())
 
       stream.write('\n')
 

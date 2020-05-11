@@ -6,7 +6,7 @@ import logging
 import argparse
 
 def typer(o):
-  types = ['str', 'unicode', 'int', 'float', 'list', 'dict', 'bool', 'set']
+  types = ['str', 'int', 'float', 'list', 'dict', 'bool', 'set'] # deleted unicode for Python3
   ret = None
 
   for curr in types:
