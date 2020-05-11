@@ -57,6 +57,7 @@ class Instances(object):
     aws_distro_mappings = [
       (re.compile('ubuntu-?[a-z]*-16'),  'ubuntu16', 'ubuntu'),
       (re.compile('ubuntu-?[a-z]*-18'),  'ubuntu18', 'ubuntu'),
+      (re.compile('ubuntu-?[a-z]*-20'),  'ubuntu20', 'ubuntu'),
       (re.compile('^CentOS[ A-Za-z]+6'), 'centos6',  'centos'),
       (re.compile('^CentOS[ A-Za-z]+7'), 'centos7',  'centos'),
       (re.compile('^CentOS[ A-Za-z]+8'), 'centos8',  'centos'),
@@ -121,6 +122,7 @@ class Instances(object):
       (re.compile('^debian-10'),         'debian10'),
       (re.compile('^ubuntu[-a-z]*-16'),  'ubuntu16'),
       (re.compile('^ubuntu[-a-z]*-18'),  'ubuntu18'),
+      (re.compile('^ubuntu[-a-z]*-20'),  'ubuntu20'),
     ]
 
     user = self.config.get('gcp_user')
