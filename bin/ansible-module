@@ -42,7 +42,7 @@ def run(cmd, trap=True):
 
 parser = argparse.ArgumentParser(description='Run an Ansible module')
 parser.add_argument('module', help='Name of Ansible module')
-parser.add_argument('args', help='JSON dictionary for arguments')
+parser.add_argument('args', nargs='?', help='JSON dictionary for arguments')
 parser.add_argument('--hosts', default='localhost', help='Comma-delimited list of host (default: localhost)')
 parser.add_argument('-a', '--ansible-verbose', action='count', help='Use Ansible --verbose option')
 parser.add_argument('-b', '--become', action='store_true', help='Become superuser')
@@ -54,7 +54,8 @@ log = logging.getLogger()
 # log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
-ansible_args = yaml.dump(json.loads(args.args))
+ansible_args = yaml.dump(json.loads(args.args)) if args.args else ''
+
 log.info(f'ansible_args: {ansible_args}')
 playbook_file = tempfile.NamedTemporaryFile(mode='w')
 log.info(f'playbook_file: {playbook_file.name}')
