@@ -39,6 +39,7 @@ if rc == 0 and stdout:
     'ansible_distribution' if args.names else 'Distro',
     'ansible_distribution_version' if args.names else 'Version',
     'ansible_distribution_major_version' if args.names else 'Major Version',
+    'ansible_distribution_release' if args.names else 'Distro Release',
     'ansible_kernel' if args.names else 'Kernel',
     'ansible_pkg_mgr' if args.names else 'Package Manager',
     'ansible_service_mgr' if args.names else 'Service Manager'
@@ -63,6 +64,7 @@ if rc == 0 and stdout:
           setup['ansible_facts'].get('ansible_distribution'),
           setup['ansible_facts'].get('ansible_distribution_version'),
           setup['ansible_facts'].get('ansible_distribution_major_version'),
+          setup['ansible_facts'].get('ansible_distribution_release'),
           setup['ansible_facts'].get('ansible_kernel'),
           setup['ansible_facts'].get('ansible_pkg_mgr'),
           setup['ansible_facts'].get('ansible_service_mgr')

@@ -70,7 +70,7 @@ tests2 = load(args.file2)
 
 table = Table('Description', args.file1, args.file2, 'Equal')
 
-regexp = re.compile(r'\W(?:0x)?((?:\d(?:[0-9a-f]*))|(?:[0-9a-f]*\d(?:[0-9a-f]*))|(?:[0-9a-f]*\d))\W')
+regexp = re.compile(r'((?:\d(?:[-0-9a-f]{2,}))|(?:[-0-9a-f]+\d(?:[0-9a-f]+))|(?:[-0-9a-f]*\d(?:[0-9a-f]{2,}))|(?:[-0-9a-f]{2,}\d(?:[0-9a-f]*))|(?:[-0-9a-f]{2,}\d))')
 
 for test1 in tests1:
   test2 = get_test(tests2, test1['description'])
