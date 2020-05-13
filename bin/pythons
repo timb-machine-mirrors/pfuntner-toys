@@ -2,6 +2,7 @@
 
 import os
 import re
+import sys
 import logging
 import argparse
 import subprocess
@@ -31,7 +32,7 @@ def look_for(dir, target):
   path = os.path.join(dir, target)
   if os.path.isfile(path):
     (rc, stdout, stderr) = run([path, '--version'])
-    version = (stdout + stderr).replace('\n', ' ').replace('\r', '').strip()
+    version = (stdout + stderr).decode('utf-8').replace('\n', ' ').replace('\r', '').strip()
     if not args.dumb:
       for token in version.split():
         if version_regexp.search(token):
