@@ -1,111 +1,70 @@
 #! /usr/bin/env python3
 
 import os
-import re
-import sys
-import getopt
-import hashlib
+import logging
+import argparse
 import subprocess
 
-def syntax(msg=None):
-  if msg:
-    sys.stderr.write('{msg}\n'.format(**locals()))
-  sys.stderr.write('{pgm} [--verbose] dir1 dir2\n'.format(pgm=sys.argv[0]))
-  exit(1)
+def run(cmd):
+  if isinstance(cmd, str):
+    cmd = cmd.split()
+  log.info('Executing {cmd}'.format(**locals()))
+  p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  (stdout, stderr) = tuple([s.decode('utf-8') for s in p.communicate()])
+  rc = p.wait()
+  log.debug('Executed {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
+  return (rc, stdout, stderr)
 
-def getFileType(path):
-  if os.path.isfile(path):
-    return 'f'
-  elif os.path.isdir(path):
-    return 'd'
+def listdir(dir):
+  return [] if dir.startswith('.') else [child for child in os.listdir(dir) if args.hidden or child.startswith('.')]
+
+def compare(file1, file2, remote_missing_only):
+  if report_missing_only:
+    if not os.path.isfile(file2):
+      log.warn('No {file2!r} to match {file1!r}')
+  elif os.path.isfile(file2):
+    log.info(f'Compare {file1!r} against {file2!r}')
+  elif os.path.exists(file2):
+    parser.error(f'{file2!r} is an unsupported file')
   else:
-    raise Exception('Cannot determine file type of {path!r}'.format(**locals()))
-
-def getMd5sum(path):
-  sum = hashlib.md5()
-  with open(path) as stream:
-    sum.update(stream.read().encode('utf-8'))
-  return sum.hexdigest()
-
-def getdir(args):
-  if not args:
-    syntax('Missing directory or directories')
-
-  path = args.pop(0)
-  if not os.path.isdir(path):
-    syntax('{path!r} is not a directory'.format(**locals()))
-
-  return (path, args)
-
-def excluded(filename):
-  global excludes
-
-  return any([exclude.match(filename) for exclude in excludes])
-
-def diff(dir1, dir2):
-  files1 = sorted(os.listdir(dir1))
-  files2 = sorted(os.listdir(dir2))
-  while files1 or files2:
-    if files1:
-      file1 = files1[0]
-      if not files2:
-        if not excluded(file1):
-          print('missing {dir1}/{file1} None'.format(**locals()))
-        files1.pop(0)
-        continue
-    if files2:
-      file2 = files2[0]
-      if not files1:
-        if not excluded(file2):
-          print('missing None {dir2}/{file2}'.format(**locals()))
-        files2.pop(0)
-        continue
-
-    path1 = os.path.join(dir1, file1)
-    path2 = os.path.join(dir2, file2)
-    if file1 == file2:
-      if not excluded(file1):
-        if getFileType(path1) == getFileType(path2):
-          if os.path.isdir(path1):
-            diff(path1, path2)
-          elif getMd5sum(path1) == getMd5sum(path2):
-            print('match {path1} {path2}'.format(**locals()))
-          else:
-            print('md5sum-mismatch {path1} {path2}'.format(**locals()))
+    log.warn('No {file2!r} to match {file1!r}')
+    
+def dive(tree1, tree2, paths=None, report_missing_only=False):
+  log.debug(f'tree1={tree1!r}, tree2={tree2!r}, paths={paths}, report_missing_only={report_missing_only}')
+  if paths is None:
+    if os.path.isfile(tree1):
+      compare(tree1, tree2, report_missing_only=report_missing_only)
+    elif os.path.isdir(tree1):
+      dive(tree1, tree2, path=listdir(tree1), report_missing_only=report_missing_only)
+    elif not report_missing_only:
+      if os.path.exists(tree1):
+        parser.error(f'{tree1!r} is an unsupported file')
+      else:
+        parser.error(f'{tree1!r} does not exist')
+  else:
+    for child in paths:
+      path = os.path.join(tree1, child)
+      if os.path.isfile(path):
+        compare(path, os.path.join(tree2, child), report_missing_only=report_missing_only)
+      elif os.path.isdir(path):
+        dive(path, os.path.join(tree2, child), None, report_missing_only=report_missing_only)
+      elif not report_missing_only:
+        if os.path.exists(path):
+          parser.error(f'{path!r} is an unsupported file')
         else:
-          print('type-mismatch {path1} {path2}'.format(**locals()))
-      files1.pop(0)
-      files2.pop(0)
-    elif file1 < file2:
-      if not excluded(file1):
-        print('missing {dir1}/{file1} None'.format(**locals()))
-      files1.pop(0)
-    else:
-      if not excluded(file2):
-        print('missing None {dir2}/{file2}'.format(**locals()))
-      files2.pop(0)
+          parser.error(f'{path!r} does not exist')
 
-verbose = False
-excludes = []
+parser = argparse.ArgumentParser(description='Perform diff on two trees, ignoring files')
+parser.add_argument('tree1', help='Path to tree 1')
+parser.add_argument('tree2', help='Path to tree 2')
+parser.add_argument('-x', '--exclude', nargs='*', help='Specify regular filename expressions to exclude from search')
+parser.add_argument('-H', '--hidden', action='store_true', help='Process `hidden files`')
+parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
+args = parser.parse_args()
 
-(opts, args) = ([], [])
-try:
-  (opts, args) = getopt.getopt(sys.argv[1:], 'vx:', ['verbose', 'exclude='])
-except Exception as e:
-  syntax(str(e))
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
-for (opt, arg) in opts:
-  if opt in ['-v', '--verbose']:
-    verbose = not verbose
-  elif opt in ['-x', '--exclude']:
-    excludes.append(re.compile(arg))
-  else:
-    syntax('Unexpected option: {opt!r}'.format(**locals()))
-
-(dir1, args) = getdir(args)
-(dir2, args) = getdir(args)
-
-if args:
-  syntax('Unexpected arguments: {args}'.format(**locals()))
-
-diff(dir1, dir2)
+dive(args.tree1, args.tree2)
+dive(args.tree2, args.tree1, report_missing_only=True)

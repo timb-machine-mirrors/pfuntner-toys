@@ -1,9 +1,11 @@
 #! /usr/bin/env python3
 
 import os
+import re
 import sys
 import logging
 import argparse
+import tempfile
 import subprocess
 
 def run(cmd):
@@ -20,6 +22,34 @@ def run(cmd):
   log.debug('Executed {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
   return (rc, stdout, stderr)
 
+def replace_imports(path):
+  tmp = tempfile.NamedTemporaryFile(mode='w')
+  with open(path) as stream:
+    imported = False
+    for line in stream.read().splitlines():
+      match = import_regexp.search(line)
+      if match:
+        script = os.path.join(os.path.dirname(path), match.group(1) + '.py')
+        cls = match.group(2)
+        log.info(f'importing {cls} from {script}')
+        with open(script) as script_stream:
+          copy = False
+          for script_line in script_stream.read().splitlines():
+            if copy and copy_end_regexp.search(script_line):
+              log.info(f'Stopping copying at: {script_line!r}')
+              copy = False
+              break
+            elif not copy and re.search(f'^class\s+{cls}\(', script_line):
+              copy = True
+              imported = True
+            if copy:
+              log.info(f'Copying: {script_line!r}')
+              tmp.write(script_line + '\n')
+      else:
+        tmp.write(line + '\n')
+  tmp.flush()
+  return tmp
+
 parser = argparse.ArgumentParser(description='Run a local script on a remote machine')
 parser.add_argument('host', help='Name of remote host')
 parser.add_argument('script', help='Path to script')
@@ -35,10 +65,15 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
+import_regexp = re.compile(r'^from\s+(\S+)\s+import\s+(\S+)$')
+copy_end_regexp = re.compile(r'^\S')
+
 if os.path.isfile(args.script):
   basename = os.path.basename(args.script)
+  src = replace_imports(args.script)
+
   dest = os.path.join('/tmp', basename)
-  (rc, stdout, stderr) = run(['scp', args.script, f'{args.host}:{dest}'])
+  (rc, stdout, stderr) = run(['scp', src.name, f'{args.host}:{dest}'])
   if rc == 0:
     run(['ssh', args.host, 'chmod', 'a+x', dest])
     (rc, stdout, stderr) = run(['ssh'] + (['-q'] if args.quiet else []) + [args.host] + ([args.interpreter] if args.interpreter else []) + [dest] + args.args)
