@@ -11,7 +11,7 @@ bin/megascp.json
 bundle
 bundler
 htmldiff
-ldiff
+ldiff.ruby
 rake
 rspec
 serverspec-init
