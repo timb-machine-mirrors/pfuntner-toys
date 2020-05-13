@@ -42,8 +42,8 @@ def look_for(dir, target):
   else:
     return False
 
-parser = argparse.ArgumentParser(description='Show Python interpreters/versions')
-parser.add_argument('-a', '--all', action='store_true', help='Find all instances of targets in PATH')
+parser = argparse.ArgumentParser(description='Show command locations and versions')
+parser.add_argument('targets', metavar='target', nargs='+', help='One or more targets to locate')
 parser.add_argument('-d', '--dumb', action='store_true', help='Do not try to parse out version')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
@@ -52,11 +52,12 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
+# The version must contain a digit followed by a period
 version_regexp = re.compile(r'\d\.')
 
 table = Table('Name', 'Location', 'Version')
 
-for target in ['python', 'python2', 'python3']:
+for target in args.targets:
   found = False
   processed = []
   for dir in os.environ['PATH'].split(':'):
@@ -64,8 +65,6 @@ for target in ['python', 'python2', 'python3']:
       processed.append(dir)
       if look_for(dir, target):
         found = True
-        if not args.all:
-          break
     else:
       log.debug('Skipping {dir} since it was already processed'.format(**locals()))
 
