@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import os
+import sys
 import logging
 import argparse
 import subprocess
@@ -16,14 +17,39 @@ def run(cmd):
   return (rc, stdout, stderr)
 
 def listdir(dir):
-  return [] if dir.startswith('.') else [child for child in os.listdir(dir) if args.hidden or child.startswith('.')]
+  ret = []
+  if dir.startswith('.') and not args.hidden:
+    log.info(f'Ignoring {dir!r}')
+  else:
+    ret = os.listdir(dir)
+    if not args.hidden:
+      pos = 0
+      while pos < len(ret):
+        if ret[pos].startswith('.'):
+          del ret[pos]
+        else:
+          pos += 1
+  return ret
 
-def compare(file1, file2, remote_missing_only):
+def block(s):
+  s = str(s)
+  print('*' * (len(s)+4))
+  print(f'* {s} *')
+  print('*' * (len(s)+4))
+
+def compare(file1, file2, report_missing_only):
   if report_missing_only:
     if not os.path.isfile(file2):
-      log.warn('No {file2!r} to match {file1!r}')
+      block(f'No {file2!r} to match {file1!r}')
   elif os.path.isfile(file2):
     log.info(f'Compare {file1!r} against {file2!r}')
+    cmd = ['diff', file1, file2]
+    (rc, stdout, stderr) = run(cmd)
+    if rc != 0:
+      block(cmd)
+      sys.stdout.write(stdout)
+      sys.stderr.write(stderr)
+      print('')
   elif os.path.exists(file2):
     parser.error(f'{file2!r} is an unsupported file')
   else:
@@ -33,9 +59,9 @@ def dive(tree1, tree2, paths=None, report_missing_only=False):
   log.debug(f'tree1={tree1!r}, tree2={tree2!r}, paths={paths}, report_missing_only={report_missing_only}')
   if paths is None:
     if os.path.isfile(tree1):
-      compare(tree1, tree2, report_missing_only=report_missing_only)
+      compare(tree1, tree2, report_missing_only)
     elif os.path.isdir(tree1):
-      dive(tree1, tree2, path=listdir(tree1), report_missing_only=report_missing_only)
+      dive(tree1, tree2, paths=listdir(tree1), report_missing_only=report_missing_only)
     elif not report_missing_only:
       if os.path.exists(tree1):
         parser.error(f'{tree1!r} is an unsupported file')
@@ -45,7 +71,7 @@ def dive(tree1, tree2, paths=None, report_missing_only=False):
     for child in paths:
       path = os.path.join(tree1, child)
       if os.path.isfile(path):
-        compare(path, os.path.join(tree2, child), report_missing_only=report_missing_only)
+        compare(path, os.path.join(tree2, child), report_missing_only)
       elif os.path.isdir(path):
         dive(path, os.path.join(tree2, child), None, report_missing_only=report_missing_only)
       elif not report_missing_only:
