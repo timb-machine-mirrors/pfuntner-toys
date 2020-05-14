@@ -18,7 +18,8 @@ def run(cmd):
 
 def listdir(dir):
   ret = []
-  if dir.startswith('.') and not args.hidden:
+  basename = os.path.basename(dir)
+  if not args.hidden and basename != '.' and basename.startswith('.'):
     log.info(f'Ignoring {dir!r}')
   else:
     ret = os.listdir(dir)
@@ -38,6 +39,7 @@ def block(s):
   print('*' * (len(s)+4))
 
 def compare(file1, file2, report_missing_only):
+  log.debug(f'compare(file1={file1!r}, file2={file2!r}, report_missing_only={report_missing_only})')
   if report_missing_only:
     if not os.path.isfile(file2):
       block(f'No {file2!r} to match {file1!r}')
@@ -56,7 +58,7 @@ def compare(file1, file2, report_missing_only):
     log.warn('No {file2!r} to match {file1!r}')
     
 def dive(tree1, tree2, paths=None, report_missing_only=False):
-  log.debug(f'tree1={tree1!r}, tree2={tree2!r}, paths={paths}, report_missing_only={report_missing_only}')
+  log.debug(f'dive(tree1={tree1!r}, tree2={tree2!r}, paths={paths}, report_missing_only={report_missing_only})')
   if paths is None:
     if os.path.isfile(tree1):
       compare(tree1, tree2, report_missing_only)
