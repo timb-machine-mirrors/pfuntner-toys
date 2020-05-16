@@ -54,10 +54,11 @@ class RegexpSelector(SelectorClass):
       raise Exception(f'Not a potential regular expression: {arg!r}')
 
   def grep(self, lines):
-    self.grep_hits = [bool(self.regexp.match(line)) for line in lines]
+    self.grep_hits = [bool(self.regexp.search(line)) for line in lines]
+    log.debug(f'grep_hits: {self.grep_hits}')
 
   def affect(self, lines):
-    raise Exception('WIP')
+    return [pos+1 for pos, hit in enumerate(self.grep_hits) if hit]
 
   def __str__(self):
     return f'{self.__class__.__name__}(pattern={self.regexp.pattern!r})'
@@ -85,10 +86,11 @@ class RangeSelector(SelectorClass):
 def process(file_name=None):
   stream = None
   if file_name:
-    if os.path.isfile(file_name):
-      stream = open(file_name)
-    elif os.path.exists():
-      log.warning(f'Not a file: {file_name!r}')
+    if os.path.exists(file_name):
+      if not os.path.isdir(file_name):
+        stream = open(file_name)
+      elif os.path.exists(file_name):
+        log.warning(f'Not a file: {file_name!r}')
     else:
       log.warning(f'Could not find {file_name!r}')
   else:
