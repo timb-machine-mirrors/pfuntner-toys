@@ -1,0 +1,185 @@
+#! /usr/bin/env python3
+
+import re
+import os
+import sys
+import string
+import logging
+import argparse
+
+class SelectorClass(object):
+  @classmethod
+  def parse(cls, arg):
+    try:
+      return cls(arg)
+    except Exception as e:
+      log.debug(f'{cls.__name__} threw {e!s}')
+      return None
+
+class IntegerSelector(SelectorClass):
+  def __init__(self, arg):
+    self.arg = arg
+    self.num = int(arg)
+    if self.num == 0:
+      raise Exception('Cannot select line `0` - the first line is `1`')
+
+  def affect(self, lines):
+    if self.num > 0:
+      return [self.num] if self.num <= len(lines) else []
+    else:
+      return [len(lines)+self.num+1] if -self.num < len(lines) else []
+
+  def __str__(self):
+    return f'{self.__class__.__name__}(num={self.num})'
+
+class RegexpSelector(SelectorClass):
+  def __init__(self, arg):
+    self.arg = arg
+    self.regexp = None
+    self.grep_hits = []
+    self.delim = None
+    if len(arg) >= 3:
+      self.delim = arg[0]
+      if self.delim in string.punctuation:
+        if arg[-1] == self.delim:
+          if self.delim not in arg[1:-1]:
+            self.regexp = re.compile(arg[1:-1], flags=re.IGNORECASE if args.ignore_case else 0)
+          else:
+            raise Exception(f'Delimiter {self.delim!r} repeated within potential regular expression')
+        else:
+          raise Exception(f'Potential regular expression not terminated by {self.delim!r}')
+      else:
+        raise Exception(f'Potential regular expression delimited by {self.delim!r} instead of punctuation ({string.punctuation!r}')
+    else:
+      raise Exception(f'Not a potential regular expression: {arg!r}')
+
+  def grep(self, lines):
+    self.grep_hits = [bool(self.regexp.match(line)) for line in lines]
+
+  def affect(self, lines):
+    raise Exception('WIP')
+
+  def __str__(self):
+    return f'{self.__class__.__name__}(pattern={self.regexp.pattern!r})'
+
+class RangeSelector(SelectorClass):
+  def __init__(self, arg):
+    self.arg = arg
+    self.selector1 = None
+    self.selector2 = None
+    delims = re.finditer('[:-]', arg)
+    for delim in delims:
+      self.selector1 = IntegerSelector.parse(self.arg[:delim.start(0)]) or RegexpSelector.parse(self.arg[:delim.start(0)])
+      self.selector2 = IntegerSelector.parse(self.arg[delim.end(0):]) or RegexpSelector.parse(self.arg[delim.end(0):])
+      if all([self.selector1, self.selector2]):
+        break
+    if not all([self.selector1, self.selector2]):
+      raise Exception(f'Not a range: {arg!r}')
+
+  def affect(self, lines):
+    raise Exception('WIP')
+
+  def __str__(self):
+    return f'{self.__class__.__name__}({self.selector1!s}-{self.selector2!s})'
+
+def process(file_name=None):
+  stream = None
+  if file_name:
+    if os.path.isfile(file_name):
+      stream = open(file_name)
+    elif os.path.exists():
+      log.warning(f'Not a file: {file_name!r}')
+    else:
+      log.warning(f'Could not find {file_name!r}')
+  else:
+    stream = sys.stdin
+
+  if stream:
+    lines = stream.read().splitlines()
+
+    # evaluate regular expressions across each line
+    for selector in selectors:
+      if isinstance(selector, RegexpSelector):
+        selector.grep(lines)
+      elif isinstance(selector, RangeSelector):
+        if isinstance(selector.selector1, RegexpSelector):
+          selector.selector1.grep(lines)
+        if isinstance(selector.selector2, RegexpSelector):
+          selector.selector2.grep(lines)
+
+    if args.by_selectors:
+      log.error('WIP: --by-selectors')
+    else:
+      visibles = [False] * len(lines)
+
+      for selector in selectors:
+        for effect in selector.affect(lines):
+          log.debug(f'effect: {effect}')
+          visibles[effect-1] = not visibles[effect-1]
+
+      if args.negate:
+        visibles = [not(visible) for visible in visibles]
+
+      log.debug(f'visible: {visibles}')
+
+      for pos, visible in enumerate(visibles):
+        log.debug(f'pos: {pos}, visible: {visible}')
+        if visible:
+          print('{file_name}{pos}{space}{line}'.format(
+            file_name=f'{file_name}:' if file_name else '',
+            pos='{}:'.format(pos+1) if args.number else '',
+            space=' ' if file_name or args.number else '',
+            line=lines[pos]
+          ))
+
+    if file_name:
+      stream.close()
+
+parser = argparse.ArgumentParser(description='Select lines from files based on regular expressions/line numbers')
+parser.add_argument('-i', '--ignore-case', action='store_true', help='Perform case-insensitive searches')
+parser.add_argument('-v', '--negate', action='store_true', help='Print lines that do not match the expressions/line numbers')
+parser.add_argument('-n', '--number', action='store_true', help='Print line numbers')
+parser.add_argument('-s', '--by-selectors', action='store_true', help='Print by selectors instead of lines')
+parser.add_argument('-V', '--verbose', action='count', help='Enable debugging')
+(args, unknown_args) = parser.parse_known_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.WARNING - (args.verbose or 0)*10)
+
+selector_classes = [
+  IntegerSelector,
+  RegexpSelector,
+  RangeSelector,
+]
+selectors = []
+file_names = []
+
+log.info(f'args: {args}, unknown_args: {unknown_args}')
+
+for arg in unknown_args:
+  selector = None
+  if not file_names:
+    for selector_class in selector_classes:
+      selector = selector_class.parse(arg)
+      if selector:
+        selectors.append(selector)
+        break
+  if not selector:
+    file_names.append(arg)
+
+log.info('Selectors: {selectors}, file_names={file_names}'.format(
+  selectors=[str(selector) for selector in selectors],
+  file_names=file_names,
+))
+
+if selectors:
+  if file_names:
+    for file_name in file_names:
+      process(file_name)
+  else:
+    if sys.stdin.isatty():
+      parser.error('Redirect stdin if file names are not passed on command line')
+    process()
+else:
+  parser.error('No selectors')
