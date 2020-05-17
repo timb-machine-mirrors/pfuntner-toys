@@ -86,7 +86,31 @@ class RangeSelector(SelectorClass):
       raise Exception(f'Not a range: {arg!r}')
 
   def affect(self, file_name, lines):
-    raise Exception('WIP')
+    ret = []
+    starts = self.selector1.affect(file_name, lines)
+    ends = self.selector2.affect(file_name, lines)
+
+    if starts:
+      if ends:
+        if len(starts) == len(ends):
+          for start, end in zip(starts, ends):
+            if start <= end:
+              ret += range(start, end+1)
+            else:
+              log.warning(f'{start}-{end} makes no sense in {self!s} for {file_name!r}')
+        else:
+          log.warning('{self!s} has no effect since the starting selector matched {start_num} lines and the ending selected matched {end_num} in {file_name!r}'.format(
+            self=self,
+            start_num=len(starts),
+            end_num=len(ends),
+            file_name=file_name,
+          ))
+      else:
+        log.warning(f'{self!s} has no effect since the ending selector did not match any lines in {file_name!r}')
+    else:
+      log.warning(f'{self!s} has no effect since the starting selector did not match any lines in {file_name!r}')
+
+    return ret
 
   def __str__(self):
     return f'{self.__class__.__name__}({self.selector1!s}-{self.selector2!s})'
@@ -147,9 +171,12 @@ def process(file_name=None):
 
 parser = argparse.ArgumentParser(description='Select lines from files based on regular expressions/line numbers')
 parser.add_argument('-i', '--ignore-case', action='store_true', help='Perform case-insensitive searches')
-parser.add_argument('-v', '--negate', action='store_true', help='Print lines that do not match the expressions/line numbers')
 parser.add_argument('-n', '--number', action='store_true', help='Print line numbers')
-parser.add_argument('-s', '--by-selectors', action='store_true', help='Print by selectors instead of lines')
+
+group = parser.add_mutually_exclusive_group()
+group.add_argument('-v', '--negate', action='store_true', help='Print lines that do not match the expressions/line numbers')
+group.add_argument('-s', '--by-selectors', action='store_true', help='Print by selectors instead of lines')
+
 parser.add_argument('-V', '--verbose', action='count', help='Enable debugging')
 (args, unknown_args) = parser.parse_known_args()
 
