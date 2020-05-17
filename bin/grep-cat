@@ -23,9 +23,17 @@ class IntegerSelector(SelectorClass):
     if self.num == 0:
       raise Exception('Cannot select line `0` - the first line is `1`')
 
-  def affect(self, lines):
+  def affect(self, file_name, lines):
     if self.num > 0:
-      return [self.num] if self.num <= len(lines) else []
+      if self.num <= len(lines):
+        return [self.num]
+      else:
+        log.warning('{self!s} does nothing to {file_name!r} since it only has {size} lines'.format(
+          self=self,
+          file_name=file_name,
+          size=len(lines),
+        ))
+        return []
     else:
       return [len(lines)+self.num+1] if -self.num < len(lines) else []
 
@@ -45,11 +53,11 @@ class RegexpSelector(SelectorClass):
           if self.delim not in arg[1:-1]:
             self.regexp = re.compile(arg[1:-1], flags=re.IGNORECASE if args.ignore_case else 0)
           else:
-            raise Exception(f'Delimiter {self.delim!r} repeated within potential regular expression')
+            raise Exception(f'Delimiter {self.delim!r} repeated within potential regular expression {arg!r}')
         else:
-          raise Exception(f'Potential regular expression not terminated by {self.delim!r}')
+          raise Exception(f'Potential regular expression {arg!r} not terminated by {self.delim!r}')
       else:
-        raise Exception(f'Potential regular expression delimited by {self.delim!r} instead of punctuation ({string.punctuation!r}')
+        raise Exception(f'Potential regular expression {arg!r} delimited by {self.delim!r} instead of punctuation ({string.punctuation!r}')
     else:
       raise Exception(f'Not a potential regular expression: {arg!r}')
 
@@ -57,7 +65,7 @@ class RegexpSelector(SelectorClass):
     self.grep_hits = [bool(self.regexp.search(line)) for line in lines]
     log.debug(f'grep_hits: {self.grep_hits}')
 
-  def affect(self, lines):
+  def affect(self, file_name, lines):
     return [pos+1 for pos, hit in enumerate(self.grep_hits) if hit]
 
   def __str__(self):
@@ -77,7 +85,7 @@ class RangeSelector(SelectorClass):
     if not all([self.selector1, self.selector2]):
       raise Exception(f'Not a range: {arg!r}')
 
-  def affect(self, lines):
+  def affect(self, file_name, lines):
     raise Exception('WIP')
 
   def __str__(self):
@@ -115,7 +123,7 @@ def process(file_name=None):
       visibles = [False] * len(lines)
 
       for selector in selectors:
-        for effect in selector.affect(lines):
+        for effect in selector.affect(file_name or '<stdin>', lines):
           log.debug(f'effect: {effect}')
           visibles[effect-1] = not visibles[effect-1]
 
