@@ -115,6 +115,14 @@ class RangeSelector(SelectorClass):
   def __str__(self):
     return f'{self.__class__.__name__}({self.selector1!s}-{self.selector2!s})'
 
+def print_line(file_name, pos, lines):
+  print('{file_name}{pos}{space}{line}'.format(
+    file_name=f'{file_name}:' if file_name and not args.suppress_file_names else '',
+    pos='{}:'.format(pos + 1) if args.number else '',
+    space=' ' if (file_name and not args.suppress_file_names) or args.number else '',
+    line=lines[pos]
+  ))
+
 def process(file_name=None):
   stream = None
   if file_name:
@@ -142,7 +150,9 @@ def process(file_name=None):
           selector.selector2.grep(lines)
 
     if args.by_selectors:
-      log.error('WIP: --by-selectors')
+      for selector in selectors:
+        for effect in selector.affect(file_name or '<stdin>', lines):
+          print_line(file_name, effect-1, lines)
     else:
       visibles = [False] * len(lines)
 
@@ -159,12 +169,7 @@ def process(file_name=None):
       for pos, visible in enumerate(visibles):
         log.debug(f'pos: {pos}, visible: {visible}')
         if visible:
-          print('{file_name}{pos}{space}{line}'.format(
-            file_name=f'{file_name}:' if file_name else '',
-            pos='{}:'.format(pos+1) if args.number else '',
-            space=' ' if file_name or args.number else '',
-            line=lines[pos]
-          ))
+          print_line(file_name, pos, lines)
 
     if file_name:
       stream.close()
@@ -172,6 +177,7 @@ def process(file_name=None):
 parser = argparse.ArgumentParser(description='Select lines from files based on regular expressions/line numbers')
 parser.add_argument('-i', '--ignore-case', action='store_true', help='Perform case-insensitive searches')
 parser.add_argument('-n', '--number', action='store_true', help='Print line numbers')
+parser.add_argument('-f', '--suppress-file-names', action='store_true', help='Suppress file names')
 
 group = parser.add_mutually_exclusive_group()
 group.add_argument('-v', '--negate', action='store_true', help='Print lines that do not match the expressions/line numbers')
