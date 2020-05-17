@@ -36,10 +36,11 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`flow`](doc/flow.md) | Yes | Flow lines from stdin into columnar form |
 | [`fulltime`](doc/fulltime.md) | | Execute a command using standard `time` utility and all options available to it |
 | [`gitstatus`](doc/gitstatus.md) | | Show files in a local git repo that have been changed, etc. |
+| [`grep-cat`](doc/grep-cat.md) | | Show lines in a file based on line numbers and/or regular expressions, ranges. |
 | [`headtail`](doc/headtail.md) | Yes | Print out the top and bottom of stdin or one or more files |
 | [`hex`](doc/hex.md) | | Print out data or a file in hex and character form |
 | [`indent`](doc/indent.md) | | Indent stdin by a specified number of columns |
-| [`json`](doc/json.md) | Yes | JSON magic - it's a disservice to try to summarize this tool in a single string. |
+| [`json`](doc/json.md) | Yes | JSON magic - it's a disservice to try to summarize this tool in a single string.  Check out its page |
 | [`jsoncompare`](doc/jsoncompare.md) | | Compares JSON and/or YAML files, element by element |
 | [`megadiff`](doc/megadiff.md) | | Compare two directories trees |
 | [`nocrs`](doc/nocrs.md) | | Remove carriage returns from files |
