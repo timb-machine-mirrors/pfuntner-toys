@@ -189,7 +189,7 @@ parser = argparse.ArgumentParser(
 
   Regular expression selectors
     A regular expression can be used to select lines by matching the expression.  The expression must be delimited
-    by punctunation characters which do not appear in the regular expression.  For instance: `/foo-bar/`.
+    by punctuation characters which do not appear in the regular expression.  For instance: `/foo-bar/`.
 
   Range selectors
     Two selectors can be combined using a hyphen or dash between then to select a range of lines that begin with
@@ -207,6 +207,8 @@ group.add_argument('-s', '--by-selectors', action='store_true', help='Print by s
 parser.add_argument('-V', '--verbose', action='count', help='Enable debugging')
 
 parser.usage = ' '.join(parser.format_usage().splitlines()) + ' selector ... [file ...]'
+if parser.usage.startswith('usage: '):
+  parser.usage = parser.usage[7:]
 
 (args, unknown_args) = parser.parse_known_args()
 
