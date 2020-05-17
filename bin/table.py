@@ -604,7 +604,7 @@ class FixedMethod(MethodBase):
     for (row_num, row) in enumerate(root):
       if isinstance(row, dict):
         if row_num == 0:
-          stream.write(args.separator.join([col.ljust(widths[col_num]) for (col_num, col) in enumerate(order)]))
+          stream.write(args.separator.join([col.ljust(widths[col_num]) for (col_num, col) in enumerate(order)]).rstrip())
           stream.write('\n')
         stream.write(args.separator.join([self.justify(row.get(col, ''), widths[col_num])
                                           for (col_num, col) in enumerate(order)]).rstrip())
