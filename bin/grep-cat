@@ -174,7 +174,28 @@ def process(file_name=None):
     if file_name:
       stream.close()
 
-parser = argparse.ArgumentParser(description='Select lines from files based on regular expressions/line numbers')
+parser = argparse.ArgumentParser(
+  description='Select lines from files based on regular expressions/line numbers',
+
+  # I wish I didn't have to hard code the options like this but I wanted to included selectors and files but
+  # couldn't find a better way to modify the default usage string.
+  # usage='grep-cat [-h] [-i] [-n] [-f] [-v | -s] [-V] selector ... [file ...]',
+
+  formatter_class=argparse.RawDescriptionHelpFormatter,
+  epilog="""Selectors
+  Line number selectors
+    A positive and negative integer can be used to select a line by its position in a file.  `1` is the first line,
+    `-1` is the last line.
+
+  Regular expression selectors
+    A regular expression can be used to select lines by matching the expression.  The expression must be delimited
+    by punctunation characters which do not appear in the regular expression.  For instance: `/foo-bar/`.
+
+  Range selectors
+    Two selectors can be combined using a hyphen or dash between then to select a range of lines that begin with
+    the first selector and end with the second selector.  For instance: `1-/foo/`.""",
+)
+
 parser.add_argument('-i', '--ignore-case', action='store_true', help='Perform case-insensitive searches')
 parser.add_argument('-n', '--number', action='store_true', help='Print line numbers')
 parser.add_argument('-f', '--suppress-file-names', action='store_true', help='Suppress file names')
@@ -184,6 +205,9 @@ group.add_argument('-v', '--negate', action='store_true', help='Print lines that
 group.add_argument('-s', '--by-selectors', action='store_true', help='Print by selectors instead of lines')
 
 parser.add_argument('-V', '--verbose', action='count', help='Enable debugging')
+
+parser.usage = ' '.join(parser.format_usage().splitlines()) + ' selector ... [file ...]'
+
 (args, unknown_args) = parser.parse_known_args()
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
