@@ -59,7 +59,7 @@ for host in args.hosts.split(','):
   log.debug(cmd)
   processes[host] = subprocess.Popen(cmd, stdin=subprocess.PIPE if args.encode else None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   if args.encode:
-    processes[host].stdin.write(base64.b64encode(' '.join(remote_cmd)))
+    processes[host].stdin.write(base64.b64encode(' '.join(remote_cmd).encode('utf-8')))
     processes[host].stdin.close()
 
 output = {}
