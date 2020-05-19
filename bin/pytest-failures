@@ -37,7 +37,7 @@ def finish(filename, failure):
     log.debug(f'failure: {failure!r}')
     match = title_regexp.search('\n'.join(failure).replace('\\', ''))
     if match:
-      title = match.group(1)
+      title = match.group(1).replace('\\', '')
       log.debug(f'title: {title!r}, titles: {titles}')
       if title:
         print(titles[title])
