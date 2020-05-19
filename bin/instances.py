@@ -87,7 +87,7 @@ class Instances(object):
             user = None
 
             for mapping in aws_distro_mappings:
-              if mapping[0].search(image_name):
+              if mapping[0].search(image_name) or re.sub('\d+$', '', mapping[1]) in image_name:
                 distro = mapping[1]
                 user = mapping[2]
                 break
@@ -145,7 +145,7 @@ class Instances(object):
 
           image_name = os.path.basename(image.get('sourceImage'))
           for regexp, mapping in gcp_distro_mappings:
-            if regexp.search(image_name):
+            if regexp.search(image_name) or re.sub('\d+$', '', mapping) in image_name:
               distro = mapping
               break
 
