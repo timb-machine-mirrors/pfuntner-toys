@@ -21,7 +21,7 @@ def run(cmd):
   rc = p.wait()
 
   bad = (rc != 0) or stderr
-  log.log(logging.ERROR if bad else logging.DEBUG, 'Running {cmd}'.format(**locals()))
+  log.log(logging.ERROR if bad else logging.DEBUG, 'Ran {cmd}: {rc}, {stdout!r} {stderr!r}'.format(**locals()))
   if bad:
     exit(rc or 1)
   return (rc, stdout, stderr)
@@ -88,7 +88,7 @@ def process(root):
           url = None
   
         (rc, stdout, stderr) = run('git status')
-        clean = 'Clean' if 'nothing to commit, working directory clean' in stdout else 'Dirty'
+        clean = 'Clean' if 'nothing to commit, working directory clean' in stdout or 'nothing to commit, working tree clean' in stdout else 'Dirty'
   
         table.add(root, url, curr_branch, clean, commit[:7], isotime(timestamp), comment)
       os.chdir(prev)
