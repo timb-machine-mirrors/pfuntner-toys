@@ -26,6 +26,9 @@ class Instance(object):
   def __str__(self):
     return json.dumps(self.__dict__)
 
+def distro_in_name(distro, name):
+   return re.search(re.sub(r'^([^0-9])+(.*)$', r'\1.*\2', distro), name)
+
 class Instances(object):
   def __init__(self, log):
     self.log = log
@@ -87,7 +90,7 @@ class Instances(object):
             user = None
 
             for mapping in aws_distro_mappings:
-              if mapping[0].search(image_name):
+              if mapping[0].search(image_name) or distro_in_name(mapping[1], image_name):
                 distro = mapping[1]
                 user = mapping[2]
                 break
@@ -145,7 +148,7 @@ class Instances(object):
 
           image_name = os.path.basename(image.get('sourceImage'))
           for regexp, mapping in gcp_distro_mappings:
-            if regexp.search(image_name):
+            if regexp.search(image_name) or distro_in_name(mapping, image_name):
               distro = mapping
               break
 

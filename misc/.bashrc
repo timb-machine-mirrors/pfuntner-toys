@@ -32,6 +32,8 @@ alias zip=unzip
 
 alias vact='. venv/bin/activate'
 
+alias fixed2json='table.py -i fixed --headings -o json'
+
 unalias docker 2>/dev/null
 # set up docker alias if docker is not available but podman is
 if podman --version >/dev/null 2>&1 && ! docker --version >/dev/null 2>&1
