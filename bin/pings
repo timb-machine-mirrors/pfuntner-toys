@@ -25,10 +25,9 @@ def run(struct, cmd):
   log.debug('Executed {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**struct))
 
 def ping(struct, host):
+  # Minimum = 0ms, Maximum = 0ms, Average = 0ms
   run(struct, f'ping {ping_options} {host}')
   ret = struct['rc'] == 0 and (' 0% packet loss' in struct['stdout'] or ' Lost = 0 (0% loss)' in struct['stdout'])
-  if ret:
-    struct['method'] = 'ping'
   return ret
 
 def test(host, user=None):
@@ -44,6 +43,7 @@ def test(host, user=None):
   }
   if ping(struct['ping'], host):
     struct['status'] = True
+    struct['method'] = 'ping'
   else:
     run(struct['ssh'], 'ssh {user}{host} exit 42'.format(
       user=f'{user}@' if user else '',
