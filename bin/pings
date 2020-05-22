@@ -26,7 +26,7 @@ def run(struct, cmd):
 
 def ping(struct, host):
   run(struct, f'ping {ping_options} {host}')
-  ret = struct['rc'] == 0 and ' 0% packet loss' in struct['stdout']
+  ret = struct['rc'] == 0 and (' 0% packet loss' in struct['stdout'] or ' Lost = 0 (0% loss)' in struct['stdout'])
   if ret:
     struct['method'] = 'ping'
   return ret
