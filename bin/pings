@@ -24,10 +24,27 @@ def run(struct, cmd):
   struct['start'] = struct['start'].isoformat()
   log.debug('Executed {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**struct))
 
+def echo(*columns):
+  print(echo_format.format(*columns))
+
 def ping(struct, host):
-  # Minimum = 0ms, Maximum = 0ms, Average = 0ms
   run(struct, f'ping {ping_options} {host}')
   ret = struct['rc'] == 0 and (' 0% packet loss' in struct['stdout'] or ' Lost = 0 (0% loss)' in struct['stdout'])
+
+  match = ping_ttl_regexp.search(struct['stdout'])
+  if match:
+    if 'performance' not in struct:
+      struct['performance'] = {}
+    struct['performance']['ttl'] = match.group(1)
+
+  for regexp, labels in ping_performance_regexps:
+    match = regexp.search(struct['stdout'])
+    if match:
+      if 'performance' not in struct:
+        struct['performance'] = {}
+      for pos, label in enumerate(labels):
+        struct['performance'][label] = match.group(pos+1)
+      break
   return ret
 
 def test(host, user=None):
@@ -57,11 +74,7 @@ def test(host, user=None):
   if args.json:
     print(json.dumps(struct, sort_keys=True))
   else:
-    print('{host:32} {status!s:5} {method:4}'.format(
-      host=struct['host'],
-      method=struct['method'],
-      status=struct['status'],
-    ))
+    echo(struct['host'], struct['status'], struct['method'])
 
 parser = argparse.ArgumentParser(description='Test connectivity to target hosts via ping & ssh')
 parser.add_argument('hosts', metavar='host', nargs='+', help='One or more hosts')
@@ -77,12 +90,26 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 host_regexp = re.compile(r'^(?:([^@]+)@)?(.+)$')
 
+ping_ttl_regexp = re.compile(r'ttl=(\d+)')
+
+# ping performance output:
+#   Windoze: Minimum = 0ms, Maximum = 0ms, Average = 0ms
+#   Linux: rtt min/avg/max/mdev = 0.115/0.115/0.115/0.000 ms
+ping_performance_regexps = [
+  (re.compile(r'rtt min/avg/max/mdev = ([.0-9]+)/([.0-9]+)/([.0-9]+)/([.0-9]+)'), ['min', 'avg', 'max', 'mdev']), # Linux
+  (re.compile(r'Minimum = ([.0-9]+)ms, Maximum = ([.0-9]+)ms, Average = ([.0-9]+)ms'), ['min', 'max', 'avg']), # Windoze
+]
+
 if 'win' in sys.platform.lower():
   ping_options = '-n 1 -w 1000'
 else:
   ping_options = '-c1 -w1'
 
 iteration = 0
+
+echo_format = '{:32}  {!s:6}  {:6}'
+if not args.json:
+  echo('Host', 'Status', 'Method')
 
 while True:
   iteration += 1
