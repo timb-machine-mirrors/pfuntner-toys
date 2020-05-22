@@ -32,7 +32,7 @@ def common(*dirs):
   return ret
 
 def lastdir(path):
-  return os.path.dirname(path) if os.path.isfile(path) else path
+  return os.path.dirname(path) if not os.path.isdir(path) else path
 
 def shorten(paths, dir):
   ret = []
