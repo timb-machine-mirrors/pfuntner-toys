@@ -19,9 +19,10 @@ def run(struct, cmd):
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   (struct['stdout'], struct['stderr']) = tuple([s.decode('utf-8') for s in p.communicate()])
   struct['rc'] = p.wait()
-  stop = datetime.datetime.now()
-  struct['seconds'] = (stop-struct['start']).total_seconds()
+  struct['stop'] = datetime.datetime.now()
+  struct['seconds'] = (struct['stop']-struct['start']).total_seconds()
   struct['start'] = struct['start'].isoformat()
+  struct['stop'] = struct['stop'].isoformat()
   log.debug('Executed {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**struct))
 
 def echo(*columns):
@@ -62,9 +63,10 @@ def test(host, user=None):
     struct['status'] = True
     struct['method'] = 'ping'
   else:
-    run(struct['ssh'], 'ssh {user}{host} exit 42'.format(
+    run(struct['ssh'], 'ssh {ssh_options} {user}{host} exit 42'.format(
       user=f'{user}@' if user else '',
-      host=host
+      host=host,
+      ssh_options=ssh_options,
     ))
     if struct['ssh']['rc'] == 42:
       struct['status'] = True
@@ -104,6 +106,8 @@ if 'win' in sys.platform.lower():
   ping_options = '-n 1 -w 1000'
 else:
   ping_options = '-c1 -w1'
+
+ssh_options = '-o ConnectTimeout=1'
 
 iteration = 0
 
