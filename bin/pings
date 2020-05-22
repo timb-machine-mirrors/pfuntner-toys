@@ -10,6 +10,10 @@ import argparse
 import datetime
 import subprocess
 
+def signal_handler(signum, frame):
+  log.info('Handling CTRL-C')
+  exit(0)
+
 def run(struct, cmd):
   if isinstance(cmd, str):
     cmd = cmd.split()
@@ -25,7 +29,12 @@ def run(struct, cmd):
   struct['stop'] = struct['stop'].isoformat()
   log.debug('Executed {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**struct))
 
-def echo(*columns):
+def echo(struct, *columns):
+  if args.continuous:
+    if struct:
+      columns += (struct.get('ssh', {}).get('start') or struct.get('ping', {}).get('start'),)
+    else:
+      columns += ('',)
   print(echo_format.format(*columns))
 
 def ping(struct, host):
@@ -76,11 +85,11 @@ def test(host, user=None):
   if args.json:
     print(json.dumps(struct, sort_keys=True))
   else:
-    echo(struct['host'], struct['status'], struct['method'])
+    echo(struct, struct['host'], struct['status'], struct['method'])
 
 parser = argparse.ArgumentParser(description='Test connectivity to target hosts via ping & ssh')
 parser.add_argument('hosts', metavar='host', nargs='+', help='One or more hosts')
-parser.add_argument('-s', '--sleep', default='15', type=float, help='Interval between iterations in seconds')
+parser.add_argument('-s', '--sleep', default=15, type=float, help='Interval between iterations in seconds (default: 15 seconds)')
 parser.add_argument('-c', '--continuous', action='store_true', help='Test hosts continually')
 parser.add_argument('-j', '--json', action='store_true', help='Render output in JSON')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
@@ -89,6 +98,9 @@ args = parser.parse_args()
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
 log.setLevel(logging.WARNING - (args.verbose or 0)*10)
+
+if args.continuous:
+  signal.signal(signal.SIGINT, signal_handler)
 
 host_regexp = re.compile(r'^(?:([^@]+)@)?(.+)$')
 
@@ -111,9 +123,12 @@ ssh_options = '-o ConnectTimeout=1'
 
 iteration = 0
 
-echo_format = '{:32}  {!s:6}  {:6}'
+echo_format = '{:32}  {!s:6}  {:6}' + ('  {}' if args.continuous else '')
 if not args.json:
-  echo('Host', 'Status', 'Method')
+  if args.continuous:
+    echo(None, 'Host', 'Status', 'Method', 'Time')
+  else:
+    echo(None, 'Host', 'Status', 'Method')
 
 while True:
   iteration += 1
