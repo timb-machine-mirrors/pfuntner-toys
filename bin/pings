@@ -77,7 +77,10 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 host_regexp = re.compile(r'^(?:([^@]+)@)?(.+)$')
 
-ping_options = '-c1 -w1'
+if 'win' in sys.platform.lower():
+  ping_options = '-n1 -w1000'
+else:
+  ping_options = '-c1 -w1'
 
 iteration = 0
 
