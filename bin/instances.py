@@ -27,7 +27,7 @@ class Instance(object):
     return json.dumps(self.__dict__)
 
 def distro_in_name(distro, name):
-   return re.search(re.sub(r'^([^0-9])+(.*)$', r'\1.*\2', distro), name)
+   return re.search(re.sub(r'^([^0-9]+)(.*)$', r'\1.*\2', distro), name)
 
 class Instances(object):
   def __init__(self, log):
@@ -271,7 +271,7 @@ class Instances(object):
             self.log.info(f'aws instance id: {id}')
             name = None
             for tag in instance.get('Tags', []):
-              self.log.debug(f'Examing tag {tag}')
+              self.log.debug(f'Examining tag {tag}')
               if tag.get('Key') == 'Name':
                 name = tag.get('Value')
                 if name.endswith(eks_suffix):
