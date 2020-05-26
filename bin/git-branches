@@ -5,9 +5,22 @@ import re
 import logging
 import argparse
 import subprocess
+from functools import cmp_to_key
 
 from table import Table
 
+def sorter(obj1, obj2):
+  if str(obj1).startswith('*'):
+    return -1
+  elif str(obj2).startswith('*'):
+    return 1
+  elif str(obj1) < str(obj2):
+    return -1
+  elif str(obj1) == str(obj2):
+    return 0
+  else:
+    return 1
+  
 def run(cmd, shell=False):
   if shell:
     if isinstance(cmd, list):
@@ -41,7 +54,7 @@ for dir in args.dirs:
     if os.path.isdir(os.path.join(dir, '.git')):
       (rc, stdout, stderr) = run(f'cd {dir!r}; git branch', shell=True)
       hits = regexp.finditer(stdout)
-      repos[dir] = [('*' if hit.group(1) else '') + hit.group(2) for hit in hits]
+      repos[dir] = sorted([('*' if hit.group(1) else '') + hit.group(2) for hit in hits], key=cmp_to_key(sorter))
       cols = max(cols, len(repos[dir]))
     else:
       log.warn(f'Not a git repo: {dir!r}')
