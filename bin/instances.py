@@ -219,7 +219,7 @@ class Instances(object):
           match = env_regexp.search(line)
           if match:
             env[match.group(1)] = match.group(2).strip('\'').strip('"')
-      log.debug('env: {env}')
+      log.debug(f'env: {env}')
 
       if 'secure_store' in openstack and 'secure_key' in openstack:
         password = None
