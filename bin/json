@@ -43,7 +43,7 @@ def load(stream):
     return eval(data)
 
   if args.yaml:
-    return yaml.load(data)
+    return yaml.load(data, Loader=yaml.BaseLoader)
 
   try:
     ret = json.loads(data)
@@ -334,6 +334,7 @@ else:
   if sys.stdin.isatty():
     parser.error('stdin must be directed if --file is not specified')
   root = load(sys.stdin)
+  log.debug(f'root: {root!r}')
 
 if args.path:
   root = findpath(root, re.compile((('^' if args.path.startswith('/') else '/') + args.path + '$').replace('/*/', '/[^/]+/')))

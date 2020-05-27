@@ -19,9 +19,9 @@ def parse_json(file_name, s):
 def parse_yaml(file_name, s):
   ret = None
   try:
-    ret = yaml.load(s)
-    if ret is None:
-      raise Exception('yaml.load() returned None')
+    ret = yaml.load(s, Loader=yaml.BaseLoader)
+    if not ret:
+      ret = []
   except Exception as e:
     log.info('Could not parse {file_name} as YAML: {e!s}'.format(file_name=file_name or 'stdin', e=e))
   return ret
@@ -55,13 +55,13 @@ def process(file_name=None):
           data = stream.read()
         if re.search('.json$', file_name, flags=re.IGNORECASE):
           root = parse_json(file_name, data)
-          if not root:
+          if root is None:
             log.warning(f'Could not parse as JSON: {file_name!r}')
             return
           mode = 'json'
         elif re.search('.y(?:a?)ml$', file_name, flags=re.IGNORECASE):
           root = parse_yaml(file_name, data)
-          if not root:
+          if root is None:
             log.warning(f'Could not parse as YAML: {file_name!r}')
             return
           mode = 'yaml'
@@ -74,17 +74,17 @@ def process(file_name=None):
       parser.error('stdin must be redirected if no file names are specified on command line')
     data = sys.stdin.read()
 
-  if not root:
+  if root is None:
     root = parse_json(file_name, data)
     if root:
       mode = 'json'
 
-  if not root:
+  if root is None:
     root = parse_yaml(file_name, data)
     if root:
       mode = 'yaml'
 
-  if not root:
+  if root is None:
     log.warning('Could not parse {} as JSON or YAML'.format(file_name or 'stdin'))
     return
 
