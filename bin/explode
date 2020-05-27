@@ -72,14 +72,14 @@ def process(path):
 
   if cmd:
     if args.list:
-      (rc, stdout, stderr) = run(cmd + ['-l' if cmd == 'unzip' else '-tf', path])
+      (rc, stdout, stderr) = run(cmd + ['-l' if cmd == ['unzip'] else '-tf', path])
       if (rc == 0) and (not stderr):
         for line in stdout.splitlines():
           print('{path}:{line}'.format(**locals()))
       else:
         log.warning('Error processing {path}:\n{stderr}'.format(**locals()))
     elif args.count:
-      (rc, stdout, stderr) = run(cmd + ['-l' if cmd == 'unzip' else '-tf', path])
+      (rc, stdout, stderr) = run(cmd + ['-l' if cmd == ['unzip'] else '-tf', path])
       if (rc == 0) and (not stderr):
         files = 0
         # sample stdout: "      0  10-04-2018 08:30   toys-master/"
