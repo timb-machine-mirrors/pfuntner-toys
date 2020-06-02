@@ -2,19 +2,24 @@
 
 import sys
 import re
-
-def syntax(msg=None):
-  if msg:
-    sys.stderr.write("{msg}\n".format(**locals()))
-  sys.stderr.write("Syntax: {pgm} REGEXP FILE ...\n".format(pgm=sys.argv[0]))
-  exit(1)
+import logging
+import argparse
 
 def process(filename):
+  log.info(f'Testing {filename}')
   with open(filename) as stream:
     print("{result} {filename}".format(result="+" if regexp.search(str(stream.read())) else "-", **locals()))
-if len(sys.argv) < 3:
-  syntax()
 
-regexp = re.compile(sys.argv[1])
-for filename in sys.argv[2:]:
+parser = argparse.ArgumentParser(description='Search for a regular expression and accounce whether it\'s found or not')
+parser.add_argument('regexp', help='Regular expression with which to search')
+parser.add_argument('files', metavar='file', nargs='+', help='One or more files to search')
+parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.WARNING - (args.verbose or 0)*10)
+
+regexp = re.compile(args.regexp)
+for filename in args.files:
   process(filename)
