@@ -91,7 +91,7 @@ def load(stream):
       except Exception as e:
         bottom += 1
         if bottom >= len(data):
-          log.warning('Ignoring: line {top} {line!r}'.format(line=data[top], top=top))
+          log.warning('Ignoring: line {top} {line!r}: {e!s}'.format(line=data[top], top=top, e=e))
           top += 1
           break
       else:
