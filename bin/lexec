@@ -1,44 +1,30 @@
 #! /usr/bin/env python3
 
 import os
-import os.path
-import sys
 import re
-import getopt
+import sys
+import logging
+import argparse
 
-def debug(msg):
-  if verbose:
-    sys.stderr.write(msg + "\n")
+isWindows = 'win' in sys.platform.lower()
 
-def syntax(s):
-  if s:
-    sys.stderr.write(s + "\n")
-  sys.stderr.write("Syntax %s [-d|--debug] [-l|--local] pat1 [pat2 ...]\n" % sys.argv[0])
-  exit(1)
+parser = argparse.ArgumentParser(description='Locate executables with regular expressions')
+parser.add_argument('pats', metavar='pat', nargs='+', help='One or more regular expressions')
 
-(opts,args) = ([], [])
-try:
-  (opts,args) = getopt.getopt(sys.argv[1:], "dl", ["debug", "local"])
-except Exception as e:
-  syntax(str(e))
+if isWindows:
+  parser.add_argument('-s', '--system', action='store_true', help='Expand search to system directories (Windoze only - slow!!!)')
 
-verbose = False
-localOnly = False
-for (opt,arg) in opts:
-  if opt in ["-d", "--debug"]:
-    verbose = not verbose
-  elif opt in ["-l", "--local"]:
-    localOnly = not localOnly
-  else:
-    syntax("Don't know how to handle {opt}".format(opt=repr(opt)))
+parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
+args = parser.parse_args()
 
-if not args:
-  syntax()
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 positivePats = []
 negativePats = []
 
-for pat in args:
+for pat in args.pats:
   if pat and (pat[0] == '!'):
     negativePats.append(re.compile(pat[1:]))
   else:
@@ -51,15 +37,15 @@ notLocal = re.compile("/c/WINDOWS|/c/Program Files", re.IGNORECASE)
 # Real Unix and CYGWIN separate paths in a list with a colon but Git bash uses a semicolon
 dirs = re.split('[;:]', os.environ["PATH"])
 for dir in dirs:
-  debug("raw dir {dir}".format(**locals()))
-  if (dir not in history) and ((not localOnly) or (not notLocal.search(dir))):
+  log.info("raw dir {dir}".format(**locals()))
+  if (dir not in history) and ((not isWindows) or args.system or (not notLocal.search(dir))):
     history.add(dir)
     if os.path.isdir(dir):
-      debug("good dir {dir}".format(**locals()))
+      log.info("good dir {dir}".format(**locals()))
       files = os.listdir(dir)
       for file in files:
         path = os.path.join(dir, file)
-        debug("testing {path}".format(**locals()))
+        log.info("testing {path}".format(**locals()))
         if os.path.isfile(path) and os.access(path, os.X_OK):
           candidate = False
           for pat in positivePats:
@@ -74,4 +60,4 @@ for dir in dirs:
           if candidate:
             print(path)
   else:
-    debug("Skipping {dir}".format(**locals()))
+    log.info("Skipping {dir}".format(**locals()))
