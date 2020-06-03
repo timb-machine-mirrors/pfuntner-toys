@@ -38,7 +38,7 @@ notLocal = re.compile("/c/WINDOWS|/c/Program Files", re.IGNORECASE)
 dirs = re.split('[;:]', os.environ["PATH"])
 for dir in dirs:
   log.info("raw dir {dir}".format(**locals()))
-  if (dir not in history) and (args.system or (not notLocal.search(dir))):
+  if (dir not in history) and ((not isWindows) or args.system or (not notLocal.search(dir))):
     history.add(dir)
     if os.path.isdir(dir):
       log.info("good dir {dir}".format(**locals()))
