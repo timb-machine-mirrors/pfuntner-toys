@@ -38,6 +38,7 @@ def run(cmd, shell=False):
 
 parser = argparse.ArgumentParser(description='List branches in various repos')
 parser.add_argument('dirs', metavar='dir', nargs='+', help='One more git repo directories')
+parser.add_argument('-s', '--simple', action='store_true', help='Simple output form, not a table')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -62,11 +63,23 @@ for dir in args.dirs:
     log.warn(f'Not a directory: {dir!r}')
 
 log.info(f'cols: {cols}')
-table = Table(['Repo'] + ['Branch {}'.format(branch+1) for branch in range(cols)])
+if not args.simple:
+  table = Table(['Repo'] + ['Branch {}'.format(branch+1) for branch in range(cols)])
 for repo in sorted(repos.keys()):
   branches = repos[repo]
   branches += [''] * (cols - len(branches))
-  log.info(f'Adding {repo} {branches}')
-  table.add(*([repo] + branches))
+  log.info(f'{repo} has {branches}')
 
-print(str(table), end='')
+  if args.simple:
+    for branch in branches:
+      if branch:
+        current = ''
+        if branch[0] == '*':
+          current = 'current'
+          branch = branch[1:]
+        print(f'{repo} {branch} {current}')
+  else:
+    table.add(*([repo] + branches))
+
+if not args.simple:
+  print(str(table), end='')
