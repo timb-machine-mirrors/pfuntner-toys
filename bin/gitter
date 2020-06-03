@@ -6,11 +6,7 @@ import argparse
 import subprocess
 
 parser = argparse.ArgumentParser(description='Perform arbitrary git commands on any file')
-parser.add_argument('-d',
-                    '--directory',
-                    required=True,
-                    help='Specify directory from which to run git',
-)
+parser.add_argument('directory', help='Specify directory from which to run git')
 parser.add_argument('subcommand', help='git subcommand')
 parser.add_argument('args', metavar='arg', nargs='*', help='git arguments/options')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
