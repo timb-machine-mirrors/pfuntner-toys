@@ -11,7 +11,10 @@ def see(expr):
 def process(file):
   global cmd, rc
 
-  cmd = ['find'] + args.files + ['-follow', '-type', 'f', '-name', '.*.swp']
+  cmd = ['find'] + args.files + ['-follow', '-type', 'f', '-a', '(', '-name', '.*.swp', '-o', '-name', '*~', ')']
+  if args.print0:
+    cmd += ['-print0']
+
   see('cmd')
   p = subprocess.Popen(cmd)
   rc = p.wait()
@@ -19,6 +22,7 @@ def process(file):
 
 parser = argparse.ArgumentParser(description='Find vi swap files', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+parser.add_argument('--print0', action='store_true', help='Use find\'s -print0 option')
 parser.add_argument('files', metavar='file', default='.', nargs='*', help='Zero or more files')
 args = parser.parse_args()
 
