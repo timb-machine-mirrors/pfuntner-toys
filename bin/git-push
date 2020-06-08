@@ -11,7 +11,10 @@ def run(cmd, capture=True):
     cmd = cmd.split()
   log.info('Executing {cmd}'.format(**locals()))
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE if capture else None, stderr=subprocess.PIPE if capture else None)
-  (stdout, stderr) = tuple([s.decode('utf-8') for s in p.communicate()])
+  if capture:
+    (stdout, stderr) = tuple([s.decode('utf-8') for s in p.communicate()])
+  else:
+    (stdout, stderr) = ('', '')
   rc = p.wait()
   log.debug('Executed {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
   return (rc, stdout, stderr)
@@ -36,6 +39,6 @@ if match:
   if args.force:
     cmd += ' --force'
 
-  (rc, stdout, stderr) = run(cmd)
+  (rc, stdout, stderr) = run(cmd, capture=False)
 else:
   parser.error('Could not determine current branch')
