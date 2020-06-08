@@ -18,7 +18,7 @@ def run(cmd):
   return (rc, stdout, stderr)
 
 parser = argparse.ArgumentParser(description='See if github has the most recent commit')
-parser.add_argument('repos', metavar='repo', nargs='*', default=['.'], help='One or more repo directories (default: [\'.\']')
+parser.add_argument('dirs', metavar='dir', nargs='*', default=['.'], help='One or more repo directories (default: [\'.\']')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -28,43 +28,51 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 commit_regexp = re.compile('^commit ([0-9a-f]{40})$', flags=re.MULTILINE)
 branch_regexp = re.compile('^\*\s(\S+)$', flags=re.MULTILINE)
-# url_regexp = re.compile('^origin\s+(\S+)\s+\(fetch\)$', flags=re.MULTILINE)
+repo_regexp = re.compile('^origin\s+\S+/(\S+)\.git\s+\(fetch\)$', flags=re.MULTILINE)
 
 cwd = os.getcwd()
 log.info(f'cwd: {cwd!r}')
 
-for repo in args.repos:
-  if os.path.exists(repo):
-    if os.path.isdir(repo):
-      if repo != '.':
-        os.chdir(repo)
+for dir in args.dirs:
+  if os.path.exists(dir):
+    if os.path.isdir(dir):
+      if dir != '.':
+        os.chdir(dir)
 
-      (rc, stdout, stderr) = run('git log')
-      match = commit_regexp.search(stdout)
+      (rc, stdout, stderr) = run('git remote -v')
+      match = repo_regexp.search(stdout)
       if match:
-        commit = match.group(1)
-        log.info(f'last commit: {commit}')
+        repo = match.group(1)
+        log.info(f'repo: {repo}')
 
-        (rc, stdout, stderr) = run('git branch')
-        match = branch_regexp.search(stdout)
+        (rc, stdout, stderr) = run('git log')
+        match = commit_regexp.search(stdout)
         if match:
-          branch = match.group(1)
-          log.info(f'current branch: {branch}')
-
-          (rc, stdout, stderr) = run(f'git log origin/{branch}')
-          if stdout:
-            remote_commits = commit_regexp.findall(stdout)
-            log.debug(f'remote commits: {remote_commits}')
-            if commit in remote_commits:
-              print(f'{commit} found in remote branch {branch}')
+          commit = match.group(1)
+          log.info(f'last commit: {commit}')
+  
+          (rc, stdout, stderr) = run('git branch')
+          match = branch_regexp.search(stdout)
+          if match:
+            branch = match.group(1)
+            log.info(f'current branch: {branch}')
+  
+            (rc, stdout, stderr) = run(f'git log origin/{branch}')
+            if stdout:
+              remote_commits = commit_regexp.findall(stdout)
+              log.debug(f'remote commits: {remote_commits}')
+              if commit in remote_commits:
+                print(f'{commit} found in remote branch {branch}')
+              else:
+                print(f'{commit} not found in remote branch {branch}')
             else:
-              print(f'{commit} not found in remote branch {branch}')
+              print(f'remote branch {branch} does not exist for {repo!r}')
           else:
-            print(f'remote branch {branch} does not exist for {repo!r}')
+            log.warning('Could not determine current branch for {repo!r}')
         else:
-          log.warning('No current branch found in `git branch` output for {repo!r}')
+          log.warning('Could not find latest commit for {repo!r}')
       else:
-        log.warning('Could not find latest commit for {repo!r}')
+         log.warning('Could not determine repo')
 
       if repo != '.':
         os.chdir(cwd)
