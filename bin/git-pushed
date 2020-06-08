@@ -60,7 +60,7 @@ for repo in args.repos:
             else:
               print(f'{commit} not found in remote branch {branch}')
           else:
-            print(f'remote branch {branch} does not appear to exist for {repo!r}')
+            print(f'remote branch {branch} does not exist for {repo!r}')
         else:
           log.warning('No current branch found in `git branch` output for {repo!r}')
       else:
