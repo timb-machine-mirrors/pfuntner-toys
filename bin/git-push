@@ -6,11 +6,11 @@ import logging
 import argparse
 import subprocess
 
-def run(cmd):
+def run(cmd, capture=True):
   if isinstance(cmd, str):
     cmd = cmd.split()
   log.info('Executing {cmd}'.format(**locals()))
-  p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  p = subprocess.Popen(cmd, stdout=subprocess.PIPE if capture else None, stderr=subprocess.PIPE if capture else None)
   (stdout, stderr) = tuple([s.decode('utf-8') for s in p.communicate()])
   rc = p.wait()
   log.debug('Executed {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
@@ -25,7 +25,7 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
-branch_regexp = re.search('^\*\s+(\S+)', re.MULTILINE)
+branch_regexp = re.compile('^\*\s+(\S+)', re.MULTILINE)
 (rc, stdout, stderr) = run('git branch')
 match = branch_regexp.search(stdout)
 if match:
@@ -37,7 +37,5 @@ if match:
     cmd += ' --force'
 
   (rc, stdout, stderr) = run(cmd)
-  sys.stdout.write(stdout)
-  sys.stderr.write(stderr)
 else:
   parser.error('Could not determine current branch')

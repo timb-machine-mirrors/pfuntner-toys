@@ -62,15 +62,15 @@ for dir in args.dirs:
               remote_commits = commit_regexp.findall(stdout)
               log.debug(f'remote commits: {remote_commits}')
               if commit in remote_commits:
-                print(f'{commit} found in remote branch {branch}')
+                print(f'{commit} found in remote branch {branch!r} of {repo!r}')
               else:
-                print(f'{commit} not found in remote branch {branch}')
+                log.warning(f'{commit} not found in remote branch {branch!r} of {repo!r}')
             else:
-              print(f'remote branch {branch} does not exist for {repo!r}')
+              log.warning(f'remote branch {branch!r} does not exist of {repo!r}')
           else:
-            log.warning('Could not determine current branch for {repo!r}')
+            log.warning('Could not determine current branch of {repo!r}')
         else:
-          log.warning('Could not find latest commit for {repo!r}')
+          log.warning('Could not find latest commit of {repo!r}')
       else:
          log.warning('Could not determine repo')
 
