@@ -60,20 +60,22 @@ for path in args.paths:
     log.info(f'local SHA1: {local_sha1!r}')
     if local_sha1:
       (rc, stdout, stderr) = run('git remote -v')
-      match = re.search(r'^origin+\s+(\S+)\s+\((?:fetch|push)\)$', stdout, flags=re.MULTILINE)
+      match = re.search(r'^origin+\s+(\S+/([^/]+).git)\s+\((?:fetch|push)\)$', stdout, flags=re.MULTILINE)
       if match:
         remote_url = match.group(1)
+        repo = match.group(2)
+        log.info(f'remote_url: {remote_url!r}, repo: {repo!r}')
         (rc, stdout, stderr) = run(f'git ls-remote {remote_url} master')
         match = re.search('^([0-9a-f]{40})\s', stdout)
         if match:
           remote_sha1 = match.group(1)
           log.info(f'remote SHA1: {remote_sha1!r}')
           if local_sha1 == remote_sha1:
-            print(f'No updates for master branch of {path!r}')
+            print(f'No updates for master branch of {repo!r}')
           else:
-            print(f'Update master branch of {path!r} to {remote_sha1}')
+            print(f'Update master branch of {repo!r} to {remote_sha1}')
         else:
-          parser.error(f'No remote sha1 for {path!r}')
+          parser.error(f'No remote sha1 for {repo!r}')
       else:
         parser.error(f'No remote url for {path!r}')
     else:
