@@ -117,4 +117,4 @@ if not args.diffs:
 list(map(process, args.roots))
 
 if not args.diffs:
-  print(str(table))
+  print(str(table), end='')
