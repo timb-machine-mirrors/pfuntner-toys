@@ -143,4 +143,4 @@ for line in stdout.split('\n'):
           text += "\n"
 
 report()
-print(str(table))
+print(str(table), end='')
