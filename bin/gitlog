@@ -25,6 +25,19 @@ public/js/admin-ui-events.js
 public/js/admin.js
 """
 
+def run(cmd, capture=True):
+  if isinstance(cmd, str):
+    cmd = cmd.split()
+  log.info('Executing {cmd}'.format(**locals()))
+  p = subprocess.Popen(cmd, stdout=subprocess.PIPE if capture else None, stderr=subprocess.PIPE if capture else None)
+  if capture:
+    (stdout, stderr) = tuple([s.decode('utf-8') for s in p.communicate()])
+  else:
+    (stdout, stderr) = ('', '')
+  rc = p.wait()
+  log.debug('Executed {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
+  return (rc, stdout, stderr)
+
 def limit(s, desiredLen):
   assert desiredLen > 5
 
@@ -56,11 +69,10 @@ def report():
     assert date and (author is not None) and text, "At line %d, previous commit (%s) was not closed: (%s, %s, %s)" % (lineno, commit, date, author, repr(text))
     table.add([commit, author, str(date), truncate(text)])
 
-
 parser = argparse.ArgumentParser(description='Summary git log')
 parser.add_argument('targets', metavar='target', nargs='*', help='Zero or more targets (files, etc)')
 parser.add_argument('-l', '--long', action='store_true', help='Do not truncate commit text')
-parser.add_argument('-o', '--origin', action='store_true', help='Examine remote repo')
+parser.add_argument('-r', '--remote', action='store_true', help='Examine remote branch')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -71,18 +83,17 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 # cmd = "git log --name-only".split()
 
-cmd = ['git', 'log'] + (['origin'] if args.origin else [])
-if args.targets:
-  cmd += args.targets
+(rc, stdout, stderr) = run('git branch')
+branch_match = re.search(r'^\*\s+(\S+)$', stdout, re.MULTILINE)
+if branch_match:
+  branch = branch_match.group(1)
+else:
+  parser.error('Could not detect current branch')
 
-debug('cmd is {cmd}'.format(**locals()))
-p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-(stdout, stderr) = p.communicate()
-stdout = stdout.decode('utf-8')
-stderr = stderr.decode('utf-8')
-rc = p.wait()
-log.debug("%s returned %d, %s, %s" % (cmd, rc, repr(limit(stdout, 25)), repr(stderr)))
+cmd = ['git', 'log'] + ([f'origin/{branch}'] if args.remote else [])
+cmd += args.targets
 
+(rc, stdout, stderr) = run(cmd)
 if (rc != 0) or stderr:
   log.error("%s failed" % cmd)
   exit(1)
@@ -105,6 +116,7 @@ text = ""
 files = []
 
 lineno = 0
+
 table = Table(["Commit", "Author", "Date", "Comments"])
 
 for line in stdout.split('\n'):
