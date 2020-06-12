@@ -53,6 +53,7 @@ def get_containers():
 
 parser = argparse.ArgumentParser(description='Start long running Docker container')
 parser.add_argument('images', metavar='image', nargs='+', help='One or more Docker images')
+parser.add_argument('-n', '--name', help='Name to use for container - only one image')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -60,6 +61,9 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 # log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 log.setLevel(logging.WARNING - (args.verbose or 0)*10)
+
+if len(args.images) > 1 and args.name:
+  parser.error('--name cannot be used when multiple images are specified')
 
 images = []
 (rc, stdout, stderr) = run('docker images')
@@ -81,7 +85,8 @@ for desired_image in args.images:
   log.debug('old containers: {}'.format(old_containers))
   now = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
   alt_image = image.repo.replace('/', '-')
-  run('nohup docker run --name "{alt_image}-{image.tag}-{now}" {image.image_id} sh -c "sleep {SLEEP_INTERVAL}" > /dev/null 2>&1 &'.format(**locals()), shell=True)
+  name = args.name if args.name else "{alt_image}-{image.tag}-{now}"
+  run('nohup docker run --name "{name}" {image.image_id} sh -c "sleep {SLEEP_INTERVAL}" > /dev/null 2>&1 &'.format(**locals()), shell=True)
   time.sleep(1)
   new_containers = get_containers()
   log.debug('new containers: {}'.format(new_containers))
