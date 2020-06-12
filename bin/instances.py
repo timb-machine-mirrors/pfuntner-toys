@@ -27,7 +27,7 @@ class Instance(object):
     return json.dumps(self.__dict__)
 
 def distro_in_name(distro, name):
-   return re.search(re.sub(r'^([^0-9]+)(.*)$', r'\1.*\2', distro), name)
+   return re.search(re.sub(r'^([^0-9]+)(.*)$', r'\1.*\2', distro).lower(), name.lower())
 
 class Instances(object):
   def __init__(self, log):
