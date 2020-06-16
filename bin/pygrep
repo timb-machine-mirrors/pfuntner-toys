@@ -2,6 +2,7 @@
 
 import re
 import sys
+import json
 import logging
 import argparse
 
@@ -10,6 +11,8 @@ negate = False
 numbers = False
 
 def process(filename=None):
+  global json_output
+
   if filename:
     f = open(filename, "r")
   else:
@@ -24,18 +27,25 @@ def process(filename=None):
       tmp = exclude.sub("", tmp)
     match = regexp.search(tmp)
     if (match and (not args.negate)) or ((not match) and args.negate):
-      if args.list:
-        print(filename)
-        break
-
-      if filename:
-        sys.stdout.write(filename)
-        if args.line_numbers: sys.stdout.write(' ')
-      if args.line_numbers:
-        sys.stdout.write(str(lineno))
-      if filename or args.line_numbers:
-        sys.stdout.write(':')
-      sys.stdout.write("%s\n" % line)
+      if args.json:
+        json_output.append({
+          'filename': filename,
+          'lineno': lineno,
+          'line': line,
+        })
+      else:
+        if args.list:
+          print(filename)
+          break
+  
+        if filename:
+          sys.stdout.write(filename)
+          if args.line_numbers: sys.stdout.write(' ')
+        if args.line_numbers:
+          sys.stdout.write(str(lineno))
+        if filename or args.line_numbers:
+          sys.stdout.write(':')
+        sys.stdout.write("%s\n" % line)
     
   if filename:
     f.close()
@@ -46,6 +56,7 @@ parser.add_argument('-v', '--negate', action='store_true', help='Negate the sear
 parser.add_argument('-i', '--ignore-case', action='store_true', help='Perform case-insensitive search')
 parser.add_argument('-n', '--line-numbers', action='store_true', help='Include line numbers')
 parser.add_argument('-l', '--list', action='store_true', help='Print filenames only')
+parser.add_argument('-j', '--json', action='store_true', help='Display output in JSON form')
 parser.add_argument('--verbose', action='store_true', help='Enable debugging')
 parser.add_argument('regexp', help='Regular expression to search for')
 parser.add_argument('files', metavar='files', nargs='*', help='Zero or more files to search')
@@ -58,6 +69,8 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 regexp = re.compile(args.regexp, flags=re.IGNORECASE if args.ignore_case else 0)
 excludes = [re.compile(pattern, flags=re.IGNORECASE if args.ignore_case else 0) for pattern in (args.exclude or [])]
 
+json_output = []
+
 if args.files:
   for filename in args.files:
     process(filename)
@@ -67,3 +80,6 @@ elif args.list:
   parser.error('Cannot use --list without filenames')
 else:
   process()
+
+if args.json:
+  json.dump(json_output, sys.stdout, indent=2, sort_keys=True)
