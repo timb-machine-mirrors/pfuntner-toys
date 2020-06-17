@@ -56,12 +56,12 @@ command += [args.dest] + args.command
 
 log.info(f'command: {command}')
 
-subprocess.Popen(f'windoze-title {args.dest}', shell=True).wait()
+subprocess.Popen(f'set-title {args.dest}', shell=True).wait()
 
 p = subprocess.Popen(command)
 rc = p.wait()
 
-subprocess.Popen('windoze-title --self', shell=True).wait()
+subprocess.Popen('set-title --self', shell=True).wait()
 
 exit(rc)
 #! /usr/bin/env python3
