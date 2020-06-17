@@ -9,6 +9,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Perform interactive JSON operations')
 parser.add_argument('filename', help='Path to file to read')
+parser.add_argument('-i', '--import_module', action='append', help='Specify a module to import (multiples allows)')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -17,6 +18,9 @@ log = logging.getLogger()
 log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
+
+for module in args.import_module or []:
+  exec(f'{module} = __import__("{module}")')
 
 if sys.stdin.isatty():
   sys.stderr.write('Enter interactive statements:\n')
@@ -35,7 +39,7 @@ if os.path.exists(args.filename):
           del(root[pos])
         else:
           pos += 1
-      json.dump(root, sys.stdout, indent=2, sort_keys=True)
+      print(json.dumps(root, indent=2, sort_keys=True))
     else:
       parser.error('JSON root object must be a list')
   else:
