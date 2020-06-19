@@ -10,28 +10,38 @@ def process(arg):
   if isinstance(arg, str):
     if os.path.exists(arg) and not os.path.isdir(arg):
       try:
-        stream = open(arg)
+        stream = open(arg, 'rb')
       except Exception as e:
         log.warning('Cannot open {arg!r}: {e!s}'.format(**locals()))
     else:
       log.warning('Not a file: {arg!r}'.format(**locals()))
   else:
-    stream = arg
+    stream = os.fdopen(sys.stdin.fileno(), 'rb')
 
   if stream:
     pos = 0
+    eof = False
     while True:
+      empty = True
       line1 = '{pos:08x}'.format(**locals())
       line2 = ' ' * 8
-      buf = stream.read(width)
-      if buf:
-        for c in buf:
-          line1 += '{c:>5}'.format(c=repr(c)[1:-1])
+      for iteration in range(width):
+        c = stream.read(1) # .decode('cp437')
+        if c:
+          empty = False
+          line1 += '{c:>5}'.format(c=repr(c)[2:-1])
           line2 += ' '*3 + '{c:02x}'.format(c=ord(c))
+        else:
+          eof = True
+          break
+
+      if not empty:
         print(line1)
         print(line2)
-      else:
+
+      if eof:
         break
+
       pos += width
 
     if isinstance(arg, str):
