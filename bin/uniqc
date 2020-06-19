@@ -2,10 +2,10 @@
 
 import sys
 import math
-
 import logging
 import argparse
 
+from functools import cmp_to_key
 
 def install(token):
   global tokens
@@ -66,5 +66,5 @@ if total:
       return tokens[token1] - tokens[token2]
     
   # for token in sorted(tokens.keys(), key=lambda token: tokens[token], reverse=True):
-  for token in order if args.fifo else sorted(tokens.keys(), cmp=comparator, reverse=True):
+  for token in order if args.fifo else sorted(tokens.keys(), key=cmp_to_key(comparator), reverse=True):
     print("%*d %6.2f%% %s" % (digits, tokens[token], (tokens[token]*100.0)/total, token))
