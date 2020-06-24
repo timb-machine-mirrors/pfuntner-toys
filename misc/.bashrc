@@ -1,4 +1,7 @@
-# This is a fragment of a bash script that I like to use in my $HOME/.bashrc
+
+################################################################################
+# This is a fragment of a bash script that I like to use in my $HOME/.bashrc   #
+################################################################################
 
 # Remove `ls` aliases
 for cmd in $(alias | grep ls | awk -F'[ =]' '{ print $2 }')

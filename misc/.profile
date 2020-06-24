@@ -1,4 +1,7 @@
-# This is a fragment of a bash profile that I liked to use
+
+################################################################################
+# This is a fragment of a bash profile that I liked to use                     #
+################################################################################
 # 
 # Remember that bash looks for profile scripts in the following order:
 #   $HOME/.bash_profile
