@@ -1,0 +1,46 @@
+#! /usr/bin/env python3
+
+import os
+import sys
+import getpass
+import logging
+import argparse
+import subprocess
+
+def run(cmd):
+  if isinstance(cmd, str):
+    cmd = cmd.split()
+  log.info('Executing {cmd}'.format(**locals()))
+  p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  (stdout, stderr) = tuple([s.decode('utf-8') for s in p.communicate()])
+  rc = p.wait()
+  log.debug('Executed {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
+  return (rc, stdout, stderr)
+
+user = os.environ.get('GITHUB_USER') or getpass.getuser()
+
+parser = argparse.ArgumentParser(description='Clone github repos')
+parser.add_argument('repos', metavar='repo', nargs='+', help='One or more repos')
+parser.add_argument('--user', nargs='?', help=f'Github user (default: {user})')
+parser.add_argument('--http', action='store_true', help='Clone via http rather than ssh')
+parser.add_argument('-d', '--dry-run', action='store_true', help='Do not execute git command(s)')
+parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.INFO if args.dry_run else logging.WARNING - (args.verbose or 0)*10)
+
+if args.user:
+  user = args.user
+
+if args.dry_run:
+  log.info('Avoiding executing git commands due to --dry-run option')
+
+for repo in args.repos:
+  cmd = ('https://' if args.http else 'git clone git@') + f'github.com:{user}/{repo}.git'
+  print(cmd)
+  if not args.dry_run:
+    (rc, stdout, stderr) = run(cmd)
+    sys.stdout.write(stdout)
+    sys.stderr.write(stderr)
