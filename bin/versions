@@ -43,6 +43,14 @@ def run(cmd):
   log.debug('Executed {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
   return (rc, stdout, stderr)
 
+def get_version(s):
+  version = None
+  for token in s.split():
+    if version_regexp.search(token):
+      version = remove_headings.sub('', remove_trailers.sub('', token))
+      break
+  return version
+
 def look_for(target, dir=None):
   global table
 
@@ -51,40 +59,44 @@ def look_for(target, dir=None):
     dir = os.path.dirname(target)
   if os.path.isfile(path):
     (rc, stdout, stderr) = run([path, '--version'])
-    version = (stdout + stderr).replace('\n', ' ').replace('\r', '').strip()
-    if not args.dumb:
-      if version.startswith('usage: '):
-        # tool probably doesn't support --version option
-        os.chdir(dir)
-        (rc, stdout, stderr) = run(['git', 'log', '-1', os.path.basename(target)])
-        if rc == 0:
-          commit = None
-          author = None
-          date = None
-          messages = ''
+    stdout = (stdout + stderr).replace('\n', ' ').replace('\r', '').strip()
+    if args.dumb:
+      version = stdout
+      initial_stdout = stdout
+    else:
+      version = get_version(stdout)
+      if not version:
+        (rc, stdout, stderr) = run([path, '-version'])
+        stdout = (stdout + stderr).replace('\n', ' ').replace('\r', '').strip()
+        version = get_version(stdout)
+        if not version:
+          # tool probably doesn't support --version or -version options - let's try to get the git commit for the file
+          version = original_version
+          os.chdir(dir)
+          (rc, stdout, stderr) = run(['git', 'log', '-1', os.path.basename(target)])
+          if rc == 0:
+            commit = None
+            author = None
+            date = None
+            messages = ''
+  
+            for line in stdout.splitlines():
+              commit = extract(commit_regexp, line) or commit
+              author = extract(author_regexp, line) or author
+              date = extract(date_regexp, line, converter=gitdate_to_datetime) or date
+              if date is None:
+                messages = ''
+  
+              match = messages_regexp.search(line)
+              if match:
+                messages += (' ' if messages and not messages.endswith(' ') else '') + match.group(1)
+  
+            log.info('Commit extractions: {date} {commit} {author} {messages}'.format(**locals()))
+            if commit and author and date and messages:
+              version = '{date} {commit} {author} {messages}'.format(**locals())
+          os.chdir(cwd)
 
-          for line in stdout.splitlines():
-            commit = extract(commit_regexp, line) or commit
-            author = extract(author_regexp, line) or author
-            date = extract(date_regexp, line, converter=gitdate_to_datetime) or date
-            if date is None:
-              messages = ''
-
-            match = messages_regexp.search(line)
-            if match:
-              messages += (' ' if messages and not messages.endswith(' ') else '') + match.group(1)
-
-          log.info('Commit extractions: {date} {commit} {author} {messages}'.format(**locals()))
-          if commit and author and date and messages:
-            version = '{date} {commit} {author} {messages}'.format(**locals())
-
-        os.chdir(cwd)
-      else:
-        for token in version.split():
-          if version_regexp.search(token):
-            version = token
-            break
-    table.add(target, target if dir is None else dir, version.strip('.').strip(','))
+    table.add(target, target if dir is None else dir, version)
     return True
   else:
     return False
@@ -101,6 +113,12 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 # The version must contain a digit followed by a period
 version_regexp = re.compile(r'\d\.')
+
+# This regular expression removes trash at beginning of the version
+remove_headings = re.compile(r'^"')
+
+# This regular expression removes trash at end of the version
+remove_trailers = re.compile(r'[.,"]+$')
 
 # regular expression for processing `git log` output
 commit_regexp = re.compile(r'^commit\s+([0-9a-f]{7})(?:[0-9a-f]{33})$') # this only retains the short SHA1: The first 7 characters
