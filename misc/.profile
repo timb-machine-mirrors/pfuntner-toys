@@ -32,5 +32,10 @@ fi
 #   source $HOME/bruno/setup
 # fi
 
-# This `true` statement must be last and will make sure that the this script returns with success regardless of what the previous command was.
+export GITHUB_USER=pfuntner
+
+################################################################################
+# This `true` statement should be last and will make sure that the this script #
+# returns with success regardless of what the previous command was.            #
+################################################################################
 true
