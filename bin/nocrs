@@ -11,8 +11,8 @@ def read(filename):
   log.debug('Reading {filename}'.format(**locals()))
   if os.path.isfile(filename):
     try:
-      with open(filename) as stream:
-        ret = stream.read()
+      with open(filename, 'rb') as stream:
+        ret = ''.join([chr(c) for c in stream.read()])
     except Exception as e:
       log.warning('Could not read {filename!r}: {e!s}'.format(**locals()))
   else:
