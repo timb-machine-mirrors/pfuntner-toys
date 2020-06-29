@@ -21,7 +21,7 @@ user = os.environ.get('GITHUB_USER') or getpass.getuser()
 
 parser = argparse.ArgumentParser(description='Clone github repos')
 parser.add_argument('repos', metavar='repo', nargs='+', help='One or more repos')
-parser.add_argument('--user', nargs='?', help=f'Github user (default: {user})')
+parser.add_argument('-u', '--user', nargs='?', help=f'Github user (default: {user})')
 parser.add_argument('--http', action='store_true', help='Clone via http rather than ssh')
 parser.add_argument('-d', '--dry-run', action='store_true', help='Do not execute git command(s)')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
