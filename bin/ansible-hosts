@@ -96,10 +96,10 @@ if rc == 0:
           break
       if not matched:
         if deselecting:
-          log.info('Keeping {hostname!r} because it did not match {args.hosts}')
+          log.info(f'Keeping {hostname!r} because it did not match {args.hosts}')
           pos += 1
         else:
-          log.info('Removing {hostname!r} because it did not match {args.hosts}')
+          log.info(f'Removing {hostname!r} because it did not match {args.hosts}')
           del hosts[hostname]
           hostnames = sorted(hosts.keys())
     
