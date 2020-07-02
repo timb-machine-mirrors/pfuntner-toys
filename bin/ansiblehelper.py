@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import re
+import os
 import logging
 import argparse
 
@@ -47,16 +48,19 @@ class AnsibleHelper(object):
 
     hosts = {}
     
-    with open('/etc/ansible/hosts') as stream:
+    private_inventory_filename = os.path.expanduser('~/.ansible/hosts.ini')
+    inventory_filename = private_inventory_filename if os.path.exists(private_inventory_filename) else '/etc/ansible/hosts'
+
+    with open(inventory_filename) as stream:
       data = stream.read()
 
     try:
       import yaml
       root = yaml.load(data, Loader=yaml.SafeLoader)
     except Exception as e:
-      log.debug('Ignoring {e!s} from parsing /etc/ansible/hosts as YAML'.format(**locals()))
+      log.debug('Ignoring {e!s} from parsing {inventory_filename} as YAML'.format(**locals()))
     else:
-      log.info('Processing /etc/ansible/hosts as YAML')
+      log.info(f'Processing {inventory_filename} as YAML')
       hosts = AnsibleHelper.find_hosts(root)
 
     if not hosts:
@@ -68,10 +72,12 @@ class AnsibleHelper(object):
         match = name_regexp.search(str(line))
         if match:
           name = match.group(1)
-          hosts[name] = {}
-          for hit in key_regexp.findall(str(line)):
-            hosts[name][hit[0]] = hit[1]
-          log.debug('host: {}'.format(hosts))
+          hits = key_regexp.findall(str(line))
+          if hits:
+            hosts[name] = {}
+            for hit in hits:
+              hosts[name][hit[0]] = hit[1]
+            log.debug('host: {}'.format(hosts))
 
     return hosts
 
