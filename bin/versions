@@ -157,6 +157,7 @@ for target in args.targets:
         processed.append(dir)
         if look_for(target, dir):
           found = True
+          break
       else:
         log.debug('Skipping {dir} since it was already processed'.format(**locals()))
 
