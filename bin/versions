@@ -67,6 +67,7 @@ def look_for(target, dir=None):
       initial_stdout = stdout
     else:
       version = get_version(stdout)
+      original_version = version
       if not version:
         (rc, stdout, stderr) = run([path, '-version'])
         stdout = (stdout + stderr).replace('\n', ' ').replace('\r', '').strip()
