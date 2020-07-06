@@ -121,7 +121,9 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
-if args.version and args.targets != 1:
+log.debug('args: {args}'.format(**locals()))
+
+if args.version and len(args.targets) != 1:
   parser.error('You must specify exactly one target when you specify --version')
 
 # The version must contain a digit followed by a period
