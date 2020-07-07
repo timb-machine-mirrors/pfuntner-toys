@@ -23,6 +23,7 @@ def run(cmd):
   return (rc, stdout, stderr)
 
 parser = argparse.ArgumentParser(description='Monitor a system via ssh over a period')
+parser.add_argument('-s', '--ssh', default='ssh', help='Specify ssh command.  Default: ssh')
 parser.add_argument('-i', '--interval', type=float, default=5, help='Specify internal between ssh commands')
 parser.add_argument('-t', '--timeout', type=int, default=1, help='Specify ssh connect timeout')
 parser.add_argument('-q', '--quiet', action='store_true', help='Use ssh --quiet option')
@@ -35,7 +36,7 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
-cmd = ['ssh', '-o', f'ConnectTimeout={args.timeout}', args.host] + (['-q'] if args.quiet else []) + args.cmd
+cmd = [args.ssh, '-o', f'ConnectTimeout={args.timeout}'] + (['-q'] if args.quiet else []) + [args.host] + args.cmd
 log.info(f'cmd: {cmd}')
 
 while True:

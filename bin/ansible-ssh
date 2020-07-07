@@ -10,6 +10,7 @@ from ansiblehelper import AnsibleHelper
 parser = argparse.ArgumentParser(description='ssh to ansible target ansible host')
 parser.add_argument('host', help='The name of the target host')
 parser.add_argument('cmd', nargs='*', help='Optional command and arguments')
+parser.add_argument('-o', dest='options', action='append', help='Specify ssh -o option')
 parser.add_argument('-q', '--quiet', dest='quiet', action='store_true', help='Enable ssh quiet mode')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 args = parser.parse_args()
@@ -25,8 +26,13 @@ except Exception as e:
 else:
   log.debug('{args.host}: {host}'.format(**locals()))
   cmd = ['ssh', '-i', host['ansible_ssh_private_key_file']]
+
   if args.quiet:
     cmd.append('-q')
+
+  for option in args.options or []:
+    cmd += ['-o', option]
+
   cmd.append('{ansible_user}@{ansible_host}'.format(**host))
   if args.cmd:
     cmd += args.cmd
