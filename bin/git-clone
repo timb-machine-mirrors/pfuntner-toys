@@ -38,6 +38,7 @@ if args.dry_run:
   log.info('Avoiding executing git commands due to --dry-run option')
 
 for repo in args.repos:
+  repo = repo.rstrip('/')
   cmd = ('https://' if args.http else 'git clone git@') + f'github.com:{user}/{repo}.git'
   print(cmd)
   if not args.dry_run:
