@@ -5,6 +5,7 @@ import sys
 import csv
 import json
 import string
+import signal
 import logging
 import argparse
 import io
@@ -891,6 +892,8 @@ parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help
 args = parser.parse_args() if __name__ == '__main__' else parser.parse_args(['-i', 'separator', '-o', 'fixed'])
 
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
+signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
 if args.loose_headings:
   args.headings = True
