@@ -721,6 +721,13 @@ class Table(object):
     args.separator = kwargs.get('desiredSep') or args.separator
     args.numeric_justify = kwargs.get('numeric_justify', False)
 
+  def append(self, *args):
+    """
+    This method performs the same function as add().  I added it because I can't 
+    remember if the method is add() or append() so this will allow either to work.
+    """
+    self.add(*args)
+
   def add(self, *args):
     """
     This method is used by the caller to add a new row to the table
