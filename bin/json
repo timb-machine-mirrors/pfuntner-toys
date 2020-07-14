@@ -3,6 +3,7 @@
 import re
 import sys
 import json
+import signal
 import logging
 import argparse
 
@@ -302,6 +303,8 @@ parser.add_argument('-v', '--verbose', dest='verbose', action='count', help='Ena
 
 parser.add_argument('path', nargs='?', help='Path to desired object(s)')
 args = parser.parse_args()
+
+signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
 yaml = None
 if args.yaml:
