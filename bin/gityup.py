@@ -38,34 +38,57 @@ class Git(object):
     return str(date) # .isoformat().replace('-', '.').replace(':', '').replace('T', '-')
 
   def parse_log(self, args=[]):
-    ret = []
+    commits = []
     # regular expression for processing `git log` output
     commit_regexp = re.compile(r'^commit\s+([0-9a-f]{40})$')  # this only retains the short SHA1: The first 7 characters
     author_regexp = re.compile(r'^Author:\s+.*<([^>]+)>$')
     date_regexp = re.compile(r'^Date:\s+((?:Sun|Mon|Tue|Wed|Thu|Fri|Sat)\s(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s\d{1,2}\s\d{2}:\d{2}:\d{2}\s\d{4})\s([-+]\d{2})(\d{2})$')
     messages_regexp = re.compile(r'^ {4}(.*)$')
+    file_status_regexp = re.compile('^[A-Za-z]')
 
-    (rc, stdout, stderr) = self.run(['git', 'log'] + args)
+    (rc, stdout, stderr) = self.run(['git', 'log', '--name-status'] + args)
     for line in stdout.splitlines():
+      self.log.debug(f'Checking {line!r}')
       match = commit_regexp.search(line)
       if match:
-        ret.append({})
-        ret[-1]['commit'] = match.group(1)
-        ret[-1]['messages'] = []
+        commits.append({'messages': [], 'files': [], 'merge': []})
+        commits[-1]['commit'] = match.group(1)
       else:
         match = author_regexp.search(line)
         if match:
-          ret[-1]['author'] = match.group(1)
+          commits[-1]['author'] = match.group(1)
         else:
           match = date_regexp.search(line)
           if match:
-            ret[-1]['utc_date'] = self.git_timestamp_parse(match.groups())
-          elif ret:
+            commits[-1]['utc_date'] = self.git_timestamp_parse(match.groups())
+          elif commits:
             match = messages_regexp.search(line)
             if match:
-              ret[-1]['messages'].append(match.group(1))
+              commits[-1]['messages'].append(match.group(1))
+            else:
+              match = file_status_regexp.search(line)
+              if match:
+                tokens = line.split()
+                self.log.debug(f'Checking for file status in {tokens}')
+                if tokens[0] == 'A':
+                  commits[-1]['files'].append({'operation': 'add', 'name': tokens[1]})
+                elif tokens[0] == 'M':
+                  commits[-1]['files'].append({'operation': 'modify', 'name': tokens[1]})
+                elif tokens[0] == 'D':
+                  commits[-1]['files'].append({'operation': 'delete', 'name': tokens[1]})
+                elif tokens[0] == 'Merge:':
+                  commits[-1]['merge'].append(tokens[1:])
+                elif tokens[0].startswith('R'):
+                  commits[-1]['files'].append({'operation': 'rename', 'name': tokens[1], 'old_name': tokens[2]})
 
-    return ret
+    for commit in commits:
+      assert bool(commit['merge']) ^ bool(commit['files']), f'Either `merge` or `file` element expected in {commit}'
+      if not commit['merge']:
+        del commit['merge']
+      if not commit['files']:
+        del commit['files']
+
+    return commits
 
 parser = argparse.ArgumentParser(description='git log parser')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
