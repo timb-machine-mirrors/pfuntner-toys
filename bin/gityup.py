@@ -10,7 +10,12 @@ import subprocess
 
 class Git(object):
   def __init__(self, log=None):
-    self.log = log
+    if log:
+      self.log = log
+    else:
+      logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+      self.log = logging.getLogger()
+      mylog.setLevel(logging.WARNING)
 
   def run(self, cmd, capture=True):
     if isinstance(cmd, str):
@@ -90,15 +95,16 @@ class Git(object):
 
     return commits
 
-parser = argparse.ArgumentParser(description='git log parser')
-parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
-(args, unknown_args) = parser.parse_known_args()
+if __name__ == '__main__':
+  parser = argparse.ArgumentParser(description='git log parser')
+  parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
+  (args, unknown_args) = parser.parse_known_args()
 
-logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
-mylog = logging.getLogger()
-mylog.setLevel(logging.WARNING - (args.verbose or 0)*10)
+  logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+  mylog = logging.getLogger()
+  mylog.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
-signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
+  signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
-gitlog = Git(mylog).parse_log(unknown_args)
-print(json.dumps(gitlog))
+  gitlog = Git(mylog).parse_log(unknown_args)
+  print(json.dumps(gitlog))
