@@ -8,6 +8,7 @@ import csv
 import io
 import logging
 import argparse
+import signal
 
 def delimOrBlank():
   return args.delim or ' '
@@ -25,6 +26,8 @@ parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help
 
 parser.add_argument('columns', metavar='column', nargs='+', help='Specify columns')
 args = parser.parse_args()
+
+signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
 if args.delim == '\\t':
   args.delim = '\t'
