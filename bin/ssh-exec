@@ -68,6 +68,8 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 import_regexp = re.compile(r'^from\s+(\S+)\s+import\s+(\S+)$')
 copy_end_regexp = re.compile(r'^\S')
 
+rc = 0
+
 if os.path.isfile(args.script):
   basename = os.path.basename(args.script)
   src = replace_imports(args.script)
@@ -84,3 +86,5 @@ if os.path.isfile(args.script):
     parser.error(f'Could not copy to {dest} @ {args.host}')
 else:
   parser.error(f'Could not find {args.script!r}')
+
+exit(rc)
