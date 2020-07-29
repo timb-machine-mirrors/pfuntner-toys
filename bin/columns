@@ -102,8 +102,12 @@ except Exception as e:
   parser.error('Invalid field: `%s`' % str(e))
 log.debug('desiredFields: {desiredFields}'.format(**locals()))
 
+if args.csv:
+  stream = csv.reader(stream)
+
 for line in stream:
-  line = line.rstrip()
+  if not args.csv:
+    line = line.rstrip()
   output = []
   if regexp:
     match = regexp.search(line)
@@ -112,7 +116,7 @@ for line in stream:
       print(delimOrBlank().join([match.group(field) for field in desiredFields]))
   else:
     if args.csv:
-      tokens = (csv.reader(io.StringIO(line))).next()
+      tokens = line
     else:
       tokens = delim.split(line)
 
