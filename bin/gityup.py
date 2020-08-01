@@ -84,7 +84,7 @@ class Git(object):
                 elif tokens[0] == 'Merge:':
                   commits[-1]['merge'].append(tokens[1:])
                 elif tokens[0].startswith('R'):
-                  commits[-1]['files'].append({'operation': 'rename', 'name': tokens[1], 'old_name': tokens[2]})
+                  commits[-1]['files'].append({'operation': 'rename', 'old_name': tokens[1], 'name': tokens[2]})
 
     for commit in commits:
       assert bool(commit['merge']) ^ bool(commit['files']), f'Either `merge` or `file` element expected in {commit}'
