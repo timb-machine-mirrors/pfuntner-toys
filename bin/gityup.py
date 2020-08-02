@@ -50,6 +50,7 @@ class Git(object):
     date_regexp = re.compile(r'^Date:\s+((?:Sun|Mon|Tue|Wed|Thu|Fri|Sat)\s(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s\d{1,2}\s\d{2}:\d{2}:\d{2}\s\d{4})\s([-+]\d{2})(\d{2})$')
     messages_regexp = re.compile(r'^ {4}(.*)$')
     file_status_regexp = re.compile('^[A-Za-z]')
+    rename_regexp = re.compile(r'^R\S+\t([^\t]+)\t([^\t]+)$')
 
     (rc, stdout, stderr) = self.run(['git', 'log', '--name-status'] + args)
     for line in stdout.splitlines():
@@ -83,8 +84,10 @@ class Git(object):
                   commits[-1]['files'].append({'operation': 'delete', 'name': tokens[1]})
                 elif tokens[0] == 'Merge:':
                   commits[-1]['merge'].append(tokens[1:])
-                elif tokens[0].startswith('R'):
-                  commits[-1]['files'].append({'operation': 'rename', 'old_name': tokens[1], 'name': tokens[2]})
+                else:
+                  match = rename_regexp.search(line)
+                  if match:
+                    commits[-1]['files'].append({'operation': 'rename', 'old_name': match.group(1), 'name': match.group(2)})
 
     for commit in commits:
       assert bool(commit['merge']) ^ bool(commit['files']), f'Either `merge` or `file` element expected in {commit}'
