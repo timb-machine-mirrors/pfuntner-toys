@@ -9,6 +9,8 @@ import datetime
 import subprocess
 
 class Git(object):
+  filename_regexp = re.compile('^"(.+)"$')
+
   def __init__(self, log=None):
     if log:
       self.log = log
@@ -16,6 +18,29 @@ class Git(object):
       logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
       self.log = logging.getLogger()
       mylog.setLevel(logging.WARNING)
+
+  def repair_filename(self, filename):
+    """
+    Git does a little strangeness with files with special characters.  A tab always separates filenames in a line of
+    output, even if the file name has an embedded tab and git will modify filenames:
+      - Embedded tabs are turned into '\\t'
+      - Embedded double quotes are turned into '\\"'
+      - Embedded back slashes are turned into '\\\\'
+      - A file name is wrapped with double quotes if it contains a tab, double quote, or back slash.
+    There is no special processing for embedded spaces or single quotes.
+
+    :param
+    filename: A filename parsed from a git operation line.  It might have been massaged by git according to the above notes
+    :return: The filename before git massages it:
+      - Double quotes added by git to wrap the filename are removed
+      - '\\t' is turned into '\t'
+      - '\\"' is turned into '"'
+      - '\\\\' is turned into '\\'
+    """
+    match = self.filename_regexp.search(filename)
+    if match:
+      filename = match.group(1).replace('\\t', '\t').replace('\\"', '"').replace('\\\\', '\\')
+    return filename
 
   def run(self, cmd, capture=True):
     if isinstance(cmd, str):
@@ -76,15 +101,19 @@ class Git(object):
                 tokens = match.groups()
                 self.log.debug(f'Checking for file status in {tokens}')
                 if tokens[0] == 'A':
-                  commits[-1]['files'].append({'operation': 'add', 'name': tokens[1]})
+                  commits[-1]['files'].append({'operation': 'add', 'name': self.repair_filename(tokens[1])})
                 elif tokens[0] == 'M':
-                  commits[-1]['files'].append({'operation': 'modify', 'name': tokens[1]})
+                  commits[-1]['files'].append({'operation': 'modify', 'name': self.repair_filename(tokens[1])})
                 elif tokens[0] == 'D':
-                  commits[-1]['files'].append({'operation': 'delete', 'name': tokens[1]})
+                  commits[-1]['files'].append({'operation': 'delete', 'name': self.repair_filename(tokens[1])})
                 elif tokens[0] == 'Merge:':
                   commits[-1]['merge'].append(tokens[1:] if tokens[2] else tokens[1].split())
                 elif tokens[0].startswith('R'):
-                  commits[-1]['files'].append({'operation': 'rename', 'old_name': tokens[1], 'name': tokens[2]})
+                  commits[-1]['files'].append({
+                    'operation': 'rename',
+                    'old_name': self.repair_filename(tokens[1]),
+                    'name': self.repair_filename(tokens[2])
+                  })
 
     for commit in commits:
       assert bool(commit['merge']) ^ bool(commit['files']), f'Either `merge` or `file` element expected in {commit}'
