@@ -49,12 +49,11 @@ class Git(object):
     author_regexp = re.compile(r'^Author:\s+.*<([^>]+)>$')
     date_regexp = re.compile(r'^Date:\s+((?:Sun|Mon|Tue|Wed|Thu|Fri|Sat)\s(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s\d{1,2}\s\d{2}:\d{2}:\d{2}\s\d{4})\s([-+]\d{2})(\d{2})$')
     messages_regexp = re.compile(r'^ {4}(.*)$')
-    file_status_regexp = re.compile('^[A-Za-z]')
-    rename_regexp = re.compile(r'^R\S+\t([^\t]+)\t([^\t]+)$')
+    operation_regexp = re.compile(r'^(\S+)\s+([^\t]+)(?:\s+([^\t]+))?$')
 
     (rc, stdout, stderr) = self.run(['git', 'log', '--name-status'] + args)
     for line in stdout.splitlines():
-      self.log.debug(f'Checking {line!r}')
+      self.log.debug('Checking {line!r}, {last}'.format(line=line, last=commits[-1] if commits else None))
       match = commit_regexp.search(line)
       if match:
         commits.append({'messages': [], 'files': [], 'merge': []})
@@ -72,9 +71,9 @@ class Git(object):
             if match:
               commits[-1]['messages'].append(match.group(1))
             else:
-              match = file_status_regexp.search(line)
+              match = operation_regexp.search(line)
               if match:
-                tokens = line.split()
+                tokens = match.groups()
                 self.log.debug(f'Checking for file status in {tokens}')
                 if tokens[0] == 'A':
                   commits[-1]['files'].append({'operation': 'add', 'name': tokens[1]})
@@ -83,11 +82,9 @@ class Git(object):
                 elif tokens[0] == 'D':
                   commits[-1]['files'].append({'operation': 'delete', 'name': tokens[1]})
                 elif tokens[0] == 'Merge:':
-                  commits[-1]['merge'].append(tokens[1:])
-                else:
-                  match = rename_regexp.search(line)
-                  if match:
-                    commits[-1]['files'].append({'operation': 'rename', 'old_name': match.group(1), 'name': match.group(2)})
+                  commits[-1]['merge'].append(tokens[1:] if tokens[2] else tokens[1].split())
+                elif tokens[0].startswith('R'):
+                  commits[-1]['files'].append({'operation': 'rename', 'old_name': tokens[1], 'name': tokens[2]})
 
     for commit in commits:
       assert bool(commit['merge']) ^ bool(commit['files']), f'Either `merge` or `file` element expected in {commit}'
