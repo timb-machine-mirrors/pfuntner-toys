@@ -18,6 +18,7 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 
 | Tool | Bruno's Favorite? | Brief Description |
 | ---- | ----------------- | ----------------- |
+| [`ansible-distros`](doc/ansible-distros.md) | | Prints OS information about Ansible hosts |
 | [`banner`](doc/banner.md) | Yes | Prints text in a _banner_ |
 | [`bashprofiles`](doc/bashprofiles.md) | | Prints profile script(s) `bash` will use |
 | [`beeper`](doc/beeper.md) | | Beeps over and over |
@@ -42,11 +43,13 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`indent`](doc/indent.md) | | Indent stdin by a specified number of columns |
 | [`json`](doc/json.md) | Yes | JSON magic - it's a disservice to try to summarize this tool in a single string.  Check out its page |
 | [`jsoncompare`](doc/jsoncompare.md) | | Compares JSON and/or YAML files, element by element |
+| [`lexec`](doc/lexec.md) | Yes | Locate executable files by pattern |
 | [`megadiff`](doc/megadiff.md) | | Compare two directories trees |
 | [`nocrs`](doc/nocrs.md) | | Remove carriage returns from files |
 | [`oldtable`](doc/oldtable.md) | | Parse data into a tabular form using a few input and output forms - replaced by _table_ |
 | [`peval`](doc/peval.md) | Yes | Evaluate Python expression strings |
 | [`pycomment`](doc/pycomment.md) | | vi command to toggle Python-style comments, similar to PyCharm `ctrl-/` command |
+| [`pythons`](doc/pythons.md) | | Show versions of Python/Python2/Python3 interpreters |
 | [`recentdownloads`](doc/recentdownloads.md) | | Find recently downloaded files |
 | [`SecureKeyValues`](doc/SecureKeyValues.md) | | Manage secure key value stores |
 | [`table`](doc/table.md) | yes | Parse data into a tabular form using several input and output forms - more flexible than _oldtable_ |
@@ -55,4 +58,5 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`uniqc`](doc/uniqc.md) | Yes | Counts unique instances of input |
 | [`undupe`](doc/undupe.md) | | Removes duplicate punctuation & whitespace |
 | [`unixdate`](doc/unixdate.md) | | Invokes `date` with Unix-style format on Windoze |
+| [`versions`](doc/versions.md) | | Show versions of arbitrary commands |
 | [`wholegrep`](doc/wholegrep.md) | | Grep entire files that contain or do not contain regular expressions |

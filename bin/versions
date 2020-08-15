@@ -81,22 +81,23 @@ def look_for(target, dir=None):
             commit = None
             author = None
             date = None
-            messages = ''
+            message = None
   
             for line in stdout.splitlines():
               commit = extract(commit_regexp, line) or commit
               author = extract(author_regexp, line) or author
               date = extract(date_regexp, line, converter=gitdate_to_datetime) or date
               if date is None:
-                messages = ''
+                message = None
+
+              if not message:
+                match = messages_regexp.search(line)
+                if match:
+                  message = match.group(1)
   
-              match = messages_regexp.search(line)
-              if match:
-                messages += (' ' if messages and not messages.endswith(' ') else '') + match.group(1)
-  
-            log.info('Commit extractions: {date} {commit} {author} {messages}'.format(**locals()))
-            if commit and author and date and messages:
-              version = '{date} {commit} {author} {messages}'.format(**locals())
+            log.info('Commit extractions: {date} {commit} {author} {message}'.format(**locals()))
+            if commit and author and date and message:
+              version = '{date} {commit} {author} {message}'.format(**locals())
           os.chdir(cwd)
 
     if args.version:

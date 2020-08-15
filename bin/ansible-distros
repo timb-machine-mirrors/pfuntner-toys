@@ -20,7 +20,7 @@ def run(cmd):
 
 parser = argparse.ArgumentParser(description='Display Ansible distro information')
 parser.add_argument('nodes', default=['all'], nargs='*', help='Zero or more nodes.  Default: all')
-parser.add_argument('-i', '--inventory', default='/etc/ansible/hosts', help='Path to Ansible inventory YAML file.  Default: /etc/ansible/hosts')
+parser.add_argument('-i', '--inventory', help='Path to Ansible inventory YAML file.  Defaults to Ansible default')
 parser.add_argument('-n', '--names', action='store_true', help='Retain actual Ansible names')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
@@ -31,7 +31,7 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 regexp = re.compile('^(\S+)\s+\|\s+SUCCESS\s+=>\s+{$')
 
-(rc, stdout, stderr) = run('ansible -i {inventory} {nodes} -m setup'.format(inventory=args.inventory, nodes=','.join(args.nodes)))
+(rc, stdout, stderr) = run('ansible {inventory} {nodes} -m setup'.format(inventory='-i {}'.format(args.inventory) if args.inventory else '', nodes=','.join(args.nodes)))
 if rc == 0 and stdout:
   table = Table(
     'Node',

@@ -39,7 +39,9 @@ if args.dry_run:
 
 for repo in args.repos:
   repo = repo.rstrip('/')
-  cmd = ('https://' if args.http else 'git clone git@') + f'github.com:{user}/{repo}.git'
+  prefix = 'https://' if args.http else 'git clone git@'
+  separator = '/' if args.http else ':'
+  cmd = f'{prefix}github.com{separator}{user}/{repo}.git'
   print(cmd)
   if not args.dry_run:
     (rc, stdout, stderr) = run(cmd)
