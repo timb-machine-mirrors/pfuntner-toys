@@ -55,16 +55,25 @@ Python 2.7.17
 $
 ```
 
+```
+$ docker --version
+Docker version 17.09.0-ce, build afdb6d4
+$
+```
+
 ### Simple use of the tool 
 ```
-$ versions java bash ansible python
+$ versions java bash ansible python docker
 Name     Location  Version
 java     /usr/bin  11.0.8
 bash     /bin      4.4.20(1)-release
 ansible  /usr/bin  2.5.1
 python   /usr/bin  2.7.17
+docker   /usr/bin  17.09.0-ce
 $
 ```
+
+Note that annoying trailing characters are removed from the "version token" such as the comma from `docker`. 
 
 ### Using `--dumb` option
 ```
@@ -85,7 +94,7 @@ $
 ```
 
 ### `git`-based example
-I honestly don't use the tool much on my own tools but maybe I should!
+I honestly don't use the tool much on my own tools but maybe I should!  I haven't provided a `--version` option for any of my tools and I don't really want to have to maintain a version level either.  But I figured I could mine the information from `git`:
 ```
 $ versions versions
 Name      Location           Version
