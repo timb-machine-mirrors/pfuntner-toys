@@ -10,9 +10,9 @@ import subprocess
 parser = argparse.ArgumentParser(description='Run an Ansible role against specified hosts')
 parser.add_argument('role', help='Ansible role')
 parser.add_argument('hosts', metavar='host', nargs='+', help='One or more hosts to run the role on')
-parser.add_argument('-a', '--ansible-verbose', action='count', help='Use Ansible -v option - zero or more occurrences')
+parser.add_argument('-V', '--ansible-verbose', action='count', help='Use Ansible -v option - zero or more occurrences')
 parser.add_argument('-b', '--become', action='store_true', help='Become root (sudo) on hosts')
-parser.add_argument('-e', '--extra-vars', help='Specify extra variables in JSON')
+parser.add_argument('-e', '--extra-vars', action='append', help='One or more sets of extra variables to ansible-playbook')
 parser.add_argument('-d', '--dry-run', action='store_true', help='Do not invoke ansible-playbook')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
@@ -32,11 +32,6 @@ playbook.write(f"""- name: Run {args.role}
   - role: {args.role}
 """)
 
-if args.extra_vars:
-  playbook.write('  vars:\n')
-  for line in yaml.dump(json.loads(args.extra_vars)).splitlines():
-    playbook.write(f'    {line}\n')
-
 if args.become:
   playbook.write('  become: true\n')
 
@@ -45,7 +40,10 @@ playbook.flush()
 if args.dry_run or ((args.verbose or 0) > 1):
   subprocess.Popen(['cat', playbook.name]).wait()
 
-cmd = ['ansible-playbook'] + (['-v'] * (args.ansible_verbose or 0)) + [playbook.name]
+cmd = ['ansible-playbook'] + (['-v'] * (args.ansible_verbose or 0))
+for extra_var in args.extra_vars or []:
+  cmd += ['-e', extra_var]
+cmd.append(playbook.name)
 log.debug(cmd)
 if not args.dry_run:
   exit(subprocess.Popen(cmd).wait())
