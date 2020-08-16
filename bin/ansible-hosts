@@ -11,7 +11,7 @@ from table import Table
 
 parser = argparse.ArgumentParser(description='List ansible hosts')
 parser.add_argument('hosts', nargs='*', default=['all'], help='Regular expressions to select hosts - default: all')
-parser.add_argument('-c', '--comma', action='store_true', help='Join hosts with a comma - implied --name-only')
+parser.add_argument('-c', '--commas', action='store_true', help='Join hosts with a comma - implied --name-only')
 parser.add_argument('-n', '--names-only', action='store_true', help='Report names only, not even headings')
 parser.add_argument('-v', '--verbose', action='store_true', help='Enable debugging')
 args = parser.parse_args()
@@ -58,7 +58,7 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 }
 """
 
-if args.comma:
+if args.commas:
   args.names_only = True
 
 p = subprocess.Popen(['ansible-inventory', '--list'], stdout=subprocess.PIPE)
@@ -115,6 +115,6 @@ if rc == 0:
   if table:
     sys.stdout.write(str(table))
   else:
-    print((',' if args.comma else '\n').join(names))
+    print((',' if args.commas else '\n').join(names))
     
 exit(rc)
