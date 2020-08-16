@@ -19,6 +19,8 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | Tool | Bruno's Favorite? | Brief Description |
 | ---- | ----------------- | ----------------- |
 | [`ansible-distros`](doc/ansible-distros.md) | | Prints OS information about Ansible hosts |
+| [`ansible-host-data`](doc/ansible-host-data.md) | | Extracts specific information about a host in an ansible inventory |
+| [`ansible-hosts`](doc/ansible-hosts.md) | Yes | Lists host information from an Ansible inventory |
 | [`banner`](doc/banner.md) | Yes | Prints text in a _banner_ |
 | [`bashprofiles`](doc/bashprofiles.md) | | Prints profile script(s) `bash` will use |
 | [`beeper`](doc/beeper.md) | | Beeps over and over |
