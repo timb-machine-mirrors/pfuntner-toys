@@ -6,21 +6,9 @@ import signal
 import logging
 import argparse
 
-parser = argparse.ArgumentParser(description='Process nearly-JSON data')
-parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
-args = parser.parse_args()
-
-logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
-log = logging.getLogger()
-log.setLevel(logging.WARNING - (args.verbose or 0)*10)
-
-signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
-
-if sys.stdin.isatty():
-  parser.error('stdin must be redirected')
-
-for line in sys.stdin.read().splitlines():
+def process(line):
   log.debug(f'Processing: {line!r}')
+  line = line.strip()
   if line:
     obj = None
     if line[-1] == '}':
@@ -36,3 +24,23 @@ for line in sys.stdin.read().splitlines():
       print(json.dumps(obj, indent=2, sort_keys=True))
     else:
       log.debug('Could not transform line')
+
+parser = argparse.ArgumentParser(description='Process nearly-JSON data')
+parser.add_argument('-l', '--multiline', action='store_true', help='Process multiple lines into a single string')
+parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.WARNING - (args.verbose or 0)*10)
+
+signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
+
+if sys.stdin.isatty():
+  parser.error('stdin must be redirected')
+
+if args.multiline:
+  process(sys.stdin.read())
+else:
+  for line in sys.stdin.read().splitlines():
+    process(line)
