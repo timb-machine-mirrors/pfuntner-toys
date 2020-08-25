@@ -18,7 +18,7 @@ Syntax: versions [-d | --version] [-v] target [target ...]
 ## Example
 
 ### The madness of various commands
-Here are examples of the different ways executables can present their version.  Not only does the output differ greatly but the option can vary!  Some commands like `--version` but some like `-version` or `version`.  Occasionaly, you'll run across a helpful command that supports more than one method but that's not very typical.
+Here are examples of the different ways executables can present their version.  Not only does the output differ greatly but the option can vary!  Some commands like `--version` but some like `-version` or `version`.  Occasionaly, you'll run across a helpful command that supports more than one method but that's not very typical.  Sometimes the method is different depending on the operating system you're using.
 
 ```
 $ java -version
