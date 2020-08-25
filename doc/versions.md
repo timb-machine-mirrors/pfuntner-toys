@@ -18,9 +18,10 @@ Syntax: versions [-d | --version] [-v] target [target ...]
 ## Example
 
 ### The madness of various commands
-Here are examples of the different ways executables can present their version.
+Here are examples of the different ways executables can present their version.  Not only does the output differ greatly but the option can vary!  Some commands like `--version` but some like `-version` or `version`.  Occasionaly, you'll run across a helpful command that supports more than one method but that's not very typical.
+
 ```
-$ java --version
+$ java -version
 openjdk 11.0.8 2020-07-14
 OpenJDK Runtime Environment (build 11.0.8+10-post-Ubuntu-0ubuntu118.04.1)
 OpenJDK 64-Bit Server VM (build 11.0.8+10-post-Ubuntu-0ubuntu118.04.1, mixed mode, sharing)
@@ -61,15 +62,25 @@ Docker version 17.09.0-ce, build afdb6d4
 $
 ```
 
+```
+$ packer version
+Packer v1.5.1
+
+Your version of Packer is out of date! The latest version
+is 1.6.1. You can update by downloading from www.packer.io/downloads.html
+$
+```
+
 ### Simple use of the tool 
 ```
-$ versions java bash ansible python docker
-Name     Location  Version
-java     /usr/bin  11.0.8
-bash     /bin      4.4.20(1)-release
-ansible  /usr/bin  2.5.1
-python   /usr/bin  2.7.17
-docker   /usr/bin  17.09.0-ce
+$ versions java bash ansible python docker packer
+Name     Location                 Version
+java     /usr/bin                 11.0.8
+bash     /bin                     4.4.20(1)-release
+ansible  /usr/bin                 2.5.1
+python   /usr/bin                 2.7.17
+docker   /usr/bin                 17.09.0-ce
+packer   /home/centos/.local/bin  1.5.1
 $
 ```
 
