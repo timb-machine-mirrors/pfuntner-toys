@@ -29,30 +29,40 @@ def add_crs(s):
 parser = argparse.ArgumentParser(description='Launch vi on a file/data stream in read-only mode')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 
+group = parser.add_mutually_exclusive_group()
 windoze = 'win' in sys.platform
 if windoze:
   # Windoze only options
-  group = parser.add_mutually_exclusive_group()
-  group.add_argument('-g', '--gvim', dest='gvim', action='store_true', help='Use gvim instead of vi (Windoze only)')
-  group.add_argument('-n', '--notepad', dest='notepad', action='store_true', help='Use notepad instead of vi (Windoze only)')
+  group.add_argument('-g', '--gvim', action='store_true', help='Use gvim instead of vi (Windoze only)')
+  group.add_argument('-n', '--notepad', action='store_true', help='Use notepad instead of vi (Windoze only)')
+else:
+  group.add_argument('-g', '--gedit', action='store_true', help='Use gedit instead of vi (Unix only)')
 
 parser.add_argument('files', metavar='file', nargs='*', help='Zero or more files')
 args = parser.parse_args()
 
+
 if not windoze:
   args.gvim = False
   args.notepad = False
+else:
+  args.gedit = False
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
 editor = 'vi'
+editor_options = ['-R']
+
 if args.gvim:
   editor = os.environ['GVIM']
   if not editor:
     log.error('--gvim used but there is no GVIM environment variable')
     exit(1)
+elif args.gedit:
+  editor = 'gedit'
+  editor_options = []
 elif args.notepad:
   editor = 'notepad'
 
@@ -65,7 +75,7 @@ if sys.stdin.isatty():
   if not args.files:
     log.error('When stdin is not directed, files are expected on command line')
     exit(1)
-  cmd = [editor] + ([] if args.notepad else ["-R"]) + [truepath.process(path, log) for path in args.files]
+  cmd = [editor] + ([] if args.notepad else editor_options) + [truepath.process(path, log) for path in args.files]
   log.debug(str(cmd))
   os.execvp(editor, cmd)
   assert False, "os.execvp() of `vi` returned control to us!"
@@ -85,7 +95,7 @@ os.write(fd, add_crs(sys.stdin.read()).encode('utf-8'))
 os.close(fd)
 
 with open("/dev/tty", 'r') as tty:
-  cmd = [editor] + ([] if args.notepad else ["-R"]) + [truepath.process(name, log=log)]
+  cmd = [editor] + ([] if args.notepad else editor_options) + [truepath.process(name, log=log)]
   log.debug(str(cmd))
   p = subprocess.Popen(cmd, stdin=tty)
   rc = p.wait()
