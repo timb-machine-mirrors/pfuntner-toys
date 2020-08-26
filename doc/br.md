@@ -15,6 +15,7 @@ Syntax: br [-g] [-n] [ [ OPTS ] FILENAME ... ]
 | ------ | ----------- | ------- |
 | `-g` `--gvim` | Use {gvim} instead of `vi`/`vim` | Available only on Windoze |
 | `-n` {--notepad} | Use Windoze {notepad} of `vi`/`vim` | Available only on Windoze |
+| `-g` `--gedit` | Use {gedit} instead of `vi` | Available only on Unix |
 
 - If you supply one or more filenames, it invokes `vi` on the files in read-only mode.
 - If you don't supply any filenames, the script copies all the data from stdin into a temporary file and launches `vi` on that file.
