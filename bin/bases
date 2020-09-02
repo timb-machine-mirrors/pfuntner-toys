@@ -42,7 +42,7 @@ for num in args.nums:
     (16, r'0?[xX]([0-9a-f]+)'),
     (8, r'[o0]([0-7]+)'),
     (2, r'b([0-1]+)'),
-    (10, r'(\d+)'),
+    (10, r'([1-9]\d*)'),
   )
   table.add(num, value, '{:b}'.format(value), '{:o}'.format(value), '{:x}'.format(value))
 
