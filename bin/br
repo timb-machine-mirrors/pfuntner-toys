@@ -68,20 +68,17 @@ elif args.notepad:
 
 log.debug('editor: {editor!r}'.format(**locals()))
 
-if sys.stdin.isatty():
+if args.files:
   """
-    If stdin has not be redirected, we'll act like the old `br` script and just invoke `vi -R argv[1] ...`
+    We'll act like the old `br` script and just invoke `vi -R argv[1] ...`
   """
-  if not args.files:
-    log.error('When stdin is not directed, files are expected on command line')
-    exit(1)
   cmd = [editor] + ([] if args.notepad else editor_options) + [truepath.process(path, log) for path in args.files]
   log.debug(str(cmd))
   os.execvp(editor, cmd)
   assert False, "os.execvp() of `vi` returned control to us!"
 
-if args.files:
-  log.error('Files are specified on the command line but stdin is also redirected')
+if sys.stdin.isatty():
+  log.error('stdin must be redirected if no files are specified on command line')
   exit(1)
 
 name = None
