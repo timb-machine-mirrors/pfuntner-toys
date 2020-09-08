@@ -41,6 +41,8 @@ if rc == 0:
       if rc == 0:
         (rc, stdout, stderr) = run('git pull', capture=False)
         if rc == 0:
+          run('git log -1', capture=False)
+
           print(f'Master branch pulled.  Shall I remove {branch!r}? ', end='', flush=True)
           if re.match('y(e(s)?)?$', sys.stdin.readline().strip(), flags=re.IGNORECASE):
             (rc, stdout, stderr) = run(['git', 'branch', '-D', branch], capture=False)
