@@ -11,6 +11,8 @@ isWindows = 'win' in sys.platform.lower()
 parser = argparse.ArgumentParser(description='Locate executables with regular expressions')
 parser.add_argument('pats', metavar='pat', nargs='+', help='One or more regular expressions')
 
+parser.add_argument('-l', '--local', action='count', help='Report on non-system executables only')
+
 if isWindows:
   parser.add_argument('-s', '--system', action='store_true', help='Expand search to system directories (Windoze only - slow!!!)')
 
@@ -33,12 +35,13 @@ for pat in args.pats:
 history = set()
 
 notLocal = re.compile("/c/WINDOWS|/c/Program Files", re.IGNORECASE)
+system_paths = [re.compile('^/usr/(local|ucb|bin|sbin)'), re.compile('^/bin')]
 
 # Real Unix and CYGWIN separate paths in a list with a colon but Git bash uses a semicolon
 dirs = re.split('[;:]', os.environ["PATH"])
 for dir in dirs:
   log.info("raw dir {dir}".format(**locals()))
-  if (dir not in history) and ((not isWindows) or args.system or (not notLocal.search(dir))):
+  if (dir not in history) and ((not isWindows) or args.system or (not notLocal.search(dir))) and ((not args.local) or not any([regexp.search(dir) for regexp in system_paths])):
     history.add(dir)
     if os.path.isdir(dir):
       log.info("good dir {dir}".format(**locals()))
