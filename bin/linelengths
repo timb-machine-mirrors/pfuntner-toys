@@ -16,11 +16,11 @@ def process(filename=None):
     stream = sys.stdin
 
   for (linenum, line) in enumerate(stream.read().splitlines()):
-    print('{filename}{linenum:>8} {bytes:>8}'.format()
+    print('{filename}{linenum:>8} {bytes:>8}'.format(
       filename=(filename+': ') if filename else '',
       bytes=len(line),
       linenum=linenum+1,
-    )
+    ))
 
   if filename:
     stream.close()
