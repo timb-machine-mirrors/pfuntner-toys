@@ -6,12 +6,8 @@ import logging
 import argparse
 
 def uni2str(root):
-  if isinstance(root, unicode):
-    root = str(root)
-  elif isinstance(root, dict):
+  if isinstance(root, dict):
     for (key, value) in root.items():
-      if isinstance(key, unicode):
-        del root[key]
       root[str(key)] = uni2str(value)
   elif isinstance(root, list):
     for (pos, value) in enumerate(root):
