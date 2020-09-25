@@ -54,7 +54,7 @@ def get_containers():
 parser = argparse.ArgumentParser(description='Start long running Docker container')
 parser.add_argument('images', metavar='image', nargs='+', help='One or more Docker images')
 parser.add_argument('-n', '--name', help='Name to use for container - only one image')
-parser.add_argument('--networking', help='Use host networking')
+parser.add_argument('--networking', action='store_true', help='Use host networking')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
