@@ -50,6 +50,8 @@ def dump(host, cmd, rc, stdout, stderr):
 parser = argparse.ArgumentParser(description='Push script to remote one or more remote hosts and run it')
 parser.add_argument('hosts', help='One or more comma-delimited hosts')
 parser.add_argument('cmd', nargs='+', help='Command and arguments')
+parser.add_argument('-x', '--execute', action='store_true', help='Use chmod to turn on execute bit')
+parser.add_argument('-b', '--become', action='store_true', help='Invoke script with sudo')
 parser.add_argument('-f', '--force', action='store_true', help='Ignore errors')
 parser.add_argument('-j', '--json', action='store_true', help='Print output in JSON form')
 parser.add_argument('-q', '--quiet', action='store_true', help='Use --quiet for ssh/scp')
@@ -73,7 +75,9 @@ output = {}
 for host in args.hosts.split(','):
   log.info(f'host: {host}')
   dump(host, 'scp', *run(['scp'] + (['-q'] if args.quiet else []) + [script, f'{host}:/tmp/{base}']))
-  dump(host, 'scp', *run(['ssh'] + (['-q'] if args.quiet else []) + [host, f'/tmp/{base}'] + args.cmd[1:]))
+  if args.execute:
+    dump(host, 'scp', *run(['ssh'] + (['-q'] if args.quiet else []) + [host] + (['sudo'] if args.become else []) + ['chmod', '+x', f'/tmp/{base}']))
+  dump(host, 'scp', *run(['ssh'] + (['-q'] if args.quiet else []) + [host] + (['sudo'] if args.become else []) + [f'/tmp/{base}'] + args.cmd[1:]))
 
 if args.json:
   json.dump(output, sys.stdout)
