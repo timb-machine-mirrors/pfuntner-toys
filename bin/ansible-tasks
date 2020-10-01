@@ -53,7 +53,7 @@ def process(filename=None):
         host_match = host_simplifier_regexp.search(str(host))
         if host_match:
           host = host_match.group(1)
-        task.hosts[host_prefix + host] = match.group(1)
+        task.hosts[host_prefix + host] = {'status': match.group(1), 'item': match.group(3) }
 
   if filename:
     stream.close()
@@ -68,7 +68,12 @@ log = logging.getLogger()
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
 task_regexp = re.compile('^(?:RUNNING\s+)?(\S+)\s+\[([^:]*\s:\s)?\s*(.*)\]\s+\*{5,}$')
-host_regexp = re.compile('^([a-z]+):\s+\[([^\]]*)\]')
+
+"""
+2020-10-01 10:44:13,927 DEBUG /home/centos/bin/ansible-tasks:49 host match: ('ok', 'localhost') 'ok: [localhost]'
+2020-10-01 10:44:13,927 DEBUG /home/centos/bin/ansible-tasks:49 host match: ('ok', 'localhost') "ok: [localhost] => (item=[u'item1.1', u'item2.1', u'item3.1']) => {"
+"""
+host_regexp = re.compile('^([a-z]+):\s+\[([^\]]*)\](?: => \(item=\[(.+)\]\) => \{)?')
 
 # Remove packer overhead if necessary
 packer_regexp = re.compile('^\x1b\[\d+;\d+2m\s+\S+:\s(.*)\x1b\[\d+m$')
@@ -98,6 +103,6 @@ table = Table('Task type', 'Role', 'Task', *hosts)
 for task in tasks:
   row = [task.type, task.role, task.name]
   for host in hosts:
-    row.append(task.hosts.get(host, ''))
+    row.append(task.hosts.get(host, {'status': '', 'item': None})['status'])
   table.add(row)
 sys.stdout.write(str(table))
