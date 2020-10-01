@@ -3,6 +3,9 @@
 import sys
 import math
 import re
+import signal
+import logging
+import argparse
 
 def process(size, file, filename=None):
   linenum = 0
@@ -16,7 +19,7 @@ def process(size, file, filename=None):
   for line in file:
     linenum += 1
     if linenum <= top:
-      sys.stdout.write("%s%8d %s" % (visibleFilename, linenum, line))
+      sys.stdout.write("{visibleFilename}{linenum}{line}".format(visibleFilename=visibleFilename, linenum="%8d " % linenum if print_numbers else '', line=line))
     else:
       if len(buf) == bot:
         del buf[0]
@@ -25,23 +28,44 @@ def process(size, file, filename=None):
   if linenum > top:
     if linenum > size:
       for x in range(3):
-        print("%s%s" % (" " * len(visibleFilename), ".".rjust(10, ' ')))
+        print("%s%s" % (" " * len(visibleFilename), ".".rjust(10 if print_numbers else 1, ' ')))
     else:
       bot = len(buf)
     for curr in range(len(buf)):
-      sys.stdout.write("%s%8d %s" % (visibleFilename, linenum - (bot - curr - 1), buf[curr]))
+      sys.stdout.write("{visibleFilename}{linenum}{line}".format(visibleFilename=visibleFilename, linenum="%8d " % (linenum - (bot - curr - 1)) if print_numbers else '', line=buf[curr]))
+
+parser = argparse.ArgumentParser(description='Perform head and tail on a file')
+parser.add_argument('-n', '--number', action='count', help='Toggle line numbers: default=true')
+parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
+(args, unknown_args) = parser.parse_known_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.WARNING - (args.verbose or 0)*10)
+
+signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
 size = 10 # default size
-arg = 1
-if arg < len(sys.argv) and re.match("-\d", sys.argv[1]):
-  size = int(sys.argv[1][1:])
-  arg += 1
+if unknown_args:
+  try:
+    arg1 = int(unknown_args[0])
+    if arg1 < 0:
+      arg1 = -arg1
+  except:
+    arg1 = None
 
-if len(sys.argv) == arg:
-  assert not sys.stdin.isatty(), "stdin must be directed if no files are specified"
-  process(size, sys.stdin)
-else:
-  for filename in sys.argv[arg:]:
+  if arg1:
+    size = arg1
+    unknown_args.pop(0) 
+
+print_numbers = ((args.number or 0) % 2) == 0
+
+if unknown_args:
+  for filename in unknown_args:
     with open(filename, "r") as file:
       process(size, file, filename)
     print("")
+else:
+  if sys.stdin.isatty():
+    parser.error("stdin must be directed if no files are specified")
+  process(size, sys.stdin)
