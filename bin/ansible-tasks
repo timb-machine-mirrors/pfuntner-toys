@@ -8,17 +8,21 @@ import argparse
 from table import Table
 
 class Task(object):
-  def __init__(self, task_type, role, name):
+  def __init__(self, task_type, role, name, item):
     self.type = task_type.lower()
     self.role = re.sub('\s:\s$', '', role or '')
     self.name = name
+    self.item = item or ''
     self.hosts = {}
 
   def __str__(self):
-    return '{self.type} {self.name} {self.hosts}'.format(**locals())
+    if self.item:
+      return '{self.type} {self.name!r} {self.item!r} {self.hosts}'.format(**locals())
+    else:
+      return '{self.type} {self.name!r} {self.hosts}'.format(**locals())
 
   def __eq__(self, other):
-    return (self.type == other.type) and (self.role == other.role) and (self.name == other.name)
+    return (self.type == other.type) and (self.role == other.role) and (self.name == other.name) and (self.item == other.item)
 
 def remove_packer_overhead(s):
   match = packer_regexp.search(str(s))
@@ -27,33 +31,42 @@ def remove_packer_overhead(s):
   else:
     return s
 
+def simplify_host(host):
+  match = host_simplifier_regexp.search(str(host))
+  if match:
+    host = match.group(1)
+  return host
+
+def get_task(args):
+  global tasks
+  log.debug(f'get_task({args})')
+  task = Task(*args)
+  for curr in tasks:
+    if curr == task:
+      task = curr
+      break
+  else:
+    tasks.append(task)
+  return task
+
 def process(filename=None):
   stream = open(filename) if filename else sys.stdin
   host_prefix = (filename + ' ') if filename else ''
 
-  task = None
+  task_match = None
   for line in stream.read().splitlines():
     line = remove_packer_overhead(line)
+
     match = task_regexp.search(str(line))
     log.debug('task match: {groups} {line!r}'.format(groups=match.groups() if match else None, **locals()))
     if match:
-      task = Task(*match.groups())
-      for old_task in tasks:
-        if old_task == task:
-          task = old_task
-          break
-      else:
-        tasks.append(task)
-    else:
-      match = host_regexp.search(str(line))
-      log.debug('host match: {groups} {line!r}'.format(groups=match.groups() if match else None, **locals()))
-      if match and tasks:
-        assert task
-        host = match.group(2)
-        host_match = host_simplifier_regexp.search(str(host))
-        if host_match:
-          host = host_match.group(1)
-        task.hosts[host_prefix + host] = {'status': match.group(1), 'item': match.group(3) }
+      task_match = match
+    elif task_match:
+      host_match = host_regexp.search(str(line))
+      log.debug('host match: {groups} {line!r}'.format(groups=host_match.groups() if host_match else None, **locals()))
+      if host_match:
+        task = get_task(list(task_match.groups()) + [host_match.group(3)])
+        task.hosts[host_prefix + simplify_host(host_match.group(2))] = host_match.group(1)
 
   if filename:
     stream.close()
@@ -72,8 +85,9 @@ task_regexp = re.compile('^(?:RUNNING\s+)?(\S+)\s+\[([^:]*\s:\s)?\s*(.*)\]\s+\*{
 """
 2020-10-01 10:44:13,927 DEBUG /home/centos/bin/ansible-tasks:49 host match: ('ok', 'localhost') 'ok: [localhost]'
 2020-10-01 10:44:13,927 DEBUG /home/centos/bin/ansible-tasks:49 host match: ('ok', 'localhost') "ok: [localhost] => (item=[u'item1.1', u'item2.1', u'item3.1']) => {"
+skipping: [aws-centos6] => (item=2.8.0)
 """
-host_regexp = re.compile('^([a-z]+):\s+\[([^\]]*)\](?: => \(item=\[(.+)\]\) => \{)?')
+host_regexp = re.compile('^([a-z]+):\s+\[([^\]]*)\](?: => \(item=(.+)\))?(?: => \{)?$')
 
 # Remove packer overhead if necessary
 packer_regexp = re.compile('^\x1b\[\d+;\d+2m\s+\S+:\s(.*)\x1b\[\d+m$')
@@ -99,10 +113,10 @@ for task in tasks:
     hosts.add(host)
 hosts = sorted(list(hosts))
 
-table = Table('Task type', 'Role', 'Task', *hosts)
+table = Table('Task type', 'Role', 'Task', 'Item', *hosts)
 for task in tasks:
-  row = [task.type, task.role, task.name]
+  row = [task.type, task.role, task.name, task.item]
   for host in hosts:
-    row.append(task.hosts.get(host, {'status': '', 'item': None})['status'])
+    row.append(task.hosts.get(host, ''))
   table.add(row)
 sys.stdout.write(str(table))
