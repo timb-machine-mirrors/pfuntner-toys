@@ -86,8 +86,9 @@ task_regexp = re.compile('^(?:RUNNING\s+)?(\S+)\s+\[([^:]*\s:\s)?\s*(.*)\]\s+\*{
 2020-10-01 10:44:13,927 DEBUG /home/centos/bin/ansible-tasks:49 host match: ('ok', 'localhost') 'ok: [localhost]'
 2020-10-01 10:44:13,927 DEBUG /home/centos/bin/ansible-tasks:49 host match: ('ok', 'localhost') "ok: [localhost] => (item=[u'item1.1', u'item2.1', u'item3.1']) => {"
 skipping: [aws-centos6] => (item=2.8.0)
+failed: [centos7] (item=OUTPUT) => {"ansible_loop_var": "item", "changed": false, "cmd": "/sbin/iptables -t filter -L OUTPUT", "item": "OUTPUT", "msg": "iptables v1.4.21: can\'t initialize iptables table `filter\': Permission denied (you must be root)\\nPerhaps iptables or your kernel needs to be upgraded.", "rc": 3, "stderr": "iptables v1.4.21: can\'t initialize iptables table `filter\': Permission denied (you must be root)\\nPerhaps iptables or your kernel needs to be upgraded.\\n", "stderr_lines": ["iptables v1.4.21: can\'t initialize iptables table `filter\': Permission denied (you must be root)", "Perhaps iptables or your kernel needs to be upgraded."], "stdout": "", "stdout_lines": []}
 """
-host_regexp = re.compile('^([a-z]+):\s+\[([^\]]*)\](?: => \(item=(.+)\))?(?: => \{)?$')
+host_regexp = re.compile('^([a-z]+):\s+\[([^\]]*)\](?: =>)?(?: \(item=(.+)\))?(?: =>)?(?: \{.*)?$')
 
 # Remove packer overhead if necessary
 packer_regexp = re.compile('^\x1b\[\d+;\d+2m\s+\S+:\s(.*)\x1b\[\d+m$')
