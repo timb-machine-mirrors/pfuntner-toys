@@ -180,7 +180,7 @@ class XmlMethod(MethodBase):
             tree_col = ET.SubElement(tree_row, self.normalize(key))
             tree_col.text = col
 
-      stream.write(ET.tostring(tree) + '\n')
+      stream.write(ET.tostring(tree).decode('utf-8') + '\n')
 
 class CsvMethod(MethodBase):
   """
