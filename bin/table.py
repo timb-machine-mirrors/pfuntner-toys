@@ -741,6 +741,7 @@ class Table(object):
     else:
       row = args
     if self.headings:
+      assert len(row) == len(self.headings), 'Expected {} columns but got {}'.format(len(self.headings), len(row))
       self.root.append({name: str(row[pos]) for (pos, name) in enumerate(self.headings)})
     else:
       self.root.append([col for col in row])
