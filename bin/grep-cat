@@ -23,7 +23,7 @@ class IntegerSelector(SelectorClass):
     if self.num == 0:
       raise Exception('Cannot select line `0` - the first line is `1`')
 
-  def affect(self, file_name, lines):
+  def affect(self, file_name, lines, other_hits=[]):
     if self.num > 0:
       if self.num <= len(lines):
         return [self.num]
@@ -71,24 +71,53 @@ class RegexpSelector(SelectorClass):
   def __str__(self):
     return f'{self.__class__.__name__}(pattern={self.regexp.pattern!r})'
 
+class ReferenceSelector(SelectorClass):
+  def __init__(self, arg):
+    self.arg = arg
+
+    match = re.search(r'^\.([+-])(\d+)$', self.arg)
+    if match:
+      self.amt = int(match.group(2)) * (1 if match.group(1) == '+' else -1)
+    else:
+      raise Exception(f'Not a reference: {arg!r}')
+
+  def __str__(self):
+    return f'{self.__class__.__name__}({self.arg})'
+
+  def affect(self, file_name, lines, other_hits=[]):
+    return [min(max(1, other + self.amt), len(lines)) for other in other_hits]
+
 class RangeSelector(SelectorClass):
   def __init__(self, arg):
     self.arg = arg
     self.selector1 = None
     self.selector2 = None
-    delims = re.finditer('[:-]', arg)
+
+    # we use re.finditer since a colon could be expressed inside a regular expression selector.  We'll use the first
+    # instance that makes sense to separate two selectors
+    delims = re.finditer(':', arg)
     for delim in delims:
-      self.selector1 = IntegerSelector.parse(self.arg[:delim.start(0)]) or RegexpSelector.parse(self.arg[:delim.start(0)])
-      self.selector2 = IntegerSelector.parse(self.arg[delim.end(0):]) or RegexpSelector.parse(self.arg[delim.end(0):])
+      left = self.arg[:delim.start(0)]
+      self.selector1 = IntegerSelector.parse(left) or RegexpSelector.parse(left) or ReferenceSelector.parse(left)
+
+      right = self.arg[delim.end(0):]
+      self.selector2 = IntegerSelector.parse(right) or RegexpSelector.parse(right) or ReferenceSelector.parse(right)
+
       if all([self.selector1, self.selector2]):
+        if self.selector1.__class__ == ReferenceSelector and self.selector2.__class__ == ReferenceSelector:
+          raise Exception('Both range selectors may not be references')
         break
     if not all([self.selector1, self.selector2]):
       raise Exception(f'Not a range: {arg!r}')
 
   def affect(self, file_name, lines):
     ret = []
-    starts = self.selector1.affect(file_name, lines)
-    ends = self.selector2.affect(file_name, lines)
+    if self.selector2.__class__ == ReferenceSelector:
+      starts = self.selector1.affect(file_name, lines)
+      ends = self.selector2.affect(file_name, lines, starts)
+    else:
+      ends = self.selector2.affect(file_name, lines)
+      starts = self.selector1.affect(file_name, lines, ends)
 
     if starts:
       if ends:
