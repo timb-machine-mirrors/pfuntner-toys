@@ -26,11 +26,18 @@ A positive and negative integer can be used to select a line by its position in 
 A regular expression can be used to select lines by matching the 
 expression.  The expression must be delimited by punctuation characters 
 which do not appear in the regular expression.  For instance: `/foo-bar/`.
-#### Range selectors
-Two selectors (any combination of the previous selectors) can be combined using a hyphen or dash between them to select a range 
-of lines that begin with the first selector and end with the second selector.  For instance: `1-/foo/`.
+##### Regular expression offsets
+A regular expression selector also accepts an "offset" of the form `+NUM` or `-NUM` to alter the selector to target lines before or after the the regular expression.
 
-Here is how ranges involving regular expressions are handled:
+#### Range selectors
+Two selectors (any combination of the previous selectors) can be combined using a colon between them to select a range 
+of lines that begin with the first selector and end with the second selector.  For instance: `1:/foo/`.
+##### Reference selectors
+An additional selector available on either side _(but not both)_ of a range selector is a _reference selector_ of the form
+`.+NUM` or `.-NUM`.  The period stands in for hits from the other selector allowing you to refer to lines relative
+to the other selector.
+##### Range selector logic
+Here is how ranges involving regular expressions are processed:
 1. All lines of a specified file are read
 2. Regular expressions for the range selectors are processed against all lines
 3. The number of starting selector lines must match the number of ending selector lines.  A warning is raised if not and the 
@@ -95,6 +102,49 @@ Filesystem      Size  Used Avail Use% Mounted on
 $ 
 ```
 
+### Regular expression offsets
+
+```
+$ cat test.txt
+abc
+def
+ghi
+jkl
+mno
+pqr
+stu
+vxy
+z
+$ grep-cat '/g/-1:/p/+1' test.txt
+test.txt: def
+test.txt: ghi
+test.txt: jkl
+test.txt: mno
+test.txt: pqr
+test.txt: stu
+$ 
+```
+
+### Reference selector
+
+```
+$ cat test.txt
+abc
+def
+ghi
+jkl
+mno
+pqr
+stu
+vxy
+z
+$ grep-cat /g/:.+2 test.txt
+test.txt: ghi
+test.txt: jkl
+test.txt: mno
+$ 
+```
+
 ## Notes
 
 - In default selector mode, a selector that targets a line that was targetted by a previous selector will toggle its visibility.
@@ -123,7 +173,7 @@ making lines two and three invisible, making four visible.
     Processing by selectors will generate different behavior:
     
     ```
-    $ grep-cat -s -n /aaa/-/zzz/ foo.txt
+    $ grep-cat -s -n /aaa/:/zzz/ foo.txt
     foo.txt:1: aaa
     foo.txt:2: aaa
     foo.txt:3: zzz
@@ -135,3 +185,12 @@ making lines two and three invisible, making four visible.
 
     I'm not wild about this behavior but I think this is a reasonable way to handle regular expressions especially with respect to 
 overlapping ranges.  I reserve the right to change my mind.
+
+- I bounded regular expression offsets and reference selectors by the number of lines in the file.
+  - `.-1:1` is not invalid - the first selector would technically reference _line 0_ which doesn't exist but I made sure a reference never went below 1
+  - `-1:.+1` is not invalid - the second selector would technically reference beyond the last line but I made sure a reference never goes beyond the last line
+
+- `.+1:1` and `2:.-1` are probably both invalid because the first selector is greater than the second reference
+
+- Initially I had designed range selectors to be delimited by a colon **or a hyphen** but once I introduced the ideas of reference selectors and regular expression offsets, I wanted to simplify the syntax and avoid ambiguities. 
+   
