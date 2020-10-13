@@ -436,8 +436,11 @@ if __name__ == '__main__':
               instances_class.run(f'gcloud compute instances start {instance.true_name}')
             else:
               log.warning(f'{instance.name} has unexpected provider {instance.provider!r}')
+            args.hosts.remove(instance.name)
           else:
             log.warning(f'{instance.name} is already started')
+        if args.hosts:
+          log.warning(f'Did not find instances: {args.hosts}')
 
     if args.stop:
       for instance in instances:
@@ -451,8 +454,11 @@ if __name__ == '__main__':
               instances_class.run(f'gcloud compute instances stop {instance.true_name}')
             else:
               log.warning(f'{instance.name} has unexpected provider {instance.provider!r}')
+            args.hosts.remove(instance.name)
           else:
             log.warning(f'{instance.name} is already stopped')
+        if args.hosts:
+          log.warning(f'Did not find instances: {args.hosts}')
 
     if args.restart:
       for instance in instances:
@@ -466,8 +472,11 @@ if __name__ == '__main__':
               instances_class.run(f'gcloud compute instances reset {instance.true_name}')
             else:
               log.warning(f'{instance.name} has unexpected provider {instance.provider!r}')
+            args.hosts.remove(instance.name)
           else:
             log.warning(f'{instance.name} is already stopped')
+        if args.hosts:
+          log.warning(f'Did not find instances: {args.hosts}')
 
     if args.make or args.ansible_make:
         if args.user:
