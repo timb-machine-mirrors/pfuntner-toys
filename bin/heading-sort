@@ -1,5 +1,6 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
+import os
 import sys
 import logging
 import argparse
@@ -19,11 +20,12 @@ log.debug('sort_args: {}'.format(sort_args))
 if sys.stdin.isatty():
   parser.error('This script works best when you redirect stdin so the heading line can be removed')
 
-lines = sys.stdin.read().splitlines()
+stream = os.fdopen(sys.stdin.fileno(), 'rb')
+lines = stream.read().decode().splitlines()
 
 if lines:
   print(lines[0])
 
 p = subprocess.Popen(['sort'] + sort_args, stdin=subprocess.PIPE)
-p.communicate('\n'.join(lines[1:]))
+p.communicate('\n'.join(lines[1:]).encode())
 exit(p.wait())
