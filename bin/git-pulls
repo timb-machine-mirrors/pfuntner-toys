@@ -110,9 +110,14 @@ if os.path.exists(args.root):
         if not args.dry_run:
           if (branch == 'master') or args.branch:
             (rc, stdout, stderr) = run('git pull', readonly=False)
-            sys.stdout.write(stdout)
-            sys.stderr.write(stderr)
-            if not up_to_date_regexp.search(stdout.strip()):
+            up_to_date = up_to_date_regexp.search(stdout.strip())
+            if rc != 0 or not stdout or not up_to_date:
+              print('*' * (len(path) + 4))
+              print(f'* {path} *')
+              print('*' * (len(path) + 4))
+              sys.stdout.write(stdout)
+              sys.stderr.write(stderr)
+            if not up_to_date:
               (date, sha1, text) = get_last_commit()
               cols += [sha1, date, text]
             else:
