@@ -35,6 +35,11 @@ def run(cmd, capture=True):
 
 parser = argparse.ArgumentParser(description='Get information from Ansible hosts')
 parser.add_argument('hosts', metavar='host', default=['all'], nargs='*', help='Zero or more hosts (default: all)')
+
+group = parser.add_mutually_exclusive_group()
+group.add_argument('-n', '--names', action='store_true', help='Report names only, one per line')
+group.add_argument('-c', '--commas', action='store_true', help='Report names only on a single line, separated by commas')
+
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -56,80 +61,98 @@ if rc != 0 or not stdout:
   exit(1)
 inventory = json.loads(stdout).get('_meta', {}).get('hostvars', {})
 if args.hosts == ['all']:
-  args.hosts = inventory.keys()
+  args.hosts = list(inventory.keys())
+else:
+  # apply hosts as regular expressions
+  hosts = set()
+  for host in args.hosts:
+    if host in inventory.keys():
+      hosts.add(host)
+    else:
+      matched = False
+      for curr in inventory.keys():
+        if re.search(host, curr):
+          hosts.add(curr)
+          matched = True
+      if not matched:
+        hosts.add(host)
+  args.hosts = list(hosts)
 
 args.hosts = sorted(args.hosts)
 log.info(f'all hosts => {args.hosts}')
 
-setup_regexp = re.compile(r'^(\S+)\s+\|\s+(\S+)\s+=>\s+\{$')
-table = Table('Host', 'User', 'Address', 'Key', 'Distro', 'Up time', 'Kernel', 'Pkgmgr')
-
-(rc, stdout, stderr) = run('ansible {} -m setup'.format(','.join(args.hosts)))
-lines = stdout.splitlines()
-setup = dict()
-pos = 0
-while pos < len(lines):
-  match = setup_regexp.search(lines[pos])
-  if match:
-    host = match.group(1)
-    json_string = '{'
-    pos += 1
-    while pos < len(lines):
-      json_string += '\n' + lines[pos]
-      if lines[pos] == '}':
-        break
+if args.names or args.commas:
+  print(('\n' if args.names else ',').join(args.hosts))
+else:
+  setup_regexp = re.compile(r'^(\S+)\s+\|\s+(\S+)\s+=>\s+\{$')
+  table = Table('Host', 'User', 'Address', 'Key', 'Distro', 'Up time', 'Kernel', 'Pkgmgr')
+  
+  (rc, stdout, stderr) = run('ansible {} -m setup'.format(','.join(args.hosts)))
+  lines = stdout.splitlines()
+  setup = dict()
+  pos = 0
+  while pos < len(lines):
+    match = setup_regexp.search(lines[pos])
+    if match:
+      host = match.group(1)
+      json_string = '{'
       pos += 1
-    try:
-      setup[host] = json.loads(json_string)
-    except Exception as e:
-      log.debug(f'JSON parser threw {e!s} on {json_string!r}')
-
-    if host in setup and setup.get(host).get('unreachable', False):
-      """
-        aws-centos7 | UNREACHABLE! => {
-            "changed": false, 
-            "msg": "Failed to connect to the host via ssh: ssh: connect to host 54.197.26.211 port 22: Connection timed out", 
-            "unreachable": true
-        }
-      """
-      log.warning('Could not contact {host}: {msg!r}'.format(host=host, msg=setup.get(host).get('msg', 'Unknown reason')))
-
-  pos += 1
-log.info(f'setup: {setup}')
-
-for host in args.hosts:
-  if host == 'localhost':
-    addr = 'localhost'
-    user = ''
-    key = ''
-  else:
-    addr = inventory.get(host, {}).get('ansible_host')
-    user = inventory.get(host, {}).get('ansible_user', '')
-    key = inventory.get(host, {}).get('ansible_ssh_private_key_file', '')
-
-  log.info(f'{host}: -i {key} {user}@{addr}')
-  if addr:
-    facts = setup.get(host, {}).get('ansible_facts', {})
-    facts['distro'] = facts.get('ansible_distribution', '')
-    if facts['distro'] and 'WIN' not in facts['distro']:
-      facts['distro'] = (facts['distro'] + ' ' + facts.get('ansible_distribution_version', '')).strip()
-    if 'WIN' in facts['distro']:
-      """
-        [jpfuntne@JPFUNTNE-GCEYJ ~]$ systeminfo | grep 'System Boot Time'
-        System Boot Time:          2020-10-06, 7:51:30 AM
-      """
-      (rc, stdout, stderr) = run('systeminfo')
-      match = re.search(r'^System Boot Time:\s+(\d{4}-\d{2}-\d{2}, \d{1,2}:\d{2}:\d{2} (?:AM|PM))', stdout, flags=re.MULTILINE)
-      if match:
-        boot_time = datetime.datetime.strptime(match.group(1), '%Y-%m-%d, %I:%M:%S %p')
-        log.info(f'boot_time: {boot_time!s}')
-        facts['uptime'] = dhms(datetime.datetime.now() - boot_time)
-      else:
-        facts['uptime'] = ''
+      while pos < len(lines):
+        json_string += '\n' + lines[pos]
+        if lines[pos] == '}':
+          break
+        pos += 1
+      try:
+        setup[host] = json.loads(json_string)
+      except Exception as e:
+        log.debug(f'JSON parser threw {e!s} on {json_string!r}')
+  
+      if host in setup and setup.get(host).get('unreachable', False):
+        """
+          aws-centos7 | UNREACHABLE! => {
+              "changed": false, 
+              "msg": "Failed to connect to the host via ssh: ssh: connect to host 54.197.26.211 port 22: Connection timed out", 
+              "unreachable": true
+          }
+        """
+        log.warning('Could not contact {host}: {msg!r}'.format(host=host, msg=setup.get(host).get('msg', 'Unknown reason')))
+  
+    pos += 1
+  log.info(f'setup: {setup}')
+  
+  for host in args.hosts:
+    if host == 'localhost':
+      addr = 'localhost'
+      user = ''
+      key = ''
     else:
-      facts['uptime'] = dhms(datetime.timedelta(seconds=facts.get('ansible_uptime_seconds', 0)))
-    table.add(host, user, addr, key, facts.get('distro', ''), facts.get('uptime', ''), facts.get('ansible_kernel', ''), facts.get('ansible_pkg_mgr', ''))
-  else:
-    log.warning(f'Could not find host {host!r}')
-
-print(str(table), end='')
+      addr = inventory.get(host, {}).get('ansible_host')
+      user = inventory.get(host, {}).get('ansible_user', '')
+      key = inventory.get(host, {}).get('ansible_ssh_private_key_file', '')
+  
+    log.info(f'{host}: -i {key} {user}@{addr}')
+    if addr:
+      facts = setup.get(host, {}).get('ansible_facts', {})
+      facts['distro'] = facts.get('ansible_distribution', '')
+      if facts['distro'] and 'WIN' not in facts['distro']:
+        facts['distro'] = (facts['distro'] + ' ' + facts.get('ansible_distribution_version', '')).strip()
+      if 'WIN' in facts['distro']:
+        """
+          [jpfuntne@JPFUNTNE-GCEYJ ~]$ systeminfo | grep 'System Boot Time'
+          System Boot Time:          2020-10-06, 7:51:30 AM
+        """
+        (rc, stdout, stderr) = run('systeminfo')
+        match = re.search(r'^System Boot Time:\s+(\d{4}-\d{2}-\d{2}, \d{1,2}:\d{2}:\d{2} (?:AM|PM))', stdout, flags=re.MULTILINE)
+        if match:
+          boot_time = datetime.datetime.strptime(match.group(1), '%Y-%m-%d, %I:%M:%S %p')
+          log.info(f'boot_time: {boot_time!s}')
+          facts['uptime'] = dhms(datetime.datetime.now() - boot_time)
+        else:
+          facts['uptime'] = ''
+      else:
+        facts['uptime'] = dhms(datetime.timedelta(seconds=facts.get('ansible_uptime_seconds', 0)))
+      table.add(host, user, addr, key, facts.get('distro', ''), facts.get('uptime', ''), facts.get('ansible_kernel', ''), facts.get('ansible_pkg_mgr', ''))
+    else:
+      log.warning(f'Could not find host {host!r}')
+  
+  print(str(table), end='')
