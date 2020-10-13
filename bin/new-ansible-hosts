@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+import re
 import json
 import signal
 import logging
@@ -8,6 +9,16 @@ import datetime
 import subprocess
 
 from table import Table
+
+def dhms(delta):
+  """
+  Return a time delta formatted as "days-hours:minutes:seconds"
+  """
+  seconds = int(delta.total_seconds())
+  (days, seconds) = divmod(seconds, 24*60*60)
+  (hours, seconds) = divmod(seconds, 60*60)
+  (minutes, seconds) = divmod(seconds, 60)
+  return f'{days:02}-{hours:02}:{minutes:02}:{seconds:02}'
 
 def run(cmd, capture=True):
   if isinstance(cmd, str):
@@ -76,7 +87,21 @@ for host in args.hosts:
       log.debug(f'setup: {setup}')
       facts = setup['ansible_facts']
       facts['distro'] = '{ansible_distribution} {ansible_distribution_version}'.format(**facts)
-      facts['uptime'] = str(datetime.timedelta(seconds=facts['ansible_uptime_seconds']))
+      if 'WIN' in facts['ansible_distribution']:
+        """
+          [jpfuntne@JPFUNTNE-GCEYJ ~]$ systeminfo | grep 'System Boot Time'
+          System Boot Time:          2020-10-06, 7:51:30 AM
+        """
+        (rc, stdout, stderr) = run('systeminfo')
+        match = re.search(r'^System Boot Time:\s+(\d{4}-\d{2}-\d{2}, \d{1,2}:\d{2}:\d{2} (?:AM|PM))', stdout, flags=re.MULTILINE)
+        if match:
+          boot_time = datetime.datetime.strptime(match.group(1), '%Y-%m-%d, %I:%M:%S %p')
+          log.info(f'boot_time: {boot_time!s}')
+          facts['uptime'] = dhms(datetime.datetime.now() - boot_time)
+        else:
+          facts['uptime'] = ''
+      else:
+        facts['uptime'] = dhms(datetime.timedelta(seconds=facts['ansible_uptime_seconds']))
     table.add(host, user, addr, key, facts.get('distro', ''), facts.get('uptime', ''), facts.get('ansible_kernel', ''), facts.get('ansible_pkg_mgr', ''))
   else:
     log.warning(f'Could not find host {host!r}')
