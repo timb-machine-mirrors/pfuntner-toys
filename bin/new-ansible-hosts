@@ -4,7 +4,10 @@ import json
 import signal
 import logging
 import argparse
+import datetime
 import subprocess
+
+from table import Table
 
 def run(cmd, capture=True):
   if isinstance(cmd, str):
@@ -20,7 +23,7 @@ def run(cmd, capture=True):
   return (rc, stdout, stderr)
 
 parser = argparse.ArgumentParser(description='Get information from Ansible hosts')
-parser.add_argument('hosts', metarvar='host', default=['all'], nargs='*', help='Zero or more hosts (default: all)')
+parser.add_argument('hosts', metavar='host', default=['all'], nargs='*', help='Zero or more hosts (default: all)')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -40,11 +43,42 @@ signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 if rc != 0 or not stdout:
   log.fatal(f'ansible-inventory --list failed: {rc}, {stdout!r}, {stderr!r}')
   exit(1)
-inventory = json.loads(stdout)
+inventory = json.loads(stdout).get('_meta', {}).get('hostvars', {})
 if args.hosts == ['all']:
-  args.hosts = sorted(inventory.get('_meta', {}).get('hostvars', {}).keys())
-  log.info(f'all hosts => {args.hosts}')
+  args.hosts = inventory.keys()
+
+args.hosts = sorted(args.hosts)
+log.info(f'all hosts => {args.hosts}')
+
+table = Table('Host', 'User', 'Address', 'Key', 'Distro', 'Up time', 'Kernel', 'Pkgmgr')
 
 for host in args.hosts:
   if host == 'localhost':
-    pass
+    addr = 'localhost'
+    user = ''
+    key = ''
+  else:
+    addr = inventory.get(host, {}).get('ansible_host')
+    user = inventory.get(host, {}).get('ansible_user', '')
+    key = inventory.get(host, {}).get('ansible_ssh_private_key_file', '')
+
+  log.info(f'{host}: -i {key} {user}@{addr}')
+  if addr:
+    (rc, stdout, stderr) = run(f'ansible {host} -m setup')
+    lines = stdout.splitlines()
+    facts = dict()
+    if (rc == 0) and (len(lines) > 1) and (lines[0] == f'{host} | SUCCESS => {{'):
+      lines[0] = '{'
+      try:
+        setup = json.loads('\n'.join(lines))
+      except Exception as e:
+        log.debug(f'JSON parser threw {e!s} on {lines}')
+      log.debug(f'setup: {setup}')
+      facts = setup['ansible_facts']
+      facts['distro'] = '{ansible_distribution} {ansible_distribution_version}'.format(**facts)
+      facts['uptime'] = str(datetime.timedelta(seconds=facts['ansible_uptime_seconds']))
+    table.add(host, user, addr, key, facts.get('distro', ''), facts.get('uptime', ''), facts.get('ansible_kernel', ''), facts.get('ansible_pkg_mgr', ''))
+  else:
+    log.warning(f'Could not find host {host!r}')
+
+print(str(table), end='')
