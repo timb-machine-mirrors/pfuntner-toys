@@ -388,12 +388,15 @@ if __name__ == '__main__':
 
   instances_class = Instances(log)
 
-  parser = argparse.ArgumentParser(description='Discover AWS/GCP instances')
-
+  parser = argparse.ArgumentParser(description='Operations on AWS/GCP instances: discover, make Ansible files, stop/start')
   group = parser.add_mutually_exclusive_group()
   group.add_argument('-m', '--make', action='store_true', help=f'Refresh /etc/ansible/hosts and {instances_class.ssh_config_filename} with instance information')
-  group.add_argument('-A', '--ansible-make', action='store_true', help=f'Refresh /etc/ansible/hosts only')
+  group.add_argument('-A', '--ansible-make', action='store_true', help='Refresh /etc/ansible/hosts only')
+  group.add_argument('--start', action='store_true', help='Start stopped instances')
+  group.add_argument('--stop', action='store_true', help='Stop started instances')
+  group.add_argument('--restart', action='store_true', help='Stop started instances')
 
+  parser.add_argument('hosts', metavar='host', nargs='*', help='Zero or more hosts to start, stop, restart')
   parser.add_argument('-u', '--user', help='Default user if cannot be determined from the image, etc')
   parser.add_argument('-o', '--out', default='/etc/ansible/hosts', help='Ansible hosts yaml destination file.  Default: /etc/ansible/hosts')
   parser.add_argument('-a', '--all', action='store_true', help='Show all columns')
@@ -401,6 +404,11 @@ if __name__ == '__main__':
   args = parser.parse_args()
 
   log.setLevel(logging.WARNING - (args.verbose or 0)*10)
+
+  if args.hosts and not any([args.start, args.stop, args.restart]):
+    parser.error('Hosts are only allowed with --start, --stop, or --restart')
+  if not args.hosts and any([args.start, args.stop, args.restart]):
+    args.hosts = ['all']
 
   instances = instances_class.get_instances()
   if instances:
@@ -412,6 +420,54 @@ if __name__ == '__main__':
       else:
         table.add(instance.name, instance.distro, instance.user, instance.ip, instance.key_filename)
     print(str(table), end='')
+
+    if args.hosts == ['all']:
+      args.hosts = [instance.name for instance in instances]
+
+    if args.start:
+      for instance in instances:
+        if instance.name in args.hosts:
+          if not instance.active:
+            if instance.provider == 'aws':
+              print(f'Starting {instance.name}')
+              instances_class.run(f'aws ec2 start-instances --instance-ids {instance.id}')
+            elif instance.provider == 'gcp':
+              print(f'Starting {instance.name}')
+              instances_class.run(f'gcloud compute instances start {instance.true_name}')
+            else:
+              log.warning(f'{instance.name} has unexpected provider {instance.provider!r}')
+          else:
+            log.warning(f'{instance.name} is already started')
+
+    if args.stop:
+      for instance in instances:
+        if instance.name in args.hosts:
+          if instance.active:
+            if instance.provider == 'aws':
+              print(f'Stopping {instance.name}')
+              instances_class.run(f'aws ec2 stop-instances --instance-ids {instance.id}')
+            elif instance.provider == 'gcp':
+              print(f'Stopping {instance.name}')
+              instances_class.run(f'gcloud compute instances stop {instance.true_name}')
+            else:
+              log.warning(f'{instance.name} has unexpected provider {instance.provider!r}')
+          else:
+            log.warning(f'{instance.name} is already stopped')
+
+    if args.restart:
+      for instance in instances:
+        if instance.name in args.hosts:
+          if instance.active:
+            if instance.provider == 'aws':
+              print(f'Restarting {instance.name}')
+              instances_class.run(f'aws ec2 reboot-instances --instance-ids {instance.id}')
+            elif instance.provider == 'gcp':
+              print(f'Resetting {instance.name}')
+              instances_class.run(f'gcloud compute instances reset {instance.true_name}')
+            else:
+              log.warning(f'{instance.name} has unexpected provider {instance.provider!r}')
+          else:
+            log.warning(f'{instance.name} is already stopped')
 
     if args.make or args.ansible_make:
         if args.user:
