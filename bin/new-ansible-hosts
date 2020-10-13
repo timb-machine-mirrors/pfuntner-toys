@@ -61,7 +61,30 @@ if args.hosts == ['all']:
 args.hosts = sorted(args.hosts)
 log.info(f'all hosts => {args.hosts}')
 
+setup_regexp = re.compile(r'^(\S+)\s+\|\s+SUCCESS\s+=>\s+\{$')
 table = Table('Host', 'User', 'Address', 'Key', 'Distro', 'Up time', 'Kernel', 'Pkgmgr')
+
+(rc, stdout, stderr) = run('ansible {} -m setup'.format(','.join(args.hosts)))
+lines = stdout.splitlines()
+setup = dict()
+pos = 0
+while pos < len(lines):
+  match = setup_regexp.search(lines[pos])
+  if match:
+    host = match.group(1)
+    json_string = '{'
+    pos += 1
+    while pos < len(lines):
+      json_string += '\n' + lines[pos]
+      if lines[pos] == '}':
+        break
+      pos += 1
+    try:
+      setup[host] = json.loads(json_string)
+    except Exception as e:
+      log.debug(f'JSON parser threw {e!s} on {json_string!r}')
+  pos += 1
+log.info(f'setup: {setup}')
 
 for host in args.hosts:
   if host == 'localhost':
@@ -75,33 +98,25 @@ for host in args.hosts:
 
   log.info(f'{host}: -i {key} {user}@{addr}')
   if addr:
-    (rc, stdout, stderr) = run(f'ansible {host} -m setup')
-    lines = stdout.splitlines()
-    facts = dict()
-    if (rc == 0) and (len(lines) > 1) and (lines[0] == f'{host} | SUCCESS => {{'):
-      lines[0] = '{'
-      try:
-        setup = json.loads('\n'.join(lines))
-      except Exception as e:
-        log.debug(f'JSON parser threw {e!s} on {lines}')
-      log.debug(f'setup: {setup}')
-      facts = setup['ansible_facts']
-      facts['distro'] = '{ansible_distribution} {ansible_distribution_version}'.format(**facts)
-      if 'WIN' in facts['ansible_distribution']:
-        """
-          [jpfuntne@JPFUNTNE-GCEYJ ~]$ systeminfo | grep 'System Boot Time'
-          System Boot Time:          2020-10-06, 7:51:30 AM
-        """
-        (rc, stdout, stderr) = run('systeminfo')
-        match = re.search(r'^System Boot Time:\s+(\d{4}-\d{2}-\d{2}, \d{1,2}:\d{2}:\d{2} (?:AM|PM))', stdout, flags=re.MULTILINE)
-        if match:
-          boot_time = datetime.datetime.strptime(match.group(1), '%Y-%m-%d, %I:%M:%S %p')
-          log.info(f'boot_time: {boot_time!s}')
-          facts['uptime'] = dhms(datetime.datetime.now() - boot_time)
-        else:
-          facts['uptime'] = ''
+    facts = setup.get(host, {}).get('ansible_facts', {})
+    facts['distro'] = facts.get('ansible_distribution', '')
+    if facts['distro']:
+      facts['distro'] = (facts['distro'] + ' ' + facts.get('ansible_distribution_version', '')).strip()
+    if 'WIN' in facts.get('ansible_distribution', ''):
+      """
+        [jpfuntne@JPFUNTNE-GCEYJ ~]$ systeminfo | grep 'System Boot Time'
+        System Boot Time:          2020-10-06, 7:51:30 AM
+      """
+      (rc, stdout, stderr) = run('systeminfo')
+      match = re.search(r'^System Boot Time:\s+(\d{4}-\d{2}-\d{2}, \d{1,2}:\d{2}:\d{2} (?:AM|PM))', stdout, flags=re.MULTILINE)
+      if match:
+        boot_time = datetime.datetime.strptime(match.group(1), '%Y-%m-%d, %I:%M:%S %p')
+        log.info(f'boot_time: {boot_time!s}')
+        facts['uptime'] = dhms(datetime.datetime.now() - boot_time)
       else:
-        facts['uptime'] = dhms(datetime.timedelta(seconds=facts['ansible_uptime_seconds']))
+        facts['uptime'] = ''
+    else:
+      facts['uptime'] = dhms(datetime.timedelta(seconds=facts.get('ansible_uptime_seconds', 0)))
     table.add(host, user, addr, key, facts.get('distro', ''), facts.get('uptime', ''), facts.get('ansible_kernel', ''), facts.get('ansible_pkg_mgr', ''))
   else:
     log.warning(f'Could not find host {host!r}')
