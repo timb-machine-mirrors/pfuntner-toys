@@ -61,7 +61,7 @@ if args.hosts == ['all']:
 args.hosts = sorted(args.hosts)
 log.info(f'all hosts => {args.hosts}')
 
-setup_regexp = re.compile(r'^(\S+)\s+\|\s+SUCCESS\s+=>\s+\{$')
+setup_regexp = re.compile(r'^(\S+)\s+\|\s+(\S+)\s+=>\s+\{$')
 table = Table('Host', 'User', 'Address', 'Key', 'Distro', 'Up time', 'Kernel', 'Pkgmgr')
 
 (rc, stdout, stderr) = run('ansible {} -m setup'.format(','.join(args.hosts)))
@@ -83,6 +83,17 @@ while pos < len(lines):
       setup[host] = json.loads(json_string)
     except Exception as e:
       log.debug(f'JSON parser threw {e!s} on {json_string!r}')
+
+    if host in setup and setup.get(host).get('unreachable', False):
+      """
+        aws-centos7 | UNREACHABLE! => {
+            "changed": false, 
+            "msg": "Failed to connect to the host via ssh: ssh: connect to host 54.197.26.211 port 22: Connection timed out", 
+            "unreachable": true
+        }
+      """
+      log.warning('Could not contact {host}: {msg!r}'.format(host=host, msg=setup.get(host).get('msg', 'Unknown reason')))
+
   pos += 1
 log.info(f'setup: {setup}')
 
