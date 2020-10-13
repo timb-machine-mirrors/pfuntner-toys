@@ -20,6 +20,7 @@ then
   export ROOT=/cygdrive/c
   export GVIM=$ROOT/utils/gVimPortable/gVimPortable.exe
   export HOSTS=$ROOT/Windows/System32/drivers/etc/hosts
+  export DOWNLOADS="$USERPROFILE/Downloads"
 
   $HOME/bin/set-title --self 
 fi
