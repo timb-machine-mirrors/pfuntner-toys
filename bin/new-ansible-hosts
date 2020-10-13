@@ -111,9 +111,9 @@ for host in args.hosts:
   if addr:
     facts = setup.get(host, {}).get('ansible_facts', {})
     facts['distro'] = facts.get('ansible_distribution', '')
-    if facts['distro']:
+    if facts['distro'] and 'WIN' not in facts['distro']:
       facts['distro'] = (facts['distro'] + ' ' + facts.get('ansible_distribution_version', '')).strip()
-    if 'WIN' in facts.get('ansible_distribution', ''):
+    if 'WIN' in facts['distro']:
       """
         [jpfuntne@JPFUNTNE-GCEYJ ~]$ systeminfo | grep 'System Boot Time'
         System Boot Time:          2020-10-06, 7:51:30 AM
