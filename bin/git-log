@@ -9,22 +9,7 @@ import datetime
 import subprocess
 
 from table import Table
-
-"""
-commit c2bcf77c55ac334999d1b3bdb7706d40580590eb
-Author: John Pfuntner <pfuntner@us.ibm.com>
-Date:   Wed Oct 4 15:49:37 2017 -0400
-
-    Latest changes
-
-    I am displaying the announcements pretty well.  I've added
-    an "update" button to just do an alert() and that's appearing!
-    I'll work on more tomorrow.
-
-public/css/admin_monitor.css
-public/js/admin-ui-events.js
-public/js/admin.js
-"""
+from gityup import Git
 
 def run(cmd, capture=True):
   if isinstance(cmd, str):
@@ -39,36 +24,10 @@ def run(cmd, capture=True):
   log.debug('Executed {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
   return (rc, stdout, stderr)
 
-def limit(s, desiredLen):
-  assert desiredLen > 5
-
-  if len(s) > desiredLen:
-    ret = s[:int((desiredLen-4)/2)+1] + "..."
-    ret = ret + s[-(desiredLen-len(ret)):]
-  else:
-    ret = s
-  return ret
-
-def match(regexp, line):
-  result = regexp.search(line)
-  if result:
-    result = result.group(1)
-  return result
-
-def debug(s):
-  if s:
-    log.info(s)
-
-def truncate(s):
-  s = s.strip()
+def shorten(s):
   if not args.long:
-    s = s[:50]
-  return repr(s)
-
-def report():
-  if commit:
-    assert date and (author is not None) and text, "At line %d, previous commit (%s) was not closed: (%s, %s, %s)" % (lineno, commit, date, author, repr(text))
-    table.add([commit, author, str(date), truncate(text)])
+    s = s[:60]
+  return s
 
 parser = argparse.ArgumentParser(description='Summary git log')
 parser.add_argument('targets', metavar='target', nargs='*', help='Zero or more targets (files, etc)')
@@ -76,7 +35,7 @@ parser.add_argument('-l', '--long', action='store_true', help='Do not truncate c
 parser.add_argument('-r', '--remote', action='store_true', help='Examine remote branch')
 parser.add_argument('-b', '--branch', help='Examine branch other than current')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
-args = parser.parse_args()
+(args, unknown_args) = parser.parse_known_args()
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
@@ -84,8 +43,6 @@ log = logging.getLogger()
 log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
-
-# cmd = "git log --name-only".split()
 
 branch = None
 if args.branch:
@@ -98,74 +55,9 @@ else:
   else:
     parser.error('Could not detect current branch')
 
-cmd = ['git', 'log'] 
-if args.remote:
-  cmd += [f'origin/{branch}']
-elif branch:
-  cmd += [branch]
+table = Table('Commit', 'Date', 'Author', 'Text')
+git_class = Git(log)
+for commit in git_class.parse_log(unknown_args + [('origin/' if args.remote else '') + branch]):
+  table.add(commit['commit'], commit['utc_date'], commit['author'], shorten(repr('\n'.join(commit['messages']))[1:-1]))
 
-cmd += args.targets
-
-(rc, stdout, stderr) = run(cmd)
-if (rc != 0) or stderr:
-  log.error("%s failed" % cmd)
-  exit(1)
-
-commitRegexp = re.compile("^commit (\S+)$")
-
-"""
-  I tried "%z" 5 parse the timezone offset component but was getting "ValueError: 'z' is a bad directive in format"
-"""
-dateRegexp = re.compile("^Date:\s+(\S{3} \S{3} \d{1,2} \d{2}:\d{2}:\d{2} \d{4})")
-authorRegexp = re.compile("^Author:.*<([^>]*)>")
-
-textRegexp = re.compile("^\s+(\S.*)$")
-fileRegexp = re.compile("^(\S.*)$")
-
-commit = None
-author = None
-date = None
-text = ""
-files = []
-
-lineno = 0
-
-table = Table(["Commit", "Author", "Date", "Comments"])
-
-for line in stdout.split('\n'):
-  lineno += 1
-  token = match(commitRegexp, line)
-  if token: 
-    report()
-
-    commit = token
-    debug("saw commit %s" % commit)
-    author = None
-    date = None
-    text = ""
-    files = []
-  elif commit:
-    if author is None:
-      token = match(authorRegexp, line)
-      if token is not None:
-        author = token
-    elif not date:
-      token = match(dateRegexp, line)
-      if token:
-        # assert not date, "At line %d, found %s when date was already read as %s" % (lineno, token, date)
-        date = datetime.datetime.strptime(token, "%a %b %d %H:%M:%S %Y")
-    else:
-      token = match(fileRegexp, line)
-      debug("checking %s for file -> %s" % (repr(line), True if token else False))
-      if token:
-        files.append(token) 
-        debug("%d files now" % len(files))
-      elif not files:
-        token = match(textRegexp, line)
-        if token:
-          text += "%s%s" % ('\n' if text else '', token)
-        elif text:
-          text += "\n"
-
-report()
 print(str(table), end='')
