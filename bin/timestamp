@@ -24,6 +24,9 @@ def get_offset():
 
   return diff
 
+def get_seconds_since_epoch(timestamp):
+  return (timestamp-datetime.datetime.fromtimestamp(0)).total_seconds()
+
 def interpret(arg):
   global captured_zone
 
@@ -38,9 +41,9 @@ def interpret(arg):
         if len(arg_tokens) == len(style_tokens):
           ret = datetime.datetime.strptime(' '.join(arg_tokens[:-2]) + ' ' + arg_tokens[-1], ' '.join(style_tokens[:-2]) + ' ' + style_tokens[-1])
           captured_zone = arg_tokens[-2]
-          return ret
+          return get_seconds_since_epoch(ret)
       else:
-        return datetime.datetime.strptime(arg, style)
+        return get_seconds_since_epoch(datetime.datetime.strptime(arg, style))
     except Exception as e:
       log.debug('Cannot interpret {arg!r} as {name}: {e!s}'.format(**locals()))
   parser.error('Cannot interpret {arg!r}'.format(**locals()))
@@ -61,7 +64,7 @@ parser.add_argument('-t', '--time', help='Specify time on which to base output')
 
 group = parser.add_mutually_exclusive_group()
 group.add_argument('-a', '--all', action='store_true', help='Display all formats')
-group.add_argument('-s', '--style', dest='styles', action='append', help='Specify style on which to render output: {styles}'.format(styles=styles.keys()))
+group.add_argument('-s', '--style', dest='styles', action='append', help='Specify style on which to render output: {styles}'.format(styles=list(styles.keys())))
 
 parser.add_argument('-v', '--verbose', action='store_true', help='Enable debugging')
 args = parser.parse_args()
@@ -71,7 +74,7 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 log.debug(args)
 
 if args.all:
-  args.styles = styles.keys()
+  args.styles = list(styles.keys())
 
 for (pos, style) in enumerate(args.styles or []):
   keys = []
@@ -88,6 +91,7 @@ for (pos, style) in enumerate(args.styles or []):
   elif len(keys) > 1:
     parser.error('{style!r} is ambiguous: {keys}'.format(**locals()))
 
+  log.debug(f'pos: {pos}, args.styles: {args.styles}')
   args.styles[pos] = keys[0]
 
 if not args.styles:
