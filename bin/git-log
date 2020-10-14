@@ -55,9 +55,9 @@ else:
   else:
     parser.error('Could not detect current branch')
 
-table = Table('Commit', 'Date', 'Author', 'Text')
+table = Table('Commit', 'Author', 'Date', 'Text')
 git_class = Git(log)
 for commit in git_class.parse_log(unknown_args + [('origin/' if args.remote else '') + branch]):
-  table.add(commit['commit'], commit['utc_date'], commit['author'], shorten(repr('\n'.join(commit['messages']))[1:-1]))
+  table.add(commit['commit'], commit['author'], commit['utc_date'], shorten(repr('\n'.join(commit['messages']))[1:-1]))
 
 print(str(table), end='')
