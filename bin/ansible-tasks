@@ -50,21 +50,30 @@ def get_task(args):
   return task
 
 def process(filename=None):
+  global eof
+
   stream = open(filename) if filename else sys.stdin
   host_prefix = (filename + ' ') if filename else ''
+
+  eof.append(False)
 
   task_match = None
   for line in stream.read().splitlines():
     line = remove_packer_overhead(line)
 
+    if end_regexp.search(line):
+      eof[-1] = True
+
     match = task_regexp.search(str(line))
     log.debug('task match: {groups} {line!r}'.format(groups=match.groups() if match else None, **locals()))
     if match:
+      eof[-1] = False
       task_match = match
     elif task_match:
       host_match = host_regexp.search(str(line))
       log.debug('host match: {groups} {line!r}'.format(groups=host_match.groups() if host_match else None, **locals()))
       if host_match:
+        eof[-1] = False
         task = get_task(list(task_match.groups()) + [host_match.group(3)])
         task.hosts[host_prefix + simplify_host(host_match.group(2))] = host_match.group(1)
 
@@ -96,7 +105,10 @@ packer_regexp = re.compile('^\x1b\[\d+;\d+2m\s+\S+:\s(.*)\x1b\[\d+m$')
 # Simplify host: [foo -> bar] => [foo]
 host_simplifier_regexp = re.compile('^(\S+)\s+->\s+\S+$')
 
+end_regexp = re.compile('^PLAY RECAP')
+
 tasks = []
+eof = []
 
 if args.files:
   list(map(process, args.files))
@@ -121,3 +133,7 @@ for task in tasks:
     row.append(task.hosts.get(host, ''))
   table.add(row)
 sys.stdout.write(str(table))
+
+log.info(f'eof: {eof}')
+if all(eof):
+  log.warning('Ansible playbooks have ended')
