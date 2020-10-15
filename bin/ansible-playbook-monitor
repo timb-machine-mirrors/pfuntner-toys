@@ -62,5 +62,9 @@ while True:
   tasks = stdout.splitlines()
   print('{} tasks'.format(len(tasks)))
   run('table.py -i json -o fixed --rotate', stdin='[' + tasks[-1] + ']', capture=False, shell=True)
-  print()
-  time.sleep(15)
+
+  if 'Ansible playbooks have ended' in stderr:
+    break
+  else:
+    print()
+    time.sleep(15)
