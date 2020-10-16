@@ -60,7 +60,7 @@ while True:
   run('date | banner --color blue', capture=False, shell=True)
   (rc, stdout, stderr) = run(f'ansible-tasks < {args.filename!r} | table.py -i fixed --heading -o json | json --linear', shell=True)
   tasks = stdout.splitlines()
-  print('{} tasks'.format(len(tasks)))
+  print('{} items/tasks'.format(len(tasks)))
   run('table.py -i json -o fixed --rotate', stdin='[' + tasks[-1] + ']', capture=False, shell=True)
 
   if 'Ansible playbooks have ended' in stderr:
