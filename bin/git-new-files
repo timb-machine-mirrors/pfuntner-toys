@@ -46,7 +46,7 @@ for commit in gitlog[-1::-1]:
   for curr in commit.get('files', []):
     log.debug('{commit} {curr} files={files}'.format(commit=commit['commit'], curr=curr, files=files))
     if curr['operation'] == 'add':
-      files.insert(0, [curr['name'], commit['commit'], commit['author'], commit['utc_date']])
+      files.insert(0, [curr['name'], commit['utc_date'], commit['commit'], commit['author']])
     elif curr['operation'] == 'rename':
       pos = find(files, curr['old_name'])
       files[pos][0] = curr['name']
@@ -54,7 +54,7 @@ for commit in gitlog[-1::-1]:
       pos = find(files, curr['name'])
       files.pop(pos)
 
-table = Table('Name', 'Commit', 'Author', 'Date') if args.all else None
+table = Table('Name', 'Date', 'Commit', 'Author') if args.all else None
 for curr in files:
   if args.all:
     table.add(curr)
