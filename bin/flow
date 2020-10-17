@@ -1,54 +1,17 @@
 #! /usr/bin/env python3
 import sys
 import os
-import getopt
 import math
+import signal
+import logging
+import argparse
 
 from Decolorizer import *
 from BrunoUtils import *
 
-class Orient:
-  horizontal = 1
-  vertical = 2
-
-  def __init__(self, value):
-    self.value = value
-
-  def isHorizontal(self):
-    return self.value == self.horizontal
-
-  def isVertical(self):
-    return self.value == self.vertical
-
-def usage():
-  sys.stderr.write("Syntax: %s [-w num|--width=num] [-v|--vertical] [-h|--horizontal] [-x|--verbose] [--sep CHAR] [-?|--help]\n" % sys.argv[0])
-
-def debug(msg):
-  global verbose, deferred_msgs
-  if verbose:
-    print(str(msg))
-  else:
-    deferred_msgs.append(msg)
-
-verbose = False
-deferred_msgs = []
-orientation = Orient(Orient.horizontal)
-separator = ' '
-sepWidth = len(separator)
-maxWidth = 1
-
-tput_cols=BrunoUtils.cols()
-
-if tput_cols:
-  width = tput_cols
-elif "COLUMNS" in os.environ:
-  width = int(os.environ["COLUMNS"])
-else:
-  width = 80
-
 def get(row, col):
   global orientation, rows, cols, data, colsInLastRow
-  if orientation.isHorizontal():
+  if args.horizontal:
     pos = row*cols + col
     if pos >= len(data):
       return ""
@@ -67,53 +30,37 @@ def get(row, col):
       else:
         return data[col*(rows-1) + row + colsInLastRow]
 
-try:
-  opts, args = getopt.getopt(sys.argv[1:], "s:hvxw:?", ["separator=", "horizontal", "vertical", "verbose", "width=", "help"])
-except getopt.GetoptError as err:
-  print(str(err))
-  usage()
-  sys.exit(2)
+parser = argparse.ArgumentParser(description='Flow lines into a grid/table')
 
-for opt, arg in opts:
-  if opt in ["-x", "--verbose"]:
-    verbose = not verbose
-    if verbose and len(deferred_msgs) > 0:
-      for msg in deferred_msgs:
-        print(msg)
-  elif opt in ["-h", "--horizontal"]:
-    orientation = Orient(Orient.horizontal)
-  elif opt in ["-v", "--vertical"]:
-    orientation = Orient(Orient.vertical)
-  elif opt in ["-w", "--width"]:
-    try:
-      width = int(arg)
-    except Exception as e:
-      sys.stderr.write("Invalid width arg %s: %s\n" % (arg, str(e)))
-      usage()
-      sys.exit(1)
-  elif opt in ["-s", "--separator"]:
-    separator = arg
-  elif opt in ["-?", "--help"]:
-    usage()
-    sys.exit()
-  else:
-    raise Exception("Unexpected option: %s" % o)
+group = parser.add_mutually_exclusive_group()
+group.add_argument('-V', '--vertical', action='store_true', help='Display elements vertically (default mode)')
+group.add_argument('-H', '--horizontal', action='store_true', help='Display elements horizontally')
 
-# if len(args) != 0:
-#   usage()
-#   sys.exit(1)
+parser.add_argument('-s', '--separator', default='  ', help='Desired width of grid/table lines')
+parser.add_argument('-w', '--width', type=int, default=BrunoUtils.cols(), help='Width of lines (default: {})'.format(BrunoUtils.cols()))
+parser.add_argument('items', metavar='item', nargs='*', help='Zero or more items')
+parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.WARNING - (args.verbose or 0)*10)
+
+signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
+
+if not any([args.horizontal, args.vertical]):
+  args.vertical = True
 
 data = []
+maxWidth = 1
 
-if len(args) == 0:
-  if os.isatty(sys.stdin.fileno()):
-    sys.stderr.write("Cowardly refusing to read from the terminal!\n")
-    usage()
-    sys.exit(1)
+if len(args.items) == 0:
+  if sys.stdin.isatty():
+    parser.error('Cowardly refusing to read from the terminal!')
 
   # data comes from stdin
   decolorizer = Decolorizer()
-  for line in sys.stdin:
+  for line in sys.stdin.read().splitlines():
     line = decolorizer.process(line.strip())
     if line:
       # line = line.translate(None, "\n")
@@ -121,36 +68,35 @@ if len(args) == 0:
         maxWidth = len(line)
       data.append(line)
 elif len(args) > 1:
-  data = args[1:]
-  for datum in data:
+  for datum in args.items:
     if len(datum) > maxWidth:
-      maxWidth = len(datum)
+      maxWidth = len(datum.strip())
 
-debug("items: %d" % len(data))
-debug("width: %d" % width)
-debug("max width: %d" % maxWidth)
+log.info("items: %d" % len(data))
+log.info("width: %d" % args.width)
+log.info("max width: %d" % maxWidth)
 
 curr = maxWidth
 cols = 1
-step = maxWidth + sepWidth
-debug("step: %d" % step)
-while (curr + step) < width and (cols < len(data)): 
+step = maxWidth + len(args.separator)
+log.info("step: %d" % step)
+while (curr + step) < args.width and (cols < len(data)):
   curr += step
   cols += 1
-  debug("%d columns take up %d bytes" % (cols, curr))
+  log.info("%d columns take up %d bytes" % (cols, curr))
 
 colsInLastRow = len(data) % cols
 if colsInLastRow == 0:
   colsInLastRow = cols
-debug("colsInLastRow: %d" % colsInLastRow)
+log.info("colsInLastRow: %d" % colsInLastRow)
 
-debug("columns: %d" % cols)
+log.info("columns: %d" % cols)
 rows = int(math.ceil((len(data) * 1.0) / cols))
-debug("rows: %d" % rows)
+log.info("rows: %d" % rows)
 
 for row in range(rows):
   for col in range(cols):
     if col > 0:
-      sys.stdout.write(separator)
+      sys.stdout.write(args.separator)
     sys.stdout.write("%-*s" % (maxWidth, get(row, col)))
   sys.stdout.write("\n")
