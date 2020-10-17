@@ -439,8 +439,8 @@ if __name__ == '__main__':
             args.hosts.remove(instance.name)
           else:
             log.warning(f'{instance.name} is already started')
-        if args.hosts:
-          log.warning(f'Did not find instances: {args.hosts}')
+      if args.hosts:
+        log.warning(f'Did not find instances: {args.hosts}')
 
     if args.stop:
       for instance in instances:
@@ -457,8 +457,8 @@ if __name__ == '__main__':
             args.hosts.remove(instance.name)
           else:
             log.warning(f'{instance.name} is already stopped')
-        if args.hosts:
-          log.warning(f'Did not find instances: {args.hosts}')
+      if args.hosts:
+        log.warning(f'Did not find instances: {args.hosts}')
 
     if args.restart:
       for instance in instances:
@@ -475,8 +475,8 @@ if __name__ == '__main__':
             args.hosts.remove(instance.name)
           else:
             log.warning(f'{instance.name} is already stopped')
-        if args.hosts:
-          log.warning(f'Did not find instances: {args.hosts}')
+      if args.hosts:
+        log.warning(f'Did not find instances: {args.hosts}')
 
     if args.make or args.ansible_make:
         if args.user:
