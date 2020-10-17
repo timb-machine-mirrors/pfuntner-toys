@@ -2,6 +2,9 @@
 
 import sys
 import string
+import signal
+import logging
+import argparse
 import datetime
 
 from BrunoUtils import *
@@ -13,67 +16,57 @@ def debug(msg):
     sys.stderr.write('{now}: {msg}\n'.format(**locals()))
 
 def process(file):
-  global width, beginning, ending, middle, ellipses
 
   while True:
-    line = file.readline()
+    line = file.readline().expandtabs(4)
     if not line:
       break
 
     debug('read {line!r}'.format(**locals()))
     line = line.replace('\r', '').replace('\n', '')
-    if len(line) <= width:
+    if len(line) <= args.width:
       print(line)
     else:
-      if beginning:
-        print("%s%s" % (ellipses, line[-(width-len(ellipses)):]))
-      elif middle:
-        prefix = int((width-len(ellipses))/2)
-        suffix = width - prefix - len(ellipses)
+      if args.beginning:
+        print("%s%s" % (ellipses, line[-(args.width-len(ellipses)):]))
+      elif args.middle:
+        prefix = int((args.width-len(ellipses))/2)
+        suffix = args.width - prefix - len(ellipses)
         print("%s%s%s" % (line[:prefix], ellipses, line[-suffix:]))
-      elif ending:
-        print("%s%s" % (line[:width-len(ellipses)], ellipses))
+      elif args.ending:
+        print("%s%s" % (line[:args.width-len(ellipses)], ellipses))
+      else:
+        log.fatal(f'Unexpected mode: {args}')
 
-beginning = False
-middle = True
-ending = False
+parser = argparse.ArgumentParser(description='Reform lines to fit your screen width')
+
+group = parser.add_mutually_exclusive_group()
+group.add_argument('-m', '--middle', action='store_true', help='Eliminate the middle of lines (default mode)')
+group.add_argument('-b', '--beginning', action='store_true', help='Eliminate the beginning of lines')
+group.add_argument('-e', '--ending', action='store_true', help='Eliminate the ending of lines')
+
+parser.add_argument('-w', '--width', type=int, default=BrunoUtils.cols(), help='Set specific width (default: {})'.format(BrunoUtils.cols()))
+parser.add_argument('files', metavar='file', nargs='*', help='Zero or more files to process')
+parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.WARNING - (args.verbose or 0)*10)
+
+signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
+
 ellipses = " ... "
 
-width = BrunoUtils.cols()
+if not any([args.beginning, args.middle, args.ending]):
+  args.middle = True
 
-arg = 1
-if len(sys.argv) > 1:
-  if sys.argv[arg] == "--beginning":
-    beginning = True
-    middle = False
-    ending = False
-    ellipses = ".... "
-    arg += 1
-  elif sys.argv[arg] == "--middle":
-    beginning = False
-    middle = True
-    ending = False
-    ellipses = " ... "
-    arg += 1
-  elif sys.argv[arg] == "--ending":
-    beginning = False
-    middle = False
-    ending = True
-    ellipses = " ...."
-    arg += 1
-  elif ((arg+1) < len(sys.argv)) and (sys.argv[arg] == "--width"):
-    width = int(sys.argv[arg+1])
-    arg += 2
-  elif sys.argv[arg].startswith("-"):
-    sys.stderr.write("Syntax: %s [--width int] [--beginning|--middle|--ending] [file ...]\n" % sys.argv[0])
-    exit(1)
-
-if arg <= len(sys.argv):
+if args.files:
+  for filename in args.files:
+    with open(filename, "r") as file:
+      process(file)
+else:
   if sys.stdin.isatty():
     sys.stderr.write("stdin is not redirected\n")
     exit(1)
   process(sys.stdin)
-else:
-  for filename in sys.argv[arg:]:
-    with open(filename, "r") as file:
-      process(file)
