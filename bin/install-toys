@@ -1,0 +1,8 @@
+if [ $# -gt 0 ]
+then
+  hosts="$@"
+else
+  hosts=all
+fi
+
+ansible-playbook -e hosts="$hosts" $(dirname "$0")/install-toys.yml

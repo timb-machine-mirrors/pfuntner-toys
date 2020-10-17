@@ -1,0 +1,97 @@
+- name: Install Bruno's Toys
+  hosts: "{{ hosts }}"
+  tasks:
+
+  - name: Query peon home directory
+    command: pwd
+    register: peon_pwd
+
+  - name: Capture peon home directory
+    set_fact:
+      peon_home: "{{ peon_pwd.stdout_lines[0] }}"
+
+  - name: Display peon home directory
+    debug:
+      msg: "{{ peon_home }}"
+
+  - name: Install packages
+    package:
+      name: "{{ item }}"
+    loop: 
+      - python3
+      - git
+    become: true
+
+  - name: "Create {{ peon_home }}/repos directory"
+    file:
+      path: "{{ peon_home }}/repos"
+      state: directory
+
+  - name: "Test for {{peon_home}}/repos/toys directory"
+    shell: "test -d '{{ peon_home }}/repos/toys'"
+    register: test_for_peon_repos_toys
+    failed_when: false
+
+  - name: Clone toys repository
+    command: "git clone https://github.com/pfuntner/toys.git"
+    args:
+      chdir: "{{ peon_home }}/repos"
+    when: test_for_peon_repos_toys.rc != 0
+
+  - name: "Create {{ peon_home }}/bin symlink"
+    file:
+      path: "{{ peon_home }}/bin"
+      src: "{{ peon_home }}/repos/toys/bin"
+      state: link
+    failed_when: false
+
+  - name: "Test for {{ peon_home }}/.bash_profile"
+    file:
+      path: "{{ peon_home }}/.bash_profile"
+      state: present
+    register: test_for_peon_bash_profile
+    failed_when: false
+
+  - name: "Use {{ peon_home }}/.bash_profile"
+    set_fact:
+      bash_profile: "{{ peon_home }}/.bash_profile"
+    when: not test_for_peon_bash_profile.failed
+
+  - name: "Test for {{ peon_home }}/.bash_login"
+    file:
+      path: "{{ peon_home }}/.bash_login"
+      state: present
+    register: test_for_peon_bash_login
+    when: test_for_peon_bash_profile.failed
+    failed_when: false
+
+  - name: "Use {{ peon_home }}/.bash_login"
+    set_fact:
+      bash_profile: "{{ peon_home }}/.bash_login"
+    when: test_for_peon_bash_profile.failed and not test_for_peon_bash_login.failed
+
+  - name: "Test for toys changes to {{ bash_profile }}"
+    command: "grep 'This is a fragment of a bash profile that I liked to use' '{{ bash_profile }}'"
+    register: test_for_toys_changes_to_profile
+    failed_when: false
+
+  - block:
+    - name: "Make changes to {{ bash_profile }}"
+      shell: "cat '{{ peon_home }}/repos/toys/misc/.profile' >> '{{ bash_profile }}'"
+
+    - name: "Make changes to {{ peon_home }}/.bashrc"
+      shell: "cat '{{ peon_home }}/repos/toys/misc/.bash_rc' >> '{{ peon_home }}/.bashrc'"
+    when: (test_for_toys_changes_to_profile | default(empty_stdout)).stdout == ''
+
+  - name: Try a tool
+    shell: "source {{ bash_profile }} && whatami"
+    register: try_a_tool
+
+  - name: See trial output
+    debug:
+      var: try_a_tool.stdout_lines
+
+  vars:
+    bash_profile: "{{ peon_home }}/.profile"
+    empty_stdout:
+      stdout: ''

@@ -491,7 +491,8 @@ if __name__ == '__main__':
         p = subprocess.Popen(([] if ('win' in sys.platform) or (args.out != '/etc/ansible/hosts') else ['sudo']) + ['bash', '-c', f'cat > {args.out}'], stdin=subprocess.PIPE)
         p.stdin.write('[targets]\n'.encode())
         for instance in instances:
-          p.stdin.write(f'{instance.name} ansible_host={instance.ip} ansible_user={instance.user} ansible_ssh_private_key_file={instance.key_filename}\n'.encode())
+          if instance.active:
+            p.stdin.write(f'{instance.name} ansible_host={instance.ip} ansible_user={instance.user} ansible_ssh_private_key_file={instance.key_filename}\n'.encode())
         p.stdin.close()
         rc = p.wait()
 
