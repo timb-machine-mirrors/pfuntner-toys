@@ -137,7 +137,9 @@ if args.hosts:
         facts = setup.get(host, {}).get('ansible_facts', {})
         facts['distro'] = facts.get('ansible_distribution', '')
         if facts['distro'] and 'WIN' not in facts['distro']:
-          facts['distro'] = (facts['distro'] + ' ' + facts.get('ansible_distribution_version', '')).strip()
+          version = facts.get('ansible_distribution_version')
+          if version and version != 'NA':
+            facts['distro'] += ' ' + version
         if 'WIN' in facts['distro']:
           """
             [jpfuntne@JPFUNTNE-GCEYJ ~]$ systeminfo | grep 'System Boot Time'
