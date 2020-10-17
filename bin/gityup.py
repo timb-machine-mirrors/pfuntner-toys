@@ -77,6 +77,8 @@ class Git(object):
     operation_regexp = re.compile(r'^(\S+)\s+([^\t]+)(?:\s+([^\t]+))?$')
 
     (rc, stdout, stderr) = self.run(['git', 'log', '--name-status'] + args)
+    if rc != 0:
+      self.log.warning(f'git error: {stderr!r}')
     for line in stdout.splitlines():
       self.log.debug('Checking {line!r}, {last}'.format(line=line, last=commits[-1] if commits else None))
       match = commit_regexp.search(line)
