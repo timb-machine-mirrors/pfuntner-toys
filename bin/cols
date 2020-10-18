@@ -4,14 +4,11 @@
    Print lines to identify the columns, keyed off the width of the screen.  Useful to know how long lines are, what column a character/field is in, etc.
 """
 
-import re
 import sys
 import pdb
 import math
-import getopt
 import logging
 import argparse
-import subprocess
 
 from BrunoUtils import BrunoUtils
 
