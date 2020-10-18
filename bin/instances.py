@@ -71,9 +71,9 @@ class Instances(object):
       (re.compile('^amzn2'),             'amazon2',  'ec2-user'),
       (re.compile('amazon-eks-node'),    'amazon2',  'ec2-user'),
       (re.compile('AmazonLinux2_'),      'amazon2',  'ec2-user'),
-      (re.compile('^RHEL-6'),            'rhel6',    'ec2-user'),
       (re.compile('^RHEL-7'),            'rhel7',    'ec2-user'),
       (re.compile('^RHEL-8'),            'rhel8',    'ec2-user'),
+      (re.compile('^RHEL-6'),            'rhel6',    'ec2-user'),
     ]
 
     image_ids = list(set([instance.image_id for instance in instances if instance.provider == 'aws']))
