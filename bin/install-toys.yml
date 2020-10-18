@@ -15,7 +15,7 @@
       msg: "{{ peon_home }}"
 
   - name: Use correct Python package for Amazon 1
-    set_facts:
+    set_fact:
       python_pkg: python36
     when: ansible_distribution == 'Amazon' and ansible_distribution_major_version == '2018'
 
@@ -85,7 +85,7 @@
       shell: "cat '{{ peon_home }}/repos/toys/misc/.profile' >> '{{ bash_profile }}'"
 
     - name: "Make changes to {{ peon_home }}/.bashrc"
-      shell: "cat '{{ peon_home }}/repos/toys/misc/.bash_rc' >> '{{ peon_home }}/.bashrc'"
+      shell: "cat '{{ peon_home }}/repos/toys/misc/.bashrc' >> '{{ peon_home }}/.bashrc'"
     when: (test_for_toys_changes_to_profile | default(empty_stdout)).stdout == ''
 
   - name: Try a tool
