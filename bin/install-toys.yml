@@ -14,11 +14,16 @@
     debug:
       msg: "{{ peon_home }}"
 
+  - name: Use correct Python package for Amazon 1
+    set_facts:
+      python_pkg: python36
+    when: ansible_distribution == 'Amazon' and ansible_distribution_major_version == '2018'
+
   - name: Install packages
     package:
       name: "{{ item }}"
     loop: 
-      - python3
+      - "{{ python_pkg }}"
       - git
     become: true
 
@@ -92,6 +97,7 @@
       var: try_a_tool.stdout_lines
 
   vars:
+    python_pkg: python3
     bash_profile: "{{ peon_home }}/.profile"
     empty_stdout:
       stdout: ''
