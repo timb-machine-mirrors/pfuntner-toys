@@ -74,6 +74,8 @@ class Instances(object):
       (re.compile('^RHEL-7'),            'rhel7',    'ec2-user'),
       (re.compile('^RHEL-8'),            'rhel8',    'ec2-user'),
       (re.compile('^RHEL-6'),            'rhel6',    'ec2-user'),
+      (re.compile('suse-sles-15'),       'suse15',   'ec2-user'),
+      (re.compile('ubuntu-focal-20'),    'ubuntu20', 'ubuntu'),
     ]
 
     image_ids = list(set([instance.image_id for instance in instances if instance.provider == 'aws']))
@@ -436,9 +438,9 @@ if __name__ == '__main__':
               instances_class.run(f'gcloud compute instances start {instance.true_name}')
             else:
               log.warning(f'{instance.name} has unexpected provider {instance.provider!r}')
-            args.hosts.remove(instance.name)
           else:
             log.warning(f'{instance.name} is already started')
+          args.hosts.remove(instance.name)
       if args.hosts:
         log.warning(f'Did not find instances: {args.hosts}')
 
@@ -454,9 +456,9 @@ if __name__ == '__main__':
               instances_class.run(f'gcloud compute instances stop {instance.true_name}')
             else:
               log.warning(f'{instance.name} has unexpected provider {instance.provider!r}')
-            args.hosts.remove(instance.name)
           else:
             log.warning(f'{instance.name} is already stopped')
+          args.hosts.remove(instance.name)
       if args.hosts:
         log.warning(f'Did not find instances: {args.hosts}')
 
@@ -472,9 +474,9 @@ if __name__ == '__main__':
               instances_class.run(f'gcloud compute instances reset {instance.true_name}')
             else:
               log.warning(f'{instance.name} has unexpected provider {instance.provider!r}')
-            args.hosts.remove(instance.name)
           else:
             log.warning(f'{instance.name} is already stopped')
+          args.hosts.remove(instance.name)
       if args.hosts:
         log.warning(f'Did not find instances: {args.hosts}')
 
