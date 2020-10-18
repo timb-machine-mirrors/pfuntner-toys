@@ -1,14 +1,9 @@
 #! /usr/bin/env python3
 
-import re
-import sys
 import json
-import getopt
 import signal
 import logging
 import argparse
-import datetime
-import subprocess
 
 from gityup import Git
 from table import Table
@@ -37,7 +32,7 @@ files = []
 if args.json:
   root = []
 else:
-  table = Table('Commit', 'Author', 'Date', 'Text', 'File')
+  table = Table('File', 'Commit', 'Author', 'Date', 'Text')
 
 for curr in gitlog:
   (commit, author, date, text) = (curr['commit'], curr['author'], curr['utc_date'], (curr['messages'] or [''])[0])
@@ -51,7 +46,7 @@ for curr in gitlog:
         'file': file['name'],
       })
     else:
-      table.append(commit, author, date, text, file['name'])
+      table.append(file['name'], commit, author, date, text)
 
 if args.json:
   print(json.dumps(root))
