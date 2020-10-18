@@ -85,6 +85,10 @@ if args.dry_run and not args.verbose:
 else:
   log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
+if os.getuid() == 0:
+  log.error('Do not run as root')
+  exit(1)
+
 sha1_regexp = re.compile('commit ([0-9a-f]{40})$')
 date_regexp = re.compile('^Date:\s*([a-z]{3} [a-z]{3} \d{1,2} \d{2}:\d{2}:\d{2} \d{4})', flags=re.IGNORECASE)
 text_regexp = re.compile('^\s+(\S?.*)$')
