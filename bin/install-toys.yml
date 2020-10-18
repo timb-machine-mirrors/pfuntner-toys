@@ -90,6 +90,8 @@
 
   - name: Try a tool for peon
     shell: "source '{{ peon_home }}/{{ peon_bash_profile }}' && whatami"
+    args:
+      executable: /bin/bash
     register: peon_try_a_tool
 
   - name: See trial output for peon
@@ -163,6 +165,8 @@
   
     - name: Try a tool for root
       shell: "source '{{ root_home }}/{{ root_bash_profile }}' && whatami"
+      args:
+        executable: /bin/bash
       register: root_try_a_tool
   
     - name: See trial output for root
