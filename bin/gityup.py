@@ -118,7 +118,8 @@ class Git(object):
                   })
 
     for commit in commits:
-      assert bool(commit['merge']) ^ bool(commit['files']), f'Either `merge` or `file` element expected in {commit}'
+      if not (commit['merge'] or commit['files']):
+        self.log.warning(f'Neither `merge` or `file` element present in {commit}')
       if not commit['merge']:
         del commit['merge']
       if not commit['files']:
