@@ -76,7 +76,7 @@ def process(filename=None):
         eof[-1] = False
         task = get_task(list(task_match.groups()) + [host_match.group(3)])
         key = host_prefix + simplify_host(host_match.group(2))
-        assert key not in task.hosts
+        assert key not in task.hosts, 'error handling line {pos} in {filename}'.format(pos=pos+1, filename if filename else 'stdin')
         task.hosts[key] = host_match.group(1)
 
   if filename:
