@@ -58,7 +58,7 @@ def process(filename=None):
   eof.append(False)
 
   task_match = None
-  for line in stream.read().splitlines():
+  for (pos, line) in enumerate(stream.read().splitlines()):
     line = remove_packer_overhead(line)
 
     if end_regexp.search(line):
@@ -75,7 +75,9 @@ def process(filename=None):
       if host_match:
         eof[-1] = False
         task = get_task(list(task_match.groups()) + [host_match.group(3)])
-        task.hosts[host_prefix + simplify_host(host_match.group(2))] = host_match.group(1)
+        key = host_prefix + simplify_host(host_match.group(2))
+        assert key not in task.hosts
+        task.hosts[key] = host_match.group(1)
 
   if filename:
     stream.close()
@@ -89,7 +91,7 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-task_regexp = re.compile('^(?:RUNNING\s+)?(\S+)\s+\[([^:]*\s:\s)?\s*(.*)\]\s+\*{5,}$')
+task_regexp = re.compile('^(?:RUNNING\s+)?(\S+)\s+\[([^:]*\s:\s)?\s*(.*)\]\s+\*{2,}$')
 
 """
 host_regexp needs to be able to process all of these possibilities:
