@@ -58,7 +58,7 @@ def process(filename=None):
   eof.append(False)
 
   task_groups = list()
-  task_names = list()
+  task_names = dict()
   for (pos, line) in enumerate(stream.read().splitlines()):
     line = remove_packer_overhead(line)
 
@@ -70,11 +70,11 @@ def process(filename=None):
     if match:
       eof[-1] = False
       task_groups = list(match.groups())
-      count = len([task_name for task_name in task_names if task_name == task_groups[2]])
-      if count > 0:
+      count = task_names.get(task_groups[2], 0) + 1
+      task_names[task_groups[2]] = count
+      if count > 1:
         # handle tasks with the same name
-        task_groups[2] += ' [{}]'.format(count+2)
-      task_names.append(task_groups[2])
+        task_groups[2] += ' [{}]'.format(count)
     elif task_groups:
       host_match = host_regexp.search(str(line))
       log.debug('host match: {groups} {line!r}'.format(groups=host_match.groups() if host_match else None, **locals()))
@@ -83,13 +83,14 @@ def process(filename=None):
         task = get_task(task_groups + [host_match.group(3)])
         key = host_prefix + simplify_host(host_match.group(2))
         assert key not in task.hosts, 'error handling line {pos} in {filename}'.format(pos=pos+1, filename=filename if filename else 'stdin')
-        task.hosts[key] = host_match.group(1)
+        task.hosts[key] = host_match.group(1) + (' - {}'.format(pos+1) if args.locate else '')
 
   if filename:
     stream.close()
 
 parser = argparse.ArgumentParser(description='Scrape info from Ansible playbook task output')
 parser.add_argument('files', metavar='file', nargs='*', help='Zero or more Ansible output files')
+parser.add_argument('-l', '--locate', action='store_true', help='Identify line numbers from whence status was obtained')
 parser.add_argument('-v', '--verbose', action='store_true', help='Enable debugging')
 args = parser.parse_args()
 
