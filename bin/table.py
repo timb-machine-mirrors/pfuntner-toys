@@ -8,6 +8,7 @@ import string
 import signal
 import logging
 import argparse
+import platform
 import io
 import xml.etree.ElementTree as ET
 
@@ -901,7 +902,8 @@ args = parser.parse_args() if __name__ == '__main__' else parser.parse_args(['-i
 
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
+if 'win' not in platform.platform().lower():
+  signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
 if args.loose_headings:
   args.headings = True
