@@ -57,7 +57,8 @@ def process(filename=None):
 
   eof.append(False)
 
-  task_match = None
+  task_groups = list()
+  task_names = list()
   for (pos, line) in enumerate(stream.read().splitlines()):
     line = remove_packer_overhead(line)
 
@@ -68,13 +69,18 @@ def process(filename=None):
     log.debug('task match: {groups} {line!r}'.format(groups=match.groups() if match else None, **locals()))
     if match:
       eof[-1] = False
-      task_match = match
-    elif task_match:
+      task_groups = list(match.groups())
+      count = len([task_name for task_name in task_names if task_name == task_groups[2]])
+      if count > 0:
+        # handle tasks with the same name
+        task_groups[2] += ' [{}]'.format(count+2)
+      task_names.append(task_groups[2])
+    elif task_groups:
       host_match = host_regexp.search(str(line))
       log.debug('host match: {groups} {line!r}'.format(groups=host_match.groups() if host_match else None, **locals()))
       if host_match:
         eof[-1] = False
-        task = get_task(list(task_match.groups()) + [host_match.group(3)])
+        task = get_task(task_groups + [host_match.group(3)])
         key = host_prefix + simplify_host(host_match.group(2))
         assert key not in task.hosts, 'error handling line {pos} in {filename}'.format(pos=pos+1, filename=filename if filename else 'stdin')
         task.hosts[key] = host_match.group(1)
