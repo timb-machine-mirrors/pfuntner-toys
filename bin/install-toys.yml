@@ -2,13 +2,15 @@
   hosts: "{{ hosts }}"
   tasks:
 
-  - name: Query peon home directory
-    command: pwd
-    register: peon_pwd
+  - block:
+    - name: Query peon home directory
+      shell: "echo ~"
+      register: peon_pwd
 
-  - name: Capture peon home directory
-    set_fact:
-      peon_home: "{{ peon_pwd.stdout_lines[0] }}"
+    - name: Capture peon home directory
+      set_fact:
+        peon_home: "{{ peon_pwd.stdout_lines[0] }}"
+    when: peon_home is not defined
 
   - name: Display peon home directory
     debug:
