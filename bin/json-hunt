@@ -75,6 +75,7 @@ signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
 yaml = None
 regexp = re.compile(args.regexp)
+empty_line = re.compile(r'^\s*(#.*)?$') # this regular expression will match any line that is blank - only whitespace or comments
 
 for filename in args.files:
   log.info(f'Processing {filename!r}')
@@ -82,29 +83,31 @@ for filename in args.files:
     if not os.path.isdir(filename):
       with open(filename) as stream:
         file_contents = stream.read()
-      root = None
-
-      try:
-        root = json.loads(file_contents)
-      except Exception as e:
-        log.info(f'Could not process {filename!r} as json: {e!s}')
-
-      if root is None:
-        if yaml is None:
-          yaml = __import__('yaml')
+      if [line for line in file_contents.splitlines() if not empty_line.search(line)]:
+        # process a non-empty file
+        root = None
+  
         try:
-          root = yaml.load(file_contents, Loader=yaml.BaseLoader)
+          root = json.loads(file_contents)
         except Exception as e:
-          log.info(f'Could not process {filename!r} as yaml: {e!s}')
-
-      if root is None:
-        log.warn(f'Could not process {filename!r} as either json or yaml')
-      else:
-        if isinstance(root, list) or isinstance(root, dict):
-          paths = []
-          hunt([], root)
+          log.info(f'Could not process {filename!r} as json: {e!s}')
+  
+        if root is None:
+          if yaml is None:
+            yaml = __import__('yaml')
+          try:
+            root = yaml.load(file_contents, Loader=yaml.BaseLoader)
+          except Exception as e:
+            log.info(f'Could not process {filename!r} as yaml: {e!s}')
+  
+        if root is None:
+          log.warn(f'Could not process {filename!r} as either json or yaml')
         else:
-          log.warn('{filename!r} is of unsupported type {type}'.format(filename=filename, type=str(reports.__class__)))
+          if isinstance(root, list) or isinstance(root, dict):
+            paths = []
+            hunt([], root)
+          else:
+            log.warn('{filename!r} is of unsupported type {type}'.format(filename=filename, type=root.__class__.__name__))
     else:
       log.warn(f'Could not process directory {filename!r}')
   else:
