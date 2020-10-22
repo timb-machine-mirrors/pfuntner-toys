@@ -55,6 +55,7 @@ parser = argparse.ArgumentParser(description='Start long running Docker containe
 parser.add_argument('images', metavar='image', nargs='+', help='One or more Docker images')
 parser.add_argument('-n', '--name', help='Name to use for container - only one image')
 parser.add_argument('--networking', action='store_true', help='Use host networking')
+parser.add_argument('-p', '--privileged', action='store_true', help='Run container in privileged mode')
 parser.add_argument('-d', '--dry-run', action='count', help='Do not execute Docker command')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
@@ -88,8 +89,9 @@ for desired_image in args.images:
   now = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
   alt_image = image.repo.replace('/', '-')
   name = args.name if args.name else "{alt_image}-{image.tag}-{now}"
-  network_option = '--network host' if args.networking else ''
-  cmd = 'nohup docker run {network_option} --name "{name}" {image.image_id} sh -c "sleep {SLEEP_INTERVAL}" > /dev/null 2>&1 &'.format(**locals())
+  network_option = ' --network host' if args.networking else ''
+  privileged_option = ' --privileged' if args.privileged else ''
+  cmd = f'nohup docker run{network_option}{privileged_option} --name "{name}" {image.image_id} sh -c "sleep {SLEEP_INTERVAL}" > /dev/null 2>&1 &'
   if args.dry_run:
     print(f'Not executing because of --dry-run: {cmd!r}')
   else:
