@@ -10,7 +10,9 @@ do
 done
 
 set -o vi
-set -o ignoreeof
+set -o ignoreeof # Don't logout if I hit CTRL-D accidentically at a prompt
+set -o pipefail  # The exit status of a pipeline will be the rightmost command that failed
+set -u           # Error if an undefined variable is used
 
 # alias br='vi -R'
 alias r='fc -s'
