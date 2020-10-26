@@ -12,7 +12,56 @@ done
 set -o vi
 set -o ignoreeof # Don't logout if I hit CTRL-D accidentically at a prompt
 set -o pipefail  # The exit status of a pipeline will be the rightmost command that failed
-set -u           # Error if an undefined variable is used
+
+# Error if an undefined variable is used
+#
+# I tried setting this in my everyday user but had trouble doing a git rebase:
+#
+#   (venv) [centos@pfuntner-everyday cloud9-audit-tool CCC-1923-3]$ git checkout master
+#   Switched to branch 'master'
+#   (venv) [centos@pfuntner-everyday cloud9-audit-tool master]$ git pull
+#   remote: Enumerating objects: 28, done.
+#   remote: Counting objects: 100% (28/28), done.
+#   remote: Compressing objects: 100% (17/17), done.
+#   remote: Total 28 (delta 15), reused 20 (delta 11), pack-reused 0
+#   Unpacking objects: 100% (28/28), done.
+#   From wwwin-github.cisco.com:sto-ccc/cloud9-audit-tool
+#      3110905..5622564  master     -> origin/master
+#      74fc266..c8e0359  CCC-1926   -> origin/CCC-1926
+#    * [new branch]      ccc1959    -> origin/ccc1959
+#    * [new tag]         1.2.0      -> 1.2.0
+#   Updating 3110905..5622564
+#   Fast-forward
+#    Release_Notes.md | 5 ++++-
+#    1 file changed, 4 insertions(+), 1 deletion(-)
+#   (venv) [centos@pfuntner-everyday cloud9-audit-tool master]$ git checkout -
+#   Switched to branch 'CCC-1923-3'
+#   (venv) [centos@pfuntner-everyday cloud9-audit-tool CCC-1923-3]$ git rebase master
+#   First, rewinding head to replay your work on top of it...
+#   Applying: CCC-1923-3: Correct test id's of EL7 prehardened skips
+#   Using index info to reconstruct a base tree...
+#   M   Release_Notes.md
+#   Falling back to patching base and 3-way merge...
+#   Auto-merging Release_Notes.md
+#   CONFLICT (content): Merge conflict in Release_Notes.md
+#   Failed to merge in the changes.
+#   Patch failed at 0001 CCC-1923-3: Correct test id's of EL7 prehardened skips
+#   The copy of the patch that failed is found in:
+#      /home/centos/sto/repos/cloud9-audit-tool/.git/rebase-apply/patch
+#
+#   When you have resolved this problem, run "git rebase --continue".
+#   If you prefer to skip this patch, run "git rebase --skip" instead.
+#   To check out the original branch and stop rebasing, run "git rebase --abort".
+#
+#   (venv) [centos@pfuntner-everyday cloud9-audit-tool (no branch, rebasing CCC-1923-3)]$ vi Relbash: !ref: unbound variable
+#   bash: !ref: unbound variable
+#   bash: words[i]: unbound variable
+#   (venv) [centos@pfuntner-everyday cloud9-audit-tool (no branch, rebasing CCC-1923-3)]$
+#
+# It looks like it might be coming from /etc/bash_completion.d/git but I'm not sure how to fix it.
+# I think it's best if this is not set.
+#
+# set -u
 
 # alias br='vi -R'
 alias r='fc -s'
