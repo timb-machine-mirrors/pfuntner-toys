@@ -82,8 +82,15 @@ def process(filename=None):
         eof[-1] = False
         task = get_task(task_groups + [host_match.group(3)])
         key = host_prefix + simplify_host(host_match.group(2))
-        assert key not in task.hosts, 'error handling line {pos} in {filename}'.format(pos=pos+1, filename=filename if filename else 'stdin')
-        task.hosts[key] = host_match.group(1) + (' - {}'.format(pos+1) if args.locate else '')
+        if key not in task.hosts:
+          task.hosts[key] = host_match.group(1) + (' - {}'.format(pos+1) if args.locate else '')
+        else:
+          log.warning('Line {pos} had duplicate status for {key!r} {task!r} {item!r}'.format(
+            pos=pos+1,
+            key=key,
+            task=task.name,
+            item=host_match.group(3),
+          ))
 
   if filename:
     stream.close()
