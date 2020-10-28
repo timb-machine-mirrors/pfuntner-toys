@@ -82,7 +82,7 @@ alias ansiblehost=ansiblehelper.py
 alias color=color.py
 alias truepath=truepath.py
 
-alias zip=unzip
+# alias zip=unzip
 
 alias vact='. venv/bin/activate'
 
