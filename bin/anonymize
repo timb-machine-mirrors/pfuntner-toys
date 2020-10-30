@@ -2,11 +2,16 @@
 
 import re
 import sys
+import string
 import logging
 import argparse
 
 parser = argparse.ArgumentParser(description='Anonymize stdin data')
-parser.add_argument('-d', '--digits', dest='digits', action='store_true', help='Remove only digits')
+
+group = parser.add_mutually_exclusive_group()
+group.add_argument('-d', '--digits', action='store_true', help='Remove only decimal digits')
+group.add_argument('-x', '--hexadecimal', action='store_true', help='Remove only hexadecimal digits')
+
 args = parser.parse_args()
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
@@ -17,13 +22,18 @@ if sys.stdin.isatty():
   parser.error('stdin must be redirected')
 
 if args.digits:
-  regexp = re.compile('\d+')
+  regexp = re.compile(r'\d+')
+elif args.hexadecimal:
+  regexp = re.compile(r'([0-9][0-9a-fA-F]*)|([0-9a-fA-F]*[0-9])|([0-9a-fA-F]*[0-9][0-9a-fA-F]*)')
 else:
-  regexp = re.compile('\w+')
+  regexp = re.compile(r'\w+')
 
+unprintables = re.compile(f'[^{string.printable}]')
 while True:
   line = sys.stdin.readline()
   if line:
-    sys.stdout.write(regexp.sub('#' if args.digits else 'foo', line))
+    line = regexp.sub('#' if (args.digits or args.hexadecimal) else 'foo', line)
+    line = unprintables.sub('', line)
+    sys.stdout.write(line)
   else:
     break
