@@ -46,7 +46,7 @@ def run(cmd, stdin=None, capture=True, shell=False):
   return (rc, stdout, stderr)
 
 parser = argparse.ArgumentParser(description='Monitor Ansible playbook')
-parser.add_argument('filename', help='Path to output from ansible-playbook')
+parser.add_argument('files', metavar='file', nargs='+', help='Paths to one or more output from ansible-playbook')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -56,9 +56,11 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
+files = ' '.join(args.files)
+
 while True:
   run('date | banner --color blue', capture=False, shell=True)
-  (rc, stdout, stderr) = run(f'ansible-tasks < {args.filename!r} | table.py -i fixed --heading -o json | json --linear', shell=True)
+  (rc, stdout, stderr) = run(f'ansible-tasks {files} | table.py -i fixed --heading -o json | json --linear', shell=True)
   tasks = stdout.splitlines()
   print('{} items/tasks'.format(len(tasks)))
   run('table.py -i json -o fixed --rotate', stdin='[' + tasks[-1] + ']', capture=False, shell=True)

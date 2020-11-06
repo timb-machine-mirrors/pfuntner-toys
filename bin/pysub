@@ -35,7 +35,7 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
-regexp = re.compile(args.pattern)
+regexp = re.compile(escape(args.pattern))
 
 lines = sys.stdin.read().splitlines()
 for line in lines:

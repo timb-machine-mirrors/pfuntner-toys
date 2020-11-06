@@ -28,12 +28,15 @@ elif args.hexadecimal:
 else:
   regexp = re.compile(r'\w+')
 
+calendar_words = re.compile('(jan(unary)?)|(feb(ruary)?)|(mar(ch)?)|(apr(il)?)|may|(jun(e)?)|(jul(y)?)|(aug(ust)?)|(sep(tember)?)|(oct(ober)?)|(nov(ember)?)|(dec(ember)?)|((sun|mon|tue(s)?|wed(nes)?|thu(rs)?|fri|sat(ur)?)(day)?)', flags=re.IGNORECASE)
+
 unprintables = re.compile(f'[^{string.printable}]')
 while True:
   line = sys.stdin.readline()
   if line:
     line = regexp.sub('#' if (args.digits or args.hexadecimal) else 'foo', line)
     line = unprintables.sub('', line)
+    line = calendar_words.sub('foo', line)
     sys.stdout.write(line)
   else:
     break
