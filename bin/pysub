@@ -3,34 +3,40 @@
 import re
 import sys
 import getopt
+import signal
+import logging
+import argparse
 
-def syntax(msg=None):
-  if msg:
-    sys.stderr.write('{msg}\n'.format(**locals()))
-  sys.stderr.write('Syntax: %s \'from\' \'to\'\n' % sys.argv[0])
-  exit(1)
+def escape(s):
+  # replace escapes: '\\t' => '\t'
+  # but not escaped escapes: '\\\\t' => '\\\\t'
+  pos = 0
+  while pos < len(s):
+    if s[pos+1:pos+3] == '\\n' and s[pos:pos+3] != '\\\\n':
+      s = s[:pos+1] + '\n' + s[pos+3:]
+    elif s[pos+1:pos+3] == '\\t' and s[pos:pos+3] != '\\\\t':
+      s = s[:pos+1] + '\t' + s[pos+3:]
+    pos += 1
+  return s
 
-def process(s):
-  if regexp:
-    return re.sub(eval(args[0]), eval(args[1]), s, flags=re.MULTILINE)
-  else:
-    return s.replace(eval(args[0]), eval(args[1]))
+parser = argparse.ArgumentParser(description='Perform string substitution on stdin using Python re.sub()')
+parser.add_argument('-c', '--count', type=int, default=0, help='Maximum number of pattern occurrences to be replaced (default: 0)')
+parser.add_argument('pattern', help='Regular expression pattern (left-hand side)')
+parser.add_argument('replacement', help='Replacement string (right-hand side)')
+parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
+args = parser.parse_args()
 
 if sys.stdin.isatty():
-  syntax("stdin must be redirected")
+  perror("stdin must be redirected")
 
-(opts, args) = ([], [])
-try:
-  (opts, args) = getopt.getopt(sys.argv[1:], 'r', ['re', 'regexp'])
-except Exception as e:
-  syntax('Caught `{e!s}`'.format(**locals()))
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
-regexp = False
-for (opt,arg) in opts:
-  if opt in ['-r', '--re', '--regexp']:
-    regexp = not regexp
+signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
-if len(args) != 2:
-  syntax()
+regexp = re.compile(args.pattern)
 
-sys.stdout.write(process(sys.stdin.read()))
+lines = sys.stdin.read().splitlines()
+for line in lines:
+  print(regexp.sub(escape(args.replacement), line, count=args.count))
