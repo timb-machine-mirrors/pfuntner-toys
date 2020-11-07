@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import re
+import sys
 import json
 import signal
 import logging
@@ -67,7 +68,7 @@ class Git(object):
       date += datetime.timedelta(hours=-hours_offset, minutes=minutes_offset)
     return str(date) # .isoformat().replace('-', '.').replace(':', '').replace('T', '-')
 
-  def parse_log(self, args=[]):
+  def parse_log(self, args=[], read_from_stdin=False):
     commits = []
     # regular expression for processing `git log` output
     commit_regexp = re.compile(r'^commit\s+([0-9a-f]{40})$')  # this only retains the short SHA1: The first 7 characters
@@ -76,7 +77,14 @@ class Git(object):
     messages_regexp = re.compile(r'^ {4}(.*)$')
     operation_regexp = re.compile(r'^(\S+)\s+([^\t]+)(?:\s+([^\t]+))?$')
 
-    (rc, stdout, stderr) = self.run(['git', 'log', '--name-status'] + args)
+    if read_from_stdin:
+      if sys.stdin.isatty():
+        self.log.fatal('cannot read `git log` output from terminal')
+        exit(1)
+      (rc, stdout, stderr) = (0, sys.stdin.read(), '')
+    else:
+      (rc, stdout, stderr) = self.run(['git', 'log', '--name-status'] + args)
+
     if rc != 0:
       self.log.warning(f'git error: {stderr!r}')
     for line in stdout.splitlines():
@@ -129,6 +137,7 @@ class Git(object):
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='git log parser')
+  parser.add_argument('--read-from-stdin', action='store_true', help='Get `git log` output from stdin')
   parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
   (args, unknown_args) = parser.parse_known_args()
 
@@ -138,5 +147,5 @@ if __name__ == '__main__':
 
   signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
-  gitlog = Git(mylog).parse_log(unknown_args)
+  gitlog = Git(mylog).parse_log(unknown_args, read_from_stdin=bool(args.read_from_stdin))
   print(json.dumps(gitlog))
