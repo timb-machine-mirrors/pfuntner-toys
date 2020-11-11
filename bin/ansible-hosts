@@ -4,6 +4,7 @@ import re
 import json
 import signal
 import logging
+import getpass
 import argparse
 import datetime
 import subprocess
@@ -125,7 +126,7 @@ if args.hosts:
     for host in args.hosts:
       if host == 'localhost':
         addr = 'localhost'
-        user = ''
+        user = getpass.getuser()
         key = ''
       else:
         addr = inventory.get(host, {}).get('ansible_host')
