@@ -130,7 +130,7 @@ class BrunoUtils:
     return ret
 
   @classmethod
-  def open_file(cls, filename):
+  def get_file(cls, filename):
     if os.path.exists(filename):
       assert not os.path.isdir(filename), f'{filename} is a directory'
       size = os.path.getsize(filename)
@@ -138,7 +138,7 @@ class BrunoUtils:
         altname = filename + '-' + datetime.datetime.now().strftime('%Y%m%dT%H%M%S%f')
         subprocess.Popen(['mv', filename, altname]).wait()
         subprocess.Popen(['gzip', altname]).wait()
-    return open(filename, 'a')
+    return filename
 
 class TimezoneMagic(object):
   """
