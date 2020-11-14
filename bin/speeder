@@ -33,6 +33,7 @@ def run(cmd, stdin=None, capture=True, shell=False):
   return (rc, stdout, stderr)
 
 parser = argparse.ArgumentParser(description='Perform speedtest and log it')
+parser.add_argument('-d', '--debug', action='store_true', help='Debug mode: read from stdin, write to stdout')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -65,10 +66,20 @@ jitter_regexp = re.compile(r'\((\S+ \S+) (jitter)\)')
 stats = dict()
 start = datetime.datetime.now()
 stats['start'] = start.isoformat()
-(rc, stdout, stderr) = run(['speedtest'])
+
+if args.debug:
+  if sys.stdin.isatty():
+    parser.error('stdin must be redirected when --debug is used')
+  hits = re.split('"""', sys.stdin.read())
+  (rc, stdout, stderr) = (None, hits[1], '')
+else:
+  (rc, stdout, stderr) = run(['speedtest'])
 stop = datetime.datetime.now()
+
 stats['stop'] = stop.isoformat()
 stats['stdout'] = stdout
+stats['stderr'] = stderr
+stats['rc'] = rc
 stats['duration'] = str(stop-start)
 
 for line in stdout.splitlines():
@@ -94,6 +105,10 @@ if 'id' in stats:
 (rc, stdout, stderr) = run('dig +short myip.opendns.com @resolver1.opendns.com')
 stats['IP'] = stdout.strip()
 
-with open(BrunoUtils.get_file(os.path.expanduser('~/speeder/stats')), 'a') as stream:
-  json.dump(stats, stream, sort_keys=True)
-  stream.write('\n')
+if args.debug:
+  json.dump(stats, sys.stdout, sort_keys=True, indent=True)
+  print()
+else:
+  with open(BrunoUtils.get_file(os.path.expanduser('~/speeder/stats')), 'a') as stream:
+    json.dump(stats, stream, sort_keys=True)
+    stream.write('\n')
