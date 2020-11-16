@@ -1,11 +1,11 @@
 #! /usr/bin/env python3
-import platform
-import subprocess
-import os
-import datetime
 
 import re
+import os
 import logging
+import datetime
+import platform
+import subprocess
 
 """
   A trick for bootstrapping this module when it's not in the same directory
@@ -128,6 +128,17 @@ class BrunoUtils:
       raise Exception("Don't know how to handle a %s" % str(type(o)))
   
     return ret
+
+  @classmethod
+  def get_file(cls, filename):
+    if os.path.exists(filename):
+      assert not os.path.isdir(filename), f'{filename} is a directory'
+      size = os.path.getsize(filename)
+      if size > 2**20:
+        altname = filename + '-' + datetime.datetime.now().strftime('%Y%m%dT%H%M%S%f')
+        subprocess.Popen(['mv', filename, altname]).wait()
+        subprocess.Popen(['gzip', altname]).wait()
+    return filename
 
 class TimezoneMagic(object):
   """
