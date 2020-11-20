@@ -108,6 +108,7 @@ if args.debug:
   json.dump(stats, sys.stdout, sort_keys=True, indent=True)
   print()
 else:
-  with open(BrunoUtils.get_file(os.path.expanduser('~/speeder/stats')), 'a') as stream:
-    json.dump(stats, stream, sort_keys=True)
-    stream.write('\n')
+  p = subprocess.Popen([os.path.expanduser('~/bin/logit'), os.path.expanduser('~/speeder/stats'), '--raw'], stdin=subprocess.PIPE)
+  file=p.stdin.write((json.dumps(stats) + '\n').encode())
+  p.stdin.close()
+  p.wait()
