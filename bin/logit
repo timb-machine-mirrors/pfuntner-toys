@@ -46,8 +46,9 @@ if sys.stdin.isatty():
 if os.path.isfile(args.logfile) and os.path.getsize(args.logfile) > args.size:
   now = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
   newname = f'{args.logfile}.{now}'
-  run(['mv', '-v', args.logfile, newname])
+  run(['cp', '-pv', args.logfile, newname]) # use permissions of main file
   run(['gzip', '-v', newname])
+  open(args.logfile, 'w').close()           # wipe out main file, retaining permissions
 
 with open(args.logfile, 'a') as stream:
   while True:
