@@ -109,6 +109,6 @@ if args.debug:
   print()
 else:
   p = subprocess.Popen([os.path.expanduser('~/bin/logit'), os.path.expanduser('~/speeder/stats'), '--raw'], stdin=subprocess.PIPE)
-  file=p.stdin.write((json.dumps(stats) + '\n').encode())
+  file=p.stdin.write((json.dumps(stats, sort_keys=True) + '\n').encode())
   p.stdin.close()
   p.wait()
