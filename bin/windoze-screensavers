@@ -47,8 +47,10 @@ if os.path.isdir(srcdir):
       width = int(match.group(1))
       height = int(match.group(2))
       log.info('{basename}: {size} {width}x{height}'.format(**locals()))
-      if width > height:
-        run(['cp', '-pv', path, os.path.join(dstdir, basename + '.jpg')])
+      dest = os.path.join(dstdir, basename + '.jpg')
+      if width > height and not os.path.isfile(dest):
+        run(['ls', '-ld', path])
+        run(['cp', '-pv', path, dest])
     else:
       log.info('{basename}: {size} ?x?'.format(**locals()))
 else:
