@@ -1,59 +1,34 @@
 #! /usr/bin/env python3
 
+import sys
 import time
 import logging
 import argparse
-import datetime
 import subprocess
 
-SLEEP_INTERVAL = 60*60*24*365 # 1 year in seconds
-
-class Image(object):
-  def __init__(self, line):
-    """
-      REPOSITORY  TAG  IMAGE ID            CREATED             SIZE
-      foo         bar  e6e5c9479d74        40 hours ago        334MB
-    """
-    self.line = line
-    tokens = line.split()
-    self.repo = tokens[0]
-    self.tag = tokens[1]
-    self.image_id = tokens[2]
-
-  def __str__(self):
-    elements = [
-      'image_id: {self.image_id}'.format(**locals()),
-      'repo: {self.repo}'.format(**locals()),
-      'tag: {self.tag}'.format(**locals()),
-    ]
-    return ', '.join(elements)
-    
-  def equal(self, s):
-    log.debug('Checking {s!r} against `{self!s}`'.format(**locals()))
-    return (s == self.image_id) or (s == '{self.repo}:{self.tag}'.format(**locals()))
-
-def run(cmd, shell=False):
+def run(cmd, shell=False, capture=True):
   if (not shell) and isinstance(cmd, str):
     cmd = cmd.split()
   elif shell and not isinstance(cmd, str):
     cmd = ' '.join(cmd)
 
   log.info('Running {cmd}'.format(**locals()))
-  p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=shell)
-  (stdout, stderr) = p.communicate()
-  stdout = stdout.decode('utf-8')
-  stderr = stderr.decode('utf-8')
+  p = subprocess.Popen(cmd, stdout=subprocess.PIPE if capture else None, stderr=subprocess.PIPE if capture else None, shell=shell)
+  if capture:
+    (stdout, stderr) = p.communicate()
+    stdout = stdout.decode('utf-8')
+    stderr = stderr.decode('utf-8')
+  else:
+    stdout = ''
+    stderr = ''
   rc = p.wait()
   log.debug('Ran {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
   return (rc, stdout, stderr)
 
-def get_containers():
-  (rc, stdout, stderr) = run('docker ps')
-  return set([line.split()[0] for line in stdout.splitlines()[1:]])
 
-parser = argparse.ArgumentParser(description='Start long running Docker container')
-parser.add_argument('images', metavar='image', nargs='+', help='One or more Docker images')
-parser.add_argument('-n', '--name', help='Name to use for container - only one image')
+parser = argparse.ArgumentParser(description='Start Docker container')
+parser.add_argument('image', metavar='image', help='Docker image')
+parser.add_argument('-n', '--name', help='Name to use for container')
 parser.add_argument('--networking', action='store_true', help='Use host networking')
 parser.add_argument('-p', '--privileged', action='store_true', help='Run container in privileged mode')
 parser.add_argument('-d', '--dry-run', action='count', help='Do not execute Docker command')
@@ -65,48 +40,45 @@ log = logging.getLogger()
 # log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
-if len(args.images) > 1 and args.name:
-  parser.error('--name cannot be used when multiple images are specified')
+"""
+[centos@pfuntner-everyday ~]$ docker images ubuntu:latest
+[centos@pfuntner-everyday ~]$ docker run -it -d --name bruno ubuntu:latest
+24b06bf7279a10c6acf05d6d55f1a95bf24a8b3bdc5f0b462e2061dd12aad8c1
+[centos@pfuntner-everyday ~]$ docker ps -f id=24b06bf7279a
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+24b06bf7279a        ubuntu:latest       "/bin/bash"         37 seconds ago      Up 35 seconds                           bruno
+"""
 
-images = []
-(rc, stdout, stderr) = run('docker images')
-for line in stdout.splitlines()[1:]:
-  images.append(Image(line))
-
-log.debug('images: {}'.format([str(image) for image in images]))
-
-for desired_image in args.images:
-  for image in images:
-    if image.equal(desired_image):
-      break
+(rc, stdout, stderr) = run(['docker', 'images', args.image])
+if len(stdout.splitlines()) == 1:
+  (rc, stdout, stderr) = run(['docker', 'pull', args.image], capture=False)
+  if rc == 0:
+    print('')
   else:
-    log.warning('No image: {desired_image!r}'.format(**locals()))
-    break
-  log.info('Creating container with image: {image!s}'.format(**locals()))
+    perror(f'Could not pull {args.image!r}')
 
-  old_containers = get_containers()
-  log.debug('old containers: {}'.format(old_containers))
-  now = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
-  alt_image = image.repo.replace('/', '-')
-  name = args.name if args.name else "{alt_image}-{image.tag}-{now}"
-  network_option = ' --network host' if args.networking else ''
-  privileged_option = ' --privileged' if args.privileged else ''
-  cmd = f'nohup docker run{network_option}{privileged_option} --name "{name}" {image.image_id} sh -c "sleep {SLEEP_INTERVAL}" > /dev/null 2>&1 &'
-  if args.dry_run:
-    print(f'Not executing because of --dry-run: {cmd!r}')
-  else:
-    run(cmd, shell=True)
-    time.sleep(1)
-    new_containers = get_containers()
-    log.debug('new containers: {}'.format(new_containers))
-  
-    brand_new_containers = new_containers-old_containers
-    if len(brand_new_containers) == 1:
-      container_id = list(brand_new_containers)[0]
-      (rc, stdout, stderr) = run('docker ps --filter id={container_id}'.format(**locals()))
-      if stdout:
-        print(stdout)
-      else:
-        log.warning('Could not find container {container_id}'.format(**locals()))
+run(['docker', 'images', args.image], capture=False)
+
+network_option = ' --network host' if args.networking else ''
+privileged_option = ' --privileged' if args.privileged else ''
+name_option = f' --name {args.name}' if args.name else ''
+
+cmd = f'docker run -it -d{network_option}{privileged_option}{name_option} {args.image}'
+if args.dry_run:
+  print(cmd)
+else:
+  (rc, stdout, stderr) = run(cmd)
+  if rc == 0:
+    if stdout:
+      container_id = stdout.strip()
+      print('')
+      (rc, stdout, stderr) = run(['docker', 'ps', '-f', 'id=' + container_id], capture=False)
+      print('\nUse `docker attach {}` to attach to detached container\nUse CTRL-p CTRL-q to detach'.format(args.name if args.name else container_id))
+      exit(rc)
     else:
-      log.warning('Could not find new container')
+      log.error('`docker run` didn\'t return container id')
+      exit(1)
+  else:
+    log.error('Could not start container')
+    print(stdout, end='')
+    print(stderr, file=sys.stdout, end='')
