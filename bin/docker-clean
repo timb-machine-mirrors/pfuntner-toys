@@ -39,11 +39,11 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
-(rc, stdout, stderr) = run('docker ps -a')
-containers = [line.split()[0] for line in stdout.splitlines()[1:]]
+(rc, stdout, stderr) = run('docker ps -qa')
+containers = stdout.splitlines()
 print(f'Containers: {containers}')
-(rc, stdout, stderr) = run('docker images')
-images = [line.split()[2] for line in stdout.splitlines()[1:]]
+(rc, stdout, stderr) = run('docker images -q')
+images = stdout.splitlines()
 print(f'Images: {images}')
 
 if containers or images:
