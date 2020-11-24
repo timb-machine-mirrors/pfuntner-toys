@@ -55,7 +55,7 @@ if len(stdout.splitlines()) == 1:
   if rc == 0:
     print('')
   else:
-    perror(f'Could not pull {args.image!r}')
+    parser.error(f'Could not pull {args.image!r}')
 
 run(['docker', 'images', args.image], capture=False)
 
