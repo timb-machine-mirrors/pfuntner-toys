@@ -20,10 +20,10 @@ def toCenter(s, width):
 def process(lines):
   maxWidth = max([len(line) for line in lines])
   log.debug('maxWidth: {maxWidth}'.format(**locals()))
-  print ("%s%s%s" % (topLeftCorner, horizontal * (maxWidth+2), topRightCorner)).encode('utf-8')
+  print("%s%s%s" % (topLeftCorner, horizontal * (maxWidth+2), topRightCorner))
   for line in lines:
-    print ("%s %s %s" % (vertical, just(line, maxWidth), vertical)).encode('utf-8')
-  print ("%s%s%s" % (bottomLeftCorner, horizontal * (maxWidth+2), bottomRightCorner)).encode('utf-8')
+    print("%s %s %s" % (vertical, just(line, maxWidth), vertical))
+  print("%s%s%s" % (bottomLeftCorner, horizontal * (maxWidth+2), bottomRightCorner))
 
 def reset(signum=None, stack=None):
   Color.print_color('0')
@@ -31,7 +31,7 @@ def reset(signum=None, stack=None):
     sys.stdout.write('\n')
   exit(0)
 
-horizontal = unichr(9473)
+horizontal = chr(9473)
 parser = argparse.ArgumentParser(description='Print a message or information in a pretty banner')
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
@@ -57,12 +57,12 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
 log.debug('args: {args}'.format(**locals()))
 
-vertical = unichr(9475)
+vertical = chr(9475)
 
-topLeftCorner = unichr(9487)
-topRightCorner = unichr(9491)
-bottomLeftCorner = unichr(9495)
-bottomRightCorner = unichr(9499)
+topLeftCorner = chr(9487)
+topRightCorner = chr(9491)
+bottomLeftCorner = chr(9495)
+bottomRightCorner = chr(9499)
 
 fillChar = '#'
 
