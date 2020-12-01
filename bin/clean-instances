@@ -38,7 +38,7 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
-run(['banner', '--color', 'yellow', 'Clean all instances?'], capture=False)
+run(['banner', '--color', 'blue', 'Clean all instances?'], capture=False)
 resp = sys.stdin.readline().strip()
 log.info(f'resp: {resp!r}')
 if re.search('^y(e(s?))?', resp, flags=re.IGNORECASE):
