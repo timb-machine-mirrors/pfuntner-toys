@@ -22,6 +22,7 @@ def run(cmd, capture=True):
 parser = argparse.ArgumentParser(description='Print values of Ansible variables')
 parser.add_argument('vars', help='Ansible variable(s) to report, comma-delimited')
 parser.add_argument('hosts', help='Host(s) to examine, comma-delimited')
+parser.add_argument('-d', '--docker', action='store_true', help='Use docker connection')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -31,7 +32,12 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
-hosts = ' '.join(args.hosts.split(','))
+if args.docker:
+  if len(args.hosts.split(',')) > 1:
+    parser.error('Specify only one host with --docker')
+  hosts = 'all'
+else:
+  hosts = ' '.join(args.hosts.split(','))
 
 stream = tempfile.NamedTemporaryFile(mode='w')
 stream.write(f"""- name: "Display {args.vars} on {args.hosts}"
@@ -48,4 +54,4 @@ for var in args.vars.split(','):
 stream.flush()
 
 run(f'cat {stream.name}')
-run(f'ansible-playbook {stream.name}', capture=False)
+run('ansible-playbook {opts} {stream_name}'.format(stream_name=stream.name, opts=f'-c docker -i {args.hosts},' if args.docker else ''), capture=False)
