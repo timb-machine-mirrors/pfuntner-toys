@@ -110,17 +110,28 @@ Free RAM: 565MB/4GB 13.81%
 CPU name: AMD A9-9420e RADEON R5, 5 COMPUTE CORES 2C+3G
 """
 
-my_ip = socket.gethostbyname(socket.gethostname())
-log.info(f'my_ip: {my_ip}')
 
-nybbles = my_ip.split('.')
-for nybble in range(1,17):
-  ip = '.'.join(nybbles[:3] + [str(nybble)])
-  if ip != my_ip:
-    log.info(f'Testing {ip!r}...')
-    (rc, stdout, stderr) = run(f'ssh -o ConnectTimeout=1 mrbruno@{ip} exit 42')
-    if rc == 42:
-      print(ip)
-      exit(0)
+"""
+>>> socket.gethostbyname_ex(socket.gethostname())
+('JPFUNTNE-GCEYJ.cisco.com', [], ['192.168.72.1', '192.168.255.1', '10.82.242.69', '192.168.1.8'])
+>>> quit()
+[jpfuntne@JPFUNTNE-GCEYJ ~]$ ssh -oPreferredAuthentications=publickey mrbruno@10.82.242.1 hostname
+mrbruno@10.82.242.1: Permission denied (publickey,password,keyboard-interactive).
+[jpfuntne@JPFUNTNE-GCEYJ ~]$
+"""
+
+# my_ip = socket.gethostbyname(socket.gethostname())
+for my_ip in socket.gethostbyname_ex(socket.gethostname())[2]:
+  log.info(f'my_ip: {my_ip}')
+  
+  nybbles = my_ip.split('.')
+  for nybble in range(1,17):
+    ip = '.'.join(nybbles[:3] + [str(nybble)])
+    if ip != my_ip:
+      log.info(f'Testing {ip!r}...')
+      (rc, stdout, stderr) = run(f'ssh -o PreferredAuthentications=publickey -o ConnectTimeout=1 mrbruno@{ip} exit 42')
+      if rc == 42:
+        print(ip)
+        exit(0)
 
 log.warn('Could not find meerkat system')
