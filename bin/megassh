@@ -19,7 +19,7 @@ parser = argparse.ArgumentParser(description='ssh to multiple machines')
 parser.add_argument('hosts', help='One or more comma-separated hosts')
 parser.add_argument('cmd', help='Command')
 parser.add_argument('args', metavar='arg', nargs='*', help='Command arguments')
-parser.add_argument('-t', '--tty', action='store_true', help='Force pseudo-terminal allocation')
+parser.add_argument('-t', '--tty', action='count', help='Force pseudo-terminal allocation')
 parser.add_argument('-e', '--encode', action='store_true', help='Use base64 encoding to protect command')
 parser.add_argument('-b', '--become', action='store_true', help='Use sudo on remote system')
 parser.add_argument('-q', '--quiet', action='store_true', help='Use ssh -q')
@@ -52,15 +52,17 @@ remote_cmd = [args.cmd] + (args.args if args.args else [])
 processes = {}
 for host in args.hosts.split(','):
   log.info(f'Creating {remote_cmd} for {host}')
-  cmd = ['ssh'] + (['-q'] if args.quiet else []) + (['-t'] if args.tty else []) + [host]
+  cmd = ['ssh'] + (['-q'] if args.quiet else []) + (['-t'] * (args.tty or 0)) + [host]
   if args.encode:
     cmd += ['bash -c "base64 -d | {sudo} bash"'.format(sudo='sudo' if args.become else '')]
   else:
     cmd += (['sudo'] if args.become else []) + remote_cmd
   log.debug(cmd)
-  processes[host] = subprocess.Popen(cmd, stdin=subprocess.PIPE if args.encode else None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  processes[host] = subprocess.Popen(cmd, stdin=subprocess.PIPE if args.encode or args.tty else None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   if args.encode:
     processes[host].stdin.write(base64.b64encode(' '.join(remote_cmd).encode('utf-8')))
+    processes[host].stdin.close()
+  elif args.tty:
     processes[host].stdin.close()
 
 output = {}

@@ -67,7 +67,7 @@ if len(args.items) == 0:
       if len(line) > maxWidth:
         maxWidth = len(line)
       data.append(line)
-elif len(args) > 1:
+elif len(args.items) > 1:
   for datum in args.items:
     if len(datum) > maxWidth:
       maxWidth = len(datum.strip())
