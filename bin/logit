@@ -57,6 +57,6 @@ with open(args.logfile, 'a') as stream:
     now = datetime.datetime.now().isoformat()
     if line:
       line = line.rstrip()
-      print(line if args.raw else f'{now} {line!r}', file=stream)
+      print(line if args.raw else f'{now}Z {line!r}', file=stream)
     else:
       break
