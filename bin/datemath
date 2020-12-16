@@ -29,9 +29,9 @@ def parseTimestamp(s):
 
 deltaRegexp = re.compile("^((\d+)(d))?((\d+)(h))?((\d+)(m))?((\d+)(s))?$")
 timestampFormats = [
-                     "%Y/%m/%d",
-                     "%Y/%m/%dT%H:%M",
-                     "%Y/%m/%dT%H:%M:%S",
+                     "%Y-%m-%d",
+                     "%Y-%m-%dT%H:%M",
+                     "%Y-%m-%dT%H:%M:%S",
                      "%H:%M:%S",
                      "%H:%M",
                    ]
