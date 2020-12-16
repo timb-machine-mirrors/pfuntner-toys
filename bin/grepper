@@ -23,10 +23,15 @@ def process(stream):
       if not included:
         break
     if included:
-      print(f'{stream.name!r}: {line}')
+      if args.list:
+        print(stream.name)
+        break
+      else:
+        print(f'{stream.name!r}: {line}')
 
 parser = argparse.ArgumentParser(description='Search for lines including/excluding various regular expressions')
 parser.add_argument('-i', '--ignore-case', action='store_true', help='Ignore case')
+parser.add_argument('-l', '--list', action='store_true', help='List names of files only')
 parser.add_argument('-r', '--regexp', action='append', help='Two or more regular expressions: /regexp/ or !/regexp/')
 parser.add_argument('files', metavar='file', nargs='*', help='Zero or more files to search')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
