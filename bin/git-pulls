@@ -62,7 +62,7 @@ def get_last_commit():
       text.append(s)
 
   if date:
-    date = datetime.datetime.strptime(date, '%a %b %d %H:%M:%S %Y').isoformat()
+    date = datetime.datetime.strptime(date, '%a %b %d %H:%M:%S %Y').isoformat().replace('T', ' ')
 
   if text:
     text = repr('\n'.join(text)[:20])[1:-1]
