@@ -6,6 +6,26 @@ import json
 import signal
 import logging
 import argparse
+from functools import cmp_to_key
+
+key_regexp = re.compile('^([^ ]*)(?: $)')
+
+def get_key(s):
+  ret = s
+  match = key_regexp.search(s)
+  if match:
+    s = [eval(elem) if elem.isdecimal() else elem for elem in match.group(1).split('/')]
+  return s
+
+def sorter(s1, s2):
+  l1 = len(s1)
+  l2 = len(s2)
+  if l1 < l2:
+    return -1
+  elif l1 > l2:
+    return 1
+  else:
+    return 0
 
 class Filter(object):
   regexp = re.compile('^([^=]+)(?:=(.*))?$')
@@ -162,9 +182,6 @@ def makeIntIfPossible(elem):
     pass
   return elem
 
-def path_sorter(path):
-  return [makeIntIfPossible(elem) for elem in path.split('/')]
-
 def see(o):
   ret = repr(o)
   if ret.startswith('u'):
@@ -182,7 +199,7 @@ def flatWriter(root, path=[]):
     ret.append('/{path} {root}'.format(path='/'.join(path), root=see(root)))
 
   if path == []:
-    print('\n'.join(sorted(ret))) # , key=path_sorter)))
+    print('\n'.join(sorted(ret, key=cmp_to_key(sorter))))
   return ret
 
 def findpath(root, path_pattern, path=[]):
