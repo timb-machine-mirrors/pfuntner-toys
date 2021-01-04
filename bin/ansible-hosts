@@ -38,7 +38,7 @@ parser = argparse.ArgumentParser(description='Get information from Ansible hosts
 parser.add_argument('hosts', metavar='host', default=['all'], nargs='*', help='Zero or more hosts (default: all)')
 
 group = parser.add_mutually_exclusive_group()
-group.add_argument('-n', '--names', action='store_true', help='Report names only, one per line')
+group.add_argument('-n', '-l', '--names', '--list', action='store_true', help='List names only, one per line')
 group.add_argument('-c', '--commas', action='store_true', help='Report names only on a single line, separated by commas')
 
 parser.add_argument('-i', '--inventory', default='/etc/ansible/hosts', help='Specify Ansible inventory file. (default: /etc/ansible/hosts)')
