@@ -49,12 +49,12 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 repos = {}
 cols = 0
 
-regexp = re.compile(r'^(\*?)\s+(.*)$', flags=re.MULTILINE)
+branch_regexp = re.compile(r'^(\*?)\s+(.*)$', flags=re.MULTILINE)
 for dir in args.dirs:
   if os.path.isdir(dir):
     if os.path.isdir(os.path.join(dir, '.git')):
       (rc, stdout, stderr) = run(f'cd {dir!r}; git branch', shell=True)
-      hits = regexp.finditer(stdout)
+      hits = branch_regexp.finditer(stdout)
       repos[dir] = sorted([('*' if hit.group(1) else '') + hit.group(2) for hit in hits], key=cmp_to_key(sorter))
       cols = max(cols, len(repos[dir]))
     else:
@@ -65,8 +65,10 @@ for dir in args.dirs:
 log.info(f'cols: {cols}')
 if not args.simple:
   table = Table(['Repo'] + ['Branch {}'.format(branch+1) for branch in range(cols)])
+
+no_asterisk = re.compile(r'^\*')
 for repo in sorted(repos.keys()):
-  branches = repos[repo]
+  branches = [no_asterisk.sub('', branch) for branch in repos[repo]]
   branches += [''] * (cols - len(branches))
   log.info(f'{repo} has {branches}')
 
