@@ -4,14 +4,15 @@ import argparse
 import sys
 import re
 
-assert not sys.stdin.isatty(), "stdin must be redirected"
-
 parser = argparse.ArgumentParser(description='Simple math processor')
 group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument('--sum', '--total', dest='sum', action='store_true', help='Perform addition')
 group.add_argument('--avg', dest='avg', action='store_true', help='Perform average')
 parser.add_argument('--fuzzy', dest='fuzzy', action='store_true', help='Ignore non-numeric data')
 args = parser.parse_args()
+
+if sys.stdin.isatty():
+  parser.error("stdin must be redirected")
 
 digits = re.compile("(^|\D)((\d+.?\d*)|(\d*.\d+))(\D|$)")
 
