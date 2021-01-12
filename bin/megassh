@@ -5,6 +5,7 @@ import json
 import base64
 import logging
 import argparse
+import datetime
 import subprocess
 
 def echo(host, data):
@@ -37,6 +38,14 @@ log.setLevel(logging.WARNING - 10*(args.verbose or 0))
 
 log.info(f'args: {args}')
 
+p = subprocess.Popen(['docker', 'ps'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+(stdout, stderr) = p.communicate()
+stdout = stdout.decode('utf-8')
+stderr = stderr.decode('utf-8')
+rc = p.wait()
+docker_instances = [line.split()[-1] for line in stdout.splitlines()[1:]]
+log.info(f'docker_instances: {docker_instances}')
+
 if args.hosts == 'all':
   try:
     p = subprocess.Popen(['ansible-inventory', '--list'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -44,19 +53,31 @@ if args.hosts == 'all':
     stdout = stdout.decode('utf-8')
     stderr = stderr.decode('utf-8')
     rc = p.wait()
-    args.hosts = ','.join(json.loads(stdout)['targets']['hosts'])
+    args.hosts = ','.join(json.loads(stdout)['targets']['hosts'] + docker_instances) 
   except Exception as e:
     log.debug(f'Ignoring {e!s} from ansible-inventory')
 
 remote_cmd = [args.cmd] + (args.args if args.args else [])
 processes = {}
+output = {}
+
 for host in args.hosts.split(','):
   log.info(f'Creating {remote_cmd} for {host}')
-  cmd = ['ssh'] + (['-q'] if args.quiet else []) + (['-t'] * (args.tty or 0)) + [host]
-  if args.encode:
-    cmd += ['bash -c "base64 -d | {sudo} bash"'.format(sudo='sudo' if args.become else '')]
+  if host in docker_instances:
+    cmd = ['docker', 'exec', host, '/bin/sh', '-c', ' '.join(remote_cmd)]
   else:
-    cmd += (['sudo'] if args.become else []) + remote_cmd
+    # use ssh
+    cmd = ['ssh'] + (['-q'] if args.quiet else []) + (['-t'] * (args.tty or 0)) + [host]
+    if args.encode:
+      cmd += ['bash -c "base64 -d | {sudo} bash"'.format(sudo='sudo' if args.become else '')]
+    else:
+      cmd += (['sudo'] if args.become else []) + remote_cmd
+
+  if args.json:
+    output[host] = {
+      'start': datetime.datetime.now()
+    }
+
   log.debug(cmd)
   processes[host] = subprocess.Popen(cmd, stdin=subprocess.PIPE if args.encode or args.tty else None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   if args.encode:
@@ -64,8 +85,6 @@ for host in args.hosts.split(','):
     processes[host].stdin.close()
   elif args.tty:
     processes[host].stdin.close()
-
-output = {}
 
 secs = .1
 while processes:
@@ -94,11 +113,14 @@ while processes:
         stderr = stderr.decode('utf-8')
       rc = p.wait()
       if args.json:
-        output[host] = {
-          'rc': rc,
-          'stdout': stdout.splitlines(),
-          'stderr': stderr.splitlines(),
-        }
+        output[host]['rc'] = rc
+        output[host]['stdout'] = stdout.splitlines()
+        output[host]['stderr'] = stderr.splitlines()
+        output[host]['stop'] = datetime.datetime.now()
+        output[host]['elapsed'] = str(output[host]['stop'] - output[host]['start'])
+        output[host]['stop'] = output[host]['stop'].isoformat()
+        output[host]['start'] = output[host]['start'].isoformat()
+
       else:
         echo(host, stdout)  
         echo(host, stderr)  
