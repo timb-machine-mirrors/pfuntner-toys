@@ -50,7 +50,7 @@ def get_task(args):
   return task
 
 def process(filename=None):
-  global eof
+  global eof, hosts
 
   stream = open(filename) if filename else sys.stdin
   host_prefix = (filename + ' ') if filename else ''
@@ -68,6 +68,14 @@ def process(filename=None):
     match = task_regexp.search(str(line))
     log.debug('task match: {groups} {line!r}'.format(groups=match.groups() if match else None, **locals()))
     if match:
+      # check if last task didn't have items that applied to any host
+      task_check = [task for task in tasks if task.type == task_groups[0].lower() and task.role == (task_groups[1] or '') and task.name == task_groups[2]]
+      log.info(f'Checking for dummy task: {task_groups} {task_check}')
+      if task_groups and not task_check:
+        for task in tasks:
+          log.info(f'Need dummy task: {task}')
+        get_task(task_groups + [''])
+
       eof[-1] = False
       task_groups = list(match.groups())
       count = task_names.get(task_groups[2], 0) + 1
@@ -82,6 +90,7 @@ def process(filename=None):
         eof[-1] = False
         task = get_task(task_groups + [host_match.group(3)])
         key = host_prefix + simplify_host(host_match.group(2))
+        hosts.add(key)
         if key not in task.hosts:
           task.hosts[key] = host_match.group(1) + (' - {}'.format(pos+1) if args.locate else '')
         else:
@@ -128,6 +137,7 @@ end_regexp = re.compile('^PLAY RECAP')
 
 tasks = []
 eof = []
+hosts = set()
 
 if args.files:
   list(map(process, args.files))
@@ -139,10 +149,6 @@ else:
 if tasks:
   log.info(tasks[-1])
 
-hosts = set()
-for task in tasks:
-  for host in task.hosts.keys():
-    hosts.add(host)
 hosts = sorted(list(hosts))
 
 table = Table('Task type', 'Role', 'Task', 'Item', *hosts)
