@@ -6,6 +6,7 @@ import time
 import signal
 import logging
 import argparse
+import datetime
 
 def timeout(signum, stack):
   log.debug('timeout')
@@ -28,7 +29,7 @@ def process(filename=None):
       signal.alarm(0)
     if data is not None:
       if data:
-        sys.stdout.write(data)
+        sys.stdout.write(((datetime.datetime.now().isoformat() + ' ') if args.timestamp else '') + data)
       else:
         log.debug('sleeping at EOF')
         time.sleep(1)
@@ -44,6 +45,7 @@ def process(filename=None):
 
 parser = argparse.ArgumentParser(description='Read a file continually')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+parser.add_argument('-t', '--timestamp', action='store_true', help='Add timestamp to output')
 parser.add_argument('file', nargs='?', help='Path of file to read (if not reading stdin)')
 args = parser.parse_args()
 
