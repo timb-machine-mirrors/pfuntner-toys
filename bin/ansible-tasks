@@ -125,7 +125,7 @@ host_regexp needs to be able to process all of these possibilities:
   failed: [centos7] (item=OUTPUT) => {"ansible_loop_var": "item", "changed": false, "cmd": "/sbin/iptables -t filter -L OUTPUT", "item": "OUTPUT", "msg": "iptables v1.4.21: can\'t initialize iptables table `filter\': Permission denied (you must be root)\\nPerhaps iptables or your kernel needs to be upgraded.", "rc": 3, "stderr": "iptables v1.4.21: can\'t initialize iptables table `filter\': Permission denied (you must be root)\\nPerhaps iptables or your kernel needs to be upgraded.\\n", "stderr_lines": ["iptables v1.4.21: can\'t initialize iptables table `filter\': Permission denied (you must be root)", "Perhaps iptables or your kernel needs to be upgraded."], "stdout": "", "stdout_lines": []}
   fatal: [aws-rh8]: FAILED! => {"changed": true, "cmd": "cat '/home/ec2-user/repos/toys/misc/.bash_rc' >> '/home/ec2-user/.bashrc'", "delta": "0:00:00.005289", "end": "2020-10-18 13:42:04.813624", "msg": "non-zero return code", "rc": 1, "start": "2020-10-18 13:42:04.808335", "stderr": "cat: /home/ec2-user/repos/toys/misc/.bash_rc: No such file or directory", "stderr_lines": ["cat: /home/ec2-user/repos/toys/misc/.bash_rc: No such file or directory"], "stdout": "", "stdout_lines": []}
 """
-host_regexp = re.compile('^([a-z]+):\s+\[([^\]]*)\](?:)?(?: FAILED!)?(?: =>)?(?: \(item=(.+)\))?(?: =>)?(?: \{.*$)?')
+host_regexp = re.compile('^([a-z]+):\s+\[([^\]]*)\](?:)?(?: FAILED!)?(?: =>)?(?: \(item=([^)]+)\))?(?: =>)?(?: \{.*$)?')
 
 # Remove packer overhead if necessary
 packer_regexp = re.compile('^\x1b\[\d+;\d+2m\s+\S+:\s(.*)\x1b\[\d+m$')
