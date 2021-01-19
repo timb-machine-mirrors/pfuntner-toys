@@ -407,6 +407,8 @@ if __name__ == '__main__':
 
   log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
+  count = 0
+
   if args.hosts and not any([args.start, args.stop, args.restart]):
     parser.error('Hosts are only allowed with --start, --stop, or --restart')
   if not args.hosts and any([args.start, args.stop, args.restart]):
@@ -433,16 +435,20 @@ if __name__ == '__main__':
             if instance.provider == 'aws':
               print(f'Starting {instance.name}')
               instances_class.run(f'aws ec2 start-instances --instance-ids {instance.id}')
+              count += 1
             elif instance.provider == 'gcp':
               print(f'Starting {instance.name}')
               instances_class.run(f'gcloud compute instances start {instance.true_name}')
+              count += 1
             else:
               log.warning(f'{instance.name} has unexpected provider {instance.provider!r}')
           else:
             log.warning(f'{instance.name} is already started')
           args.hosts.remove(instance.name)
       if args.hosts:
-        log.warning(f'Did not find instances: {args.hosts}')
+        parser.error(f'Did not find instances: {args.hosts}')
+      if count == 0:
+        parser.error('No instances to start')
 
     if args.stop:
       for instance in instances:
@@ -451,16 +457,20 @@ if __name__ == '__main__':
             if instance.provider == 'aws':
               print(f'Stopping {instance.name}')
               instances_class.run(f'aws ec2 stop-instances --instance-ids {instance.id}')
+              count += 1
             elif instance.provider == 'gcp':
               print(f'Stopping {instance.name}')
               instances_class.run(f'gcloud compute instances stop {instance.true_name}')
+              count += 1
             else:
               log.warning(f'{instance.name} has unexpected provider {instance.provider!r}')
           else:
             log.warning(f'{instance.name} is already stopped')
           args.hosts.remove(instance.name)
       if args.hosts:
-        log.warning(f'Did not find instances: {args.hosts}')
+        parser.error(f'Did not find instances: {args.hosts}')
+      if count == 0:
+        parser.error('No instances to stop')
 
     if args.restart:
       for instance in instances:
@@ -469,16 +479,20 @@ if __name__ == '__main__':
             if instance.provider == 'aws':
               print(f'Restarting {instance.name}')
               instances_class.run(f'aws ec2 reboot-instances --instance-ids {instance.id}')
+              count += 1
             elif instance.provider == 'gcp':
               print(f'Resetting {instance.name}')
               instances_class.run(f'gcloud compute instances reset {instance.true_name}')
+              count += 1
             else:
               log.warning(f'{instance.name} has unexpected provider {instance.provider!r}')
           else:
             log.warning(f'{instance.name} is already stopped')
           args.hosts.remove(instance.name)
       if args.hosts:
-        log.warning(f'Did not find instances: {args.hosts}')
+        parser.error(f'Did not find instances: {args.hosts}')
+      if count == 0:
+        parser.error('No instances to stop')
 
     if args.make or args.ansible_make:
         if args.user:
