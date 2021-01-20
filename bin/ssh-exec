@@ -78,7 +78,7 @@ if os.path.isfile(args.script):
   (rc, stdout, stderr) = run(['scp', src.name, f'{args.host}:{dest}'])
   if rc == 0:
     run(['ssh', args.host, 'chmod', 'a+x', dest])
-    (rc, stdout, stderr) = run(['ssh'] + (['-q'] if args.quiet else []) + [args.host] + ([args.interpreter] if args.interpreter else []) + [dest] + args.args)
+    (rc, stdout, stderr) = run(['ssh'] + (['-q'] if args.quiet else []) + [args.host] + (['sudo'] if args.become else []) + ([args.interpreter] if args.interpreter else []) + [dest] + args.args)
     sys.stdout.write(stdout)
     sys.stderr.write(stderr)
     run(['ssh', args.host, 'rm', dest])
