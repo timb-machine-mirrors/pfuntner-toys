@@ -66,7 +66,8 @@ class MethodBase(object):
     """
     for item in root:
       if isinstance(item, dict):
-        for (key, value) in item.items():
+        kvs = list(item.items())
+        for (key, value) in kvs:
           del item[key]
           item[str(key)] = str(value)
       else:
