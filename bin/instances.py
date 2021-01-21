@@ -497,7 +497,7 @@ if __name__ == '__main__':
 
     if args.make or args.ansible_make:
         if args.clean:
-          subprocess.Popen([os.path.expanduser('~/bin/clean-instances'), '--force']).wait()
+          subprocess.Popen(['clean-instances', '--force']).wait()
 
         if args.user:
           for instance in instances:
