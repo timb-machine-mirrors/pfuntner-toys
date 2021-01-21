@@ -29,6 +29,7 @@ def run(cmd, stdin=None, capture=True, shell=False):
   return (rc, stdout, stderr)
 
 parser = argparse.ArgumentParser(description='Clean all VM instances')
+parser.add_argument('-f', '--force', action='count', help='Do not prompt for permission')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -38,10 +39,12 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
-run(['banner', '--color', 'blue', 'Clean all instances?'], capture=False)
-resp = sys.stdin.readline().strip()
-log.info(f'resp: {resp!r}')
-if re.search('^y(e(s?))?', resp, flags=re.IGNORECASE):
+if not args.force:
+  run(['banner', '--color', 'blue', 'Clean all instances?'], capture=False)
+  resp = sys.stdin.readline().strip()
+  log.info(f'resp: {resp!r}')
+
+if args.force or re.search('^y(e(s?))?', resp, flags=re.IGNORECASE):
   run('sudo rm -fv /etc/ansible/hosts', capture=False)
   run(['rm', '-fv', os.path.expanduser('~/.ssh/config')], capture=False)
   run('clean-known-hosts', capture=False)

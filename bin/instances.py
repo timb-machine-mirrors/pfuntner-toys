@@ -399,6 +399,7 @@ if __name__ == '__main__':
   group.add_argument('--restart', action='store_true', help='Stop started instances')
 
   parser.add_argument('hosts', metavar='host', nargs='*', help='Zero or more hosts to start, stop, restart')
+  parser.add_argument('-c', '--clean', action='store_true', help=f'Clean instances before --make')
   parser.add_argument('-u', '--user', help='Default user if cannot be determined from the image, etc')
   parser.add_argument('-o', '--out', default='/etc/ansible/hosts', help='Ansible hosts yaml destination file.  Default: /etc/ansible/hosts')
   parser.add_argument('-a', '--all', action='store_true', help='Show all columns')
@@ -495,6 +496,9 @@ if __name__ == '__main__':
         parser.error('No instances to stop')
 
     if args.make or args.ansible_make:
+        if args.clean:
+          subprocess.Popen([os.path.expanduser('~/bin/clean-instances'), '--force']).wait()
+
         if args.user:
           for instance in instances:
             if instance.user == None:
