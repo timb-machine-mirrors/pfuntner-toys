@@ -76,7 +76,7 @@ alias gitbranch=currbranch
 alias instances=instances.py
 
 alias newdir='dir=$(date +%Y%m%d%H%M%S%N) && mkdir -v $dir && cd $dir'
-alias oldir='. olddir.sh'
+alias olddir='. olddir.sh'
 
 alias ansiblehost=ansiblehelper.py
 alias color=color.py
