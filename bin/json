@@ -220,7 +220,7 @@ def applyFilters(root, from_list=False):
       else:
         root.pop(key)
   elif isinstance(root, dict):
-    keys = root.keys()
+    keys = list(root.keys())
     for key in keys:
       for filter in excludes:
         if (filter.value is None) and filter.name.search(key):
