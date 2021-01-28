@@ -24,8 +24,6 @@ log = logging.getLogger()
 log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 if args.docker:
-  if len(args.hosts) > 1:
-    parser.error('Specify only one host with --docker')
   hosts = 'all'
 else:
   hosts = ','.join(args.hosts)
@@ -50,7 +48,8 @@ if args.dry_run or ((args.verbose or 0) > 1):
 cmd = ['ansible-playbook'] + (['-v'] * (args.ansible_verbose or 0))
 
 if args.docker:
-  cmd += ['-c', 'docker', '-i', args.hosts[0] + ',']
+  hosts = f'{args.hosts},' if len(args.hosts) == 1 else ','.join(args.hosts)
+  cmd += ['-c', 'docker', '-i', hosts]
 
 for extra_var in args.extra_vars or []:
   cmd += ['-e', extra_var]
