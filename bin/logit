@@ -2,6 +2,7 @@
 
 import os
 import sys
+import json
 import logging
 import argparse
 import datetime
@@ -56,7 +57,17 @@ with open(args.logfile, 'a') as stream:
     line = sys.stdin.readline()
     now = datetime.datetime.now().isoformat()
     if line:
-      line = line.rstrip()
-      print(line if args.raw else f'{now}Z {line!r}', file=stream)
+      obj = None
+      try:
+        obj = json.loads(line)
+      except:
+        pass
+      if obj and isinstance(obj, dict):
+        obj['logit-now'] = now
+        json.dump(obj, stream)
+        print('', file=stream)
+      else:
+        line = line.rstrip()
+        print(line if args.raw else f'{now}Z {line!r}', file=stream)
     else:
       break
