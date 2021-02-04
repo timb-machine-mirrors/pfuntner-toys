@@ -48,7 +48,7 @@ if args.dry_run or ((args.verbose or 0) > 1):
 cmd = ['ansible-playbook'] + (['-v'] * (args.ansible_verbose or 0))
 
 if args.docker:
-  hosts = f'{args.hosts},' if len(args.hosts) == 1 else ','.join(args.hosts)
+  hosts = ','.join(args.hosts) + (',' if len(args.hosts) == 1 else '')
   cmd += ['-c', 'docker', '-i', hosts]
 
 for extra_var in args.extra_vars or []:
