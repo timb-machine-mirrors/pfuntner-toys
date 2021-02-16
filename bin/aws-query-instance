@@ -38,6 +38,8 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
+found = 0
+
 (rc, stdout, stderr) = run('aws ec2 describe-instances')
 if rc == 0 and stdout:
   reservations = json.loads(stdout).get('Reservations', [])
@@ -47,5 +49,9 @@ if rc == 0 and stdout:
       if instance.get('InstanceId') == args.instance_id:
         json.dump(instance, sys.stdout, indent=2, sort_keys=True)
         print('')
+        found += 1
 else:
   parser.error(f'describe-instances failed: {rc}, {stderr!r}')
+
+if found == 0:
+  parser.error(f'Could not find {args.instance_id!r}')
