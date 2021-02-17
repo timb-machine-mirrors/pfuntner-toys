@@ -18,6 +18,9 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
+iteration = 0
 while True:
-  print('\r' + datetime.datetime.now().strftime("%a %Y-%m-%d %H:%M:%S.%f"), end='')
+  iteration += 1
+  now = datetime.datetime.now().strftime("%a %Y-%m-%d %H:%M:%S.%f")
+  print(f'\r{iteration:6}: {now}', end='')
   time.sleep(args.interval*60)
