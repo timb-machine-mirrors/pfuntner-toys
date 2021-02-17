@@ -11,10 +11,10 @@ import subprocess
 def echo(host, data):
   if args.raw:
     if data:
-      print('{host}: {data!r}'.format(**locals()))
+      print((f'{host}: ' if len(hosts) > 1 else '') + f'{data!r}')
   else:
     for line in data.splitlines():
-      print('{host}: {line}'.format(**locals()))
+      print((f'{host}: ' if len(hosts) > 1 else '') + f'{line}')
   
 parser = argparse.ArgumentParser(description='ssh to multiple machines')
 parser.add_argument('hosts', help='One or more comma-separated hosts')
@@ -61,7 +61,8 @@ remote_cmd = [args.cmd] + (args.args if args.args else [])
 processes = {}
 output = {}
 
-for host in args.hosts.split(','):
+hosts = args.hosts.split(',')
+for host in hosts:
   log.info(f'Creating {remote_cmd} for {host}')
   if host in docker_instances:
     cmd = ['docker', 'exec', host, '/bin/sh', '-c', ' '.join(remote_cmd)]
