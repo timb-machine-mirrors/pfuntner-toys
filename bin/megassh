@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+import sys
 import time
 import json
 import base64
@@ -8,13 +9,13 @@ import argparse
 import datetime
 import subprocess
 
-def echo(host, data):
+def echo(host, stream, data):
   if args.raw:
     if data:
-      print((f'{host}: ' if len(hosts) > 1 else '') + f'{data!r}')
+      print((f'{host}: ' if multiple_hosts else '') + f'{data!r}', file=stream)
   else:
     for line in data.splitlines():
-      print((f'{host}: ' if len(hosts) > 1 else '') + f'{line}')
+      print((f'{host}: ' if multiple_hosts else '') + f'{line}', file=stream)
   
 parser = argparse.ArgumentParser(description='ssh to multiple machines')
 parser.add_argument('hosts', help='One or more comma-separated hosts')
@@ -62,6 +63,7 @@ processes = {}
 output = {}
 
 hosts = args.hosts.split(',')
+multiple_hosts = len(hosts) > 1
 for host in hosts:
   log.info(f'Creating {remote_cmd} for {host}')
   if host in docker_instances:
@@ -123,8 +125,8 @@ while processes:
         output[host]['start'] = output[host]['start'].isoformat()
 
       else:
-        echo(host, stdout)  
-        echo(host, stderr)  
+        echo(host, sys.stdout, stdout)  
+        echo(host, sys.stderr, stderr)  
       del processes[host]
       if not args.json:
         print('')
