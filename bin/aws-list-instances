@@ -8,13 +8,33 @@ import subprocess
 
 from table import Table
 
-def get_name(tags):
+def get_tag(tags, tag_name):
   ret = ''
   for tag in tags:
-    if tag.get('Key') == 'Name':
+    if tag.get('Key') == tag_name:
       ret = tag.get('Value', '')
       break
   return ret
+
+def dive(root, *names):
+  id = instance.get('InstanceId', '')
+
+  for name in names:
+    log.info(f'{id} {root!s}')
+    if isinstance(root, dict) and name in root:
+      root = root[name]
+      if isinstance(root, str):
+        break
+      else:
+        if isinstance(root, list) and root:
+          root = root[0]
+        else:
+          root = ''
+          break
+    else:
+      root = ''
+      break
+  return root
 
 def run(cmd, stdin=None, capture=True, shell=False):
   if shell:
@@ -137,19 +157,40 @@ if rc == 0 and stdout:
     /Reservations/0/Instances/0/VpcId 'vpc-809519e6'
     /Reservations/0/OwnerId '338885122066'
     /Reservations/0/ReservationId 'r-01ae0e81f7458cf2a'
+
+      "PrivateIpAddresses": [
+        {
+          "Association": {
+            "IpOwnerId": "amazon",
+            "PublicDnsName": "ec2-54-89-251-82.compute-1.amazonaws.com",
+            "PublicIp": "54.89.251.82"
+          },
+          "Primary": true,
+          "PrivateDnsName": "ip-172-31-63-187.ec2.internal",
+          "PrivateIpAddress": "172.31.63.187"
+        }
+      ],
+
   """
   reservations = json.loads(stdout).get('Reservations', [])
 
-  table = Table('ID', 'Name', 'State', 'AMI', 'Launched')
+  table = Table('Name', 'State', 'IP', 'ID', 'AMI', 'Key', 'Launched')
   for reservation in reservations:
     instances = reservation.get('Instances', [])
     if instances:
       instance = instances[0]
+
+      # log.info('1: ' + str(instance.get('NetworkInterfaces', [{}])))
+      # log.info('2: ' + str(instance.get('NetworkInterfaces', [{}])[0].get('PrivateIpAddresses', '')))
+      # log.info('3: ' + instance.get('NetworkInterfaces', [{}])[0].get('PrivateIpAddresses', [{}])[0].get('PrivateIpAddress', ''))
+
       table.add(
-        get_name(instance.get('Tags', [])),
+        get_tag(instance.get('Tags', []), 'Name'),
         instance.get('State', []).get('Name', ''),
+        dive(instance, 'NetworkInterfaces', 'PublicIpAddresses', 'PublicIpAddress'),
         instance.get('InstanceId', ''),
         instance.get('ImageId', ''),
+        instance.get('KeyName', ''),
         instance.get('LaunchTime', ''),
       )
       
