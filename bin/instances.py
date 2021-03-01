@@ -11,6 +11,15 @@ import requests
 import argparse
 import subprocess
 
+ssh_root = os.path.expandvars("$HOME/.ssh")
+ssh_config_filename = os.path.join(ssh_root, 'config')
+
+vultr_apikey_filename = os.path.join(ssh_root, 'vultr.apikey')
+vultr_apikey = None
+if os.path.isfile(vultr_apikey_filename):
+  with open(vultr_apikey_filename) as stream:
+    vultr_apikey = stream.read().strip()
+
 class Instance(object):
   def __init__(self, provider, true_name, name, id, image_id, image_name, distro, user, ip, key_filename, active):
     self.provider = provider
@@ -34,9 +43,6 @@ def distro_in_name(distro, name):
 class Instances(object):
   def __init__(self, log):
     self.log = log
-
-    self.ssh_root = os.path.expandvars("$HOME/.ssh")
-    self.ssh_config_filename = os.path.join(self.ssh_root, 'config')
 
     basename = os.path.basename(inspect.getfile(self.__class__))
     if basename.endswith('.py'):
@@ -267,7 +273,7 @@ class Instances(object):
             user = None
             ip = self.extract(instance, 'PublicIpAddress')
             key_name = instance.get('KeyName')
-            key_filename = os.path.join(self.ssh_root, key_name + '.pem') if key_name else None
+            key_filename = os.path.join(ssh_root, key_name + '.pem') if key_name else None
             active = self.extract(instance, 'State/Name') == 'running'
   
             if not id:
@@ -308,7 +314,7 @@ class Instances(object):
     self.backfill_aws_image_info(instances)
 
     provider = 'gcp'
-    key_filename = os.path.join(self.ssh_root, 'google_compute_engine')
+    key_filename = os.path.join(ssh_root, 'google_compute_engine')
     (rc, stdout, stderr) = self.run('gcloud --format json compute instances list')
     if rc == 0 and stdout:
       raw = json.loads(stdout)
@@ -340,11 +346,10 @@ class Instances(object):
     self.backfill_gcp_image_info(instances)
 
     provider = 'vultr'
-    vultr_apikey_filename = os.path.join(self.ssh_root, 'vultr.apikey')
-    if os.path.isfile(vultr_apikey_filename):
-      with open(vultr_apikey_filename) as stream:
-        vultr_apikey = stream.read().strip()
+    if vultr_apikey:
       """
+      See: https://www.vultr.com/api/#section/Introduction
+
       curl --request GET 'https://api.vultr.com/v2/instances' --header "Authorization: Bearer $(cat ~/.ssh/vultr.apikey)"
 
         /instances/0/allowed_bandwidth 1000
@@ -450,14 +455,14 @@ if __name__ == '__main__':
 
   parser = argparse.ArgumentParser(description='Operations on AWS/GCP instances: discover, make Ansible files, stop/start')
   group = parser.add_mutually_exclusive_group()
-  group.add_argument('-m', '--make', action='store_true', help=f'Refresh /etc/ansible/hosts and {instances_class.ssh_config_filename} with instance information')
+  group.add_argument('-m', '--make', action='store_true', help=f'Refresh /etc/ansible/hosts and {ssh_config_filename} with instance information')
   group.add_argument('-A', '--ansible-make', action='store_true', help='Refresh /etc/ansible/hosts only')
   group.add_argument('--start', action='store_true', help='Start stopped instances')
   group.add_argument('--stop', action='store_true', help='Stop started instances')
   group.add_argument('--restart', action='store_true', help='Stop started instances')
 
   parser.add_argument('hosts', metavar='host', nargs='*', help='Zero or more hosts to start, stop, restart')
-  parser.add_argument('-c', '--clean', action='store_true', help=f'Clean instances before --make')
+  parser.add_argument('-c', '--clean', action='store_true', help='Clean instances before --make')
   parser.add_argument('-u', '--user', help='Default user if cannot be determined from the image, etc')
   parser.add_argument('-o', '--out', default='/etc/ansible/hosts', help='Ansible hosts yaml destination file.  Default: /etc/ansible/hosts')
   parser.add_argument('-a', '--all', action='store_true', help='Show all columns')
@@ -499,6 +504,10 @@ if __name__ == '__main__':
               print(f'Starting {instance.name}')
               instances_class.run(f'gcloud compute instances start {instance.true_name}')
               count += 1
+            elif instance.provider == 'vultr':
+              print(f'Starting {instance.name}')
+              req = requests.post(f'https://api.vultr.com/v2/instances/{instance.id}/start', headers={'Authorization': f'Bearer {vultr_apikey}'})
+              count += 1
             else:
               log.warning(f'{instance.name} has unexpected provider {instance.provider!r}')
           else:
@@ -513,6 +522,7 @@ if __name__ == '__main__':
       for instance in instances:
         if instance.name in args.hosts:
           if instance.active:
+            log.debug('Stopping {instance!s}')
             if instance.provider == 'aws':
               print(f'Stopping {instance.name}')
               instances_class.run(f'aws ec2 stop-instances --instance-ids {instance.id}')
@@ -520,6 +530,12 @@ if __name__ == '__main__':
             elif instance.provider == 'gcp':
               print(f'Stopping {instance.name}')
               instances_class.run(f'gcloud compute instances stop {instance.true_name}')
+              count += 1
+            elif instance.provider == 'vultr':
+              print(f'Stopping {instance.name}')
+              req = requests.post(f'https://api.vultr.com/v2/instances/{instance.id}/halt', headers={'Authorization': f'Bearer {vultr_apikey}'})
+              log.info(f'stop request status code: {req.status_code}')
+              log.info(f'stop request text: {req.text!r}')
               count += 1
             else:
               log.warning(f'{instance.name} has unexpected provider {instance.provider!r}')
@@ -542,6 +558,10 @@ if __name__ == '__main__':
             elif instance.provider == 'gcp':
               print(f'Resetting {instance.name}')
               instances_class.run(f'gcloud compute instances reset {instance.true_name}')
+              count += 1
+            elif instance.provider == 'vultr':
+              print(f'Restarting {instance.name}')
+              req = requests.post(f'https://api.vultr.com/v2/instances/{instance.id}/reboot', headers={'Authorization': f'Bearer {vultr_apikey}'})
               count += 1
             else:
               log.warning(f'{instance.name} has unexpected provider {instance.provider!r}')
