@@ -1,4 +1,5 @@
 #! /usr/bin/env python3
+
 import os
 import re
 import sys
@@ -6,6 +7,7 @@ import json
 import getpass
 import inspect
 import logging
+import requests
 import argparse
 import subprocess
 
@@ -336,6 +338,62 @@ class Instances(object):
             self.log.info(f'No device name for {id}/{name}')
 
     self.backfill_gcp_image_info(instances)
+
+    provider = 'vultr'
+    vultr_apikey_filename = os.path.join(self.ssh_root, 'vultr.apikey')
+    if os.path.isfile(vultr_apikey_filename):
+      with open(vultr_apikey_filename) as stream:
+        vultr_apikey = stream.read().strip()
+      """
+      curl --request GET 'https://api.vultr.com/v2/instances' --header "Authorization: Bearer $(cat ~/.ssh/vultr.apikey)"
+
+        /instances/0/allowed_bandwidth 1000
+        /instances/0/app_id 0
+        /instances/0/date_created '2021-03-01T15:11:05+00:00'
+        /instances/0/disk 25
+        /instances/0/firewall_group_id ''
+        /instances/0/gateway_v4 '45.76.254.1'
+        /instances/0/id '1f804c0a-64e3-4b40-89ae-97ff50705bf9'
+        /instances/0/internal_ip ''
+        /instances/0/kvm 'https://my.vultr.com/subs/vps/novnc/api.php?data=djJ8V2NNUzN6Q3NFY3l6UERRLWJ1OEhnZmliTng4QkU1X0Z8XhNCAu9UWG7WrNlD6mfKQ2yFGCKwNKrwdVU5nQPmOJtvZhDa1O63jXRXBmps7uCCJYzzpdwV7HtAECuc6kiLlTKr9dLg50pwR32v4LrlMB3cNLcG93Z65jIUoU1N9w-l1KMuNdkRPIIDw3GAtPFI8HOFtXWQR2zP3xAEcRKMeJI78m_1yvcBDNGLJqad-j42DGufpyac'
+        /instances/0/label 'bruno1'
+        /instances/0/main_ip '45.76.255.154'
+        /instances/0/netmask_v4 '255.255.254.0'
+        /instances/0/os 'Ubuntu 20.10 x64'
+        /instances/0/os_id 413
+        /instances/0/plan 'vc2-1c-1gb'
+        /instances/0/power_status 'running'
+        /instances/0/ram 1024
+        /instances/0/region 'atl'
+        /instances/0/server_status 'ok'
+        /instances/0/status 'active'
+        /instances/0/tag ''
+        /instances/0/v6_main_ip ''
+        /instances/0/v6_network ''
+        /instances/0/v6_network_size 0
+        /instances/0/vcpu_count 1
+        /meta/links/next ''
+        /meta/links/prev ''
+        /meta/total 1
+
+      """
+      req = requests.get('https://api.vultr.com/v2/instances', headers={'Authorization': f'Bearer {vultr_apikey}'})
+      log.info(f'vultr request: {req.status_code}')
+      for instance in req.json().get('instances', []):
+         #def __init__(self, provider, true_name, name, id, image_id, image_name, distro, user, ip, key_filename, active):
+         instances.append(Instance(
+           provider,
+           instance['label'],
+           instance['label'],
+           instance['id'],
+           instance['os_id'],
+           instance['os'],
+           instance['os'],
+           'bruno',
+           instance['main_ip'],
+           vultr_apikey_filename,
+           instance['power_status'] == 'running',
+         ))
 
     """
     Example of OpenStack server detail: {protocol}://{server}:8774/v2/{OS_PROJECT_ID}/servers/detail
