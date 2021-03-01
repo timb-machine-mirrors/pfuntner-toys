@@ -14,7 +14,7 @@ import subprocess
 ssh_root = os.path.expandvars("$HOME/.ssh")
 ssh_config_filename = os.path.join(ssh_root, 'config')
 
-vultr_apikey_filename = os.path.join(ssh_root, 'vultr.apikey')
+vultr_apikey_filename = os.path.join(ssh_root, 'vultr-apikey')
 vultr_apikey = None
 if os.path.isfile(vultr_apikey_filename):
   with open(vultr_apikey_filename) as stream:
@@ -57,7 +57,7 @@ class Instances(object):
           raise Exception(f'Could not parse {self.config_name!r}: "{e!s}"')
         self.log.debug(f'config: {self.config}')
     else:
-      self.log.warn(f'Could not find config {self.config_name!r}')
+      self.log.warning(f'Could not find config {self.config_name!r}')
       self.config = {}
 
     if 'gcp_user' not in self.config:
@@ -108,7 +108,7 @@ class Instances(object):
             log.debug(f'image: {image_id} {image_name} {distro} {user}')
 
             if not (distro and user):
-              log.warn(f'No distro or user for {image_id}/{image_name}')
+              log.warning(f'No distro or user for {image_id}/{image_name}')
 
             for instance in instances:
               if instance.image_id == image_id:
@@ -384,8 +384,8 @@ class Instances(object):
       """
       req = requests.get('https://api.vultr.com/v2/instances', headers={'Authorization': f'Bearer {vultr_apikey}'})
       log.info(f'vultr request: {req.status_code}')
+      log.debug(f'vultr request: {req.text}')
       for instance in req.json().get('instances', []):
-         #def __init__(self, provider, true_name, name, id, image_id, image_name, distro, user, ip, key_filename, active):
          instances.append(Instance(
            provider,
            instance['label'],
