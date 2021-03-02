@@ -597,8 +597,8 @@ if __name__ == '__main__':
         rc = p.wait()
 
     if args.make:
-        print(f'Writing to {instances_class.ssh_config_filename}')
-        with open(instances_class.ssh_config_filename, 'w') as stream:
+        print(f'Writing to {ssh_config_filename}')
+        with open(ssh_config_filename, 'w') as stream:
           for instance in instances:
             stream.write(f'Host {instance.name}\n\tHostname {instance.ip}\n\tUser {instance.user}\n\tIdentityFile {instance.key_filename}\n')
         
