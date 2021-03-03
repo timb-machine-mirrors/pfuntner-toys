@@ -1,112 +1,53 @@
 #! /usr/bin/env python3
 
-import os
-import sys
-import grp
-import pwd
-import stat
+import signal
 import logging
-import datetime
+import argparse
+import subprocess
 
-def mode_bits(mode, pos):
-  bits = (mode / (8**pos)) % 8
-  ret = '{read}{write}{execute}'.format(
-    read='r' if bits & 4 else '-',
-    write='w' if bits & 2 else '-',
-    execute='x' if bits & 1 else '-',
-  )
+from BrunoUtils import BrunoUtils
 
-  return ret
+def run(cmd, stdin=None, capture=True, shell=False):
+  if shell:
+    if isinstance(cmd, list):
+      cmd = ' '.join(cmd)
+  elif isinstance(cmd, str):
+    cmd = cmd.split()
 
-def special_bits(mode):
-  ret = ''
-
-  if stat.S_ISUID & mode:
-    ret += ', setuid bit is on'
-
-  if stat.S_ISGID & mode:
-    ret += ', setgid bit is on'
-
-  if stat.S_ISVTX & mode:
-    ret += ', sticky bit is on'
-
-  return ret
-
-def see_time(secs):
-  return str(datetime.datetime.fromtimestamp(secs))
-
-def emit(label, value):
-  label += ':'
-  print('  {label:<8} {value}'.format(**locals()))
-
-def human_size(value):
-  units = 'b'
-  if value > 1000:
-    value /= 1024.0
-    units = 'K'
-    if value > 1000:
-      value /= 1024.0
-      units = 'M'
-      if value > 1000:
-        value /= 1024.0
-        units = 'G'
-        if value > 1000:
-          value /= 1024.0
-          units = 'T'
-    return '{value:.3f}{units}'.format(**locals())
+  log.info('Executing {cmd}'.format(**locals()))
+  p = subprocess.Popen(cmd, stdin=subprocess.PIPE if stdin else None, stdout=subprocess.PIPE if capture else None, stderr=subprocess.PIPE if capture else None, shell=shell)
+  if stdin:
+    p.stdin.write(stdin.encode())
+    # p.stdin.close()
+  if capture:
+    (stdout, stderr) = tuple([s.decode('utf-8') for s in p.communicate()])
   else:
-    return '{value}{units}'.format(**locals())
+    (stdout, stderr) = ('', '')
+  rc = p.wait()
+  log.debug('Executed {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
+  return (rc, stdout, stderr)
 
-def see_user(uid):
-  try:
-    user = pwd.getpwuid(uid)
-  except:
-    return '? ({uid})'.format(**locals())
-  else:
-    user = user.pw_name
-    return '{user} ({uid})'.format(**locals())
-
-def see_group(gid):
-  try:
-    group = grp.getgrgid(gid)
-  except:
-    return '? ({gid})'.format(**locals())
-  else:
-    group = group.gr_name
-    return '{group} ({gid})'.format(**locals())
-  
-def process(filename):
-  global log, count
-
-  try:
-    # stat attributes: ['n_fields', 'n_sequence_fields', 'n_unnamed_fields', 'st_atime', 'st_blksize', 'st_blocks', 'st_ctime', 'st_dev', 'st_gid', 'st_ino', 'st_mode', 'st_mtime', 'st_nlink', 'st_rdev', 'st_size', 'st_uid']
-    stat_obj = os.stat(filename)
-  except Exception as e:
-    log.error('Could not stat() {filename!r}: `{e!s}`'.format(**locals()))
-  else:
-    print(os.path.abspath(filename))
-    emit('mode', '{owner}{group}{other}{special_bits}'.format(
-      owner=mode_bits(stat_obj.st_mode, 2),
-      group=mode_bits(stat_obj.st_mode, 1),
-      other=mode_bits(stat_obj.st_mode, 0),
-      special_bits=special_bits(stat_obj.st_mode),
-    ))
-    emit('ctime', see_time(stat_obj.st_ctime))
-    emit('mtime', see_time(stat_obj.st_mtime))
-    emit('size',  '{size:,} bytes, {size:.2e}, {human_size}'.format(size= stat_obj.st_size, human_size=human_size(stat_obj.st_size)))
-    emit('user',  see_user(stat_obj.st_uid))
-    emit('group', see_group(stat_obj.st_gid))
-    emit('inode', stat_obj.st_ino)
-    emit('dev', stat_obj.st_dev)
-
-  if count:
-    print('')
-
-  count += 1
-
-count = 0
+parser = argparse.ArgumentParser(description='Display file info')
+parser.add_argument('files', metavar='file', nargs='+', help='One or more files')
+parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
+args = parser.parse_args()
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
+log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
-list(map(process, sys.argv[1:]))
+signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
+
+width = BrunoUtils.cols()
+for (pos, filename) in enumerate(args.files):
+  (rc, sdout, stderr) = run(['stat', filename], capture=False)
+  if rc == 0:
+    with open(filename) as stream:
+      data = stream.read()
+    (rc, stdout, stderr) = run('wc', stdin=data)
+    stdout = stdout.strip()
+    print(f'    wc: {stdout}')
+    (rc, stdout, stderr) = run('md5sum', stdin=data)
+    print(f'md5sum: {stdout}', end='')
+  if pos+1 < len(args.files):
+    print('=' * width)
