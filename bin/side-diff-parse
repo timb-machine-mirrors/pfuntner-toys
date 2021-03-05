@@ -10,6 +10,7 @@ potential_delimiters = '|%&$@#!/\\'
 strip_leading_quote = re.compile('^ ')
 
 parser = argparse.ArgumentParser(description='side diff parser')
+parser.add_argument('-n', '--number', action='store_true', help='Number the lines')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -32,6 +33,10 @@ else:
 log.debug(f'Your delimiter is {delimiter!r}')
 
 lines = [line.expandtabs() for line in data.splitlines()]
+if not lines:
+  log.error('No lines to parse')
+  exit(1)
+
 max_width = max([len(line) for line in lines])
 columns = []
 for column in range(max_width):
@@ -61,9 +66,10 @@ if len(channels) != 1:
 
 channel = channels[0][0]
 
-for line in lines:
+for (pos, line) in enumerate(lines):
   log.debug(list(enumerate([c for c in line])))
   print(
+    (str(pos+1)+delimiter if args.number else '') +
     line[:channel].rstrip() +
     delimiter +
     line[channel:channel+1].rstrip() +
