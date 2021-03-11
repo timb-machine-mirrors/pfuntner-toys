@@ -14,6 +14,8 @@ export PAGER=less
 export EDITOR=vi
 export PYTHONUNBUFFERED=true
 
+$HOME/bin/set-title --self 
+
 # Windoze setup
 if expr match "$(uname -s)" '.*[Ww][Ii][Nn]' >/dev/null 2>&1
 then
@@ -21,8 +23,6 @@ then
   export GVIM=$ROOT/utils/gVimPortable/gVimPortable.exe
   export HOSTS=$ROOT/Windows/System32/drivers/etc/hosts
   export DOWNLOADS="$USERPROFILE/Downloads"
-
-  $HOME/bin/set-title --self 
 fi
 
 # For shared systems, this is useful for automatically sourcing my personal setup script
