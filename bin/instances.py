@@ -14,7 +14,7 @@ import subprocess
 ssh_root = os.path.expandvars("$HOME/.ssh")
 ssh_config_filename = os.path.join(ssh_root, 'config')
 
-vultr_apikey_filename = os.path.join(ssh_root, 'vultr-apikey')
+vultr_apikey_filename = os.path.join(ssh_root, 'vultr.apikey')
 vultr_apikey = None
 if os.path.isfile(vultr_apikey_filename):
   with open(vultr_apikey_filename) as stream:
