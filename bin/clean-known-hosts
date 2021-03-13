@@ -70,6 +70,8 @@ ip_regexp = re.compile(r'^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\s')
 docker_regexp = re.compile(r'^(\[127.0.0.1\]:\d+)\s+')
 nslookup_regexp = re.compile(r'\s+name\s+=\s+(\S+)\.$', flags=re.MULTILINE)
 
+cloud_providers_regexp = re.compile(r'googleusercontent.com|amazonaws.com|vultr.com')
+
 known_hosts_file_name = os.path.expanduser('~/.ssh/known_hosts')
 log.info(f'known_hosts_file_name: {known_hosts_file_name!r}')
 
@@ -90,7 +92,7 @@ if os.path.isfile(known_hosts_file_name):
           match = nslookup_regexp.search(stdout)
           if match:
             dns_server = match.group(1)
-            if 'googleusercontent.com' in dns_server or 'amazonaws.com' in dns_server:
+            if cloud_providers_regexp.search(dns_server):
               print(f'{ip}\t{dns_server}')
               del lines[pos]
               cleanups += 1
