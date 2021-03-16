@@ -15,7 +15,9 @@ import subprocess
 ssh_root = os.path.expandvars("$HOME/.ssh")
 ssh_config_filename = os.path.join(ssh_root, 'config')
 
-vultr_apikey_filename = os.path.join(ssh_root, 'vultr-apikey')
+private_ssh_keyfile = os.path.join(ssh_root, 'id_rsa')
+
+vultr_apikey_filename = os.path.join(ssh_root, 'vultr.apikey')
 vultr_apikey = None
 if os.path.isfile(vultr_apikey_filename):
   with open(vultr_apikey_filename) as stream:
@@ -397,7 +399,7 @@ class Instances(object):
            instance['os'],
            'bruno',
            instance['main_ip'],
-           vultr_apikey_filename,
+           private_ssh_keyfile,
            instance['power_status'] == 'running',
          ))
 

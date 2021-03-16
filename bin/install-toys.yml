@@ -16,6 +16,27 @@
     debug:
       msg: "{{ peon_home }}"
 
+  - name: Collect home directory of controlling system user
+    shell: echo ~
+    register: local_home_directory
+    delegate_to: localhost
+
+  - name: Create .ssh directory
+    file:
+      path: "{{ peon_home }}/.ssh"
+      mode: 0700
+      state: directory
+
+  - name: Share ssh keys
+    copy:
+      src: "{{ local_home_directory.stdout }}/.ssh/{{ item }}"
+      dest: "{{ peon_home }}/.ssh/{{ item }}"
+      mode: 0600
+      force: no
+    loop:
+      - id_rsa
+      - id_rsa.pub
+
   - name: Use correct Python package for Amazon 1
     set_fact:
       python_pkg: python36
