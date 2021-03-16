@@ -4,6 +4,7 @@ import os
 import re
 import sys
 import json
+import time
 import getpass
 import inspect
 import logging
@@ -515,7 +516,9 @@ if __name__ == '__main__':
           args.hosts.remove(instance.name)
       if args.hosts:
         parser.error(f'Did not find instances: {args.hosts}')
-      if count == 0:
+      if count > 0:
+        time.sleep(30)
+      else:
         parser.error('No instances to start')
 
     if args.stop:
@@ -570,7 +573,9 @@ if __name__ == '__main__':
           args.hosts.remove(instance.name)
       if args.hosts:
         parser.error(f'Did not find instances: {args.hosts}')
-      if count == 0:
+      if count > 0:
+        time.sleep(30)
+      else:
         parser.error('No instances to stop')
 
     if args.make or args.ansible_make:

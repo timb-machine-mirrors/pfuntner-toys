@@ -103,20 +103,30 @@ for host in args.hosts:
       pos += 1
 
   if not args.clean:
-    # get new SSH fingerprint
-    cmd = ['ssh-keyscan', '-H', ip]
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (stdout, stderr) = p.communicate()
-    stdout = stdout.decode('utf-8')
-    stderr = stderr.decode('utf-8')
-    rc = p.wait()
-    log.debug('{cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
+    retry = 5
+    (rc, stdout, stderr) = (0, '', '')
+    while True:
+      # get new SSH fingerprint
+      cmd = ['ssh-keyscan', '-H', ip]
+      p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+      (stdout, stderr) = p.communicate()
+      stdout = stdout.decode('utf-8')
+      stderr = stderr.decode('utf-8')
+      rc = p.wait()
+      log.debug('{cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
   
-    if (rc != 0) or (not stdout):
-      log.error('ssh-keyscan failed for {ip}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
-      exit(1)
-    changed = True
+      if rc == 0 and stdout:
+        break
+      else:
+        retry -= 1
+        if retry > 0:
+          print(f'Waiting for ssh fingerprint for {ip}')
+          time.sleep(15)
+        else:
+          log.error('ssh-keyscan failed for {ip}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
+          exit(1)
 
+    changed = True
     fingerprint = None
     for preferred_method in preferred_methods:
       for line in stdout.splitlines():
