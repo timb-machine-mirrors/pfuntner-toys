@@ -21,6 +21,7 @@ if expr match "$(uname -s)" '.*[Ww][Ii][Nn]' >/dev/null 2>&1
 then
   export ROOT=/cygdrive/c
   export GVIM=$ROOT/utils/gVimPortable/gVimPortable.exe
+  export VIM=$ROOT/utils/gVimPortable/gVimPortable.exe
   export HOSTS=$ROOT/Windows/System32/drivers/etc/hosts
   export DOWNLOADS="$USERPROFILE/Downloads"
 fi
