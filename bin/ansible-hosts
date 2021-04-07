@@ -69,10 +69,10 @@ else:
 
   negate_regexp = re.compile('^!')
   negate = any([bool(negate_regexp.search(host)) for host in args.hosts])
-  affirm = all([not bool(negate_regexp.search(host)) for host in args.hosts])
+  affirm = any([not bool(negate_regexp.search(host)) for host in args.hosts])
 
   if negate and affirm:
-    perror('Cannot mix positive and negative regular expressions')
+    parser.error('Cannot mix positive and negative regular expressions')
 
   hosts = set([host for host in inventory.keys() if negate])
 
