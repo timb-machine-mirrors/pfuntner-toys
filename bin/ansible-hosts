@@ -66,18 +66,39 @@ if args.hosts == ['all']:
   args.hosts = list(inventory.keys())
 else:
   # apply hosts as regular expressions
-  hosts = set()
+
+  negate_regexp = re.compile('^!')
+  negate = any([bool(negate_regexp.search(host)) for host in args.hosts])
+  affirm = any([not bool(negate_regexp.search(host)) for host in args.hosts])
+
+  if negate and affirm:
+    parser.error('Cannot mix positive and negative regular expressions')
+
+  hosts = set([host for host in inventory.keys() if negate])
+
   for host in args.hosts:
+    host = negate_regexp.sub('', host)
     if host in inventory.keys():
-      hosts.add(host)
+      if negate:
+        hosts.remove(host)
+      else:
+        hosts.add(host)
     else:
       matched = False
       for curr in inventory.keys():
         if re.search(host, curr):
-          hosts.add(curr)
-          matched = True
-      if not matched:
-        hosts.add(host)
+          if negate:
+            hosts.remove(curr)
+          else:
+            hosts.add(curr)
+
+      #     matched = True
+      # if not matched:
+      #   if negate:
+      #     hosts.remove(host)
+      #   else:
+      #     hosts.add(host)
+
   args.hosts = list(hosts)
 
 args.hosts = sorted(args.hosts)
