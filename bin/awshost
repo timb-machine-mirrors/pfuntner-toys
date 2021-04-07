@@ -178,4 +178,4 @@ for instance in instances.get('Reservations', []):
 if not args.list:
   for (name, chosen) in names.items():
     if not chosen:
-      log.warn('{name!r} was not found'.format(**locals()))
+      log.warning('{name!r} was not found'.format(**locals()))

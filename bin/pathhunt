@@ -23,9 +23,9 @@ def process(dir):
         files.append(filename)
     table.add(dir, ', '.join(files))
   elif os.path.exists(dir):
-    log.warn('{dir}: Not a directory'.format(**locals()))
+    log.warning('{dir}: Not a directory'.format(**locals()))
   else:
-    log.warn('{dir}: Not found'.format(**locals()))
+    log.warning('{dir}: Not found'.format(**locals()))
   
 parser = argparse.ArgumentParser(description='Hunt for executables in PATH')
 parser.add_argument('regexp', help='Regular expression for executable for which to hunt')

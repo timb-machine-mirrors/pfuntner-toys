@@ -162,4 +162,4 @@ if args.hosts:
     
     print(str(table), end='')
 else:
-  log.warn('No hosts')
+  log.warning('No hosts')

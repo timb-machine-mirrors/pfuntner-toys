@@ -48,7 +48,7 @@ def read(path):
     with open(path) as stream:
       data = stream.read()
   except Exception as e:
-    log.warn(f'{e!s} while reading {path!r}')
+    log.warning(f'{e!s} while reading {path!r}')
   return data.splitlines()
 
 def dive(path1, path2):
@@ -74,7 +74,7 @@ def dive(path1, path2):
   else:
     type1 = describe_file(path1)
     type2 = describe_file(path2)
-    log.warn(f'{path1!r} is {type1} and {path2!r} is {type2}')
+    log.warning(f'{path1!r} is {type1} and {path2!r} is {type2}')
 
 parser = argparse.ArgumentParser(description='Compare lines in files')
 

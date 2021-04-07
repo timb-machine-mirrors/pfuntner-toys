@@ -18,7 +18,7 @@ def dive(root):
       for child in os.listdir(root):
         ret += dive(os.path.join(root, child))
     except Exception as e:
-      log.warn('Cannot list {root!r}: `{e!s}`'.format(**locals()))
+      log.warning('Cannot list {root!r}: `{e!s}`'.format(**locals()))
 
   return ret
 

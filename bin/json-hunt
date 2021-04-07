@@ -101,14 +101,14 @@ for filename in args.files:
             log.info(f'Could not process {filename!r} as yaml: {e!s}')
   
         if root is None:
-          log.warn(f'Could not process {filename!r} as either json or yaml')
+          log.warning(f'Could not process {filename!r} as either json or yaml')
         else:
           if isinstance(root, list) or isinstance(root, dict):
             paths = []
             hunt([], root)
           else:
-            log.warn('{filename!r} is of unsupported type {type}'.format(filename=filename, type=root.__class__.__name__))
+            log.warning('{filename!r} is of unsupported type {type}'.format(filename=filename, type=root.__class__.__name__))
     else:
-      log.warn(f'Could not process directory {filename!r}')
+      log.warning(f'Could not process directory {filename!r}')
   else:
-    log.warn(f'Could not find {filename!r}')
+    log.warning(f'Could not find {filename!r}')

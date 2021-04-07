@@ -75,6 +75,6 @@ for host in hosts:
     if not args.all:
       host.name = re.sub(args.hostexpr, '', host.name)
     if host.state.lower() != 'running':
-      log.warn('{host.name} is stopped'.format(**locals()))
+      log.warning('{host.name} is stopped'.format(**locals()))
     else:
       print('{host.name} ansible_host={host.ip} ansible_user={host.user} ansible_ssh_private_key_file={host.key}'.format(**locals()))

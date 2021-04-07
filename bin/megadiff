@@ -55,7 +55,7 @@ def compare(file1, file2, report_missing_only):
   elif os.path.exists(file2):
     parser.error(f'{file2!r} is an unsupported file')
   else:
-    log.warn('No {file2!r} to match {file1!r}')
+    log.warning('No {file2!r} to match {file1!r}')
     
 def dive(tree1, tree2, paths=None, report_missing_only=False):
   log.debug(f'dive(tree1={tree1!r}, tree2={tree2!r}, paths={paths}, report_missing_only={report_missing_only})')

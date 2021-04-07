@@ -54,4 +54,4 @@ if os.path.isdir(srcdir):
     else:
       log.info('{basename}: {size} ?x?'.format(**locals()))
 else:
-  log.warn('Could not find {srcdir!r}'.format(**locals()))
+  log.warning('Could not find {srcdir!r}'.format(**locals()))

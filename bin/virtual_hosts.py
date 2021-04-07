@@ -393,7 +393,7 @@ class VirtualHosts(object):
           if host.name not in ret.keys():
             ret[host.name] = host
           else:
-            log.warn('Note: There are multiple machines called {host.name!r}'.format(**locals()))
+            log.warning('Note: There are multiple machines called {host.name!r}'.format(**locals()))
 
     args = globals().get('args')
     if args and args.debug:

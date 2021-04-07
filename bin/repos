@@ -96,7 +96,7 @@ def process(root):
       for filename in os.listdir(root):
         process(os.path.join(root, filename))
   else:
-    log.warn('Not found: {root!r}'.format(**locals()))
+    log.warning('Not found: {root!r}'.format(**locals()))
 
 parser = argparse.ArgumentParser(description='Display git repos')
 parser.add_argument('-d', '--diffs', action='store_true', help='Show `git diff` for each repo')

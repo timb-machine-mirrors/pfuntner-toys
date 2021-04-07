@@ -22,9 +22,9 @@ class TailThread(threading.Thread):
         log.info('Starting thread')
         self.start()
       else:
-        log.warn(f'Could not open: {filename!r}')
+        log.warning(f'Could not open: {filename!r}')
     else:
-      log.warn(f'Could not find: {filename!r}')
+      log.warning(f'Could not find: {filename!r}')
 
   def run(self):
     while(True):
