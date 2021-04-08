@@ -12,10 +12,12 @@ import requests
 import argparse
 import subprocess
 
-ssh_root = os.path.expandvars("$HOME/.ssh")
+ssh_root_raw = '~/.ssh'
+ssh_root = os.path.expanduser(ssh_root_raw)
 ssh_config_filename = os.path.join(ssh_root, 'config')
 
 private_ssh_keyfile = os.path.join(ssh_root, 'id_rsa')
+private_ssh_keyfile_raw = os.path.join(ssh_root_raw, 'id_rsa')
 
 vultr_apikey_filename = os.path.join(ssh_root, 'vultr.apikey')
 vultr_apikey = None
@@ -276,7 +278,7 @@ class Instances(object):
             user = None
             ip = self.extract(instance, 'PublicIpAddress')
             key_name = instance.get('KeyName')
-            key_filename = os.path.join(ssh_root, key_name + '.pem') if key_name else None
+            key_filename = os.path.join(ssh_root_raw, key_name + '.pem') if key_name else None
             active = self.extract(instance, 'State/Name') == 'running'
   
             if not id:
@@ -317,7 +319,7 @@ class Instances(object):
     self.backfill_aws_image_info(instances)
 
     provider = 'gcp'
-    key_filename = os.path.join(ssh_root, 'google_compute_engine')
+    key_filename = os.path.join(ssh_root_raw, 'google_compute_engine')
     (rc, stdout, stderr) = self.run('gcloud --format json compute instances list')
     if rc == 0 and stdout:
       raw = json.loads(stdout)
@@ -399,7 +401,7 @@ class Instances(object):
            instance['os'],
            'bruno',
            instance['main_ip'],
-           private_ssh_keyfile,
+           private_ssh_keyfile_raw,
            instance['power_status'] == 'running',
          ))
 
