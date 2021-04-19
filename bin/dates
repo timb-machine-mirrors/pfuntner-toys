@@ -47,6 +47,7 @@ fmt_strings = list()
 
 table = Table(
   'String',
+  'Unix',
   'isotime',
   'Secs since epoch',
 )
@@ -85,6 +86,7 @@ for curr in args.strings:
 
   table.add(
     curr,
+    datetime.datetime.strftime(ts, '%a %d %b %Y %I:%M:%S %p') if ts else '', # Sun 18 Apr 2021 07:47:54 AM EDT
     ts.isoformat() if ts else '',
     (ts - epoch).total_seconds() if ts else '',
   )
