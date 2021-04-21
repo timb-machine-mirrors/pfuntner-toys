@@ -31,6 +31,8 @@ patterns = [
 
   { 'regexp': re.compile(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'),         'replacement': 'DDD.DDD.DDD.DDD' },
   { 'regexp': re.compile(r':\d{1,6}'),                                   'replacement': ':DDDDDD' },
+
+  { 'regexp': re.compile(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'), 'replacement': 'deadbeef-dead-beef-dead-beefdeadbeef' },
 ]
 
 data = sys.stdin.read()
