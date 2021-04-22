@@ -56,13 +56,13 @@ class JsonDiff(object):
   def compare(self, root1, root2, path=[]):
     ret = True
     
-    log.debug(f'Comparing {path}: {root1!r} vs {root2!r}')
+    self.log.debug(f'Comparing {path}: {root1!r} vs {root2!r}')
     if root1 != root2:
       ret = False
       if type(root1) == type(root2):
         if isinstance(root1, list):
           if len(root1) != len(root2):
-            log.warning('At /{path}, lhs has {size1!s} elements and rhs has {size2!s}'.format(
+            self.log.warning('At /{path}, lhs has {size1!s} elements and rhs has {size2!s}'.format(
               path='/'.join(path),
               size1=len(root1),
               size2=len(root2),
@@ -74,23 +74,25 @@ class JsonDiff(object):
             if key in root1 and key in root2:
               ret &= self.compare(root1[key], root2[key], path + [key])
             elif key in root1:
-              log.warning('At /{path}, lhs has key {key} but rhs does not'.format(
+              self.log.warning('At /{path}, lhs has key {key}={value!r}  but rhs does not'.format(
                 path='/'.join(path),
                 key=key,
+                value=root1[key],
               ))
             else:
-              log.warning('At /{path}, rhs has key {key} but lhs does not'.format(
+              self.log.warning('At /{path}, rhs has key {key}={value!r} but lhs does not'.format(
                 path='/'.join(path),
                 key=key,
+                value=root2[key],
               ))
         else:
-          log.warning('At /{path}, {root1!r} != {root2!r}'.format(
+          self.log.warning('At /{path}, {root1!r} != {root2!r}'.format(
             path='/'.join(path),
             root1=root1,
             root2=root2,
           ))
       else:
-        log.warning('At /{path}, lhs is {type1!s} and rhs is {type2!s}'.format(
+        self.log.warning('At /{path}, lhs is {type1!s} and rhs is {type2!s}'.format(
           path='/'.join(path),
           type1=root1.__class__.__name__,
           type2=root2.__class__.__name__,
