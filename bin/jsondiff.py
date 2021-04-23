@@ -74,7 +74,7 @@ class JsonDiff(object):
             if key in root1 and key in root2:
               ret &= self.compare(root1[key], root2[key], path + [key])
             elif key in root1:
-              self.log.warning('At /{path}, lhs has key {key}={value!r}  but rhs does not'.format(
+              self.log.warning('At /{path}, lhs has key {key}={value!r} but rhs does not'.format(
                 path='/'.join(path),
                 key=key,
                 value=root1[key],
