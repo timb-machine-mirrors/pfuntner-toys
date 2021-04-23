@@ -7,9 +7,11 @@ import signal
 import logging
 import argparse
 
+SHORTEN_WIDTH = 256
+
 def shorten(s):
-  if args.shorten and len(s) > 100:
-    s = s[:47] + ' ... ' + s[-48:]
+  if args.shorten and len(s) > SHORTEN_WIDTH:
+    s = s[:int(SHORTEN_WIDTH/2)-2] + ' ... ' + s[-(int(SHORTEN_WIDTH/2)-3):]
   return s
 
 parser = argparse.ArgumentParser(description='Parse output from grep')
