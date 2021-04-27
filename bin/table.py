@@ -264,26 +264,29 @@ class FlatMethod(MethodBase):
     order = []
     pos = 0
     if args.headings:
-      while pos < len(lines) and lines[pos]:
+      while pos < len(lines) and ((pos < args.columns) if args.columns is not None else lines[pos]):
         order.append(lines[pos])
         pos += 1
+    log.info(f'order: {order}')
 
-    pos += 1
+    if not args.columns:
+      pos += 1
     while pos < len(lines):
       row = {} if args.headings else []
       ret.append(row)
       log.info('Starting to read data row at line {pos}'.format(**locals()))
-      while (pos < len(lines)) and lines[pos]:
+      while (pos < len(lines)) and ((len(row) < args.columns) if args.columns else lines[pos]):
         log.info('{pos}: {line!r}'.format(pos=pos, line=lines[pos]))
         if args.headings:
           inner_pos = len(row)
           if inner_pos >= len(order):
-            parser.error('Column {inner_pos} encountered when only {count} headings'.format(inner_pos=inner_pos, count=count(order)))
+            parser.error('Column {inner_pos} encountered when only {count} headings'.format(inner_pos=inner_pos, count=len(order)))
           row[order[inner_pos]] = lines[pos]
         else:
           row.append(lines[pos])
         pos += 1
-      pos += 1
+      if not args.columns:
+        pos += 1
 
     return (ret, order)
 
@@ -888,6 +891,7 @@ parser.add_argument('-i', '--input', dest='input', help='Input method', type=met
                     choices=method_names('read'), required=True)
 parser.add_argument('-o', '--output', dest='output', help='Output method', type=method_abbreviator,
                     choices=method_names('write'), required=True)
+parser.add_argument('-c', '--columns', type=int, help='Number of columns for the flat format')
 parser.add_argument('--order', dest='order', type=order_splitter, help='Specify the order of columns')
 parser.add_argument('-r', '--regexp', help='Regular expression to be used as an input separator', default=r'\s+')
 parser.add_argument('-s', '--separator', help='Output separator')
