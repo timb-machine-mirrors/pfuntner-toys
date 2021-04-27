@@ -44,10 +44,10 @@ name_regexp = re.compile(args.name_pattern)
 (rc, stdout, stderr) = run(f'aws ec2 describe-images --owners {args.owner_id}')
 
 if rc == 0:
-  table = Table('Image name', 'Image ID')
+  table = Table('Image name', 'Image ID', 'Created')
   for image in json.loads(stdout).get('Images', []):
     if name_regexp.search(image.get('Name', '')):
-      table.add(image['Name'], image['ImageId'])
+      table.add(image['Name'], image['ImageId'], image['CreationDate'])
       log.debug(image)
   print(str(table))
 else:
