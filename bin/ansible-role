@@ -49,7 +49,7 @@ cmd = ['ansible-playbook'] + (['-v'] * (args.ansible_verbose or 0))
 
 if args.docker:
   hosts = ','.join(args.hosts) + (',' if len(args.hosts) == 1 else '')
-  cmd += ['-c', 'docker', '-i', hosts]
+  cmd += ['-c', 'docker', '-i', hosts, '-e', 'ansible_user=root']
 
 for extra_var in args.extra_vars or []:
   cmd += ['-e', extra_var]
