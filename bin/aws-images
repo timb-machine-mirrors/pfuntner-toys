@@ -49,6 +49,8 @@ if rc == 0:
     if name_regexp.search(image.get('Name', '')):
       table.add(image['Name'], image['ImageId'], image['CreationDate'])
       log.debug(image)
+
+  table.root.sort(reverse=True, key=lambda image: image['Created'])
   print(str(table))
 else:
   log.error('aws command failed')
