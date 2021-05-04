@@ -32,7 +32,12 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
-(rc, stdout, stderr) = run('docker images')
+try:
+  (rc, stdout, stderr) = run('docker images')
+except Exception as e:
+  log.warning(f'`docker images` failed: {e!s}')
+  exit(1)
+
 for line in stdout.splitlines()[1:]:
   tokens = line.split()
   print(tokens[0] + ':' + tokens[1])
