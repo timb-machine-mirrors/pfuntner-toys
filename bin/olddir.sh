@@ -2,7 +2,7 @@ if [ "$BASH_SOURCE" != "$0" ]
 then
   dir="$PWD"
   base=$(basename "$dir")
-  if expr match "$base" '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$' >/dev/null 2>&1
+  if expr match "$base" '[0-9]\{23\}$' >/dev/null 2>&1
   then
     cd ..
     rm -rfv "$dir"
