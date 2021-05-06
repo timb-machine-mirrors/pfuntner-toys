@@ -521,6 +521,7 @@ if __name__ == '__main__':
       if args.hosts:
         parser.error(f'Did not find instances: {args.hosts}')
       if count > 0:
+        print('sleeping for 30 seconds to let instances restart')
         time.sleep(30)
       else:
         parser.error('No instances to start')
