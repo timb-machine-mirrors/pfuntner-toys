@@ -69,12 +69,13 @@ def process(filename=None):
     log.debug('task match: {groups} {line!r}'.format(groups=match.groups() if match else None, **locals()))
     if match:
       # check if last task didn't have items that applied to any host
-      task_check = [task for task in tasks if task.type == task_groups[0].lower() and task.role == (task_groups[1] or '') and task.name == task_groups[2]]
-      log.info(f'Checking for dummy task: {task_groups} {task_check}')
-      if task_groups and not task_check:
-        for task in tasks:
-          log.info(f'Need dummy task: {task}')
-        get_task(task_groups + [''])
+      if task_groups:
+        task_check = [task for task in tasks if task.type == task_groups[0].lower() and task.role == (task_groups[1] or '') and task.name == task_groups[2]]
+        log.info(f'Checking for dummy task: {task_groups} {task_check}')
+        if not task_check:
+          for task in tasks:
+            log.info(f'Need dummy task: {task}')
+          get_task(task_groups + [''])
 
       eof[-1] = False
       task_groups = list(match.groups())

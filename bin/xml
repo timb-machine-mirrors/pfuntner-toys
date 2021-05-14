@@ -266,7 +266,7 @@ def flatten(root, stack=[]):
   if root.tag:
     tags = [tag for tag in stack]
     tags.append(root.tag)
-    print('/'.join(tags))
+    print('/'.join(tags) + ' ' + str(root.attrs))
     for child in root.children:
       flatten(child, tags)
   else:
