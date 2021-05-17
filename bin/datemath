@@ -2,6 +2,7 @@
 
 import re
 import sys
+import logging
 import datetime
 
 def syntax(msg=None):
@@ -18,7 +19,7 @@ def parseTimestamp(s):
     try:
       ret = datetime.datetime.strptime(s, format)
     except Exception as e:
-      pass
+      log.debug(f'While trying to convert {s!r} with {format!r}, caught `{e!s}`')
     else:
       break
 
@@ -27,9 +28,18 @@ def parseTimestamp(s):
 
   return ret
 
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+if len(sys.argv) > 1 and sys.argv[1] in ['-v', '--verbose']:
+  del sys.argv[1]
+  log.setLevel(logging.DEBUG)
+else:
+  log.setLevel(logging.WARNING)
+
 deltaRegexp = re.compile("^((\d+)(d))?((\d+)(h))?((\d+)(m))?((\d+)(s))?$")
 timestampFormats = [
                      "%Y-%m-%d",
+                     "%d-%b-%Y",
                      "%Y-%m-%dT%H:%M",
                      "%Y-%m-%dT%H:%M:%S",
                      "%H:%M:%S",
