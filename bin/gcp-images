@@ -68,7 +68,7 @@ images = sorted(json.loads(stdout), key=lambda image: image['name'])
 pos = 0
 while pos < len(images):
   image = images[pos]
-  if (args.project and not re.search(f'^https://www.googleapis.com/compute/v\\d+/projects/{args.project}/global/licenses/', image['selfLink'])):
+  if (args.project and not re.search(f'^https://www.googleapis.com/compute/v\\d+/projects/{args.project}/global/images/', image['selfLink'])):
     del images[pos]
   elif (args.family and not re.search(args.family, image['family'])):
     del images[pos]
