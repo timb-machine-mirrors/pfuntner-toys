@@ -41,18 +41,20 @@ dumping = False
 task = None
 status = None
 task_regexp = re.compile('^(?:TASK|HANDLER) \[(.*)\] \*+$')
-host_regexp = re.compile('^([a-z]+): ')
+host_regexp = re.compile('^([a-z]+): \[([-a-zA-Z0-9]+)')
 
-for line in sys.stdin.read().splitlines():
+for (pos, line) in enumerate(sys.stdin.read().splitlines()):
   match = task_regexp.search(line)
   if match:
     task = match.group(1)
-    log.info(f'Encountered task {task!r}')
+    log.info(f'Line {pos}: Encountered task {task!r}')
     dumping = False
   else:
     match = host_regexp.search(line)
     if task and match:
-      if match.group(1) in ['fatal', 'failed']:
+      (status, host) = match.groups()
+      log.info(f'Line {pos}: host: {host} {status}')
+      if status in ['fatal', 'failed']:
         print(f'\n{task}')
         dumping = True
       else:

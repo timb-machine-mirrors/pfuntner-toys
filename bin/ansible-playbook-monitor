@@ -7,6 +7,15 @@ import signal
 import logging
 import argparse
 
+def report():
+  if tasks:
+    log.info('Tasks: {tasks}, Hosts: {hosts}, Last Task: {last_task!r}, Statuses: {statuses}'.format(
+      tasks=tasks,
+      hosts=len(hosts),
+      last_task=last_task,
+      statuses=statuses,
+    ))
+
 parser = argparse.ArgumentParser(description='Monitor execution of an Ansible playbook')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
@@ -43,14 +52,19 @@ pos = 0
 last_task = None
 hosts = set()
 statuses = set()
-task_regexp = re.compile('^(?:TASK|HANDLER) \[(.*)\] \*+$')
-host_regexp = re.compile('^([a-z]+): \[([-a-zA-Z0-9]+)')
+task_regexp = re.compile(r'^(?:TASK|HANDLER) \[(.*)\] \*+$')
+host_regexp = re.compile(r'^([a-z]+): \[([-a-zA-Z0-9]+)')
+final_regexp = re.compile(r'^Playbook run took')
 
 while True:
   line = sys.stdin.readline()
   if line:
     line = line.rstrip()
     pos += 1
+
+    if final_regexp.search(line):
+      break
+
     match = task_regexp.search(line)
     if match:
       task = match.group(1)
@@ -65,10 +79,7 @@ while True:
         hosts.add(host)
         statuses.add(status)
   else:
-    log.info('Tasks: {tasks}, Hosts: {hosts}, Last Task: {last_task!r}, Statuses: {statuses}'.format(
-      tasks=tasks,
-      hosts=len(hosts),
-      last_task=last_task,
-      statuses=statuses,
-    ))
+    report()
     time.sleep(15)
+
+report()
