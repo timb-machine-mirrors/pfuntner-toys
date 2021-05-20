@@ -6,12 +6,13 @@ import time
 import signal
 import logging
 import argparse
+import datetime
 
 def report():
   if tasks:
-    log.info('Tasks: {tasks}, Hosts: {hosts}, Last Task: {last_task!r}, Statuses: {statuses}'.format(
+    print('{now}: Tasks: {tasks}, Last Task: {last_task!r}, Statuses: {statuses}'.format(
+      now=datetime.datetime.now().isoformat().replace('T', ' '),
       tasks=tasks,
-      hosts=len(hosts),
       last_task=last_task,
       statuses=statuses,
     ))
@@ -22,7 +23,7 @@ args = parser.parse_args()
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
-log.setLevel(logging.INFO - (args.verbose or 0)*10)
+log.setLevel(logging.WARN - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
