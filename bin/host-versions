@@ -31,7 +31,7 @@ def version(host, command, option):
   ret = ''
   log.info(f'version({host!r}, {command!r}, {option!r})')
   (rc, stdout, stderr) = run((['ssh', host] if host != 'localhost' else []) + [command, option], stdin='')
-  match = regexp.search(stdout)
+  match = regexp.search(stdout + stderr)
   if match:
     ret = match.group(1)
   return ret
