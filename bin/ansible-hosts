@@ -51,6 +51,7 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
+log.debug(f'args: {args}')
 """
   /_meta/hostvars/aws-centos7/ansible_host '54.197.26.211'
   /_meta/hostvars/aws-centos7/ansible_ssh_private_key_file '/home/centos/.ssh/pfuntner-aws.pem'
@@ -85,12 +86,15 @@ else:
         hosts.add(host)
     else:
       matched = False
-      for curr in inventory.keys():
-        if re.search(host, curr):
-          if negate:
-            hosts.remove(curr)
-          else:
-            hosts.add(curr)
+      if host == 'localhost':
+        hosts.add(host)
+      else:
+        for curr in inventory.keys():
+          if re.search(host, curr):
+            if negate:
+              hosts.remove(curr)
+            else:
+              hosts.add(curr)
 
       #     matched = True
       # if not matched:
