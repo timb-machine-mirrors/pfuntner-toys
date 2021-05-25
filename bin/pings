@@ -41,7 +41,7 @@ def colorize(status):
 def echo(struct, *columns):
   if args.continuous:
     if struct:
-      columns += (struct.get('ssh', {}).get('start') or struct.get('ping', {}).get('start'),)
+      columns += (struct.get('ssh', {}).get('start').replace('T', ' ') or struct.get('ping', {}).get('start').replace('T', ' '),)
     else:
       columns += ('',)
 
