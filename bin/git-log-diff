@@ -38,9 +38,11 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
 (rc, stdout, stderr) = run('git branch')
-match = re.match(r'^\*\s+(.+)$', stdout, re.MULTILINE)
+match = re.search(r'^\*\s+(.+)$', stdout, flags=re.MULTILINE)
+log.info(f'branch match: {match}')
 if match:
   curr_branch = match.group(1)
+  log.info(f'curr_branch: {curr_branch!r}')
   if curr_branch != 'master':
     (master_rc, master_stdout, master_stderr) = run('git-log --branch master')
     if rc == 0:
