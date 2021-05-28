@@ -10,6 +10,12 @@
 
 export PATH="$PATH:$HOME/repos/toys/bin"
 
+local="$HOME/local/bin"
+if test -e "$local"
+then
+  export PATH="$PATH:$local"
+fi
+
 export PAGER=less
 export EDITOR=vi
 export PYTHONUNBUFFERED=true
