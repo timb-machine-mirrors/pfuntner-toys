@@ -20,7 +20,10 @@ export PAGER=less
 export EDITOR=vi
 export PYTHONUNBUFFERED=true
 
-$HOME/bin/set-title --self 
+if tty >/dev/null 2>&1
+then
+  $HOME/bin/set-title --self 
+fi
 
 # Windoze setup
 if expr match "$(uname -s)" '.*[Ww][Ii][Nn]' >/dev/null 2>&1
