@@ -19,6 +19,7 @@ usage: ssh [-46AaCfGgKkMNnqsTtVvXxYy] [-B bind_interface]
 
 parser = argparse.ArgumentParser(description='Windows ssh frontend')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
+parser.add_argument('--no-title', action='store_true', help='Suppress set-title')
 
 for option in '46AaCfGgKkMNnqsTtVXxYy': # I took -v out of this list because I want this option!
   parser.add_argument(f'-{option}', action='store_true')
@@ -40,7 +41,7 @@ log.info(f'args: {args}')
 
 command = ['ssh']
 
-for option in [arg for arg in dir(args) if (not arg.startswith('_')) and (arg not in ['verbose', 'v', 'dest', 'command'])]:
+for option in [arg for arg in dir(args) if (not arg.startswith('_')) and (arg not in ['verbose', 'v', 'dest', 'command', 'no_title'])]:
   value = getattr(args, option)
   log.debug(f'{option}: {value!r}')
   if value != None:
@@ -56,12 +57,14 @@ command += [args.dest] + args.command
 
 log.info(f'command: {command}')
 
-subprocess.Popen(f'set-title {args.dest}', shell=True).wait()
+if not args.no_title:
+  subprocess.Popen(f'set-title {args.dest}', shell=True).wait()
 
 p = subprocess.Popen(command)
 rc = p.wait()
 
-subprocess.Popen('set-title --self', shell=True).wait()
+if not args.no_title:
+  subprocess.Popen('set-title --self', shell=True).wait()
 
 exit(rc)
 #! /usr/bin/env python3
