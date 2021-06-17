@@ -13,7 +13,7 @@ def process(source):
     filename_prefix = f'{source}: '
     if os.path.exists(source):
       if not os.path.isdir(source):
-        stream = open(source)
+        stream = open(source, 'rb')
       else:
         log.warning(f'{source!r} is a directory')
     else:
@@ -26,7 +26,7 @@ def process(source):
     for line in stream.read().splitlines():
       hits = regexp.findall(line)
       for hit in hits:
-        print(f'{filename_prefix}{hit!r}')
+        print(f'{filename_prefix}{hit.decode()!r}')
 
     if isinstance(source, str):
       stream.close()
@@ -44,7 +44,7 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 if not args.files and sys.stdin.isatty():
   parser.error('stdin must be redirected if no filenames are specified on command line')
 
-regexp = re.compile(args.regexp)
+regexp = re.compile(args.regexp.encode())
 
 if args.files:
   for filename in args.files:
