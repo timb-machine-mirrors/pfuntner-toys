@@ -6,11 +6,19 @@ import sys
 import logging
 import argparse
 
+def see(s):
+  ret = repr(s.decode())
+  if args.hits_only and len(ret) >= 1:
+    ret = ret[1:-1]
+  return ret
+
 def process(source):
   stream = None
+  filename_prefix = ''
 
   if isinstance(source, str):
-    filename_prefix = f'{source}: '
+    if not args.hits_only:
+      filename_prefix = f'{source}: '
     if os.path.exists(source):
       if not os.path.isdir(source):
         stream = open(source, 'rb')
@@ -19,14 +27,13 @@ def process(source):
     else:
       log.warning(f'Cannot find {source!r}')
   else:
-    filename_prefix = ''
     stream = sys.stdin
 
   if stream:
     for line in stream.read().splitlines():
       hits = regexp.findall(line)
       for hit in hits:
-        print(f'{filename_prefix}{hit.decode()!r}')
+        print('{filename_prefix}{hit}'.format(filename_prefix=filename_prefix, hit=see(hit)))
 
     if isinstance(source, str):
       stream.close()
@@ -34,6 +41,7 @@ def process(source):
 parser = argparse.ArgumentParser(description='Perform re.findall on stdin')
 parser.add_argument('regexp', help='Regular expression with which to search')
 parser.add_argument('files', metavar='file', nargs='*', help='Zero or more files to process')
+parser.add_argument('--hits-only', action='store_true', help='Display hits only')
 parser.add_argument('-v', '--verbose', action='store_true', help='Enable debugging')
 args = parser.parse_args()
 
