@@ -30,13 +30,13 @@ class PushbackReader(object):
     # figure out the type of source and build a stream from it if necessary
     self.src = src
     if isinstance(src, io.IOBase):
+      if src == sys.stdin and sys.stdin.isatty():
+        log.fatal('stdin must be redirected')
+        exit(1)
       self.stream = src
     elif isinstance(src, int):
       self.stream = os.fdopen(src, 'r')
     elif isinstance(src, str):
-      if src == sys.stdin and sys.stdin.isatty():
-        log.fatal('stdin must be redirected')
-        exit(1)
       self.stream = open(src, 'r')
     else:
       raise(Exception(f'Unexpected source: {src.__class__.__name__}'))
