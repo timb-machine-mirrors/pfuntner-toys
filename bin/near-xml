@@ -7,73 +7,160 @@ import string
 import logging
 import argparse
 
-class Reader(object):
-  def Reader(self, stream):
-    self.stream = stream
-    self.buf = list()
-    self.text = ''
-
-  def read(self, bytes=1):
-    ret = ''
-    while bytes > 0 and len(self.buf) > 0:
-      ret = self.buf.pop(0)
-      bytes -= 1
-    if bytes > 0:
-      ret += stream.read(bytes)
-    return ret
-
-  def skip_spaces(self):
-    c = None
-    while True:
-      c = self.read(1)
-      if c in [None] + spaces:
-        break
-    return c
-
-  def push(self, bytes):
-    self.buf = bytes + self.buf
+from PushbackReader import PushbackReader
 
 class Node(object):
-  def Node(self, tag, children=None):
+  def __init__(self, tag, location, children=None):
+    """
+    Construct a ndoe
+    :param tag: tag (name) of tag
+    :param location: typically stream.location() when the node was first encountered
+    :param children: optional children to assign to the node
+    """
     self.tag = tag
+    self.location = location
     self.attrs = dict()
-    self.children = list()
+    self.children = children or list()
+    self.text = ''
+    self.self_closed = False
+
+  def describe(self):
+    return f'<{self.tag}> from {self.location}'
 
 def get_node():
   node = None
-  c = stdin.skip_spaces()
+  c = stream.skip_spaces()
   if c is not None:
     if c == '<':
       tag = ''
-      while true:
-        c = stdin.read(1)
-        if c in [None, '>'] + spaces:
-          stdin.push(c)
+      location = stream.location()
+      while True:
+        c = stream.read()
+        if c in [None, '>'] + whitespace:
+          stream.push(c)
           break
         else:
+          log.debug(f'Read {c!r} for tag')
           tag += c
-      node = Node(tag)
-      c = stdin.skip_spaces()
-      # work in progress
-    else:
-      node = Node('text')
-      stdin.push(c)
+
+      node = Node(tag, location)
+      log.debug(f'creating {node.describe()}')
+
+      # parse attributes
       while True:
-        c = stdin.read(1)
-        if c in [None, '<']:
-          stdin.push(c)
+        c = stream.skip_spaces()
+        if c in [None, '/', '>']:
           break
-        node.text += c
+
+        # parse out attribute name
+        name = c
+        while True:
+          c = stream.read()
+          if c in [None, '='] + whitespace:
+            break
+          name += c
+
+        if c != '=':
+          log.fatal(f'Missing `=` after attribute {name!r} at {stream.location()}: {c!r}')
+          exit(1)
+
+        # prepare for attribute value
+        value = ''
+        quote = None
+        c = stream.read()
+        if c in '"\'':
+          quote = c
+        else:
+          stream.push(c)
+
+        # parse out attribute value
+        while True:
+          c = stream.read()
+          if c is None:
+            break
+          if not quote and c in whitespace + ['>', '/']:
+            stream.push(c)
+            break
+          elif quote and c == quote:
+            break
+          elif c == '\\':
+            c = stream.read()
+            if c != None and c != quote:
+              value += '\\'
+            value += c
+          else:
+            value += c
+        if not value:
+          log.fatal(f'Missing value after attribute {name!r} at {stream.location()}: {c!r}')
+          exit(1)
+        log.debug(f'creating {name}={value} for {node.describe()}')
+        node.attrs[name] = value
+
+      if c == '/':
+        log.debug(f'{node.describe()} is self-closed')
+        node.self_closed = True
+        c = stream.read()
+
+      if c != '>':
+        log.fatal(f'Missing `>` at end of {node.tag!r} tag at {stream.location()}: {c!r}')
+        exit(1)
+
+      if not node.self_closed:
+        log.debug(f'Seeking inner nodes for {node.describe()}')
+
+        # process inner (child) nodes
+        while True:
+          c = stream.skip_spaces()
+          if c is None:
+            log.warning(f'At {stream.location()}: No </{node.tag}> found for <{node.tag}> started at {node.location}')
+            break
+          if c == '<':
+            c = stream.read()
+            if c == '/':
+              name = ''
+              while True:
+                c = stream.read()
+                if c in [None, '/', '>'] + whitespace:
+                  break
+                name += c
+              if name == node.tag and c == '>':
+                # found the end tag of this node
+                log.debug(f'Found <!{node.tag} for {node.describe()}')
+                break
+              else:
+                # assume this end tag for this node is missing and we're reading the end tag for a previous tag
+                log.warning(f'At {stream.location}: No </{node.tag}> found for <{node.tag}> started at {node.location}')
+                # push the end tag back on the stream so a previous node can be closed
+                stream.push(f'</{name}>')
+                break
+          stream.push(c)
+          log.debug(f'Seeking child node #{len(node.children)} for {node.describe()}')
+          node.children.append(get_node())
+      else:
+        node = Node('text', stream.location())
+        log.debug(f'creating {node.describe()}')
+        stream.push(c)
+        while True:
+          c = stream.read()
+          if c in [None, '<']:
+            stream.push(c)
+            break
+          log.debug(f'Read {c!r} for {node.describe()} at {stream.location()}')
+          node.text += c
     
   return node
   
 def dive(node, indent=0):
   spaces = ' ' * (indent*2)
-  print('{spaces}{node.tag}')
+  print(f'{spaces}{node.tag}', end='')
+  for (name, value) in node.attrs.items():
+    print(f' {name}={value}', end='')
+  print('')
   for child in node.children:
-    dive(child, ident+1)
+    dive(child, indent+1)
 
 parser = argparse.ArgumentParser(description='Parse a nearly-xml document')
+parser.add_argument('file', nargs='?', help='File to process (if not reading from stdin)')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -83,11 +170,8 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
-if sys.stdin.isatty():
-  parser.error('stdin must be redirected')
-
-stdin = Reader(sys.stdin)
-spaces = [c for c in string.whitespace]
+stream = PushbackReader(args.file or sys.stdin, log=log)
+whitespace = [c for c in string.whitespace]
 
 root = None
 while True:
@@ -100,7 +184,7 @@ while True:
   elif root.tag == 'root':
     root.children.append(node)
   else:
-    root = Node('root', children=root)
+    root = Node('root', 'implied-root', children=[root])
     root.children.append(node)
 
 dive(root)

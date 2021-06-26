@@ -22,7 +22,7 @@ class PushbackReader(object):
       self.log = log
     else:
       logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
-      self.log = logging.getLogger()
+      self.log = logging.getLogger('PushbackReader')
       self.log.setLevel(logging.WARNING)
 
     self.whitespace = [c for c in string.whitespace]
@@ -79,8 +79,12 @@ class PushbackReader(object):
     :param expected: The string to push back onto the stream.  Given a string of N characters, the last N characters
     of the stream at the current position must EXACTLY MATCH the expected string or else an exception is thrown.  After
     successfully pushing the string, read(N) would return the exact same string.
+
+    If `expected is None`, the method acts like `expected == ''`
     :return: None
     """
+    if expected is None:
+      expected = ''
     actual = self.buf[max(self.pos-len(expected), 0):self.pos]
     if actual != expected:
       raise Exception(f'Data mismatch: Expected {expected!r} but actual is {actual!r}')
@@ -104,6 +108,14 @@ class PushbackReader(object):
     else:
       column = self.pos - self.newlines[linenum-2]
     return f'{linenum}:{column}'
+
+  def peek(self, expected):
+    """
+    Determine if the upcoming bytes match an expected string
+    :param expected: The string to test the stream against
+    :return: True if the next characters in the stream match the expected string, False otherwise
+    """
+    return self.buf[self.pos:self.pos+len(expected)] == expected
 
 if __name__ == '__main__':
 
