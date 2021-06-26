@@ -2,6 +2,7 @@
 
 import os
 import io
+import sys
 import string
 import logging
 import argparse
@@ -33,6 +34,9 @@ class PushbackReader(object):
     elif isinstance(src, int):
       self.stream = os.fdopen(src, 'r')
     elif isinstance(src, str):
+      if src == sys.stdin and sys.stdin.isatty():
+        log.fatal('stdin must be redirected')
+        exit(1)
       self.stream = open(src, 'r')
     else:
       raise(Exception(f'Unexpected source: {src.__class__.__name__}'))
