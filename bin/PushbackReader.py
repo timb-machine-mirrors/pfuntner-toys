@@ -29,7 +29,7 @@ class PushbackReader(object):
 
     # figure out the type of source and build a stream from it if necessary
     self.src = src
-    log.debug(f'src is a {src.__class__.__name__}')
+    self.log.debug(f'src is a {src.__class__.__name__}')
     if isinstance(src, io.IOBase):
       if src == sys.stdin and sys.stdin.isatty():
         log.fatal('stdin must be redirected')
