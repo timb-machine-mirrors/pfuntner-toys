@@ -47,6 +47,8 @@ timezone_magic = TimezoneMagic()
 
 root = args.root
 regexp = re.compile(args.pattern, flags=re.IGNORECASE if bool((args.ignore_case or 0) % 2) else 0)
+remove_log_suffix_regexp = re.compile(r'\.log$')
+
 now = datetime.datetime.utcnow()
 if args.age:
   args.age *= 24*60*60 # convert to seconds
@@ -63,7 +65,7 @@ if os.path.isdir(root):
               if regexp.search(line):
                 hit = True
                 print(f'{path}: {line}')
-        if not hit and regexp.search(log_name):
+        if not hit and regexp.search(remove_log_suffix_regexp.sub('', log_name)):
           print(f'{path}')
 else:
   parser.error(f'Could not find: {root}')
