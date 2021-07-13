@@ -32,7 +32,8 @@ files = []
 if args.json:
   root = []
 else:
-  table = Table('File', 'Commit', 'Author', 'Date', 'Text')
+  if not args.files_only:
+    table = Table('File', 'Commit', 'Author', 'Date', 'Text')
 
 for curr in gitlog:
   (commit, author, date, text) = (curr['commit'], curr['author'], curr['utc_date'], (curr['messages'] or [''])[0])
@@ -45,10 +46,12 @@ for curr in gitlog:
         'text': text,
         'file': file['name'],
       })
+    elif args.files_only:
+      print(file['name'])
     else:
       table.append(file['name'], commit, author, date, text)
 
 if args.json:
   print(json.dumps(root))
-else:
+elif not args.files_only:
   print(str(table), end='')
