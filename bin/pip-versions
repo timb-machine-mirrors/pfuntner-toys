@@ -7,12 +7,15 @@ import requests
 import argparse
 from distutils.version import StrictVersion
 
-def versions(package_name):
+from table import Table
+
+def pip_info(package_name):
   req = requests.get(f'https://pypi.org/pypi/{package_name}/json')
-  return sorted(list(req.json()['releases'].keys()))
+  return req.json()['releases']
 
 parser = argparse.ArgumentParser(description='Find versions of a Python package (pip)')
 parser.add_argument('packages', metavar='package', nargs='+', help='One or more Python packages to query')
+parser.add_argument('-a', '--all', action='store_true', help='Report additional information in tabular form')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -22,6 +25,16 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
+if args.all:
+  table = Table('Package', 'Version', 'Date', 'Requires')
+
 for package in args.packages:
-  for version in versions(package):
-    print(f'{package} {version}')
+  for (version, info) in pip_info(package).items():
+    if info:
+      if args.all:
+        table.add(package, version, info[0].get('upload_time'), info[0].get('requires_python'))
+      else:
+        print(f'{package} {version}')
+
+if args.all:
+  print(str(table), end='')
