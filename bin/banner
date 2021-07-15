@@ -20,6 +20,12 @@ def toCenter(s, width):
   return s.center(width)
 
 def process(lines):
+  if args.wide_enough:
+    banner_width = max([max([len(word) for word in line.split()]) for line in lines])
+  else:
+    banner_width = (args.width or (BrunoUtils.cols() if args.screen_width else 0) or 2**64) - 4 # we subtract four to take the border into account
+  log.info(f'banner_width: {banner_width!r}')
+
   # reform lines that are too long
   pos = 0
   while pos < len(lines):
@@ -65,7 +71,8 @@ group.add_argument('-r', '--right', dest='right', action='store_true', help='Rig
 
 group = parser.add_mutually_exclusive_group()
 group.add_argument('-w', '--width', type=int, help='Specify the maximum width of the banner')
-group.add_argument('-s', '--screen-width', action='store_true', help='Restrict maximum banner width to screen width')
+group.add_argument('-s', '--screen-width', action='store_true', help='Restrict banner width to screen width')
+group.add_argument('-W', '--wide-enough', action='store_true', help='Restrict banner to longest word - useful when you have long words')
 
 parser.add_argument('--color', type=Color.get_color,
                     help='Choose a color: {colors}'.format(colors=', '.join(Color.colors.keys())))
@@ -114,8 +121,6 @@ if (not args) and sys.stdin.isatty():
 
 signal.signal(signal.SIGINT, reset)
 Color.print_color(args.color)
-
-banner_width = (args.width or (BrunoUtils.cols() if args.screen_width else 0) or 2**64) - 4 # we subtract four to take the border into account
 
 if args.args:
   process([' '.join(args.args)])
