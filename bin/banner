@@ -116,8 +116,8 @@ if not box:
   bottomLeftCorner = fillChar
   bottomRightCorner = fillChar
 
-if (not args) and sys.stdin.isatty():
-  syntax("Text must be on the command line or redirected through stdin")
+if (not args.args) and sys.stdin.isatty():
+  parser.error("Text must be on the command line or redirected through stdin")
 
 signal.signal(signal.SIGINT, reset)
 Color.print_color(args.color)
