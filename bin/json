@@ -151,6 +151,9 @@ def linearWriter(root):
   if isinstance(root, list):
     for datum in root:
       print(json.dumps(datum))
+  elif isinstance(root, dict):
+    for (key, value) in root.items():
+      print({key: value})
   else:
     sys.stderr.write('Can only use --linear on lists\n')
     exit(1)
