@@ -4,6 +4,7 @@
 import os
 import re
 import sys
+import hashlib
 import logging
 import argparse
 import datetime
@@ -52,6 +53,21 @@ def get_version(s):
       version = remove_headings.sub('', remove_trailers.sub('', token))
       break
   return version
+
+def get_hash(path):
+  ret = ''
+  if os.path.exists(path):
+    stream = open(path, 'rb')
+    hash = hashlib.md5()
+    while True:
+      c = stream.read(1)
+      if c:
+        hash.update(c)
+      else:
+        break
+    stream.close()
+    ret = hash.hexdigest()
+  return ret
 
 def look_for(target, dir=None):
   global table
@@ -103,7 +119,7 @@ def look_for(target, dir=None):
     if args.version:
       print(version)
     else:
-      table.add(target, target if dir is None else dir, version)
+      table.add(target, target if dir is None else dir, version, get_hash(path))
     return True
   else:
     return False
@@ -146,7 +162,7 @@ messages_regexp = re.compile(r'^ {4}(.*)$')
 cwd = os.getcwd()
 
 if not args.version:
-  table = Table('Name', 'Location', 'Version')
+  table = Table('Name', 'Location', 'Version', 'Checksum')
 
 for target in args.targets:
   found = False
@@ -170,7 +186,7 @@ for target in args.targets:
     if args.version:
       print('0')
     else:
-      table.add(target, 'n/a', '')
+      table.add(target, 'n/a', '', '')
 
 if not args.version:
   table.close()
