@@ -30,6 +30,7 @@ class Table(object):
 
 def pip_info(package_name):
   req = requests.get(f'https://pypi.org/pypi/{package_name}/json')
+  log.debug(f'text: {req.text}')
   return req.json()['releases']
 
 parser = argparse.ArgumentParser(description='Find versions of a Python package (pip)')

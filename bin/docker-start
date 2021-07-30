@@ -28,7 +28,11 @@ def run(cmd, shell=False, capture=True):
 
 parser = argparse.ArgumentParser(description='Start Docker container')
 parser.add_argument('image', metavar='image', help='Docker image')
-parser.add_argument('-n', '--name', help='Name to use for container')
+
+group = parser.add_mutually_exclusive_group()
+group.add_argument('-n', '--name', help='Name to use for container')
+group.add_argument('-s', '--simple-name', action='store_true', help='Mangle image name into container name')
+
 parser.add_argument('--networking', action='store_true', help='Use host networking')
 parser.add_argument('-p', '--privileged', action='store_true', help='Run container in privileged mode')
 parser.add_argument('-d', '--dry-run', action='count', help='Do not execute Docker command')
@@ -48,6 +52,9 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
 24b06bf7279a        ubuntu:latest       "/bin/bash"         37 seconds ago      Up 35 seconds                           bruno
 """
+
+if args.simple_name:
+  args.name = 'docker-' + args.image.replace(':', '-').replace('/', '-')
 
 (rc, stdout, stderr) = run(['docker', 'images', args.image])
 if len(stdout.splitlines()) == 1:
