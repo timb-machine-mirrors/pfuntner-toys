@@ -4,7 +4,8 @@ import sys
 import logging
 import argparse
 
-from PyPDF2 import PdfFileReader
+# from PyPDF2 import PdfFileReader
+from pdfreader import PDFDocument, SimplePDFViewer
 
 parser = argparse.ArgumentParser(description='Read text from PDF documents')
 parser.add_argument('file', help='Convert PDF file to text')
@@ -19,15 +20,18 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 text = ''
 
 with open(args.file, 'rb') as stream:
-  reader = PdfFileReader(stream)
-  for page_num in range(reader.numPages):
-    text += reader.getPage(page_num).extractText()
+  for canvas in SimplePDFViewer(stream):
+    print(''.join(canvas.strings), end='')
+print()
 
-c = 0
-while c+1 < len(text):
-  if text[c] == '\n' and text[c+1] != '\n':
-    text = text[:c] + text[c+1:]
-  else:
-    c += 1
-  
-sys.stdout.write(text)
+#   for page_num in range(reader.numPages):
+#     text += reader.getPage(page_num).extractText()
+# 
+# c = 0
+# while c+1 < len(text):
+#   if text[c] == '\n' and text[c+1] != '\n':
+#     text = text[:c] + text[c+1:]
+#   else:
+#     c += 1
+#   
+# sys.stdout.write(text)
