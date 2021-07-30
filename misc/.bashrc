@@ -74,6 +74,8 @@ alias time=ptime
 alias table=table.py
 alias gitbranch=currbranch
 alias instances=instances.py
+alias docker-containers='docker ps --format "{{.Names}}"'
+alias kill-docker-containers='docker ps -qa | xargs -r docker rm -f'
 
 alias newdir='dir=$(date +%Y%m%d%H%M%S%N) && mkdir -v $dir && cd $dir'
 alias olddir='. olddir.sh'
