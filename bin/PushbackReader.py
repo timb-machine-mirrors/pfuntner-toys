@@ -47,6 +47,7 @@ class PushbackReader(object):
 
     # self.newlines keeps track of where the newlines are in the file which is used by the location() method
     self.newlines = [curr for curr in range(len(self.buf)) if self.buf[curr] == '\n']
+    log.debug(f'newlines: {self.newlines}')
 
   def read(self, bytes=1):
     """
@@ -98,13 +99,13 @@ class PushbackReader(object):
     linenum = 0
     while linenum < len(self.newlines):
       self.log.debug(f'{self.pos} < {self.newlines[linenum]} ?')
-      if self.pos < self.newlines[linenum]:
+      if self.pos <= self.newlines[linenum]:
         break
       linenum += 1
 
     linenum = min(linenum + 1, len(self.newlines))
     if linenum == 1:
-      column = 1 if self.pos == 0 else self.pos
+      column = self.pos + 1
     else:
       column = self.pos - self.newlines[linenum-2]
     return f'{linenum}:{column}'
@@ -128,32 +129,45 @@ if __name__ == '__main__':
   log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
   (r, w) = os.pipe()
-  os.fdopen(w, 'w').write('  This is a\n  test\n')
+  # os.fdopen(w, 'w').write('  This is a\n  test\n')
+  #
+  # reader = PushbackReader(r, log=log)
+  #
+  # print(f'pos: {reader.pos}')
+  # print(f'location: {reader.location()}')
+  # content = reader.read(64)
+  # print(f'content: {content!r}')
+  # print(f'pos: {reader.pos}')
+  # print(f'location: {reader.location()}')
+  #
+  # reader.push(content)
+  # content = reader.read(64)
+  # print(f'content: {content!r}')
+  # print(f'pos: {reader.pos}')
+  #
+  # reader.push(content)
+  # c = reader.skip_spaces()
+  # print(f'c: {c!r}')
+  # print(f'pos: {reader.pos}')
+  # print(f'location: {reader.location()}')
+  #
+  # c = reader.read()
+  # print(f'c: {c!r}')
+  # print(f'pos: {reader.pos}')
+  # print(f'location: {reader.location()}')
+  #
+  # print('This will thrown an exception because the expected string will not match the actual string')
+  # reader.push(content)
+
+  os.fdopen(w, 'w').write('''<html>
+  <p>This is a test
+</html>
+''')
 
   reader = PushbackReader(r, log=log)
-
-  print(f'pos: {reader.pos}')
-  print(f'location: {reader.location()}')
-  content = reader.read(64)
-  print(f'content: {content!r}')
-  print(f'pos: {reader.pos}')
-  print(f'location: {reader.location()}')
-
-  reader.push(content)
-  content = reader.read(64)
-  print(f'content: {content!r}')
-  print(f'pos: {reader.pos}')
-
-  reader.push(content)
-  c = reader.skip_spaces()
-  print(f'c: {c!r}')
-  print(f'pos: {reader.pos}')
-  print(f'location: {reader.location()}')
-
-  c = reader.read()
-  print(f'c: {c!r}')
-  print(f'pos: {reader.pos}')
-  print(f'location: {reader.location()}')
-
-  print('This will thrown an exception because the expected string will not match the actual string')
-  reader.push(content)
+  while True:
+    location = reader.location()
+    c = reader.read()
+    if not c:
+      break
+    print(f'{c!r} {location}')
