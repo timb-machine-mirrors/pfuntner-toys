@@ -68,10 +68,12 @@ class PushbackReader(object):
     :return: A single character for the next non-whitespace character.  The method returns None if it is at EOF
     """
     c = None
+    location = self.location()
     while True:
       c = self.read()
       if c not in self.whitespace:
         break
+    self.log.debug(f'Read {c!r} at {location}')
     return c
 
   def push(self, expected):
