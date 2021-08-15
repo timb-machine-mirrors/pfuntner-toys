@@ -77,6 +77,16 @@ class BrunoUtils:
 
     return cls.extract('stty size < /dev/tty', '\d+\s+(\d+)', 80)
 
+  @classmethod
+  def rows(cls):
+    """
+      This is designed to return the number of rows in the user's display.
+
+      Return value: The number of rows as an integer.
+    """
+
+    return cls.extract('stty size < /dev/tty', '(\d+)\s+\d+', 24)
+
   @staticmethod
   def divmod(a, b):
     x = int(a/b)
