@@ -151,7 +151,7 @@ version_regexp = re.compile(r'\d\.')
 remove_headings = re.compile(r'^"')
 
 # This regular expression removes trash at end of the version
-remove_trailers = re.compile(r'[.,"]+$')
+remove_trailers = re.compile(r'[\].,"]+$')
 
 # regular expression for processing `git log` output
 commit_regexp = re.compile(r'^commit\s+([0-9a-f]{7})(?:[0-9a-f]{33})$') # this only retains the short SHA1: The first 7 characters
