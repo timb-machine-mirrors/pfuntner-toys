@@ -24,8 +24,11 @@ class Node(object):
     self.text = ''
     self.self_closed = False
 
-  def describe(self):
-    return f'<{self.tag}> from {self.location}'
+  def __str__(self):
+    start_tag = repr(self.text) if self.tag == 'text' else f'<{self.tag}'
+    end_tag = '' if self.tag == 'text' else '>'
+    attrs = ' '.join([f'{key}={value!r}' for (key, value) in self.attrs.items()])
+    return f'''{start_tag}{' ' if attrs else ''}{attrs}{end_tag} from {self.location}'''
 
 def get_node():
   node = None
@@ -44,7 +47,7 @@ def get_node():
           tag += c
 
       node = Node(tag, location)
-      log.debug(f'creating {node.describe()}')
+      log.debug(f'creating {node!s}')
 
       # parse attributes
       while True:
@@ -93,11 +96,11 @@ def get_node():
         if not value:
           log.fatal(f'Missing value after attribute {name!r} at {stream.location()}: {c!r}')
           exit(1)
-        log.debug(f'creating {name}={value} for {node.describe()}')
+        log.debug(f'creating {name}={value} for {node!s}')
         node.attrs[name] = value
 
       if c == '/':
-        log.debug(f'{node.describe()} is self-closed')
+        log.debug(f'{node!s} is self-closed')
         node.self_closed = True
         c = stream.read()
 
@@ -106,11 +109,12 @@ def get_node():
         exit(1)
 
       if not node.self_closed:
-        log.debug(f'Seeking inner nodes for {node.describe()}')
+        log.debug(f'Seeking inner nodes for {node!s} at {stream.location()}')
 
         # process inner (child) nodes
         while True:
           c = stream.skip_spaces()
+          log.debug(f'First character in top of inner nodes loop: {c!r}')
           if c is None:
             log.warning(f'At {stream.location()}: No </{node.tag}> found for <{node.tag}> started at {node.location}')
             break
@@ -125,39 +129,45 @@ def get_node():
                 name += c
               if name == node.tag and c == '>':
                 # found the end tag of this node
-                log.debug(f'Found <!{node.tag} for {node.describe()}')
+                log.debug(f'Found </{node.tag}> for {node!s}')
                 break
               else:
                 # assume this end tag for this node is missing and we're reading the end tag for a previous tag
-                log.warning(f'At {stream.location}: No </{node.tag}> found for <{node.tag}> started at {node.location}')
+                log.warning(f'At {stream.location()}: No </{node.tag}> found for <{node.tag}> started at {node.location}')
                 # push the end tag back on the stream so a previous node can be closed
                 stream.push(f'</{name}>')
                 break
-          stream.push(c)
-          log.debug(f'Seeking child node #{len(node.children)} for {node.describe()}')
-          node.children.append(get_node())
-      else:
-        node = Node('text', stream.location())
-        log.debug(f'creating {node.describe()}')
-        stream.push(c)
-        while True:
-          c = stream.read()
-          if c in [None, '<']:
+            else:
+              stream.push(c)
+            stream.push('<')
+          else:
             stream.push(c)
-            break
-          log.debug(f'Read {c!r} for {node.describe()} at {stream.location()}')
-          node.text += c
+          log.debug(f'Seeking child node #{len(node.children)} for {node!s}')
+          node.children.append(get_node())
+    else:
+      # we don't have a tag so we'll assume it's text
+      node = Node('text', stream.location())
+      log.debug(f'creating {node!s}')
+      stream.push(c)
+      while True:
+        c = stream.read()
+        if c in [None, '<']:
+          stream.push(c)
+          break
+        log.debug(f'Read {c!r} for {node!s} at {stream.location()}')
+        node.text += c
     
   return node
   
-def dive(node, indent=0):
-  spaces = ' ' * (indent*2)
-  print(f'{spaces}{node.tag}', end='')
-  for (name, value) in node.attrs.items():
-    print(f' {name}={value}', end='')
-  print('')
-  for child in node.children:
-    dive(child, indent+1)
+def dive(node, writer=print, indent=0):
+  if node:
+    spaces = ' ' * (indent*2)
+    writer(f'{spaces}{node!s}')
+    # for (name, value) in node.attrs.items():
+    #   print(f' {name}={value}', end='')
+    # print('')
+    for child in node.children:
+      dive(child, writer, indent+1)
 
 parser = argparse.ArgumentParser(description='Parse a nearly-xml document')
 parser.add_argument('file', nargs='?', help='File to process (if not reading from stdin)')
@@ -175,15 +185,20 @@ whitespace = [c for c in string.whitespace]
 
 root = None
 while True:
+  dive(root, writer=log.debug)
+
   node = get_node()
   if node is None:
     break
 
   if root is None:
+    log.debug('initial root')
     root = node
   elif root.tag == 'root':
+    log.debug('adding to root')
     root.children.append(node)
   else:
+    log.debug('creating an implied root')
     root = Node('root', 'implied-root', children=[root])
     root.children.append(node)
 
