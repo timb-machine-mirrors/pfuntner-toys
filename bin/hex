@@ -10,13 +10,13 @@ def process(arg):
   if isinstance(arg, str):
     if os.path.exists(arg) and not os.path.isdir(arg):
       try:
-        stream = open(arg, 'rb')
+        stream = open(arg, 'r' if args.text else 'rb')
       except Exception as e:
         log.warning('Cannot open {arg!r}: {e!s}'.format(**locals()))
     else:
       log.warning('Not a file: {arg!r}'.format(**locals()))
   else:
-    stream = os.fdopen(sys.stdin.fileno(), 'rb')
+    stream = sys.stdin if args.text else os.fdopen(sys.stdin.fileno(), 'rb')
 
   if stream:
     pos = 0
@@ -50,6 +50,7 @@ def process(arg):
 parser = argparse.ArgumentParser(description='Display files and data in hex and character form')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 parser.add_argument('-8', dest='eight_byte_width', action='store_true', help='Display eight characters at a time')
+parser.add_argument('-t', '--text', action='store_true', help='Process stream as text')
 parser.add_argument('files', metavar='file', nargs='*', help='Zero or more files')
 args = parser.parse_args()
 
