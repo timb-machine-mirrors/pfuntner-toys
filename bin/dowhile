@@ -7,6 +7,12 @@ import logging
 import argparse
 import subprocess
 
+def banner(s):
+  edge = '#' * (len(s) + 4)
+  print(edge)
+  print(f'# {s} #')
+  print(edge)
+
 def now():
   """
   Return current number of seconds since the epoch
@@ -46,9 +52,11 @@ if args.include:
 if args.exclude:
   args.exclude = re.compile(args.exclude)
 
+iteration = 0
 done = False
 while not done:
-  print(formatTime())
+  iteration += 1
+  banner(f'{iteration}: {formatTime()}')
   log.info(args.cmd)
   p = subprocess.Popen(args.cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   stdout = p.stdout.read().decode('utf-8')
@@ -58,16 +66,16 @@ while not done:
   sys.stderr.write(stderr)
   print('')
   if args.include and not args.include.search(str(stdout + stderr)):
-    log.info('Command does not have {args.include.pattern!r}'.format(**locals()))
+    log.info(f'Command does not have {args.include.pattern!r}')
     break
   elif args.exclude and args.exclude.search(str(stdout + stderr)):
-    log.info('Command has {args.exclude.pattern!r}'.format(**locals()))
+    log.info(f'Command has {args.exclude.pattern!r}')
     break
   elif args.successful and rc != 0:
-    log.info('Command exited with {rc}'.format(**locals()))
+    log.info(f'Command exited with {rc}')
     break
   elif args.fail and rc == 0:
-    log.info('Command exited with {rc}'.format(**locals()))
+    log.info(f'Command exited with {rc}')
     break
 
   time.sleep(args.delay)
