@@ -63,39 +63,41 @@ def get_node():
             break
           name += c
 
-        if c != '=':
-          log.fatal(f'Missing `=` after attribute {name!r} at {stream.location()}: {c!r}')
-          exit(1)
-
-        # prepare for attribute value
         value = ''
-        quote = None
-        c = stream.read()
-        if c in '"\'':
-          quote = c
+        if c == '=':
+          # prepare for attribute value
+          quote = None
+          c = stream.read()
+          if c in '"\'':
+            quote = c
+          else:
+            stream.push(c)
+
+          # parse out attribute value
+          while True:
+            c = stream.read()
+            if c is None:
+              break
+            if not quote and c in whitespace + ['>', '/']:
+              stream.push(c)
+              break
+            elif quote and c == quote:
+              break
+            elif c == '\\':
+              c = stream.read()
+              if c != None and c != quote:
+                value += '\\'
+              value += c
+            else:
+              value += c
         else:
+          log.warning(f'No `=` after attribute {name!r} at {stream.location()}: {c!r}')
           stream.push(c)
 
-        # parse out attribute value
-        while True:
-          c = stream.read()
-          if c is None:
-            break
-          if not quote and c in whitespace + ['>', '/']:
-            stream.push(c)
-            break
-          elif quote and c == quote:
-            break
-          elif c == '\\':
-            c = stream.read()
-            if c != None and c != quote:
-              value += '\\'
-            value += c
-          else:
-            value += c
         if not value:
-          log.fatal(f'Missing value after attribute {name!r} at {stream.location()}: {c!r}')
-          exit(1)
+          log.warning(f'Assuming {name}=true at {stream.location()}: {c!r}')
+          value = True
+
         log.debug(f'creating {name}={value} for {node!s}')
         node.attrs[name] = value
 

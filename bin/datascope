@@ -8,6 +8,7 @@ import argparse
 parser = argparse.ArgumentParser(description='Data scope')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 parser.add_argument('-l', '--lines', action='store_true', help='Report by lines')
+parser.add_argument('-t', '--text', action='store_true', help='Process stream as text')
 args = parser.parse_args()
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
@@ -18,7 +19,7 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 if sys.stdin.isatty():
   parser.error("stdin must be redirected")
 
-stream = os.fdopen(0, 'rb')
+stream = os.fdopen(0, 'r' if args.text else 'rb')
 chars = 1
 pos = 1
 linenum = 1

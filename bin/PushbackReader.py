@@ -43,6 +43,52 @@ class PushbackReader(object):
       raise(Exception(f'Unexpected source: {src.__class__.__name__}'))
 
     self.buf = self.stream.read()
+    """
+      I've seen instances of multibyte sequences in the place of double quotes.  On 2021-08-14,
+      http://cnn.com/index.html contained:
+
+        .
+        .
+        .
+        <link rel="dns-prefetch" href="//fastlane-adv.rubiconproject.com" /> ...
+        <link rel="dns-prefetch" href=”//ib.adnxs.com”/> ...
+        <link rel="dns-prefetch" href=”//prebid.adnxs.com”/>
+        .
+        .
+        .
+
+      I used my hexes tool to look more carefully at the data and saw:
+
+        00001085 000001 00001085 0x68 104 0150 'h'
+        00001086 000001 00001086 0x72 114 0162 'r'
+        00001087 000001 00001087 0x65 101 0145 'e'
+        00001088 000001 00001088 0x66 102 0146 'f'
+        00001089 000001 00001089 0x3d  61 0075 '='
+        00001090 000001 00001090 0xe2 226 0342 'â'
+        00001091 000001 00001091 0x80 128 0200 '\x80'
+        00001092 000001 00001092 0x9d 157 0235 '\x9d'
+        00001093 000001 00001093 0x2f  47 0057 '/'
+        00001094 000001 00001094 0x2f  47 0057 '/'
+        00001095 000001 00001095 0x69 105 0151 'i'
+        00001096 000001 00001096 0x62  98 0142 'b'
+        00001097 000001 00001097 0x2e  46 0056 '.'
+        00001098 000001 00001098 0x61  97 0141 'a'
+        00001099 000001 00001099 0x64 100 0144 'd'
+        00001100 000001 00001100 0x6e 110 0156 'n'
+        00001101 000001 00001101 0x78 120 0170 'x'
+        00001102 000001 00001102 0x73 115 0163 's'
+        00001103 000001 00001103 0x2e  46 0056 '.'
+        00001104 000001 00001104 0x63  99 0143 'c'
+        00001105 000001 00001105 0x6f 111 0157 'o'
+        00001106 000001 00001106 0x6d 109 0155 'm'
+        00001107 000001 00001107 0xe2 226 0342 'â'
+        00001108 000001 00001108 0x80 128 0200 '\x80'
+        00001109 000001 00001109 0x9d 157 0235 '\x9d'
+
+      I will turn those sequences into double quotes.
+    """
+    self.buf = self.buf.replace(chr(8221), '"')
+
     self.pos = 0
 
     # self.newlines keeps track of where the newlines are in the file which is used by the location() method
@@ -125,7 +171,7 @@ if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Test PushbackReader class')
   parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
   args = parser.parse_args()
-  
+
   logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
   log = logging.getLogger()
   log.setLevel(logging.WARNING - (args.verbose or 0)*10)
