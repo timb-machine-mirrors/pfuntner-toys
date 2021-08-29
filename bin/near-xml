@@ -25,6 +25,7 @@ class Node(object):
     self.text = ''
     self.special = None
     self.self_closed = False
+    self.valid = not self.tag.startswith('/')
 
   def __str__(self):
     if self.tag == 'text':
@@ -36,9 +37,10 @@ class Node(object):
       end_tag = '>'
       children = f', {len(self.children)} children'
 
+    invalid = '' if self.valid else 'INVALID '
     attrs = ' '.join([f'{key}={value!r}' for (key, value) in self.attrs.items()])
 
-    return f'''{start_tag}{' ' if attrs else ''}{attrs}{end_tag}{children} from {self.location}'''
+    return f'''{invalid}{start_tag}{' ' if attrs else ''}{attrs}{end_tag}{children} from {self.location}'''
 
   def equals(self, name):
     return self.tag == name.lower()
@@ -72,8 +74,9 @@ def get_node():
       while True:
         c = stream.read()
         if c == '>' and tag.startswith('/'):
-          log.warning(f'Ignoring unmatched <{tag}> at {location}')
-          tag = ''
+          log.warning(f'Ignoring unmatched </{tag} at {location}')
+          node = Node(tag, location)
+          return node
         if c in [None, '>'] + whitespace:
           stream.push(c)
           break
@@ -191,7 +194,9 @@ def get_node():
             else:
               stream.push(c)
             log.debug(f'Seeking child node #{len(node.children)} for {node!s}')
-            node.children.append(get_node())
+            child = get_node()
+            if child.valid:
+              node.children.append(child)
     else:
       # we don't have a tag so we'll assume it's text
       node = Node('text', stream.location())
@@ -260,16 +265,17 @@ while True:
   if node is None:
     break
 
-  if root is None:
-    log.debug('initial root')
-    root = node
-  elif root.tag == 'root':
-    log.debug('adding to root')
-    root.children.append(node)
-  else:
-    log.debug('creating an implied root')
-    root = Node('root', 'implied-root', children=[root])
-    root.children.append(node)
+  if node.valid:
+    if root is None:
+      log.debug('initial root')
+      root = node
+    elif root.tag == 'root':
+      log.debug('adding to root')
+      root.children.append(node)
+    else:
+      log.debug('creating an implied root')
+      root = Node('root', 'implied-root', children=[root])
+      root.children.append(node)
 
 if args.json:
   root = to_json(root)
