@@ -2,6 +2,7 @@
 
 import re
 import sys
+import json
 import signal
 import string
 import logging
@@ -17,18 +18,49 @@ class Node(object):
     :param location: typically stream.location() when the node was first encountered
     :param children: optional children to assign to the node
     """
-    self.tag = tag
+    self.tag = tag.lower()
     self.location = location
     self.attrs = dict()
     self.children = children or list()
     self.text = ''
+    self.special = None
     self.self_closed = False
 
   def __str__(self):
-    start_tag = repr(self.text) if self.tag == 'text' else f'<{self.tag}'
-    end_tag = '' if self.tag == 'text' else '>'
+    if self.tag == 'text':
+      start_tag = repr(self.text)
+      end_tag = ''
+      children = ''
+    else:
+      start_tag = f'<{self.tag}'
+      end_tag = '>'
+      children = f', {len(self.children)} children'
+
     attrs = ' '.join([f'{key}={value!r}' for (key, value) in self.attrs.items()])
-    return f'''{start_tag}{' ' if attrs else ''}{attrs}{end_tag} from {self.location}'''
+
+    return f'''{start_tag}{' ' if attrs else ''}{attrs}{end_tag}{children} from {self.location}'''
+
+  def equals(self, name):
+    return self.tag == name.lower()
+
+def consume_special_tag(node):
+  """
+  consume all text until end-tag
+  :param node: The special node object (script, style) to receive the text
+  :return: None
+  """
+
+  node.special = ''
+  end_tag = f'</{node.tag}>'
+  while node.special[-len(end_tag):] != end_tag:
+    c = stream.read()
+    if c:
+      node.special += c
+    else:
+      break
+
+  if node.special[-len(end_tag):] == end_tag:
+    node.special = node.special[:-len(end_tag)]
 
 def get_node():
   node = None
@@ -39,6 +71,9 @@ def get_node():
       location = stream.location()
       while True:
         c = stream.read()
+        if c == '>' and tag.startswith('/'):
+          log.warning(f'Ignoring unmatched <{tag}> at {location}')
+          tag = ''
         if c in [None, '>'] + whitespace:
           stream.push(c)
           break
@@ -47,7 +82,7 @@ def get_node():
           tag += c
 
       node = Node(tag, location)
-      log.debug(f'creating {node!s}')
+      log.debug(f'created {node!s}')
 
       # parse attributes
       while True:
@@ -59,7 +94,7 @@ def get_node():
         name = c
         while True:
           c = stream.read()
-          if c in [None, '='] + whitespace:
+          if c in [None, '=', '>'] + whitespace:
             break
           name += c
 
@@ -78,18 +113,24 @@ def get_node():
             c = stream.read()
             if c is None:
               break
-            if not quote and c in whitespace + ['>', '/']:
-              stream.push(c)
-              break
-            elif quote and c == quote:
-              break
-            elif c == '\\':
-              c = stream.read()
-              if c != None and c != quote:
-                value += '\\'
-              value += c
-            else:
-              value += c
+            if quote:
+              if c == quote:
+                break
+              if c == '\\':
+                c = stream.read()
+                if c != None and c != quote:
+                  value += '\\'
+            else: # not quoted
+              if c in whitespace + ['>']:
+                stream.push(c)
+                break
+              if c == '/':
+                next = stream.read()
+                stream.push(next)
+                if next == '>':
+                  stream.push(c)
+                  break
+            value += c
         else:
           log.warning(f'No `=` after attribute {name!r} at {stream.location()}: {c!r}')
           stream.push(c)
@@ -116,36 +157,41 @@ def get_node():
         # process inner (child) nodes
         while True:
           c = stream.skip_spaces()
-          log.debug(f'First character in top of inner nodes loop: {c!r}')
-          if c is None:
-            log.warning(f'At {stream.location()}: No </{node.tag}> found for <{node.tag}> started at {node.location}')
-            break
-          if c == '<':
-            c = stream.read()
-            if c == '/':
-              name = ''
-              while True:
-                c = stream.read()
-                if c in [None, '/', '>'] + whitespace:
+          if node.tag in ['script', 'style']:
+            stream.push(c)
+            consume_special_tag(node)
+            break # a script/style node only contains text, no other children, and is always explicitly ended
+          else:
+            log.debug(f'First character in top of inner nodes loop: {c!r}')
+            if c is None:
+              log.warning(f'At {stream.location()}: No </{node.tag}> found for <{node.tag}> started at {node.location}')
+              break
+            if c == '<':
+              c = stream.read()
+              if c == '/':
+                name = ''
+                while True:
+                  c = stream.read()
+                  if c in [None, '/', '>'] + whitespace:
+                    break
+                  name += c
+                if node.equals(name) and c == '>':
+                  # found the end tag of this node
+                  log.debug(f'Found </{node.tag}> for {node!s}')
                   break
-                name += c
-              if name == node.tag and c == '>':
-                # found the end tag of this node
-                log.debug(f'Found </{node.tag}> for {node!s}')
-                break
+                else:
+                  # assume this end tag for this node is missing and we're reading the end tag for a previous tag
+                  log.warning(f'At {stream.location()}: No </{node.tag}> found for <{node.tag}> started at {node.location}')
+                  # push the end tag back on the stream so a previous node can be closed
+                  stream.push(f'</{name}>')
+                  break
               else:
-                # assume this end tag for this node is missing and we're reading the end tag for a previous tag
-                log.warning(f'At {stream.location()}: No </{node.tag}> found for <{node.tag}> started at {node.location}')
-                # push the end tag back on the stream so a previous node can be closed
-                stream.push(f'</{name}>')
-                break
+                stream.push(c)
+              stream.push('<')
             else:
               stream.push(c)
-            stream.push('<')
-          else:
-            stream.push(c)
-          log.debug(f'Seeking child node #{len(node.children)} for {node!s}')
-          node.children.append(get_node())
+            log.debug(f'Seeking child node #{len(node.children)} for {node!s}')
+            node.children.append(get_node())
     else:
       # we don't have a tag so we'll assume it's text
       node = Node('text', stream.location())
@@ -158,7 +204,8 @@ def get_node():
           break
         log.debug(f'Read {c!r} for {node!s} at {stream.location()}')
         node.text += c
-    
+
+  log.info(str(node))
   return node
   
 def dive(node, writer=print, indent=0):
@@ -171,8 +218,28 @@ def dive(node, writer=print, indent=0):
     for child in node.children:
       dive(child, writer, indent+1)
 
+def to_json(root):
+  if root.tag == 'text':
+    ret = root.text
+  else:
+    if len(root.children) == 1 and root.children[0].tag == 'text':
+      ret = {root.tag: root.children[0].text}
+    else:
+      ret = {root.tag: dict()}
+      for (name, value) in root.attrs.items():
+        ret[root.tag][name] = value
+
+      if root.special:
+        ret[root.tag]['special'] = root.special
+
+      ret[root.tag]['children'] = list()
+      for child in root.children:
+        ret[root.tag]['children'].append(to_json(child))
+  return ret
+
 parser = argparse.ArgumentParser(description='Parse a nearly-xml document')
 parser.add_argument('file', nargs='?', help='File to process (if not reading from stdin)')
+parser.add_argument('-j', '--json', action='store_true', help='Generate JSON output')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -204,4 +271,8 @@ while True:
     root = Node('root', 'implied-root', children=[root])
     root.children.append(node)
 
-dive(root)
+if args.json:
+  root = to_json(root)
+  json.dump(root, sys.stdout)
+else:
+  dive(root)
