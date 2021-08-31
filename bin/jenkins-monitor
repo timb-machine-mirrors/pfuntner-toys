@@ -6,6 +6,7 @@ import logging
 import requests
 import argparse
 import datetime
+import binascii
 
 from table import Table
 
@@ -42,7 +43,7 @@ for job in args.jobs:
       log.debug(f'json: {attrs!s}')
       started = datetime.datetime.fromtimestamp(attrs['timestamp']/1000.0)
       duration = datetime.timedelta(seconds=attrs['duration']/1000.0) if attrs['duration'] else datetime.datetime.now()-started
-      table.add(attrs['fullDisplayName'], (attrs['result'] or 'Running').title(), started, duration)
+      table.add(' '.join(attrs['fullDisplayName'].split()[-2:]), (attrs['result'] or 'Running').title(), started, duration)
     else:
       table.add(job, req.text, '', '')
 
