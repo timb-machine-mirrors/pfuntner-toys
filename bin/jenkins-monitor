@@ -1,13 +1,30 @@
 #! /usr/bin/env python3
 
 import os
+import sys
 import json
 import logging
 import requests
 import argparse
 import datetime
+import subprocess
 
-from table import Table
+class Table(object):
+  def __init__(self, *args):
+    if len(args) == 1 and type(args[0]) in (list, tuple):
+      self.headings = args[0]
+    else:
+      self.headings = args
+
+    self.p = subprocess.Popen(['column', '-t', '-s\t'], stdin=subprocess.PIPE, text=True)
+    self.p.stdin.write('\t'.join([str(heading) for heading in self.headings]) + '\n')
+
+  def add(self, *args):
+    self.p.stdin.write('\t'.join([str(arg) for arg in args]) + '\n')
+
+  def close(self):
+    self.p.stdin.close()
+    self.p.wait()
 
 parser = argparse.ArgumentParser(description='Jenkins job monitor', formatter_class=argparse.RawTextHelpFormatter, epilog="""The credentials must be in the form of "user:token" where:
 
@@ -65,4 +82,4 @@ for job in args.jobs:
     else:
       table.add(job, req.text, '', '')
 
-print(str(table), end='')
+table.close()
