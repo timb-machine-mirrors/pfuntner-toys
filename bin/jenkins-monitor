@@ -10,8 +10,26 @@ import binascii
 
 from table import Table
 
-parser = argparse.ArgumentParser(description='Jenkins job monitor')
-parser.add_argument('-c', '--credentials', '--creds', help='Jenkins credentials (eg. user@token)')
+parser = argparse.ArgumentParser(description='Jenkins job monitor', formatter_class=argparse.RawTextHelpFormatter, epilog="""The credentials must be in the form of "user:token" where:
+
+  user: Your Jenkins userid
+  token: a 34-digit hex string
+
+You can create a token through the Jenkins GUI:
+  1) Log into Jenkins
+  2) Click your name/user in the upper right corner of the page
+  3) Look at the URL in the browser to identify your Jenkins user.  For example, my URL is something like "https://foo.bar.com/jenkins/foobar/user/jpfuntne/configure" so my user is jpfuntne.
+  4) Click the "Configure" link on left side
+  5) Click the "Create new Token" button
+  6) Name the token and press the "Generate" button
+  7) Copy the token and make a note of it
+
+The credentials can be:
+  - expressed on the command line
+  - set as an environment variable, perhaps in your shell profile""")
+
+parser.add_argument('-c', '--credentials', '--creds', help='Jenkins credentials (eg. user:token)')
+
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 parser.add_argument('jobs', metavar='job', nargs='+', help='URLs to one or more Jenkins job')
 args = parser.parse_args()
@@ -20,9 +38,10 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
-creds = tuple((args.credentials or os.environ.get('JENKINS_CREDENTIALS')).split(':'))
+creds = args.credentials or os.environ.get('JENKINS_CREDENTIALS')
 if not creds:
-  parser.error('Jenkins credentials not present')
+  parser.error('Jenkins credentials are not present')
+creds = tuple(creds.split(':'))
 
 table = Table('Job', 'Status', 'Started', 'Duration')
 
