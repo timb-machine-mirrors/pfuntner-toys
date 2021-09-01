@@ -26,6 +26,10 @@ class Table(object):
     self.p.stdin.close()
     self.p.wait()
 
+def short_time(timestamp):
+  assert isinstance(timestamp, datetime.datetime) or isinstance(timestamp, datetime.timedelta)
+  return remove_milliseconds.sub('', str(timestamp))
+
 parser = argparse.ArgumentParser(description='Jenkins job monitor', formatter_class=argparse.RawTextHelpFormatter, epilog="""The credentials must be in the form of "user:token" where:
 
   user: Your Jenkins userid
@@ -78,7 +82,7 @@ for job in args.jobs:
       log.debug(f'json: {attrs!s}')
       started = datetime.datetime.fromtimestamp(attrs['timestamp']/1000.0)
       duration = datetime.timedelta(seconds=attrs['duration']/1000.0) if attrs['duration'] else datetime.datetime.now()-started
-      table.add(' '.join(attrs['fullDisplayName'].split()[-2:]), (attrs['result'] or 'Running').title(), started, duration)
+      table.add(' '.join(attrs['fullDisplayName'].split()[-2:]), (attrs['result'] or 'Running').title(), short_time(started), short_time(duration))
     else:
       table.add(job, req.text, '', '')
 
