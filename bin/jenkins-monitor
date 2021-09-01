@@ -6,7 +6,6 @@ import logging
 import requests
 import argparse
 import datetime
-import binascii
 
 from table import Table
 
