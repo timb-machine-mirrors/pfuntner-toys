@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import os
+import re
 import sys
 import json
 import logging
@@ -58,10 +59,11 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
+remove_milliseconds = re.compile(r'\.\d{6}$')
+
 creds = args.credentials or os.environ.get('JENKINS_CREDENTIALS')
 if not creds:
   parser.error('Jenkins credentials are not present')
-creds = tuple(creds.split(':'))
 
 table = Table('Job', 'Status', 'Started', 'Duration')
 
@@ -70,7 +72,7 @@ for job in args.jobs:
   url = f'{job}/api/json?pretty=true'
   log.info(f'url: {url}, auth: {creds}')
   try:
-    req = requests.get(url, auth=creds)
+    req = requests.get(url, auth=tuple(creds.split(':')))
   except Exception as e:
     log.warning(f'{url!r} failed: {e!s}')
 
