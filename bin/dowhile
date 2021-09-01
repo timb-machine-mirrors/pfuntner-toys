@@ -22,7 +22,7 @@ def now():
 def formatTime(secs=None):
   if secs == None:
     secs = now()
-  return time.strftime("%Y-%m-%d %H:%M:%S.%s", time.localtime(secs))
+  return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(secs))
 
 parser = argparse.ArgumentParser(description='dowhile')
 parser.add_argument('-d', '--delay', type=int, default=15, help='Number of sections between execution (default: 15 seconds)')
