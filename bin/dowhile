@@ -5,6 +5,7 @@ import sys
 import time
 import logging
 import argparse
+import datetime
 import subprocess
 
 def banner(s):
@@ -52,11 +53,14 @@ if args.include:
 if args.exclude:
   args.exclude = re.compile(args.exclude)
 
+remove_fractions_of_seconds = re.compile(r'\.\d+$')
+start = datetime.datetime.now()
+
 iteration = 0
 done = False
 while not done:
   iteration += 1
-  banner(f'{iteration}: {formatTime()}')
+  banner(f'''{iteration}: {formatTime()} (+{remove_fractions_of_seconds.sub('', str(datetime.datetime.now()-start))})''')
   log.info(args.cmd)
   p = subprocess.Popen(
     args.cmd,
