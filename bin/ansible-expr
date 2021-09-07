@@ -50,8 +50,8 @@ print(f"""- name: Print expression
   hosts: {args.host or 'localhost'}
   tasks:
   - debug:
-      msg: {args.expr}
-""", file=playbook)
+      msg: "{args.expr}: [{args.expr}]"
+""".replace('[', '{{ ').replace(']', ' }}'), file=playbook)
 
 playbook.flush()
 run(f'ansible-playbook {playbook.name}', capture=False)
