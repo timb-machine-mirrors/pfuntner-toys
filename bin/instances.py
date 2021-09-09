@@ -110,14 +110,14 @@ class Instances(object):
                 user = mapping[2]
                 break
 
-            log.debug(f'image: {image_id} {image_name} {distro} {user}')
+            self.log.debug(f'image: {image_id} {image_name} {distro} {user}')
 
             if not (distro and user):
-              log.warning(f'No distro or user for {image_id}/{image_name}')
+              self.log.warning(f'No distro or user for {image_id}/{image_name}')
 
             for instance in instances:
               if instance.image_id == image_id:
-                log.debug(f'Updating image info for {instance.name}')
+                self.log.debug(f'Updating image info for {instance.name}')
                 instance.image_name = image_name
                 instance.distro = distro
                 instance.user = user
@@ -192,7 +192,7 @@ class Instances(object):
     try:
       p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     except Exception as e:
-      log.info(f'Caught: {e!s}')
+      self.log.info(f'Caught: {e!s}')
     else:
       (stdout, stderr) = tuple([s.decode('utf-8') for s in p.communicate()])
       rc = p.wait()
@@ -224,7 +224,7 @@ class Instances(object):
   def openstack_discover(self, openstack):
     instances = []
 
-    log.debug(f'Processing Openstack {openstack}')
+    self.log.debug(f'Processing Openstack {openstack}')
 
     env_regexp = re.compile(r'^\s*(?:export\s+)?(\w+)\s*=\s*(\S+)')
     if 'creds' in openstack:
@@ -234,7 +234,7 @@ class Instances(object):
           match = env_regexp.search(line)
           if match:
             env[match.group(1)] = match.group(2).strip('\'').strip('"')
-      log.debug(f'env: {env}')
+      self.log.debug(f'env: {env}')
 
       if 'secure_store' in openstack and 'secure_key' in openstack:
         password = None
@@ -244,9 +244,9 @@ class Instances(object):
 
         headers = {"Content-Type": "application/json"}
       else:
-        log.warning(f'`secure_store` and/or `secure_key` keys not in {openstack}')
+        self.log.warning(f'`secure_store` and/or `secure_key` keys not in {openstack}')
     else:
-      log.warning(f'No `creds` key in {openstack}')
+      self.log.warning(f'No `creds` key in {openstack}')
 
     url_regexp = re.compile(r'(http(?:s)?)://([^:/]+)(?::(\d+))?(?:/(.*))?$')
 
@@ -268,7 +268,7 @@ class Instances(object):
         for instance in raw_reservation.get('Instances', []):
           id = instance.get('InstanceId')
           if self.extract(instance, 'State/Name') == 'terminated':
-            log.info('skipping terminated instance')
+            self.log.info('skipping terminated instance')
           else:
             true_name = None
             name = None
@@ -388,8 +388,8 @@ class Instances(object):
 
       """
       req = requests.get('https://api.vultr.com/v2/instances', headers={'Authorization': f'Bearer {vultr_apikey}'})
-      log.info(f'vultr request: {req.status_code}')
-      log.debug(f'vultr request: {req.text}')
+      self.log.info(f'vultr request: {req.status_code}')
+      self.log.debug(f'vultr request: {req.text}')
       for instance in req.json().get('instances', []):
          instances.append(Instance(
            provider,
