@@ -408,6 +408,13 @@ $
   alias table=table.py
   ```
   This could be placed in your `$HOME/.bashrc` profile to get set automatically.
+- Speaking of aliases, I have a couple that I use regularly as filters because I'm too lazy to type the options:
+    ```
+    alias fixed2sep='table.py -i fixed --headings -o sep --sep \|'
+    alias fixed2json='table.py -i fixed --headings -o json'
+    ```
+  I tend to use `fixed2sep` more often to create a table in a Word document.  I'll copy the table with the separators, paste them into Word, and then use _Insert -> Table -> Convert Text to Table_ and make sure I specify _Separate text at |_.  I'll even do this for a document I don't plan on saving because it's a good way to visualize the data.  
+  Check out [this fragment I typically append to my `.bashrc` on my users](https://github.com/pfuntner/toys/blob/6422926d5c5c7201d2dc7a629a739082da236f88/misc/.bashrc#L91-L92).
 - There is minimal XML support:
   - When reading XML:
     - The second level node tags must all be the same
