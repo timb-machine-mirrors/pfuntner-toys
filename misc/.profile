@@ -22,7 +22,7 @@ export PYTHONUNBUFFERED=true
 
 if tty >/dev/null 2>&1
 then
-  $HOME/bin/set-title --self 
+  "$HOME/bin/set-title" --self 
 fi
 
 # Windoze setup
