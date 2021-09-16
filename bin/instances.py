@@ -145,10 +145,13 @@ class Instances(object):
 
     user = self.config.get('gcp_user')
 
+    # bruno
     image_ids = list(set([instance.image_id for instance in instances if instance.provider == 'gcp']))
+    image_true_names = list(set([instance.true_name for instance in instances if instance.provider == 'gcp']))
     self.log.debug(f'image_ids to query: {image_ids}')
+    self.log.debug(f'image_true_names to query: {image_true_names}')
     if image_ids:
-      (rc, stdout, stderr) = self.run(['gcloud', '--format', 'json', 'compute', 'disks', 'list', '--filter', 'name:(' + ' '.join(image_ids) + ')'])
+      (rc, stdout, stderr) = self.run(['gcloud', '--format', 'json', 'compute', 'disks', 'list', '--filter', 'name:(' + ' '.join(image_true_names) + ')'])
       if rc == 0 and stdout:
         for image in json.loads(stdout):
           self.log.debug(f'Now processing: {image}')
@@ -170,7 +173,7 @@ class Instances(object):
           self.log.debug(f'image: {image_id!r} {image_name!r} {distro!r} {user!r}')
           if distro and user:
             for instance in instances:
-              if instance.image_id == image_id:
+              if image_id in [instance.image_id, instance.true_name]:
                 self.log.debug(f'Updating image info for {instance.name}')
                 instance.image_name = image_name
                 instance.distro = distro
