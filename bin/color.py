@@ -81,18 +81,21 @@ if __name__ == '__main__':
   group.add_argument('color', type=Color.get_color, nargs='?',
                       help='Choose a color: {colors}'.format(colors=', '.join(Color.colors.keys())))
   group.add_argument('--test', action='store_true', required=False, help='Test all colors')
+  group.add_argument('-r', '--reset', action='store_true', help='Reset a console to default color only')
 
   parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
   parser.add_argument('text', nargs='*', help='Text to display')
 
   args = parser.parse_args()
 
-  if args.test and args.text:
-    parser.error('--test is mutually exclusive with text')
+  if (args.reset or args.test) and args.text:
+    parser.error('--test and --reset are mutually exclusive with text')
 
   log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-  if args.test:
+  if args.reset:
+    Color.print_color('0')
+  elif args.test:
     table = Table([])
     for color in Color.colors.keys():
       table.add(color, Color.get_color_code(color) + color + Color.get_color_code('0'))
