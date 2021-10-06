@@ -46,6 +46,9 @@ while path:
       exit(1)     
 
 if data:
-  print(data)
+  if isinstance(data, list):
+    print('\n'.join([str(datum) for datum in data]))
+  else:
+    print(data)
 else:
   log.warning('No data to print')
