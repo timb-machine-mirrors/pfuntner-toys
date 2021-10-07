@@ -87,6 +87,7 @@ class Instances(object):
       (re.compile('^RHEL-7'),            'rhel7',    'ec2-user'),
       (re.compile('^RHEL-8'),            'rhel8',    'ec2-user'),
       (re.compile('^RHEL-6'),            'rhel6',    'ec2-user'),
+      (re.compile('Alma'),               'alma8',    'ec2-user'),
       (re.compile('suse-sles-15'),       'suse15',   'ec2-user'),
       (re.compile('ubuntu-focal-20'),    'ubuntu20', 'ubuntu'),
     ]
