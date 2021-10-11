@@ -38,20 +38,14 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
-name_regexp = re.compile(args.name_pattern)
-(rc, stdout, stderr) = run('aws ec2 describe-images')
-
-found = False
+(rc, stdout, stderr) = run(f'aws ec2 describe-images --filter Name=image-id,Values={args.ami}')
 
 if rc == 0:
-  for image in json.loads(stdout).get('Images', []):
-    if image['ImageId'] == args.ami:
-      json.dump(image, sys.stdout)
-      found = True
-      break
-
-  if not found:
+  images = json.loads(stdout).get('Images', [])
+  if images:
+    json.dump(images[0], sys.stdout, indent=2, sort_keys=True)
+    print('')
+  else:
     log.warning(f'Could not find AMI {args.ami}')
-
 else:
   log.error('aws command failed')
