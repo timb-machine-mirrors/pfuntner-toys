@@ -52,7 +52,7 @@ tasks = 0
 pos = 0
 last_task = None
 hosts = set()
-statuses = set()
+statuses = dict()
 task_regexp = re.compile(r'^(?:TASK|HANDLER) \[(.*)\] \*+$')
 host_regexp = re.compile(r'^([a-z]+): \[([-a-zA-Z0-9]+)')
 final_regexp = re.compile(r'^Playbook run took')
@@ -78,7 +78,7 @@ while True:
         (status, host) = match.groups()
         log.debug(f'Line {pos}: host: {host} {status}')
         hosts.add(host)
-        statuses.add(status)
+        statuses[status] = statuses.get(status, 0) + 1
   else:
     report()
     time.sleep(15)
