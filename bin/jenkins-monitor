@@ -31,6 +31,21 @@ def short_time(timestamp):
   assert isinstance(timestamp, datetime.datetime) or isinstance(timestamp, datetime.timedelta)
   return remove_milliseconds.sub('', str(timestamp))
 
+def get_parameter(attrs, name, separator, format_string):
+  ret = ''
+  for action in attrs['actions']:
+    for parameter in action.get('parameters', []):
+      value = parameter.get('value', '')
+      if parameter.get('name', '') == name and value:
+        ret = format_string
+        tokens = value.split(separator)
+        for pos in range(len(tokens)):
+          ret = ret.replace('{' + str(pos) + '}', tokens[pos])
+          backward = pos - len(tokens)
+          log.info(f'{tokens} {pos} {backward}')
+          ret = ret.replace('{' + str(backward) + '}', tokens[backward])
+  return ret
+
 parser = argparse.ArgumentParser(description='Jenkins job monitor', formatter_class=argparse.RawTextHelpFormatter, epilog="""The credentials must be in the form of "user:token" where:
 
   user: Your Jenkins userid
@@ -65,7 +80,7 @@ creds = args.credentials or os.environ.get('JENKINS_CREDENTIALS')
 if not creds:
   parser.error('Jenkins credentials are not present')
 
-table = Table('Job', 'Status', 'Started', 'Duration')
+table = Table('Job', 'PR', 'Engineer', 'Status', 'Started', 'Duration')
 
 for job in args.jobs:
   req = None
@@ -82,9 +97,20 @@ for job in args.jobs:
     if req.ok:
       attrs = req.json()
       log.debug(f'json: {attrs!s}')
+
+      """
+        /actions/1/parameters/12/name 'ghprbTriggerAuthorEmail'
+        /actions/1/parameters/12/value 'jpfuntne@cisco.com'
+
+        /actions/1/parameters/24/name 'ghprbPullLink'
+        /actions/1/parameters/24/value 'https://wwwin-github.cisco.com/sto-ccc/cloud9-audit-tool/pull/298'
+      """
+      engineer = get_parameter(attrs, 'ghprbTriggerAuthorEmail', '@', '{0}')
+      pull_request = get_parameter(attrs, 'ghprbPullLink', '/', '{-3} #{-1}')
+
       started = datetime.datetime.fromtimestamp(attrs['timestamp']/1000.0)
       duration = datetime.timedelta(seconds=attrs['duration']/1000.0) if attrs['duration'] else datetime.datetime.now()-started
-      table.add(' '.join(attrs['fullDisplayName'].split()[-2:]), (attrs['result'] or 'Running').title(), short_time(started), short_time(duration))
+      table.add(' '.join(attrs['fullDisplayName'].split()[-2:]), pull_request, engineer, (attrs['result'] or 'Running').title(), short_time(started), short_time(duration))
     else:
       table.add(job, req.text, '', '')
 
