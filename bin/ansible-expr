@@ -57,4 +57,4 @@ print(f"""- name: Print expression
 """.replace('[', '{{ ').replace(']', ' }}'), file=playbook)
 
 playbook.flush()
-run(f'ansible-playbook {"-c docker -i " + args.host if args.docker else ""} {playbook.name}', capture=False)
+run(f'ansible-playbook {("-c docker -i " + args.host + ",") if args.docker else ""} {playbook.name}', capture=False)
