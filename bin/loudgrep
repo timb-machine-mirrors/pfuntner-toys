@@ -20,6 +20,6 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
-regexp = re.compile(args.regexp)
+regexp = re.compile(args.regexp, flags=re.MULTILINE)
 for filename in args.files:
   process(filename)
