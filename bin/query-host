@@ -37,6 +37,7 @@ def run(cmd, stdin=None, capture=True, shell=False):
 
 parser = argparse.ArgumentParser(description='Detect platform and distro of remote host')
 parser.add_argument('hosts', nargs='+', help='Hosts to query')
+parser.add_argument('-d', '--docker', action='store_true', help='Remote hosts are docker containers')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -94,15 +95,20 @@ for host in args.hosts:
   distro = None
   release_info = dict()
 
-  (rc, stdout, stderr) = run(f'ssh -q {host} curl --connect-timeout 5 http://169.254.169.254/latest/dynamic/instance-identity/document')
-  if rc == 0:
-    result[host]['platform'] = 'aws'
+  if args.docker:
+    result[host]['platform'] = 'docker'
+    (rc, stdout, stderr) = run(['docker', 'exec', host, 'bash', '-c', 'cat /etc/os-release'])
   else:
-    (rc, stdout, stderr) = run(f'ssh -q {host} curl --connect-timeout 5 http://metadata.google.internal/computeMetadata/v1/instance/')
+    (rc, stdout, stderr) = run(f'ssh -q {host} curl --connect-timeout 5 http://169.254.169.254/latest/dynamic/instance-identity/document')
     if rc == 0:
-      result[host]['platform'] = 'gcp'
+      result[host]['platform'] = 'aws'
+    else:
+      (rc, stdout, stderr) = run(f'ssh -q {host} curl --connect-timeout 5 http://metadata.google.internal/computeMetadata/v1/instance/')
+      if rc == 0:
+        result[host]['platform'] = 'gcp'
 
-  (rc, stdout, stderr) = run(f'ssh -q {host} cat /etc/os-release')
+    (rc, stdout, stderr) = run(f'ssh -q {host} cat /etc/os-release')
+
   release_info = dict(release_info_regexp.findall(stdout))
 
   log.info(f'release_info: {release_info}')
@@ -115,7 +121,10 @@ for host in args.hosts:
   if match:
     result[host]['major_release'] = int(match.group(1))
 
-  (rc, stdout, stderr) = run(f'ssh -q {host} arch')
+  if args.docker:
+    (rc, stdout, stderr) = run(['docker', 'exec', host, 'bash', '-c', 'arch'])
+  else:
+    (rc, stdout, stderr) = run(f'ssh -q {host} arch')
   if stdout:
     result[host]['arch'] = stdout.strip()
 
