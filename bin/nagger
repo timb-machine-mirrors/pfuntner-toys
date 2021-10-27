@@ -13,7 +13,7 @@ import time
 import random
 import string
 
-chars = [char for char in string.lowercase + ' ']
+chars = [char for char in string.ascii_lowercase + ' ']
 
 if len(sys.argv) == 1:
   limit = None
