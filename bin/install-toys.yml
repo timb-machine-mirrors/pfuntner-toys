@@ -201,6 +201,7 @@
         var: root_try_a_tool.stdout_lines
   
     become: true
+    when: bool(add_to_root | default(false))
 
   vars:
     python_pkg: python3 # this might change depending on the distro
@@ -211,3 +212,5 @@
 
     empty_stdout:
       stdout: ''
+
+    add_to_root: true

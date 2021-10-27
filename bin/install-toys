@@ -28,6 +28,7 @@ def run(cmd, stdin=None, capture=True, shell=False):
 parser = argparse.ArgumentParser(description='Install Bruno\'s toys')
 parser.add_argument('hosts', default=['all'], nargs='*', help='Zero or more hosts (default: "all")')
 parser.add_argument('-d', '--docker', action='store_true', help='Host is a single docker container')
+parser.add_argument('-r', '--add-to-root', '--root', action='store_true', help='Install toys for root too')
 parser.add_argument('-e', '--extra-vars', action='append', help='Specify Ansible variables')
 parser.add_argument('--dry-run', action='store_true', help='Do not execute command')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
@@ -43,7 +44,7 @@ if not args.hosts:
 if args.docker and len(args.hosts) > 1:
   parser.error('--docker can only be used with a single Docker container')
 
-vars = list()
+vars = ['-e', f'{{ "add_to_root": {"true" if args.add_to_root else "false"} }}']
 for var in args.extra_vars or []:
   vars += ['-e', var]
 
