@@ -1,6 +1,8 @@
 #! /usr/bin/env python3
 
 import re
+import sys
+import json
 import signal
 import logging
 import argparse
@@ -8,9 +10,27 @@ import subprocess
 
 class Heading(object):
   def __init__(self, title, start, stop):
-    self.title = title
+    self.title = title.strip().lower()
     self.start = start
     self.stop = stop
+
+  def __str__(self):
+    return f'{self.title}:{self.start}-{self.stop}'
+
+def is_int(s):
+  return bool(int_regexp.search(s))
+
+def is_float(s):
+  return bool(float_regexp.search(s))
+
+def numerify(s):
+  if is_int(s):
+    ret = int(s)
+  elif is_float(s):
+    ret = float(s)
+  else:
+    ret = s
+  return ret
 
 def run(cmd, stdin=None, capture=True, shell=False):
   if shell:
@@ -56,6 +76,9 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
+int_regexp = re.compile(r'^\d+$')
+float_regexp = re.compile(r'^((\d+\.\d*)|(\d*\.\d+))$')
+
 # /usr/bin/ssh -q aws-ubuntu2004 -- ps -e -o pid,ppid,%cpu,args
 cmd = list()
 if args.ssh:
@@ -73,8 +96,17 @@ else:
 if rc == 0:
   lines = stdout.splitlines()
   headings = list()
-  heading_columns = list(re.finditer('\s+\S+\s+', lines[0]))
+  heading_columns = list(re.finditer('\s*\S+\s*', lines[0]))
   for (pos, heading) in enumerate(heading_columns):
-    headings.append(Heading(heading.group(0), heading.start(0), heading.end(0)))
+    headings.append(Heading(heading.group(0), heading.start(0), 2**64 if pos==(len(heading_columns)-1) else heading.end(0)))
+  log.info(f'headings: {[str(heading) for heading in headings]}')
+  processes = list()
+  for line in lines[1:]:
+    process = {'line': line}
+    for heading in headings:
+      process[heading.title] = numerify(line[heading.start:heading.stop].strip())
+    processes.append(process)
+  json.dump(processes, sys.stdout, indent=2)
+  print('')
 else:
   log.error(f'{cmd} failed: {rc}, {stdout!r}, {stderr!r}')
