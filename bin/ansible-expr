@@ -36,6 +36,7 @@ def run(cmd, stdin=None, capture=True, shell=False):
 parser = argparse.ArgumentParser(description='Print value of Ansible expression')
 parser.add_argument('--host', help='Target host of temporary Ansible playbook.  Default: localhost')
 parser.add_argument('--docker', action='store_true', help='Use Ansible Docker connection')
+parser.add_argument('--extra-vars', '-e', action='append', help='Specify extra variables')
 parser.add_argument('expr', help='Expression to evaluate')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
@@ -57,4 +58,7 @@ print(f"""- name: Print expression
 """.replace('[', '{{ ').replace(']', ' }}'), file=playbook)
 
 playbook.flush()
-run(f'ansible-playbook {("-c docker -i " + args.host + ",") if args.docker else ""} {playbook.name}', capture=False)
+extra_vars = list()
+for extra_var in args.extra_vars:
+  extra_vars += ['-e', extra_var]
+run(['ansible-playbook'] + (['-c', 'docker', '-i', args.host+','] if args.docker else []) + extra_vars + [playbook.name], capture=False)
