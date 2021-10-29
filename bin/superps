@@ -17,6 +17,9 @@ class Heading(object):
   def __str__(self):
     return f'{self.title}:{self.start}-{self.stop}'
 
+def is_mostly_numeric(s):
+  return any([bool(regexp.search(s)) for regexp in mostly_numeric_regexps])
+
 def is_int(s):
   return bool(int_regexp.search(s))
 
@@ -59,14 +62,17 @@ def run(cmd, stdin=None, capture=True, shell=False):
   log.debug('Executed {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
   return (rc, stdout, stderr)
 
+SECURE_SHELL_EXECUTABLE = '/usr/bin/ssh'
+PS_OPTIONS = 'pid,ppid,etime,time,%cpu,args'
+
 parser = argparse.ArgumentParser(description='Get process information')
 
 group = parser.add_mutually_exclusive_group()
 group.add_argument('--ssh', help='Remote ssh host')
 group.add_argument('--docker', help='Docker container ')
 
-parser.add_argument('--secure_shell_executable', default='/usr/bin/ssh', help='Path to ssh executable')
-parser.add_argument('-o', '--format', default='pid,ppid,%cpu,args', help='ps format (-o)')
+parser.add_argument('--secure_shell_executable', default=SECURE_SHELL_EXECUTABLE, help=f'Path to ssh executable - default: {SECURE_SHELL_EXECUTABLE!r}')
+parser.add_argument('-o', '--format', default=PS_OPTIONS, help=f'ps format (-o) - default: {PS_OPTIONS!r}'.replace('%', '%%'))
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -78,6 +84,12 @@ signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
 int_regexp = re.compile(r'^\d+$')
 float_regexp = re.compile(r'^((\d+\.\d*)|(\d*\.\d+))$')
+
+mostly_numeric_regexps = [
+  re.compile(r'^[-.0-9]([-.:0-9]*\d)?$'), # integers, floats, elapsed time, '-': some nonsensical forms are possible but I'll accept that for now.  If necessary, I can be more specific.
+  re.compile(r'^[0-9a-f]{16}$'), # signal masks - 16 digit hex string
+  re.compile(r'^(Sun|Mon|Tue|Wed|Thu|Fri|Sat)\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s[0-9 ]\d\s\d{2}:\d{2}:\d{2}\s\d{4}$'), # timestamp such as "Fri Oct 29 08:07:46 2021"
+]
 
 # /usr/bin/ssh -q aws-ubuntu2004 -- ps -e -o pid,ppid,%cpu,args
 cmd = list()
@@ -96,7 +108,7 @@ else:
 if rc == 0:
   lines = stdout.splitlines()
   headings = list()
-  heading_columns = list(re.finditer('\s*\S+\s*', lines[0]))
+  heading_columns = list(re.finditer('\s*\S+', lines[0]))
   for (pos, heading) in enumerate(heading_columns):
     headings.append(Heading(heading.group(0), heading.start(0), 2**64 if pos==(len(heading_columns)-1) else heading.end(0)))
   log.info(f'headings: {[str(heading) for heading in headings]}')
@@ -104,7 +116,7 @@ if rc == 0:
   for line in lines[1:]:
     process = {'line': line}
     for heading in headings:
-      process[heading.title] = numerify(line[heading.start:heading.stop].strip())
+      process[heading.title] = numerify(line[heading.start:heading.stop+1].strip())
     processes.append(process)
   json.dump(processes, sys.stdout, indent=2)
   print('')
