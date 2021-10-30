@@ -55,7 +55,7 @@ def evaluate(title, s):
         minutes=int(match.group(3)),
         seconds=int(match.group(4)),
       )
-  # I wanted to do stime/start but typical values are 'hh:mm' and 'MMMdd' which isn't very useful, IMHO
+  # I wanted to do stime/start values but typical values are 'hh:mm' and 'MMMdd' which isn't very useful, IMHO
   # elif title == 'stime':
   #   try:
   #     pass
@@ -168,9 +168,11 @@ else:
     cmd += remain
 
   (rc, stdout, stderr) = run(cmd)
+
 if stdout and (args.file or rc == 0):
   lines = stdout.splitlines()
   gutters = list()
+  heading_names = args.format.split(',')
   heading_columns = list(re.finditer('\S+', lines[0]))
   for pos in range(len(heading_columns)-1):
     gutters.append(get_gutter(heading_columns[pos], heading_columns[pos+1]))
@@ -181,12 +183,15 @@ if stdout and (args.file or rc == 0):
     headings.append(Heading(heading.group(0), 0 if pos == 0 else gutters[pos-1]+1, 2**64 if pos == len(heading_columns)-1 else gutters[pos]))
   log.info(f'headings: {[str(heading) for heading in headings]}')
 
-  processes = list()
+  processes = dict() if 'pid' in heading_names else list()
   for line in lines[1:]:
     process = {'line': line}
     for heading in headings:
       process[heading.title] = evaluate(heading.title, line[heading.start:heading.stop+1].strip())
-    processes.append(process)
+    if isinstance(processes, dict):
+      processes[process.get('pid')] = process
+    else:
+      processes.append(process)
   json.dump(processes, sys.stdout, indent=2, cls=ProcessJsonEncoder)
   print('')
 else:
