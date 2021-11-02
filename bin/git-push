@@ -22,6 +22,7 @@ def run(cmd, capture=True):
 parser = argparse.ArgumentParser(description='Perform git push')
 parser.add_argument('-f', '--force', action='store_true', help='Use `git push --force`')
 parser.add_argument('-m', '--master-branch', action='store_true', help='Force use of master branch')
+parser.add_argument('-d', '--dry-run', action='store_true', help='Do not execute command')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -42,6 +43,9 @@ if match:
   if args.force:
     cmd += ' --force'
 
-  (rc, stdout, stderr) = run(cmd, capture=False)
+  if args.dry_run:
+    log.warn(f'Not running: {cmd!r}')
+  else:
+    (rc, stdout, stderr) = run(cmd, capture=False)
 else:
   parser.error('Could not determine current branch')
