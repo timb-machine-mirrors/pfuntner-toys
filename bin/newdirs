@@ -48,4 +48,6 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
 log.debug('pattern: {regexp.pattern}'.format(**locals()))
 
-print('\n'.join(sorted(dive(os.environ['HOME']), reverse=True)))
+files = sorted(dive(os.environ['HOME']), reverse=True)
+if files:
+  print('\n'.join(files))
