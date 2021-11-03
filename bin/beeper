@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+import os
 import sys
 import time
 import signal
@@ -29,9 +30,17 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
-if not args.background:
-  start = datetime.datetime.now()
-  banner("%s: Beeping started" % start)
+is_foreground = bool(os.tcgetpgrp(sys.stdout.fileno()) == os.getpid())
+
+if args.background:
+  if is_foreground:
+    parser.error('--background is only allowed from background processes')
+else:
+  if is_foreground:
+    start = datetime.datetime.now()
+    banner("%s: Beeping started" % start)
+  else:
+    parser.error('use --background for background processes')
 
 done = False
 
