@@ -2,8 +2,10 @@
 
 import sys
 import time
-import datetime
 import signal
+import logging
+import datetime
+import argparse
 
 def handleCntlC(signum, stack):
   global done
@@ -18,16 +20,27 @@ bellChar = '\a'
 
 signal.signal(signal.SIGINT, handleCntlC)
 
-start = datetime.datetime.now()
-banner("%s: Beeping started" % start)
+parser = argparse.ArgumentParser(description='Beep beep beep ...')
+parser.add_argument('-b', '--background', action='store_true', help='Run in background, every 15 minutes')
+parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.WARNING - (args.verbose or 0)*10)
+
+if not args.background:
+  start = datetime.datetime.now()
+  banner("%s: Beeping started" % start)
 
 done = False
 
 while not done:
   sys.stdout.write(bellChar)
   # sys.stdout.flush()
-  time.sleep(1)
+  time.sleep((15*60) if args.background else 1)
 
-print("")
-stop = datetime.datetime.now()
-banner("%s: Beeping ended, %s" % (stop, stop-start))
+if not args.background:
+  print("")
+  stop = datetime.datetime.now()
+  banner("%s: Beeping ended, %s" % (stop, stop-start))
