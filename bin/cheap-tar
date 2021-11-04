@@ -45,7 +45,9 @@ def dive(path):
   global files
 
   if os.path.exists(path):
-    if os.path.isfile(path):
+    if os.path.islink(path) and not args.follow_symlinks:
+      log.warning(f'Not following symlink {path!r}')
+    elif os.path.isfile(path):
       data = encode(path)
       if data is not None:
         files.append({
@@ -53,8 +55,11 @@ def dive(path):
           'base64': encode(path),
         })
     elif os.path.isdir(path):
-      for child in os.listdir(path):
-        dive(os.path.join(path, child))
+      try:
+        for child in os.listdir(path):
+          dive(os.path.join(path, child))
+      except Exception as e:
+        log.warning(f'Could not list files under {path!r}/: {e!s}')
     else:
       log.warning(f'Cannot process {path!r}')
   else:
@@ -67,7 +72,9 @@ group.add_argument('-r', '--read', action='store_true', help='Read a cheap tarba
 group.add_argument('-w', '--write', action='store_true', help='Write a cheap tarball')
 
 parser.add_argument('files', nargs='*', help='Zero or more files to process')
+parser.add_argument('-F', '--follow-symlinks', help='Follow symbolic links')
 parser.add_argument('-f', '--file', help='Path to tarball to read or write')
+parser.add_argument('-C', '--change-directory', help='Path to directory before reading/writing files')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -95,6 +102,15 @@ elif args.read:
     if sys.stdin.isatty():
       parser.error('If reading tarball from stdin, it must be redirected')
     tarball = sys.stdin
+
+if args.change_directory:
+  if os.path.exists(args.change_directory):
+    if os.path.isdir(args.change_directory):
+      os.chdir(args.change_directory)
+    else:
+      parser.error(f'{args.change_directory!r} is not a directory')
+  else:
+    parser.error(f'Could not find {args.change_directory!r}')
 
 if args.write:
   files = list()
