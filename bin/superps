@@ -1,0 +1,95 @@
+#! /usr/bin/env python3
+
+import os
+import glob
+import signal
+import logging
+import argparse
+import tempfile
+import subprocess
+
+def read(filename, mode='r'):
+  with open(filename, mode) as stream:
+    return stream.read()
+
+class fake_temp_dir(object):
+  def __init__(self, path):
+    if os.path.exists(path):
+      log.error(f'{path!r} already exists')
+      exit(1)
+    temp_dir = object()
+    os.mkdir(path)
+    setattr(self, 'name', path)
+
+def run(cmd, stdin=None, capture=True, shell=False):
+  if shell:
+    if isinstance(cmd, list):
+      cmd = ' '.join(cmd)
+  elif isinstance(cmd, str):
+    cmd = cmd.split()
+
+  log.info('Executing {cmd}'.format(**locals()))
+
+  p = None
+  try:
+    p = subprocess.Popen(cmd, stdin=subprocess.PIPE if stdin else None, stdout=subprocess.PIPE if capture else None, stderr=subprocess.PIPE if capture else None, shell=shell)
+  except Exception as e:
+    (rc, stdout, stderr) = (-1, '', f'Caught {e!s} running {cmd!r}')
+
+  if p:
+    if stdin:
+      p.stdin.write(stdin.encode())
+    if capture:
+      (stdout, stderr) = tuple([s.decode('utf-8') for s in p.communicate()])
+    else:
+      (stdout, stderr) = ('', '')
+    rc = p.wait()
+
+  log.debug('Executed {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
+  return (rc, stdout, stderr)
+
+parser = argparse.ArgumentParser(description='Generate process information in JSON')
+
+group = parser.add_mutually_exclusive_group()
+group.add_argument('-s', '--ssh', help='Remote ssh host to query')
+group.add_argument('-d', '--docker', help='Docker container query')
+
+parser.add_argument('-c', '--no-clean', action='store_true', help='Enable debugging')
+parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.WARNING - (args.verbose or 0)*10)
+
+signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
+
+if args.no_clean:
+  temp_dir = fake_temp_dir('/tmp/fake')
+  log.info(f'Fake temporary directory: {temp_dir.name}')
+else:
+  temp_dir = tempfile.TemporaryDirectory()
+  log.info(f'Temporary directory: {temp_dir.name}')
+
+from_cmd = 'tar -czf - /proc | base64'
+from_tar = subprocess.Popen(from_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+(from_stdout, from_stderr) = tuple([s.decode('utf-8') for s in from_tar.communicate()])
+from_rc = from_tar.wait()
+
+to_cmd = f'base64 -d | tar -C {temp_dir.name} -xzf -'
+to_tar = subprocess.Popen(to_cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+to_tar.stdin.write(from_stdout.encode())
+(to_stdout, to_stderr) = tuple([s.decode('utf-8') for s in to_tar.communicate()])
+to_tar.stdin.close()
+to_rc = to_tar.wait()
+
+log.info(f'from rc: {from_rc}, to rc: {to_rc}')
+if to_stderr:
+  for line in (to_stderr or '').splitlines():
+    log.debug(line)
+
+run(f'chmod -R u+w {temp_dir.name}/proc')
+
+for process in glob.glob(os.path.join(temp_dir.name, 'proc', '[0-9]*')):
+  cmdline = read(os.path.join(temp_dir.name, 'proc', process, 'cmdline'), 'rb') # .split('\0')
+  log.info(f'{process}: {cmdline!r}')
