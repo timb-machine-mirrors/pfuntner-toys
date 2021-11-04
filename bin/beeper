@@ -35,8 +35,6 @@ is_foreground = bool(os.tcgetpgrp(sys.stdout.fileno()) == os.getpid())
 if args.background:
   if is_foreground:
     parser.error('--background is only allowed from background processes')
-
-  print('Beeping every 15 minutes in the background...')
 else:
   if not is_foreground:
     parser.error('use --background for background processes')
