@@ -4,6 +4,7 @@ import time
 import signal
 import logging
 import argparse
+import datetime
 import subprocess
 
 def run(cmd, stdin=None, capture=True, shell=False):
@@ -46,9 +47,13 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
+start = datetime.datetime.now()
+
 cmd = ['ssh', '-o', f'ConnectTimeout={args.wait}', args.host, 'exit', '42']
 while True:
   (rc, stdout, stderr) = run(cmd)
   if rc == 42:
     break
   time.sleep(args.interval)
+
+print(f'Elapsed time: {str(datetime.datetime.now() - start)}')
