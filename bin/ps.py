@@ -1,5 +1,9 @@
 #! /usr/bin/env python3
 
+"""
+  The information is extracted from files under /proc.  See `man proc`.
+"""
+
 import os
 import re
 import sys
