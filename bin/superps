@@ -98,7 +98,7 @@ for path in glob.glob(os.path.join('/proc', '[0-9]*')):
     'session': int_or_none(stat_tokens[5]),
     'tty_nr': int_or_none(stat_tokens[6]),
     'tpgid': int_or_none(stat_tokens[7]),
-    'flags': stat_tokens[8],
+    'flags': '0x{:08x}'.format(int(stat_tokens[8])),
     'minflt': int_or_none(stat_tokens[9]),
     'cminflt': int_or_none(stat_tokens[10]),
     'majflt': int_or_none(stat_tokens[11]),
