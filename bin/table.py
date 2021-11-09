@@ -388,7 +388,7 @@ class JsonMethod(MethodBase):
     :param order: The order of named columns if order is important
     :return: None
     """
-    json.dump(root, stream, indent=2, sort_keys=True)
+    json.dump(root, stream, indent=2)
     stream.write('\n')
 
 
