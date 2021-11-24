@@ -2,8 +2,9 @@
 
 import re
 import json
-import logging
 import signal
+import logging
+import fnmatch
 import argparse
 import subprocess
 
@@ -30,7 +31,8 @@ def run(cmd, stdin=None, capture=True, shell=False):
 
 parser = argparse.ArgumentParser(description='Find AWS images and report information')
 parser.add_argument('-n', '--name-pattern', required=True, help='Image name regular expression pattern')
-parser.add_argument('-o', '--owner-id', type=int, required=True, help='AWS owner ID of image')
+parser.add_argument('-g', '--glob', action='store_true', help='Pattern is for shell pattern matching, not grep')
+parser.add_argument('-o', '--owner-id', required=True, help='AWS owner ID of image')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -40,13 +42,12 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
-name_regexp = re.compile(args.name_pattern)
 (rc, stdout, stderr) = run(f'aws ec2 describe-images --owners {args.owner_id}')
 
 if rc == 0:
   table = Table('Image name', 'Image ID', 'Created')
   for image in json.loads(stdout).get('Images', []):
-    if name_regexp.search(image.get('Name', '')):
+    if ((not args.glob) and re.search(args.name_pattern, image.get('Name', ''))) or (args.glob and fnmatch.fnmatch(image.get('Name', ''), args.name_pattern)):
       table.add(image['Name'], image['ImageId'], image['CreationDate'])
       log.debug(image)
 
