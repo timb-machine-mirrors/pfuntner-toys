@@ -109,6 +109,9 @@ elif args.until:
 
 log.info(f'stop time: {stop_time!s}')
 
+closed = u'\u2612'
+open = u'\u2610'
+
 done = False
 while not done:
   now = datetime.datetime.now()
@@ -137,7 +140,13 @@ while not done:
     ################################################################################
     # percent elapsed                                                              #
     ################################################################################
-    output_line += f'  {curr_elapsed / total_elapsed:6.2%}'
+    pcent = curr_elapsed / total_elapsed
+    output_line += f'  {pcent:6.2%}'
+
+    ################################################################################
+    # progress bar                                                                 #
+    ################################################################################
+    output_line += f'  {closed*int(10*pcent)}{open*int(10*(1-pcent))}'
 
   print(output_line)
   time.sleep(args.interval)
