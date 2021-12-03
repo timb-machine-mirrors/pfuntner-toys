@@ -18,9 +18,12 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
+start = datetime.datetime.now()
+
 iteration = 0
 while True:
   iteration += 1
-  now = datetime.datetime.now().strftime("%a %Y-%m-%d %H:%M:%S.%f")
-  print(f'\r{iteration:6}: {now}', end='')
+  now = datetime.datetime.now()
+  now_formatted = now.strftime("%a %Y-%m-%d %H:%M:%S.%f")
+  print(f'\r{iteration:6}: {now_formatted} {now-start!s}', end='')
   time.sleep(args.interval*60)
