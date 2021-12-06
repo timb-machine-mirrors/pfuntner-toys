@@ -59,6 +59,6 @@ print(f"""- name: Print expression
 
 playbook.flush()
 extra_vars = list()
-for extra_var in args.extra_vars:
+for extra_var in args.extra_vars or []:
   extra_vars += ['-e', extra_var]
 run(['ansible-playbook'] + (['-c', 'docker', '-i', args.host+','] if args.docker else []) + extra_vars + [playbook.name], capture=False)
