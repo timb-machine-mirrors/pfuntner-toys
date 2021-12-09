@@ -12,15 +12,21 @@ class Table(object):
     else:
       self.headings = args
 
-    self.p = subprocess.Popen(['column', '-t', '-s\t'], stdin=subprocess.PIPE)
-    self.p.stdin.write(self.encode('\t'.join([str(heading) for heading in self.headings]) + '\n'))
+    try:
+      self.p = subprocess.Popen(['column', '-t', '-s\t'], stdin=subprocess.PIPE, text=True)
+    except Exception as e:
+      print(f'Error opening `column`: {e!s}', file=sys.stderr)
+      print('On Ubuntu, try installing the bsdmainutils package', file=sys.stderr)
+      exit(1)
+
+    self.p.stdin.write('\t'.join([str(heading) for heading in self.headings]) + '\n')
 
   @classmethod
   def encode(cls, s):
     return s if sys.version_info.major == 2 else s.encode()
 
   def add(self, *args):
-    self.p.stdin.write(self.encode('\t'.join([str(arg) for arg in args]) + '\n'))
+    self.p.stdin.write('\t'.join([str(arg) for arg in args]) + '\n')
 
   def close(self):
     self.p.stdin.close()
