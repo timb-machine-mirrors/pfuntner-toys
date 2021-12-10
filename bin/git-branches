@@ -53,6 +53,7 @@ parser.add_argument('dirs', metavar='dir', nargs='*', help='Zero or more git rep
 group = parser.add_mutually_exclusive_group()
 group.add_argument('-a', '--all', action='store_true', help='Display latest commit from branch')
 group.add_argument('-s', '--simple', action='store_true', help='Simple output form, not a table')
+group.add_argument('-l', '--list', action='store_true', help='List directories')
 
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
@@ -62,6 +63,9 @@ log = logging.getLogger()
 log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 args.dirs = args.dirs or ['.']
+
+if args.list and args.dirs != ['.']:
+  parser.error('--list is only applicable when dealing with current working directory as only repo')
 
 repos = {}
 cols = 0
@@ -111,14 +115,17 @@ else:
     branches += [''] * (cols - len(branches))
     log.info(f'{repo} has {branches}')
   
-    if args.simple:
+    if args.simple or args.list:
       for branch in branches:
         if branch:
           current = ''
           if branch[0] == '*':
             current = 'current'
             branch = branch[1:]
-          print(f'{repo} {branch} {current}')
+          if args.list:
+            print(branch)
+          else:
+            print(f'{repo} {branch} {current}')
     else:
       table.add(*([repo] + branches))
 
