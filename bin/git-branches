@@ -48,7 +48,7 @@ def normalize_date(s):
     return s
 
 parser = argparse.ArgumentParser(description='List branches in various repos')
-parser.add_argument('dirs', metavar='dir', nargs='*', help='Zero or more git repo directories (default: "."')
+parser.add_argument('dirs', metavar='dir', nargs='*', help='Zero or more git repo directories (default: ".")')
 
 group = parser.add_mutually_exclusive_group()
 group.add_argument('-a', '--all', action='store_true', help='Display latest commit from branch')
