@@ -12,7 +12,7 @@ def get_tokens(s):
   for hit in list(regexp.finditer(s)):
     if hit.start(0) > pos:
       tokens.append(s[pos:hit.start(0)])
-    tokens.append(hit.group(0))
+    tokens.append(int(hit.group(0)))
     pos = hit.end(0)
   if pos < len(s):
     tokens.append(s[pos:])
