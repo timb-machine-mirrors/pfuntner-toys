@@ -50,7 +50,7 @@ channel_regexp = re.compile('^#')
 older = args.age is not None and args.age > 0
 desired_age = datetime.timedelta(days=abs(args.age)) if args.age is not None else None
 msg_regexp = re.compile(args.regexp, flags=re.IGNORECASE if args.ignore_case else 0) if args.regexp is not None else None
-name_regexp = re.compile(args.name_regexp, flags=re.IGNORECASE if args.ignore_case else 0) if args.name_regexp is not None else None
+name_regexp = re.compile(args.name_regexp, flags=re.IGNORECASE) # filenames are folded to lowercase
 
 logging_regexp = re.compile(r'^\*\*\*\* (BEGIN|ENDING) LOGGING AT (\w{3}\s+\w{3}\s+\d+\s+\d{2}:\d{2}:\d{2}\s+\d{4})\s*$')
 timestamp_regexp = re.compile('^(\w{3}\s+\d+\s+\d{2}:\d{2}:\d{2})\s+([<*].*)$')
