@@ -19,7 +19,7 @@ Syntax: bashprofiles [--all]
 ### Options and arguments
 | Option | Description | Default |
 | ------ | ----------- | ------- |
-|  `-all`  | Report on all files.  The script reports on all files in the order the shell looks for them. Even if you don't have the file, the script tells you so.  | Only the first file that the script finds is printed. |
+|  `--all`  | Report on all files.  The script reports on all files in the order the shell looks for them. Even if you don't have the file, the script tells you so.  | Only the first file that the script finds is printed. |
 
 ## Example
 
