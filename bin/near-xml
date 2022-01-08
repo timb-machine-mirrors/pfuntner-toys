@@ -101,13 +101,14 @@ def get_node():
             break
           name += c
 
-        value = ''
+        value = None
         if c == '=':
           # prepare for attribute value
           quote = None
           c = stream.read()
           if c in '"\'':
             quote = c
+            value = ''
           else:
             stream.push(c)
 
@@ -122,6 +123,8 @@ def get_node():
               if c == '\\':
                 c = stream.read()
                 if c != None and c != quote:
+                  if value is None:
+                    value = ''
                   value += '\\'
             else: # not quoted
               if c in whitespace + ['>']:
@@ -133,12 +136,14 @@ def get_node():
                 if next == '>':
                   stream.push(c)
                   break
+            if value is None:
+              value = ''
             value += c
         else:
           log.warning(f'No `=` after attribute {name!r} at {stream.location()}: {c!r}')
           stream.push(c)
 
-        if not value:
+        if value is None:
           log.warning(f'Assuming {name}=true at {stream.location()}: {c!r}')
           value = True
 
