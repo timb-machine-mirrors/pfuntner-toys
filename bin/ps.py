@@ -35,9 +35,9 @@ class Ps(object):
         if 'b' in mode:
           ret = ret.decode()
     except Exception as e:
-      log.debug(f'Could not read {path!r}: {e!s}')
+      self.log.debug(f'Could not read {path!r}: {e!s}')
   
-    log.debug(f'{path!r}: {ret!r}')
+    self.log.debug(f'{path!r}: {ret!r}')
   
     return ret
   
@@ -85,7 +85,7 @@ class Ps(object):
       statm_tokens = statm.split() if stat else [None] * 7
     
       status_dict = self.kv_parse(self.read(os.path.join(path, 'status')))
-      log.info(f'status_dict: {status_dict}')
+      self.log.info(f'status_dict: {status_dict}')
     
       processes[pid] = {
         'pid': pid,
