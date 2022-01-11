@@ -64,8 +64,8 @@ data = sys.stdin.read()
 for regexp in regexps:
   for hit in list(regexp.regexp.finditer(data))[-1::-1]:
     debug(hit.group(regexp.pos))
-    debug(data[hit.start(regexp.pos):hit.end(regexp.pos)])
+    debug(data[hit.start(regexp.pos):hit.end_time(regexp.pos)])
     debug(data)
-    data = data[:hit.start(regexp.pos)] + regexp.replacement + data[hit.end(regexp.pos):]
+    data = data[:hit.start(regexp.pos)] + regexp.replacement + data[hit.end_time(regexp.pos):]
     debug(data)
 sys.stdout.write(data)

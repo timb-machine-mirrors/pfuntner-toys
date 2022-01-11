@@ -136,4 +136,4 @@ for path in paths:
 
 if args.list:
   table.root.sort(key=lambda row: row['Start'], reverse=True)
-  print(str(table))
+  print(str(table), end='')
