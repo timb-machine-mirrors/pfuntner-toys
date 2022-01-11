@@ -12,6 +12,8 @@ def process(rawpath, log=None):
     log = logging.getLogger()
     log.setLevel(logging.WARNING)
 
+  log.debug(f'rawpath: {rawpath!r}')
+
   if rawpath.startswith('-'):
     log.debug('{rawpath!r} looks like an option so I\'m going to leave it alone!'.format(**locals()))
     path = rawpath
