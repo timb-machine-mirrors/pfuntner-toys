@@ -29,6 +29,7 @@ def run(cmd, stdin=None, capture=True, shell=False):
 
 parser = argparse.ArgumentParser(description='Find AWS images and report information')
 parser.add_argument('ami', help='AMI to search for')
+parser.add_argument('-r', '--region', help='AWS region - if not specified, your default region is used')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -38,7 +39,10 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
-(rc, stdout, stderr) = run(f'aws ec2 describe-images --filter Name=image-id,Values={args.ami}')
+cmd = f'aws ec2 describe-images --filter Name=image-id,Values={args.ami}'
+if args.region:
+  cmd += f' --region {args.region}'
+(rc, stdout, stderr) = run(cmd)
 
 if rc == 0:
   images = json.loads(stdout).get('Images', [])

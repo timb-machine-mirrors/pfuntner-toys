@@ -31,8 +31,9 @@ def run(cmd, stdin=None, capture=True, shell=False):
 
 parser = argparse.ArgumentParser(description='Find AWS images and report information')
 parser.add_argument('-n', '--name-pattern', required=True, help='Image name regular expression pattern')
-parser.add_argument('-g', '--glob', action='store_true', help='Pattern is for shell pattern matching, not grep')
 parser.add_argument('-o', '--owner-id', required=True, help='AWS owner ID of image')
+parser.add_argument('-g', '--glob', action='store_true', help='Pattern is for shell pattern matching, not grep')
+parser.add_argument('-r', '--region', help='AWS region - your default is used if not specified')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -42,7 +43,10 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
-(rc, stdout, stderr) = run(f'aws ec2 describe-images --owners {args.owner_id}')
+cmd = f'aws ec2 describe-images --owners {args.owner_id}'
+if args.region:
+  cmd += f' --region {args.region}'
+(rc, stdout, stderr) = run(cmd)
 
 if rc == 0:
   table = Table('Image name', 'Image ID', 'Created')
