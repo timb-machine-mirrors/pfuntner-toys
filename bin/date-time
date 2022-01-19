@@ -1,8 +1,7 @@
 #! /usr/bin/env python3
 
-import pdb
-
 import re
+import sys
 import signal
 import logging
 import inspect
@@ -39,12 +38,31 @@ def date001_processor(specimen):
   method = get_method()
 
   log.debug(f'{method} testing {specimen!r}')
-  pattern = r'(\d+)-(' + ('|'.join([str(num) for num in range(1,13)])) + ')-(\d+)'
+  pattern = r'(\d+)-(' + ('|'.join([str(num).rjust(2, '0') for num in range(1,13)])) + ')-(\d+)'
   match = re.search(pattern, specimen)
   log.debug(f'match groups from {pattern!r}: {match.groups() if match else None}')
   if match:
     if len(match.group(1)) == 4 and (1 <= int(match.group(3)) <= 31):
-      ret = datetime.datetime.strptime('%Y-%m-%d', specimen)
+      ret = datetime.datetime.strptime(specimen, '%Y-%m-%d')
+
+  if ret is None:
+    log.debug(f'{method} does not recognize {specimen!r}')
+  else:
+    log.info(f'{method} interpreted {specimen!r} as {ret!r}')
+
+  return ret
+
+def now_processor(specimen):
+  # Process 'now'
+  ret = None
+  method = get_method()
+
+  log.debug(f'{method} testing {specimen!r}')
+  pattern = r'\bnow\b'
+  match = re.search(pattern, specimen)
+  log.debug(f'match groups from {pattern!r}: {match.groups() if match else None}')
+  if match:
+    ret = datetime.datetime.now()
 
   if ret is None:
     log.debug(f'{method} does not recognize {specimen!r}')
@@ -62,7 +80,7 @@ def process(specimen):
     if ts is not None:
       break
 
-  table.add(specimen, None if ts is None else ts.strftime('%a %b %d %Y %H:%M:%S'), None if ts is None else ts.isoformat())
+  table.add(specimen, None if ts is None else ts.strftime('%a %b %d %Y %H:%M:%S'), None if ts is None else ts.isoformat(), None if ts is None else ts.timestamp())
 
 parser = argparse.ArgumentParser(description='Interpret date/times')
 parser.add_argument('specimens', metavar='specimen', nargs='*', help='Zero or more specimens to interpret')
@@ -80,14 +98,14 @@ processors = {key: value for key, value in locals().items() if callable(value) a
 log.info(f'processors: {processors}')
 
 if args.specimens:
-  table = Table('Specimen', 'Human', 'ISO')
+  table = Table('Specimen', 'Human', 'ISO', 'Secs since epoch')
   for specimen in args.specimens:
     process(specimen)
   table.close()
 else:
   if sys.stdin.isatty():
     parser.error('stdin must be redirected if no specimens are specified')
-  table = Table('Specimen', 'Human', 'ISO')
+  table = Table('Specimen', 'Human', 'ISO', 'Secs since epoch')
   for specimen in sys.stdin.read().splitlines():
-    proces(specimen)
+    process(specimen)
   table.close()
