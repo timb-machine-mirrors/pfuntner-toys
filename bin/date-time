@@ -33,6 +33,26 @@ def epoch_processor(specimen):
   return ret
 
 def date001_processor(specimen):
+  # Process 'Jan 19 2022 12:21:21'
+  ret = None
+  method = get_method()
+
+  log.debug(f'{method} testing {specimen!r}')
+  pattern = r'(Jan|Feb|Mar|May|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (' + ('|'.join([f'[ 0]?{num}' for num in range(1,10)] + [str(num).rjust(2, '0') for num in range(10,13)])) + ') (\d+) \d{2}:\d{2}:(\d{2,})'
+  match = re.search(pattern, specimen)
+  log.debug(f'match groups from {pattern!r}: {match.groups() if match else None}')
+  if match:
+    if len(match.group(3)) == 4 and (1 <= int(match.group(2).strip()) <= 31) and len(match.group(4)) == 2:
+      ret = datetime.datetime.strptime(specimen, '%b %d %Y %H:%M:%S')
+
+  if ret is None:
+    log.debug(f'{method} does not recognize {specimen!r}')
+  else:
+    log.info(f'{method} interpreted {specimen!r} as {ret!r}')
+
+  return ret
+
+def date999_processor(specimen):
   # Process '2021-12-10'
   ret = None
   method = get_method()
