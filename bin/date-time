@@ -10,99 +10,187 @@ import datetime
 
 from simpletable import Table
 
-def get_method():
-  # I stole this from https://stackoverflow.com/questions/5067604/determine-function-name-from-within-that-function-without-using-traceback
-  return inspect.stack()[1].function
-  
-def epoch_processor(specimen):
+
+class EpochProcessor(object):
   # Process '1642395600.0'
-  ret = None
-  method = get_method()
+  date_time_format = None
 
-  log.debug(f'{method} testing {specimen!r}')
-  match = re.search(r'(\d{10,})(\.\d*)?', specimen)
-  log.debug(f'match groups: {match.groups() if match else None}')
-  if match and len(match.group(1)) == 10:
-    ret = datetime.datetime.fromtimestamp(float(match.group(0)))
+  @classmethod
+  def get_specimen(cls):
+    return str((now - epoch).total_seconds())
 
-  if ret is None:
-    log.debug(f'{method} does not recognize {specimen!r}')
-  else:
-    log.info(f'{method} interpreted {specimen!r} as {ret!r}')
+  @classmethod
+  def process(cls, specimen):
+    ret = None
 
-  return ret
+    log.debug(f'{cls.__name__} testing {specimen!r}')
+    match = re.search(r'(\d{10,})(\.\d*)?', specimen)
+    log.debug(f'match groups: {match.groups() if match else None}')
+    if match and len(match.group(1)) == 10:
+      ret = datetime.datetime.fromtimestamp(float(match.group(0)))
 
-def date001_processor(specimen):
+    if ret is None:
+      log.debug(f'{cls.__name__} does not recognize {specimen!r}')
+    else:
+      log.info(f'{cls.__name__} interpreted {specimen!r} as {ret!r}')
+
+    return ret
+
+
+class Date001Processor(object):
   # Process 'Jan 19 2022 12:21:21'
-  ret = None
-  method = get_method()
+  date_time_format = '%b %d %Y %H:%M:%S'
 
-  log.debug(f'{method} testing {specimen!r}')
-  pattern = r'(Jan|Feb|Mar|May|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (' + ('|'.join([f'[ 0]?{num}' for num in range(1,10)] + [str(num).rjust(2, '0') for num in range(10,13)])) + ') (\d+) \d{2}:\d{2}:(\d{2,})'
-  match = re.search(pattern, specimen)
-  log.debug(f'match groups from {pattern!r}: {match.groups() if match else None}')
-  if match:
-    if len(match.group(3)) == 4 and (1 <= int(match.group(2).strip()) <= 31) and len(match.group(4)) == 2:
-      ret = datetime.datetime.strptime(specimen, '%b %d %Y %H:%M:%S')
+  @classmethod
+  def get_specimen(cls):
+    return now.strftime(cls.date_time_format)
 
-  if ret is None:
-    log.debug(f'{method} does not recognize {specimen!r}')
-  else:
-    log.info(f'{method} interpreted {specimen!r} as {ret!r}')
+  @classmethod
+  def process(cls, specimen):
+    ret = None
 
-  return ret
+    log.debug(f'{cls.__name__} testing {specimen!r}')
+    pattern = r'(Jan|Feb|Mar|May|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (' + \
+              ('|'.join([f'[ 0]?{num}' for num in range(1,10)] + [str(num).rjust(2, '0') for num in range(10,13)])) + \
+              ') (\d+) \d{2}:\d{2}:(\d{2,})'
+    match = re.search(pattern, specimen)
+    log.debug(f'match groups from {pattern!r}: {match.groups() if match else None}')
+    if match:
+      if len(match.group(3)) == 4 and (1 <= int(match.group(2).strip()) <= 31) and len(match.group(4)) == 2:
+        ret = datetime.datetime.strptime(match.group(0), cls.date_time_format)
 
-def date999_processor(specimen):
+    if ret is None:
+      log.debug(f'{cls.__name__} does not recognize {specimen!r}')
+    else:
+      log.info(f'{cls.__name__} interpreted {specimen!r} as {ret!r}')
+
+    return ret
+
+
+class Date002Processor(object):
+  # Process '22 Jan 2022 09:57:17 AM'
+  date_time_format = '%d %b %Y %H:%M:%S %p'
+
+  @classmethod
+  def get_specimen(cls):
+    return now.strftime(cls.date_time_format)
+
+  @classmethod
+  def process(cls, specimen):
+    ret = None
+
+    log.debug(f'{cls.__name__} testing {specimen!r}')
+    pattern = '(' + \
+              ('|'.join([f'[ 0]?{num}' for num in range(1, 10)] + [str(num).rjust(2, '0') for num in range(10, 13)])) + \
+              r') (Jan|Feb|Mar|May|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec) ' + \
+              '(\d+) \d{2}:\d{2}:(\d{2,}) (AM|PM)'
+    match = re.search(pattern, specimen)
+    log.debug(f'match groups from {pattern!r}: {match.groups() if match else None}')
+    if match:
+      if len(match.group(3)) == 4 and (1 <= int(match.group(1).strip()) <= 31) and len(match.group(4)) == 2:
+        ret = datetime.datetime.strptime(match.group(0), cls.date_time_format)
+
+    if ret is None:
+      log.debug(f'{cls.__name__} does not recognize {specimen!r}')
+    else:
+      log.info(f'{cls.__name__} interpreted {specimen!r} as {ret!r}')
+
+    return ret
+
+
+class Date999Processor(object):
   # Process '2021-12-10'
-  ret = None
-  method = get_method()
+  date_time_format = '%Y-%m-%d'
 
-  log.debug(f'{method} testing {specimen!r}')
-  pattern = r'(\d+)-(' + ('|'.join([str(num).rjust(2, '0') for num in range(1,13)])) + ')-(\d+)'
-  match = re.search(pattern, specimen)
-  log.debug(f'match groups from {pattern!r}: {match.groups() if match else None}')
-  if match:
-    if len(match.group(1)) == 4 and (1 <= int(match.group(3)) <= 31):
-      ret = datetime.datetime.strptime(specimen, '%Y-%m-%d')
+  @classmethod
+  def get_specimen(cls):
+    return now.strftime(cls.date_time_format)
 
-  if ret is None:
-    log.debug(f'{method} does not recognize {specimen!r}')
-  else:
-    log.info(f'{method} interpreted {specimen!r} as {ret!r}')
+  @classmethod
+  def process(cls, specimen):
+    ret = None
 
-  return ret
+    log.debug(f'{cls.__name__} testing {specimen!r}')
+    pattern = r'(\d+)-(' + ('|'.join([str(num).rjust(2, '0') for num in range(1,13)])) + ')-(\d+)'
+    match = re.search(pattern, specimen)
+    log.debug(f'match groups from {pattern!r}: {match.groups() if match else None}')
+    if match:
+      if len(match.group(1)) == 4 and (1 <= int(match.group(3)) <= 31):
+        ret = datetime.datetime.strptime(match.group(0), cls.date_time_format)
 
-def now_processor(specimen):
+    if ret is None:
+      log.debug(f'{cls.__name__} does not recognize {specimen!r}')
+    else:
+      log.info(f'{cls.__name__} interpreted {specimen!r} as {ret!r}')
+
+    return ret
+
+
+class NowProcessor(object):
   # Process 'now'
-  ret = None
-  method = get_method()
+  date_time_format = None
 
-  log.debug(f'{method} testing {specimen!r}')
-  pattern = r'\bnow\b'
-  match = re.search(pattern, specimen)
-  log.debug(f'match groups from {pattern!r}: {match.groups() if match else None}')
-  if match:
-    ret = datetime.datetime.now()
+  @classmethod
+  def get_specimen(cls):
+    return 'now'
 
-  if ret is None:
-    log.debug(f'{method} does not recognize {specimen!r}')
-  else:
-    log.info(f'{method} interpreted {specimen!r} as {ret!r}')
+  @classmethod
+  def process(cls, specimen):
+    ret = None
 
-  return ret
+    log.debug(f'{cls.__name__} testing {specimen!r}')
+    pattern = r'\bnow\b'
+    match = re.search(pattern, specimen)
+    log.debug(f'match groups from {pattern!r}: {match.groups() if match else None}')
+    if match:
+      ret = now
+
+    if ret is None:
+      log.debug(f'{cls.__name__} does not recognize {specimen!r}')
+    else:
+      log.info(f'{cls.__name__} interpreted {specimen!r} as {ret!r}')
+
+    return ret
+
 
 def process(specimen):
   global table
 
   ts = None
-  for processor in sorted(processors.keys()):
-    ts = processors[processor](specimen)
+  for processor in processor_names:
+    ts = processors[processor].process(specimen)
     if ts is not None:
       break
 
-  table.add(specimen, None if ts is None else ts.strftime('%a %b %d %Y %H:%M:%S'), None if ts is None else ts.isoformat(), None if ts is None else ts.timestamp())
+  table.add(
+    specimen,
+    None if ts is None else ts.strftime('%a %b %d %Y %H:%M:%S'),
+    None if ts is None else ts.isoformat(),
+    None if ts is None else ts.timestamp()
+  )
 
-parser = argparse.ArgumentParser(description='Interpret date/times')
+
+now = datetime.datetime.now()
+epoch = datetime.datetime.fromtimestamp(0)
+
+"""
+  Get the list of processors now so we they can help us building the help.
+
+  I morphed this technique from
+  https://stackoverflow.com/questions/18451541/getting-a-list-of-locally-defined-functions-in-python
+"""
+processors = {key: value for key, value in locals().items() if key.endswith('Processor')}
+processor_names = sorted(processors.keys())
+
+epilog = 'Sample specimens\n' + '\n'.join(
+  [f'  {processors[processor_name].get_specimen()}' for processor_name in processor_names]
+)
+
+parser = argparse.ArgumentParser(
+  description='Interpret date/times',
+  formatter_class=argparse.RawDescriptionHelpFormatter,
+  epilog=epilog,
+)
 parser.add_argument('specimens', metavar='specimen', nargs='*', help='Zero or more specimens to interpret')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
@@ -113,8 +201,6 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
-# I stole this technique from https://stackoverflow.com/questions/18451541/getting-a-list-of-locally-defined-functions-in-python
-processors = {key: value for key, value in locals().items() if callable(value) and value.__module__ == __name__ and key.endswith('_processor')}
 log.info(f'processors: {processors}')
 
 if args.specimens:
