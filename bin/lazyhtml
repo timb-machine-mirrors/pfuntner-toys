@@ -23,6 +23,7 @@ class LazyHtml(object):
       We don't expect the caller to reference this class to it's an inner class of LazyHtml.
     """
     def __init__(self, tag, attrs):
+      self.path = None
       self.tag = tag
       self.attrs = attrs
       self.data = list()
@@ -54,6 +55,7 @@ class LazyHtml(object):
       else:
         self.stack[-1].children.append(node)
       self.stack.append(node)
+      node.path = '/' + '/'.join([stack_node.tag for stack_node in self.stack])
   
     def handle_endtag(self, tag):
       """
@@ -106,12 +108,12 @@ class LazyHtml(object):
   def get_attrs(tuples):
     return {name:value for (name, value) in tuples}
     
-  def to_html(self, node):
+  def to_json(self, node):
     ret = None
     if node:
-      ret = {'tag': node.tag, 'attrs': self.get_attrs(node.attrs), 'data': node.data, 'children': []}
+      ret = {'tag': node.tag, 'attrs': self.get_attrs(node.attrs), 'data': node.data, 'children': [], 'path': node.path}
       for child in node.children:
-        ret['children'].append(self.to_html(child))
+        ret['children'].append(self.to_json(child))
     return ret
 
 def visit(node, indent=0):
@@ -142,6 +144,6 @@ if __name__ == '__main__':
   root = parser.parse(sys.stdin.read())
   
   if args.json:
-    json.dump(parser.to_html(root), sys.stdout)
+    json.dump(parser.to_json(root), sys.stdout)
   else:
     visit(root)
