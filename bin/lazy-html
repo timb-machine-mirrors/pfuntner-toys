@@ -1,0 +1,104 @@
+#! /usr/bin/env python3
+
+import sys
+import json
+import signal
+import logging
+import argparse
+
+from html.parser import HTMLParser
+
+class Node(object):
+  def __init__(self, tag, attrs):
+    self.tag = tag
+    self.attrs = attrs
+    self.data = list()
+    self.children = list()
+
+  def __str__(self):
+    return f'<{self.tag} {self.attrs}/>'
+
+class LazyHtmlParser(HTMLParser):
+  def handle_starttag(self, tag, attrs):
+    global root, stack
+
+    log.debug(f'Encountered a <{tag}>')
+    node = Node(tag, attrs)
+    if root is None:
+      root = node
+    else:
+      stack[-1].children.append(node)
+    stack.append(node)
+
+  def handle_endtag(self, tag):
+    global root, stack
+
+    log.debug(f'Encountered a </{tag}>')
+
+    if tag not in [node.tag for node in stack]:
+      log.error(f'Encountered unmatched </{tag}>')
+      exit(1)
+
+    while stack and stack[-1].tag != tag:
+      log.info(f'Encountered </{tag}> but expected </{stack[-1].tag}> first')
+      stack.pop()
+
+    stack.pop()
+
+  def handle_data(self, data):
+    global root, stack
+
+    log.debug(f'Encountered data {data!r}')
+    if stack:
+      stack[-1].data.append(data)
+    elif not data.strip():
+      log.debug('Ignoring whitespace without a node')
+    else:
+      log.error(f'Encountered data {data!r} without a node')
+      exit(1)
+
+def get_attrs(tuples):
+  return {name:value for (name, value) in tuples}
+  
+def visit(node, indent=0):
+  if node:
+    attrs = (' ' + ' '.join([f'{name}={value!r}' for (name, value) in get_attrs(node.attrs).items()])) if node.attrs else ''
+   
+    print(f'{" " * (indent*2)}<{node.tag}{attrs}>{" ".join(node.data)}')
+    for child in node.children:
+      visit(child, indent+1)
+    print(f'{" " * (indent*2)}</{node.tag}>')
+
+def to_html(node):
+  ret = None
+  if node:
+    ret = {'tag': node.tag, 'attrs': get_attrs(node.attrs), 'data': node.data, 'children': []}
+    for child in node.children:
+      ret['children'].append(to_html(child))
+  return ret
+
+parser = argparse.ArgumentParser(description=sys.argv[0])
+parser.add_argument('-j', '--json', action='store_true', help='Generate JSON output')
+parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.WARNING - (args.verbose or 0)*10)
+
+signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
+
+if sys.stdin.isatty():
+  parser.error('stdin must be redirected')
+
+text = sys.stdin.read()
+
+parser = LazyHtmlParser()
+stack = list()
+root = None
+parser.feed(text)
+
+if args.json:
+  json.dump(to_html(root), sys.stdout)
+else:
+  visit(root)
