@@ -1,0 +1,136 @@
+#! /usr/bin/env python3
+
+import sys
+import json
+import signal
+import logging
+import argparse
+
+from html.parser import HTMLParser
+
+class Node(object):
+  """
+    Represents a node in an HTML tree
+  """
+  def __init__(self, tag, attrs):
+    self.tag = tag
+    self.attrs = attrs
+    self.data = list()
+    self.children = list()
+
+  def __str__(self):
+    return f'<{self.tag} {self.attrs}/>'
+
+class BaseLazyHtmlParser(HTMLParser):
+  """
+    This extends the base HTMLParser class to forgive common HTML errors such as neglecting to close tags that prevents
+    the source from being parsed as XHTML.
+  """
+  def __init__(self):
+    self.root = None
+    self.stack = list()
+    super().__init__()
+    
+  def handle_starttag(self, tag, attrs):
+    """
+      Remember a new tag
+    """
+    log.debug(f'Encountered a <{tag}>')
+    node = Node(tag, attrs)
+    if self.root is None:
+      self.root = node
+    else:
+      self.stack[-1].children.append(node)
+    self.stack.append(node)
+
+  def handle_endtag(self, tag):
+    """
+      Finish a tag - we will forgive if the "current" node is not the one being closed... We'll work our way
+      up the stack to find the LAST node that matches the tag being closed.
+
+      It is an error if there are no open nodes matching the tag being closed.
+    """
+    log.debug(f'Encountered a </{tag}>')
+
+    if tag not in [node.tag for node in self.stack]:
+      log.error(f'Encountered unmatched </{tag}>')
+      exit(1)
+
+    while self.stack and self.stack[-1].tag != tag:
+      log.info(f'Encountered </{tag}> but expected </{self.stack[-1].tag}> first')
+      self.stack.pop()
+
+    self.stack.pop()
+
+  def handle_data(self, data):
+    """
+      Add data to a node.
+
+      It is an error if we read non-whitespace data without an open node.
+    """
+    log.debug(f'Encountered data {data!r}')
+    if self.stack:
+      self.stack[-1].data.append(data)
+    elif not data.strip():
+      log.debug('Ignoring whitespace without a node')
+    else:
+      log.error(f'Encountered data {data!r} without a node')
+      exit(1)
+
+class LazyHtml(object):
+  def __init__(self, log=None):
+    
+    if log:
+      self.log = log
+    else:
+      logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+      self.log = logging.getLogger()
+  
+    self.parser = BaseLazyHtmlParser()
+
+  def parse(self, html):
+    self.parser.feed(html)
+    return self.parser.root
+  
+  @staticmethod
+  def get_attrs(tuples):
+    return {name:value for (name, value) in tuples}
+    
+  def to_html(self, node):
+    ret = None
+    if node:
+      ret = {'tag': node.tag, 'attrs': self.get_attrs(node.attrs), 'data': node.data, 'children': []}
+      for child in node.children:
+        ret['children'].append(self.to_html(child))
+    return ret
+
+def visit(node, indent=0):
+  if node:
+    attrs = (' ' + ' '.join([f'{name}={value!r}' for (name, value) in parser.get_attrs(node.attrs).items()])) if node.attrs else ''
+   
+    print(f'{" " * (indent*2)}<{node.tag}{attrs}>{" ".join(node.data)}')
+    for child in node.children:
+      visit(child, indent+1)
+    print(f'{" " * (indent*2)}</{node.tag}>')
+  
+parser = argparse.ArgumentParser(description=sys.argv[0])
+parser.add_argument('-j', '--json', action='store_true', help='Generate JSON output')
+parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.WARNING - (args.verbose or 0)*10)
+
+signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
+
+if sys.stdin.isatty():
+  parser.error('stdin must be redirected')
+
+parser = LazyHtml(log)
+root = parser.parse(sys.stdin.read())
+
+if args.json:
+  json.dump(parser.to_html(root), sys.stdout)
+else:
+  visit(root)
