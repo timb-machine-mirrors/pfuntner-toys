@@ -167,7 +167,7 @@ def visit(node, indent=0):
     if isinstance(node, str):
       print(f'{" " * (indent*2)}{node}')
     else:
-      attrs = (' ' + ' '.join([f'{name}={value!r}' for (name, value) in parser.get_attrs(node.attrs).items()])) if node.attrs else ''
+      attrs = (' ' + ' '.join([f'{name}={value!r}' for (name, value) in html_parser.get_attrs(node.attrs).items()])) if node.attrs else ''
 
       print(f'{" " * (indent*2)}<{node.tag}{attrs}>')
       for child in node.children:
