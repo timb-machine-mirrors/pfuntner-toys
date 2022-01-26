@@ -41,8 +41,9 @@ class LazyHtml(object):
 
       We don't expect the caller to reference this class to it's an inner class of LazyHtml.
     """
-    def __init__(self):
+    def __init__(self, log):
       self.root = None
+      self.log = log
       self.stack = list()
       super().__init__()
 
@@ -50,7 +51,7 @@ class LazyHtml(object):
       """
         Remember a new tag
       """
-      log.debug(f'Encountered a <{tag}>')
+      self.log.debug(f'Encountered a <{tag}>')
       node = LazyHtml.Node(tag, attrs)
       if self.root is None:
         self.root = node
@@ -66,14 +67,14 @@ class LazyHtml(object):
 
         It is an error if there are no open nodes matching the tag being closed.
       """
-      log.debug(f'Encountered a </{tag}>')
+      self.log.debug(f'Encountered a </{tag}>')
 
       if tag not in [node.tag for node in self.stack]:
-        log.error(f'Encountered unmatched </{tag}>')
+        self.log.error(f'Encountered unmatched </{tag}>')
         exit(1)
 
       while self.stack and self.stack[-1].tag != tag:
-        log.info(f'Encountered </{tag}> but expected </{self.stack[-1].tag}> first')
+        self.log.debug(f'Encountered </{tag}> but expected </{self.stack[-1].tag}> first')
         self.stack.pop()
 
       self.stack.pop()
@@ -84,13 +85,13 @@ class LazyHtml(object):
 
         It is an error if we read non-whitespace data without an open node.
       """
-      log.debug(f'Encountered data {data!r}')
+      self.log.debug(f'Encountered data {data!r}')
       if self.stack:
         self.stack[-1].children.append(data.strip())
       elif not data.strip():
-        log.debug('Ignoring whitespace without a node')
+        self.log.debug('Ignoring whitespace without a node')
       else:
-        log.error(f'Encountered data {data!r} without a node')
+        self.log.error(f'Encountered data {data!r} without a node')
         exit(1)
 
   def __init__(self, log=None):
@@ -100,7 +101,7 @@ class LazyHtml(object):
       logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
       self.log = logging.getLogger()
 
-    self.parser = self.BaseLazyHtmlParser()
+    self.parser = self.BaseLazyHtmlParser(self.log)
 
   def get_root(self, html):
     self.parser.feed(html)
