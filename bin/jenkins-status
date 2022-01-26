@@ -1,5 +1,7 @@
 #! /usr/bin/env python3
 
+import pdb
+
 import re
 import os
 import sys
@@ -35,18 +37,16 @@ class Table(object):
     self.p.stdin.close()
     self.p.wait()
 
-def see(node):
-  keys = [key for key in dir(node) if not key.startswith('_')].remove('tag')
-  attrs = ' ' + (' '.join([f'{name}={getattr(node, key)!r}' for key in keys])) if keys else ''
-  return f'<{node.tag}{attrs}>'
+def see(o):
+  if isinstance(o, datetime.datetime):
+    return o.strftime('%Y-%m-%d %H:%M')
+  return o
 
 def find(node, *conditions):
   ret = list()
-  if node and all([condition(node) for condition in conditions]):
-    ret.append(node)
-    log.info(f'{see(node)}: True')
-  else:
-    log.info(f'{see(node)}: False')
+  if node is not None:
+    if all([condition(node) for condition in conditions]):
+      ret.append(node)
 
   for child in node:
     ret += find(child, *conditions)
@@ -110,14 +110,14 @@ if resp.ok:
       
       log.info('searching for status nodes')
       # find `<img src='/jenkins/sto/static/e823c9e3/images/16x16/red.png' alt='Failed > Console Output' tooltip='Failed > Console Output' ...` nodes
-      status_nodes = find(job_root, lambda node: node.tag == 'img', lambda node: node.get('tooltip', '') != '')
+      status_nodes = find(job_root, lambda node: node.tag == 'img', lambda node: node.attrib.get('tooltip', '') != '')
       log.info(f'{len(status_nodes)} status nodes')
-      row.append(status_nodes[0].get('tooltip') if status_nodes else None)
+      row.append(status_nodes[0].attrib.get('tooltip').split()[0] if status_nodes else 'n/a')
 
       # find `<div time='1643015460282' class='pane build-details'>` nodes
       time_nodes = find(job_root, lambda node: node.tag == 'div', lambda node: node.get('time', '') != '')
       log.info(f'{len(time_nodes)} time nodes')
-      row.append(str(datetime.datetime.fromtimestamp(int(time_nodes[0].get('time'))/1000.0)) if time_nodes else None)
+      row.append(str(datetime.datetime.fromtimestamp(int(time_nodes[0].get('time'))/1000.0)) if time_nodes else 'n/a')
 
       table.add(*row)
     else:
