@@ -52,8 +52,24 @@ def find(node, *conditions):
     ret += find(child, *conditions)
   return ret
 
-parser = argparse.ArgumentParser(description='Summarize Jenkins job status')
-parser.add_argument('-u', '--base-url', help='Base Jenkins URL')
+parser = argparse.ArgumentParser(description='Summarize Jenkins job status', formatter_class=argparse.RawTextHelpFormatter, epilog="""The credentials must be in the form of "user:token" where:
+
+  user: Your Jenkins userid
+  token: a 34-digit hex string
+
+You can create a token through the Jenkins GUI:
+  1) Log into Jenkins
+  2) Click your name/user in the upper right corner of the page
+  3) Look at the URL in the browser to identify your Jenkins user.  For example, my URL is something like "https://foo.bar.com/jenkins/foobar/user/jpfuntne/configure" so my user is jpfuntne.  It might be a common user you use all the time for your organization.
+  4) Click the "Configure" link on left side
+  5) Click the "Create new Token" button
+  6) Name the token and press the "Generate" button
+  7) Copy the token and make a note of it
+
+The credentials can be:
+  - expressed on the command line
+  - set as the JENKINS_CREDENTIALS environment variable, perhaps in your shell profile""")
+parser.add_argument('-u', '--base-url', help='Base Jenkins URL (eg. https://foo.com/jenkins/sto/job/YourOrg/job/pipelines/job), can be stored in JENKINS_BASE_URL environment variable')
 parser.add_argument('-c', '--credentials', help='Jenkins credentials (eg. user@token)')
 parser.add_argument('group', help='Jenkins group (ex. repositories, images, etc)')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
