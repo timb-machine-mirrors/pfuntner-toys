@@ -72,6 +72,7 @@ The credentials can be:
 parser.add_argument('-u', '--base-url', help='Base Jenkins URL (eg. https://foo.com/jenkins/sto/job/YourOrg/job/pipelines/job), can be stored in JENKINS_BASE_URL environment variable')
 parser.add_argument('-c', '--credentials', help='Jenkins credentials (eg. user@token)')
 parser.add_argument('group', help='Jenkins group (ex. repositories, images, etc)')
+parser.add_argument('-t', '--time', action='store_true', help='Sort by time, most recent at top')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -93,10 +94,10 @@ if not base_url:
 job_prefix_regexp = re.compile('^job_')
 job_id_regexp = re.compile('/master/(\d+)/')
 
+rows = list()
 url = f'{base_url}/{args.group}'
 resp = requests.get(url, auth=creds)
 if resp.ok:
-  table = Table('Job', 'Last build ID', 'Status', 'Last build date')
   base_root = LazyHtml(log).parse(resp.text)
   # find `<tr id='job_ansible-clamav' class=' job-status-'>` nodes
   job_nodes = find(base_root, lambda node: node.tag == 'tr', lambda node: 'job-status-' in node.get('class', '').split())
@@ -124,7 +125,6 @@ if resp.ok:
           build_id = f'#{match.group(1)}'
       row.append(build_id)
       
-      log.info('searching for status nodes')
       # find `<img src='/jenkins/sto/static/e823c9e3/images/16x16/red.png' alt='Failed > Console Output' tooltip='Failed > Console Output' ...` nodes
       status_nodes = find(job_root, lambda node: node.tag == 'img', lambda node: node.attrib.get('tooltip', '') != '')
       log.info(f'{len(status_nodes)} status nodes')
@@ -135,10 +135,22 @@ if resp.ok:
       log.info(f'{len(time_nodes)} time nodes')
       row.append(str(datetime.datetime.fromtimestamp(int(time_nodes[0].get('time'))/1000.0)) if time_nodes else 'n/a')
 
-      table.add(*row)
+      if status_nodes:
+        row.append(' '.join([('+' if node.get('tooltip', '?').startswith('S') else '-') for node in status_nodes[:5]]))
+      else:
+        row.append('n/a')
+
+      rows.append(row)
     else:
       log.error(f'{url} failed: {resp.status_code} {resp.text!r}')
       exit(1)
+
+  if args.time:
+    rows.sort(key=lambda row: row[3], reverse=True)
+
+  table = Table('Job', 'Last build ID', 'Status', 'Last build date', 'History')
+  for row in rows:
+    table.add(*row)
   table.close()
 else:
   log.error(f'{url} failed: {resp.status_code} {resp.text!r}')
