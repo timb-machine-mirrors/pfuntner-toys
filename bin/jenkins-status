@@ -142,8 +142,7 @@ if resp.ok:
 
       rows.append(row)
     else:
-      log.error(f'{url} failed: {resp.status_code} {resp.text!r}')
-      exit(1)
+      log.warning(f'{url} failed: {resp.status_code} {resp.text!r}')
 
   if args.time:
     rows.sort(key=lambda row: row[3], reverse=True)
