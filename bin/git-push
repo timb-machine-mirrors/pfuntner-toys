@@ -44,7 +44,7 @@ if match:
     cmd += ' --force'
 
   if args.dry_run:
-    log.warn(f'Not running: {cmd!r}')
+    log.warning(f'Not running: {cmd!r}')
   else:
     (rc, stdout, stderr) = run(cmd, capture=False)
 else:
