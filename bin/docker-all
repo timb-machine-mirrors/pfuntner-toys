@@ -96,9 +96,10 @@ now = datetime.datetime.now()
 images = list()
 (rc, stdout, stderr) = run('docker images --format {{.ID}}')
 if rc == 0:
-  ids = set(stdout.splitlines())
-  (rc, stdout, stderr) = run(f'docker inspect {" ".join(ids)}')
-  images = json.loads(stdout)
+  if stdout:
+    ids = set(stdout.splitlines())
+    (rc, stdout, stderr) = run(f'docker inspect {" ".join(ids)}')
+    images = json.loads(stdout)
 else:
   log.error(f'`docker images` failed: {rc}, {stdout!r}, {stderr!r}')
   exit(1)
