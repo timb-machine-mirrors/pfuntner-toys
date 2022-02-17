@@ -136,8 +136,14 @@ if resp.ok:
       row.append(str(datetime.datetime.fromtimestamp(int(time_nodes[0].get('time'))/1000.0)) if time_nodes else 'n/a')
 
       if status_nodes:
-        row.append(' '.join([('+' if node.get('tooltip', '?').startswith('S') else '-') for node in status_nodes[:5]]))
+        status = [('+' if node.get('tooltip', '?').startswith('S') else '-') for node in status_nodes[:5]]
+        row.append(' '.join(status))
+        if status:
+          row.append(f'{len([state for state in status if state == "+"])/len(status):.0%}')
+        else:
+          row.append('n/a')
       else:
+        row.append('n/a')
         row.append('n/a')
 
       rows.append(row)
@@ -147,7 +153,7 @@ if resp.ok:
   if args.time:
     rows.sort(key=lambda row: row[3], reverse=True)
 
-  table = Table('Job', 'Last build ID', 'Status', 'Last build date', 'History')
+  table = Table('Job', 'Last build ID', 'Status', 'Last build date', 'History', 'Success Rate')
   for row in rows:
     table.add(*row)
   table.close()
