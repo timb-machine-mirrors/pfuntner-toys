@@ -80,6 +80,7 @@ class Instances(object):
       (re.compile('^debian-jessie'),     'debian8',  'admin'),
       (re.compile('^debian-stretch'),    'debian9',  'admin'),
       (re.compile('^debian-10'),         'debian10', 'admin'),
+      (re.compile('^debian-11'),         'debian11', 'admin'),
       (re.compile('^amzn-'),             'amazon1',  'ec2-user'),
       (re.compile('^amzn2'),             'amazon2',  'ec2-user'),
       (re.compile('amazon-eks-node'),    'amazon2',  'ec2-user'),
@@ -87,7 +88,7 @@ class Instances(object):
       (re.compile('^RHEL-7'),            'rhel7',    'ec2-user'),
       (re.compile('^RHEL-8'),            'rhel8',    'ec2-user'),
       (re.compile('^RHEL-6'),            'rhel6',    'ec2-user'),
-      (re.compile('Alma'),               'alma8',    'ec2-user'),
+      (re.compile('Alma', flags=re.IGNORECASE),               'alma8',    'ec2-user'),
       (re.compile('suse-sles-15'),       'suse15',   'ec2-user'),
       (re.compile('ubuntu-focal-20'),    'ubuntu20', 'ubuntu'),
     ]
@@ -139,9 +140,11 @@ class Instances(object):
       (re.compile('^rhel-8'),            'rhel8'),
       (re.compile('^debian-9'),          'debian9'),
       (re.compile('^debian-10'),         'debian10'),
+      (re.compile('^debian-11'),         'debian11'),
       (re.compile('^ubuntu[-a-z]*-16'),  'ubuntu16'),
       (re.compile('^ubuntu[-a-z]*-18'),  'ubuntu18'),
       (re.compile('^ubuntu[-a-z]*-20'),  'ubuntu20'),
+      (re.compile('alma', flags=re.IGNORECASE),  'alma8'),
     ]
 
     user = self.config.get('gcp_user')
