@@ -5,6 +5,7 @@ import re
 import sys
 import json
 import time
+import socket 
 import getpass
 import inspect
 import logging
@@ -482,6 +483,10 @@ if __name__ == '__main__':
   args = parser.parse_args()
 
   log.setLevel(logging.WARNING - (args.verbose or 0)*10)
+
+
+  if args.make and 'JPFUNTNE-GCEYJ.cisco.com' in socket.gethostbyname_ex(socket.gethostname()):
+    parser.error('Avoiding running with --make on work laptop')
 
   count = 0
 
