@@ -5,34 +5,20 @@ import os
 import signal
 import logging
 import argparse
-import subprocess
 
-def run(cmd, stdin=None, capture=True, shell=False):
-  if shell:
-    if isinstance(cmd, list):
-      cmd = ' '.join(cmd)
-  elif isinstance(cmd, str):
-    cmd = cmd.split()
+def dive(path):
+  ret = list()
 
-  log.info('Executing {cmd}'.format(**locals()))
+  if not ('/.' in path or '/Downloads' in path or '/third-party' in path or '/__pycache__' in path):
 
-  p = None
-  try:
-    p = subprocess.Popen(cmd, stdin=subprocess.PIPE if stdin else None, stdout=subprocess.PIPE if capture else None, stderr=subprocess.PIPE if capture else None, shell=shell)
-  except Exception as e:
-    (rc, stdout, stderr) = (-1, '', f'Caught {e!s} running {cmd!r}')
+    if regexp.search(os.path.basename(path)) and os.path.isdir(path) and not os.path.islink(path):
+      ret.append(path)
+  
+    if os.path.isdir(path):
+      for filename in os.listdir(path):
+        ret += dive(os.path.join(path, filename))
 
-  if p:
-    if stdin:
-      p.stdin.write(stdin.encode())
-    if capture:
-      (stdout, stderr) = tuple([s.decode('utf-8') for s in p.communicate()])
-    else:
-      (stdout, stderr) = ('', '')
-    rc = p.wait()
-
-  log.debug('Executed {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
-  return (rc, stdout, stderr)
+  return ret
 
 def protect_metachars(s):
   ret = ''
@@ -55,11 +41,7 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
 regexp = re.compile(args.pat)
-(rc, stdout, stderr) = run(f'find {os.path.expanduser("~")} -follow -type d ! -path */.* ! -path */Downloads* ! -path */third-party* ! -path */venv/* ! -path */__pycache__*')
-files = list()
-for file in stdout.splitlines():
-  if regexp.search(os.path.basename(file)):
-    files.append(protect_metachars(file) if args.bash else file)
+files = dive(os.path.expanduser("~"))
 
 if args.bash:
   print(f'({" ".join(files)})')
