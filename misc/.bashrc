@@ -157,3 +157,5 @@ if test -f "$HOME/repos/toys/misc/.exrc"
 then
   alias vi="vi -u '$HOME/repos/toys/misc/.exrc'"
 fi
+
+alias supercd='. supercd.sh'
