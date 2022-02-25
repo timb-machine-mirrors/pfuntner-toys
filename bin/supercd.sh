@@ -7,6 +7,7 @@ eval files=$(supercd.py --bash "$@")
 
 if [ ${#files[@]} -eq 1 ]
 then
+  echo "${files[0]}"
   cd "${files[0]}"
 elif [ ${#files[@]} -eq 0 ]
 then
