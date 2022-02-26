@@ -15,7 +15,12 @@ def dive(path):
       ret.append(path)
   
     if os.path.isdir(path):
-      for filename in os.listdir(path):
+      children = list()
+      try:
+        children = os.listdir(path)
+      except Exception as e:
+        log.info(f'listdir({path!r}) error: {e!r}')
+      for filename in children:
         ret += dive(os.path.join(path, filename))
 
   return ret
