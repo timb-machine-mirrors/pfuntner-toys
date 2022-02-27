@@ -20,7 +20,7 @@ def run(cmd, capture=True):
   log.debug('Executed {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
   return (rc, stdout, stderr)
 
-parser = argparse.ArgumentParser(description='Refresh your master git branch after merging a feature branch')
+parser = argparse.ArgumentParser(description='Refresh your master/main git branch after merging a feature branch')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -32,12 +32,24 @@ signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
 (rc, stdout, stderr) = run('git branch')
 if rc == 0:
+  branches = re.findall(r'^[* ]\s+(.*)$', stdout, flags=re.MULTILINE)
+  if not branches:
+    log.error(f'Could not determine git branches: {rc}, {stdout!r}, {stderr!r}')
+    exit(1)
+  master = None
+  if 'master' in branches:
+    master = 'master'
+  elif 'main' in branches:
+    master = 'main'
+  else:
+    log.error(f'Could not determine master/main branch: {rc}, {stdout!r}, {stderr!r}')
+    exit(1)
   match = re.search(r'^\*\s+(.*)$', stdout, flags=re.MULTILINE)
   if match:
     branch = match.group(1)
     log.info(f'Current branch is {branch!r}')
-    if branch != 'master':
-      (rc, stdout, stderr) = run('git checkout master', capture=False)
+    if branch != master:
+      (rc, stdout, stderr) = run(f'git checkout {master}', capture=False)
       if rc == 0:
         (rc, stdout, stderr) = run('git pull', capture=False)
         if rc == 0:
@@ -52,13 +64,13 @@ if rc == 0:
           else:
             print(f'{branch!r} branch was not removed!')
         else:
-          print('Could not pull master branch')
+          print(f'Could not pull {master} branch')
           exit(rc)
       else:
-        print('Could not checkout master branch')
+        print(f'Could not checkout {master} branch')
         exit(rc)
     else:
-      print('You are already in the master branch')
+      print(f'You are already in the {master} branch')
       exit(1)
   else:
     print(f'Could not determine branch from: {stdout!r}')
