@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import re
+import os
 import signal
 import logging
 import argparse
@@ -45,11 +46,24 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
+rc = 0
+
 now = datetime.datetime.now().strftime('_%Y-%m-%d_%H.%M.%S.%f')
 regexp = re.compile(r'\d{4}-\d{2}-\d{2}_\d{2}\.\d{2}\.\d{2}\.\d{6}$')
 
 for filename in args.files:
   if regexp.search(filename):
     log.warning(f'{filename} appears to already have timestamp')
+    # this doesn't cause a non-zero exit status so we won't change `rc`
+  elif os.path.exists(filename):
+    (rc, stdout, stderr) = run(['mv', '-v', filename, filename + now])
+    if rc == 0:
+      print(stdout, end='')
+    else:
+      log.warning(f'Could not rename {filename}: {stderr or stdout!r}')
+      rc = 1
   else:
-    run(['mv', '-v', filename, filename + now], capture=False)
+    log.warning(f'Can not find {filename}')
+    rc = 1
+
+exit(rc)
