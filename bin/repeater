@@ -13,6 +13,33 @@ def interrupt_handler(signum, stack_frame):
   log.warning('Shutting down')
   quit = True
 
+def run(cmd, stdin=None, capture=True, shell=False):
+  if shell:
+    if isinstance(cmd, list):
+      cmd = ' '.join(cmd)
+  elif isinstance(cmd, str):
+    cmd = cmd.split()
+
+  log.info('Executing {cmd}'.format(**locals()))
+
+  p = None
+  try:
+    p = subprocess.Popen(cmd, stdin=subprocess.PIPE if stdin else None, stdout=subprocess.PIPE if capture else None, stderr=subprocess.PIPE if capture else None, shell=shell)
+  except Exception as e:
+    (rc, stdout, stderr) = (-1, '', f'Caught {e!s} running {cmd!r}')
+
+  if p:
+    if stdin:
+      p.stdin.write(stdin.encode())
+    if capture:
+      (stdout, stderr) = tuple([s.decode('utf-8') for s in p.communicate()])
+    else:
+      (stdout, stderr) = ('', '')
+    rc = p.wait()
+
+  log.debug('Executed {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
+  return (rc, stdout, stderr)
+
 parser = argparse.ArgumentParser(description='Repeat a command over and over')
 parser.add_argument('command', nargs='+', help='Command and arguments to execute')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
@@ -26,8 +53,9 @@ signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 signal.signal(signal.SIGINT, interrupt_handler)
 
 def write_results(results):
-  with open('repeater.json', 'w') as stream:
+  with open('repeater.json.work', 'w') as stream:
     json.dump(results, stream)
+  run('mv -f repeater.json.work repeater.json')
 
 results = {
   'command': args.command,
