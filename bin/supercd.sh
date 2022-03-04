@@ -1,3 +1,5 @@
+unset files
+
 if [ "$BASH_SOURCE" == "$0" ]
 then
   echo "Note: $0 is not sourced" >&2
