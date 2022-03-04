@@ -159,14 +159,18 @@ def linearWriter(root):
     exit(1)
 
 def makeIntIfPossible(elem):
-  try:
-    elem = int(elem)
-  except:
-    pass
+  match = numeric_regexp.search(elem)
+  if match:
+    try:
+      elem = int(match.group(1))
+    except:
+      pass
   return elem
 
 def path_sorter(path):
-  return [makeIntIfPossible(elem) for elem in path.split('/')]
+  ret = [makeIntIfPossible(elem) for elem in path.split('/')]
+  log.debug(f'path_sorter({path!r}) => {ret!r}')
+  return ret
 
 def see(o):
   ret = repr(o)
@@ -308,6 +312,8 @@ parser.add_argument('path', nargs='?', help='Path to desired object(s)')
 args = parser.parse_args()
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
+
+numeric_regexp = re.compile('^(\d+)')
 
 yaml = None
 if args.yaml:
