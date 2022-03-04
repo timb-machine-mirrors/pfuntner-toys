@@ -185,7 +185,7 @@ def flatWriter(root, path=[]):
     ret.append('/{path} {root}'.format(path='/'.join(path), root=see(root)))
 
   if path == []:
-    print('\n'.join(sorted(ret))) # , key=path_sorter)))
+    print('\n'.join(sorted(ret, key=path_sorter)))
   return ret
 
 def findpath(root, path_pattern, path=[]):
