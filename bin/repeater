@@ -13,6 +13,11 @@ def interrupt_handler(signum, stack_frame):
   log.warning('Shutting down')
   quit = True
 
+def write_results(results):
+  with open('repeater.json.work', 'w') as stream:
+    json.dump(results, stream)
+  run('rm -f repeater.json; mv -f repeater.json.work repeater.json', shell=True)
+
 def run(cmd, stdin=None, capture=True, shell=False):
   if shell:
     if isinstance(cmd, list):
@@ -51,11 +56,6 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 signal.signal(signal.SIGINT, interrupt_handler)
-
-def write_results(results):
-  with open('repeater.json.work', 'w') as stream:
-    json.dump(results, stream)
-  run('mv -f repeater.json.work repeater.json')
 
 results = {
   'command': args.command,
