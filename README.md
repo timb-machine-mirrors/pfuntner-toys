@@ -27,6 +27,7 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`bingrep`](doc/bingrep.md)                     |                   | Searches for a regular expression in arbitrary data from stdin                                       |
 | [`br`](doc/br.md)                               | Yes               | Browse a file.  Sounds simple?  Maybe, but give it a try                                             |
 | [`capture`](doc/capture.md)                     |                   | Saves output and other information from a command                                                    |
+| [`char-by-char`](doc/char-by-char.md)           | Yes               | Display a file character-by-character                                                                |
 | [`columns`](doc/columns.md)                     | Yes               | Prints _columns_ of stdin where columns are separated by a character or regular expression           |
 | [`comm2`](doc/comm2.md)                         |                   | Alternate version of `comm` that does not expect the data to be sorted                               |
 | [`cores`](doc/cores.md)                         |                   | Prints CPU core information in a simple way                                                          |
@@ -38,6 +39,7 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`fitwidth`](doc/fitwidth.md)                   | Yes               | Restrict lines of data to a desired width                                                            |
 | [`flow`](doc/flow.md)                           | Yes               | Flow lines from stdin into columnar form                                                             |
 | [`fulltime`](doc/fulltime.md)                   |                   | Execute a command using standard `time` utility and all options available to it                      |
+| [`git-cat`](doc/git-cat.md)                     | Yes               | Display a file from another git branch                                                               |
 | [`gitstatus`](doc/gitstatus.md)                 |                   | Show files in a local git repo that have been changed, etc.                                          |
 | [`grep-cat`](doc/grep-cat.md)                   |                   | Show lines in a file based on line numbers and/or regular expressions, ranges.                       |
 | [`headtail`](doc/headtail.md)                   | Yes               | Print out the top and bottom of stdin or one or more files                                           |
@@ -54,8 +56,9 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`pythons`](doc/pythons.md)                     |                   | Show versions of Python/Python2/Python3 interpreters                                                 |
 | [`recentdownloads`](doc/recentdownloads.md)     |                   | Find recently downloaded files                                                                       |
 | [`SecureKeyValues`](doc/SecureKeyValues.md)     |                   | Manage secure key value stores                                                                       |
-| [`supercd.sh`](doc/supercd.sh.md)               | yes               | Change to a directory that matches a pattern                                                         |
-| [`table`](doc/table.md)                         | yes               | Parse data into a tabular form using several input and output forms - more flexible than _oldtable_  |
+| [`side-diff`](doc/side-diff.md)                 | Yes               | Perform side-by-side compare, utilizing all of the screen width                                      |
+| [`supercd.sh`](doc/supercd.sh.md)               | Yes               | Change to a directory that matches a pattern                                                         |
+| [`table`](doc/table.md)                         | Yes               | Parse data into a tabular form using several input and output forms - more flexible than _oldtable_  |
 | [`timer`](doc/timer.md)                         |                   | Display a progress meter over a specified duration of time                                           |
 | [`timestamps`](doc/timestamps.md)               |                   | Show times when files were last modified, most-recently updated first                                |
 | [`uniqc`](doc/uniqc.md)                         | Yes               | Counts unique instances of input                                                                     |

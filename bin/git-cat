@@ -7,7 +7,7 @@ import argparse
 import subprocess
 
 parser = argparse.ArgumentParser(description='Cat a file from git')
-parser.add_argument('branch', nargs='?', help='Git branch: SHA1, HEAD~1, etc (default: HEAD)')
+parser.add_argument('branch', nargs='?', help='Git branch: master, SHA1, HEAD~1, etc. (default: HEAD)')
 parser.add_argument('filename', help='Name of file to extract')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 args = parser.parse_args()
