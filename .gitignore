@@ -20,3 +20,5 @@ thor
 
 bin/minikube_1.3.1.deb
 **.retry
+
+tmp/
