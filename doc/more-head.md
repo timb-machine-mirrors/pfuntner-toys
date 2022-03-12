@@ -36,6 +36,7 @@ You might want to view as much of the top of the output as possible without coun
 
 ## Notes
 
+- I'm not crazy about the name of the command but I think of it as a hybrid of the classic `more` and `head` commands.
 - The script reads from stdin so you must redirect input to the script or use a pipeline.
 - The script does not account for lines to wide for the screen (although you could combine it with [`fitwidth`](fitwidth.md)).
 - The script does not account for a command line so long that it doesn't fit on one screen so the entire command may not be visible.
