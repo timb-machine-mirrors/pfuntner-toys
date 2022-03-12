@@ -30,6 +30,7 @@ $
 I often use this script inside `vi` to indent a portion of code:
 
 #### Before running command
+Note the command at the bottom of the screen.
 ![indent vi "before" example](images/indent-vi-example-before.png)
 
 #### After running command
