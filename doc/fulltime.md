@@ -1,4 +1,4 @@
-# `fulletime`
+# `fulltime`
 
 ## Purpose
 Invoke command using all options of `time` utility.
