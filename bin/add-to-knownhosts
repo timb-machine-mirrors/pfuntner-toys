@@ -19,7 +19,7 @@ args = parser.parse_args()
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
 # log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
-log.setLevel(logging.WARNING - (args.verbose or 0)*10)
+log.setLevel(logging.INFO - (args.verbose or 0)*10)
 
 preferred_methods = [
   'ecdsa-sha2-nistp256',
@@ -76,7 +76,7 @@ changed = False
 
 for host in args.hosts:
   ip = None
-  log.debug('Processing host {host!r}'.format(**locals()))
+  log.info('Processing host {host!r}'.format(**locals()))
   if host in config.keys():
     ip = config[host]
     log.info('Based on {config_filename}, the IP of {host} is {ip}'.format(**locals()))
@@ -104,7 +104,7 @@ for host in args.hosts:
       pos += 1
 
   if not args.clean:
-    retry = 5
+    retry = 4*60 # timeout if we wait an hour
     (rc, stdout, stderr) = (0, '', '')
     while True:
       # get new SSH fingerprint
@@ -114,7 +114,7 @@ for host in args.hosts:
       stdout = stdout.decode('utf-8')
       stderr = stderr.decode('utf-8')
       rc = p.wait()
-      log.debug('{cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
+      log.info('{cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
   
       if rc == 0 and stdout:
         break
@@ -133,7 +133,7 @@ for host in args.hosts:
       for line in stdout.splitlines():
         if [preferred_method] == line.split()[1:2]:
           fingerprint = line
-          log.debug('Found fingerprint {fingerprint!r}'.format(**locals()))
+          log.info('Found fingerprint {fingerprint!r}'.format(**locals()))
           break
       if fingerprint:
         break
