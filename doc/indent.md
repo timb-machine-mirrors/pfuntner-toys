@@ -13,8 +13,9 @@ There are no options.
 
 The only argument is a positive integer which indicates the number of columns to indent
 
-## Example
+## Examples
 
+### Simple changes
 ```
 $ date | indent 2
   Sat Feb 23 07:35:47 EST 2019
@@ -24,6 +25,15 @@ $ date | banner | indent 4
     ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 $ 
 ```
+
+### `vi` command
+I often use this script inside `vi` to indent a portion of code:
+
+#### Before running command
+![indent vi "before" example](images/indent-vi-example-before.png)
+
+#### After running command
+![indent vi "after" example](images/indent-vi-example-after.png)
 
 ## Notes
 
