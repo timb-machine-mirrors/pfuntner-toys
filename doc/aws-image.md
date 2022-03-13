@@ -64,3 +64,4 @@ $
 
 - This script uses the [aws CLI](https://aws.amazon.com/cli/) and requires that you have installed it and set it up.
 - Yes, you could use the `aws` CLI directly to do the same thing but I find it easier to use the script and not have to worry about the syntax of the `aws` command.
+- [`aws-images`](aws-images.md) is related script that's very useful.
