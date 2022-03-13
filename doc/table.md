@@ -26,15 +26,15 @@ table.py [-h] [-H] -i {csv,yaml,fixed,json,separator,xml} -o
 
 | Format | Input | Output | Description |
 | ---- | ---- | --- | --- |
-| `csv` | ![Supported](../images/Green_tick.png) | ![Supported](../images/Green_tick.png) | Comma-separator file format |
-| `separator` | ![Supported](../images/Green_tick.png) | ![Supported](../images/Green_tick.png) | A free format where columns are separated by the `--regexp` regular expression.  Suseptible to mistakes when the separator is used within data.  Whitespace is a common separator but whitespace can also appear within data and headings |
-| `fixed` | ![Supported](../images/Green_tick.png) | ![Supported](../images/Green_tick.png) | Common to many Unix utilities such as `df` or `ls -l`.  The script identifies the beginning and ending of columns by looking for whitespace on every row |
-| `json` | ![Supported](../images/Green_tick.png) | ![Supported](../images/Green_tick.png) | Popular structured format, less ambiguities than less structured formats, more flexability |
-| `yaml` | ![Supported](../images/Green_tick.png) | ![Supported](../images/Green_tick.png) | Another popular structured format with the same strengths as `json` |
-| `xml` | ![Supported](../images/Green_tick.png) | ![Supported](../images/Green_tick.png) | Another popular structured format.  |
-| `html` | ![Not Supported](../images/red_x.png) | ![Supported](../images/Green_tick.png) | A format that can only be used for output to produce a table in [HTML](https://www.wikiwand.com/en/HTML) |
-| `markdown` | ![Not Supported](../images/red_x.png) | ![Supported](../images/Green_tick.png) | A format that can only be used for output to produce a table in [Markdown](https://www.wikiwand.com/en/Markdown).  Used extensively in [Slack](https://slack.com/) and [Github](https://www.wikiwand.com/en/GitHub): Issues (including pull requests), documentation, reviews, etc. | 
-| `bbcode` | ![Not Supported](../images/red_x.png) | ![Supported](../images/Green_tick.png) | A format that can only be used for output to produce a table in [BBCode](https://www.wikiwand.com/en/BBCode).  Used in some bulletin board systems such as [Ubuntu Forums](https://ubuntuforums.org) | 
+| `csv` | ![Supported](images/Green_tick.png) | ![Supported](images/Green_tick.png) | Comma-separator file format |
+| `separator` | ![Supported](images/Green_tick.png) | ![Supported](images/Green_tick.png) | A free format where columns are separated by the `--regexp` regular expression.  Suseptible to mistakes when the separator is used within data.  Whitespace is a common separator but whitespace can also appear within data and headings |
+| `fixed` | ![Supported](images/Green_tick.png) | ![Supported](images/Green_tick.png) | Common to many Unix utilities such as `df` or `ls -l`.  The script identifies the beginning and ending of columns by looking for whitespace on every row |
+| `json` | ![Supported](images/Green_tick.png) | ![Supported](images/Green_tick.png) | Popular structured format, less ambiguities than less structured formats, more flexability |
+| `yaml` | ![Supported](images/Green_tick.png) | ![Supported](images/Green_tick.png) | Another popular structured format with the same strengths as `json` |
+| `xml` | ![Supported](images/Green_tick.png) | ![Supported](images/Green_tick.png) | Another popular structured format.  |
+| `html` | ![Not Supported](images/red_x.png) | ![Supported](images/Green_tick.png) | A format that can only be used for output to produce a table in [HTML](https://www.wikiwand.com/en/HTML) |
+| `markdown` | ![Not Supported](images/red_x.png) | ![Supported](images/Green_tick.png) | A format that can only be used for output to produce a table in [Markdown](https://www.wikiwand.com/en/Markdown).  Used extensively in [Slack](https://slack.com/) and [Github](https://www.wikiwand.com/en/GitHub): Issues (including pull requests), documentation, reviews, etc. | 
+| `bbcode` | ![Not Supported](images/red_x.png) | ![Supported](images/Green_tick.png) | A format that can only be used for output to produce a table in [BBCode](https://www.wikiwand.com/en/BBCode).  Used in some bulletin board systems such as [Ubuntu Forums](https://ubuntuforums.org) | 
 
 ## Examples
 

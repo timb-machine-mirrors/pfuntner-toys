@@ -38,6 +38,6 @@ $
 
 ### Color
 
-![Example of banner with --color option](../images/banner-color-example.png)
+![Example of banner with --color option](images/banner-color-example.png)
 
-![Example of all colors](../images/banner-all-colors.png)
+![Example of all colors](images/banner-all-colors.png)
