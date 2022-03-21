@@ -162,7 +162,7 @@ def makeIntIfPossible(elem):
   match = numeric_regexp.search(elem)
   if match:
     try:
-      elem = int(match.group(1))
+      elem = f'{int(match.group(1)):0512d}'
     except:
       pass
   return elem
