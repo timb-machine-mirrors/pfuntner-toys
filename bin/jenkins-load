@@ -16,29 +16,6 @@ from lxml import html
 
 DEFAULT_FOLDER = 'repositories'
 
-class Table(object):
-  def __init__(self, *args):
-    if len(args) == 1 and type(args[0]) in (list, tuple):
-      self.headings = args[0]
-    else:
-      self.headings = args
-
-    try:
-      self.p = subprocess.Popen(['column', '-t', '-s\t'], stdin=subprocess.PIPE, text=True)
-    except Exception as e:
-      print(f'Error opening `column`: {e!s}', file=sys.stderr)
-      print('On Ubuntu, try installing the bsdmainutils package', file=sys.stderr)
-      exit(1)
-
-    self.p.stdin.write('\t'.join([str(heading) for heading in self.headings]) + '\n')
-
-  def add(self, *args):
-    self.p.stdin.write('\t'.join([str(arg) for arg in args]) + '\n')
-
-  def close(self):
-    self.p.stdin.close()
-    self.p.wait()
-
 class EmptyNode(object):
   def __init__(self):
     self.tag = ''
@@ -70,6 +47,33 @@ class Table(object):
   def close(self):
     self.p.stdin.close()
     self.p.wait()
+
+def run(cmd, stdin=None, capture=True, shell=False):
+  if shell:
+    if isinstance(cmd, list):
+      cmd = ' '.join(cmd)
+  elif isinstance(cmd, str):
+    cmd = cmd.split()
+
+  log.info('Executing {cmd}'.format(**locals()))
+
+  p = None
+  try:
+    p = subprocess.Popen(cmd, stdin=subprocess.PIPE if stdin else None, stdout=subprocess.PIPE if capture else None, stderr=subprocess.PIPE if capture else None, shell=shell)
+  except Exception as e:
+    (rc, stdout, stderr) = (-1, '', f'Caught {e!s} running {cmd!r}')
+
+  if p:
+    if stdin:
+      p.stdin.write(stdin.encode())
+    if capture:
+      (stdout, stderr) = tuple([s.decode('utf-8') for s in p.communicate()])
+    else:
+      (stdout, stderr) = ('', '')
+    rc = p.wait()
+
+  log.debug('Executed {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
+  return (rc, stdout, stderr)
 
 def see(o):
   if isinstance(o, datetime.datetime):
@@ -181,7 +185,7 @@ if resp.ok:
   server = None
   servers = dict()
   total_agents = []
-  table = Table('Server', 'Busy agents', '% busy')
+  table = Table('Server', 'Busy agents', '% busy', 'Load')
   for row in find(get_servers_table(root), 'tr'):
     image = travel(row, 'th', 'a', 'img')
     if 'icon-computer' in image.attrib.get('class', '').split():
@@ -197,11 +201,12 @@ if resp.ok:
   for server in sorted(servers.keys()):
      busy = [True for subserver in servers[server] if subserver == 'Busy']
      pcent = 0 if len(servers[server]) == 0 else len(busy)/len(servers[server])
-     table.add(server, f'{len(busy):4}/{len(servers[server]):4}', f'{pcent:5.0%}')
+     (rc, stdout, stderr) = run(f'ssh -q -o StrictHostKeyChecking=no ubuntu@{server} uptime')
+     table.add(server, f'{len(busy):4}/{len(servers[server]):4}', f'{pcent:5.0%}', stdout.strip())
 
   busy = [True for subserver in total_agents if subserver == 'Busy']
   pcent = 0 if len(total_agents) == 0 else len(busy)/len(total_agents)
-  table.add('Total', f'{len(busy):4}/{len(total_agents):4}', f'{pcent:5.0%}')
+  table.add('Total', f'{len(busy):4}/{len(total_agents):4}', f'{pcent:5.0%}', '')
 
   table.close()
 else:
