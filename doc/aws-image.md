@@ -9,7 +9,7 @@ Syntax: aws-image AMI
 ```
 
 ## Example
-I found the AMI of an image I was interested in by:
+I found the AMI of an Ubuntu image I was interested in by:
 1. Going to [Amazon EC2 AMI Locator](https://cloud-images.ubuntu.com/locator/ec2/)
 1. Sorting the table by _Version_, most recent first
 1. Copying the AMI for version 21.1 for region us-east1
