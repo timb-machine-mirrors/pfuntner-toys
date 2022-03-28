@@ -63,5 +63,9 @@ $
 ## Notes
 
 - This script uses the [aws CLI](https://aws.amazon.com/cli/) and requires that you have installed it and set it up.
-- Yes, you could use the `aws` CLI directly to do the same thing but I find it easier to use the script and not have to worry about the syntax of the `aws` command.
+- Yes, you could use the `aws` CLI directly to do the same thing but I find it easier to use the script and not have to worry about the syntax of the `aws` command.  The `filter` parameter is especially cumbersome IMHO.  The underlying command for the above example is:
+    ```
+    aws ec2 describe-images --filter Name=image-id,Values=ami-0a4b1fdc2301bf1f1 --region us-east-1
+    ```
+    Do **you** want to remember that syntax?  I don't!  That's why I created the script!
 - [`aws-images`](aws-images.md) is related script that's very useful.
