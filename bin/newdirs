@@ -38,6 +38,7 @@ regexp = re.compile('^20[12]\d({months})({days})({hours})({minutes})({seconds})\
 ))
 
 parser = argparse.ArgumentParser(description='Find temporary `YYYYmmddHHMMSS` directories')
+parser.add_argument('-0', '--print0', action='store_true', help='Use null characters to separate files - good for use with `xargs -0 ...`')
 parser.add_argument('-l', '--links', dest='links', action='store_true', help='Follow symbolic links')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 args = parser.parse_args()
@@ -50,4 +51,6 @@ log.debug('pattern: {regexp.pattern}'.format(**locals()))
 
 files = sorted(dive(os.environ['HOME']), reverse=True)
 if files:
-  print('\n'.join(files))
+  print(('\0' if args.print0 else '\n').join(files), end='')
+  if not args.print0:
+    print('')
