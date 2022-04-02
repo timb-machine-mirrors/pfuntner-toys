@@ -98,6 +98,67 @@ class Date002Processor(object):
     return ret
 
 
+class Date997Processor(object):
+  # Process '1970-01-01T00:00:00'
+  date_time_format = '%Y-%m-%dT%H:%M:%S'
+
+  @classmethod
+  def get_specimen(cls):
+    return now.strftime(cls.date_time_format)
+
+  @classmethod
+  def process(cls, specimen):
+    ret = None
+
+    log.debug(f'{cls.__name__} testing {specimen!r}')
+    pattern = r'(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})'
+    match = re.search(pattern, specimen)
+    log.debug(f'match groups from {pattern!r}: {match.groups() if match else None}')
+    if match:
+      if len(match.group(1)) == 4 and \
+         (1 <= int(match.group(2)) <= 12) and \
+         (1 <= int(match.group(3)) <= 31) and \
+         (0 <= int(match.group(4)) <= 23) and \
+         (0 <= int(match.group(5)) <= 59) and \
+         (0 <= int(match.group(6)) <= 59):
+        ret = datetime.datetime.strptime(match.group(0), cls.date_time_format)
+
+    if ret is None:
+      log.debug(f'{cls.__name__} does not recognize {specimen!r}')
+    else:
+      log.info(f'{cls.__name__} interpreted {specimen!r} as {ret!r}')
+
+    return ret
+
+
+class Date998Processor(object):
+  # Process '01/01/1970'
+  date_time_format = '%m/%d/%Y'
+
+  @classmethod
+  def get_specimen(cls):
+    return now.strftime(cls.date_time_format)
+
+  @classmethod
+  def process(cls, specimen):
+    ret = None
+
+    log.debug(f'{cls.__name__} testing {specimen!r}')
+    pattern = r'(\d+)/(\d+)/(\d+)'
+    match = re.search(pattern, specimen)
+    log.debug(f'match groups from {pattern!r}: {match.groups() if match else None}')
+    if match:
+      if (1 <= int(match.group(1)) <= 12) and (1 <= int(match.group(2)) <= 31) and len(match.group(3)) == 4:
+        ret = datetime.datetime.strptime(match.group(0), cls.date_time_format)
+
+    if ret is None:
+      log.debug(f'{cls.__name__} does not recognize {specimen!r}')
+    else:
+      log.info(f'{cls.__name__} interpreted {specimen!r} as {ret!r}')
+
+    return ret
+
+
 class Date999Processor(object):
   # Process '2021-12-10'
   date_time_format = '%Y-%m-%d'
