@@ -3,7 +3,7 @@ This is a collection of Unix tools command line that make my life easier.  I thi
 
 I will admit that the documentation is rather poor for some of the tools and many of them have little or **no** comments.  This is a work in progress - I'm constantly creating new tools and improving documentation.  In November 2017, I did a major overhaul of the documentation because I was disatisfed with having a huge table.  I'm liking the results so far.
 
-If you have questions, problems, etc, you can reach me at <img src="images/email.jpg" />.
+If you have questions, problems, etc, you can reach me at <img src="doc/images/email.jpg" />.
 
 ### Unix platforms
 
