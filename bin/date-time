@@ -266,7 +266,6 @@ class NowProcessor(object):
 
     log.debug(f'{cls.__name__} testing {specimen!r}')
     pattern = r'\bnow\b'
-    pattern = make_regexp_pattern(cls.date_time_format)
     match = re.search(pattern, specimen)
     log.debug(f'match groups from {pattern!r}: {match.groups() if match else None}')
     if match:
