@@ -11,7 +11,13 @@ import subprocess
 
 def process(stream):
   log.info(f'Processing file {stream.name!r}')
-  for line in stream.read().splitlines():
+  lines = []
+  try:
+    lines = stream.read().splitlines()
+  except Exception as e:
+    log.warning(f'Can\'t read {stream.name!r}: {e!s}')
+
+  for line in lines:
     log.info(f'Processing line {line!r}')
     included = not regexps[0].get('positive')
     log.debug(f'Initially, included: {included}')
