@@ -6,6 +6,7 @@ import logging
 import argparse
 
 parser = argparse.ArgumentParser(description='Print each character of stdin on a separate line')
+parser.add_argument('-l', '--line', action='store_true', help='Include each line before the characters for each line')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -19,7 +20,9 @@ if sys.stdin.isatty():
   parser.error('stdin must be redirected')
 
 for line in sys.stdin.read().splitlines():
-  for c in line.rstrip():
+  line = line.rstrip()
+  print(repr(line)[1:-1])
+  for c in line:
     if c not in "\"'":
       escaped = repr(c)[1:-1]
       if len(escaped) > 1:

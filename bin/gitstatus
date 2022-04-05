@@ -66,6 +66,8 @@ section_end_regexp = re.compile('^(|# )[A-Za-z]')
 
 inside = None
 
+items = 0
+
 for line in stdout.splitlines():
   if section_end_regexp.search(str(line)):
     inside = None
@@ -79,13 +81,20 @@ for line in stdout.splitlines():
     match = section_regexps['modified']['file'].search(str(line))
     if match:
       print(match.group(1))
+      items += 1
 
   if section_regexps['untracked']['requested'] and (inside == 'untracked'):
     match = section_regexps['untracked']['file'].search(str(line))
     if match:
       print(match.group(1))
+      items += 1
 
   if section_regexps['unmerged']['requested'] and (inside == 'unmerged'):
     match = section_regexps['unmerged']['file'].search(str(line))
     if match:
       print(match.group(1))
+      items += 1
+
+if not items:
+  log.warning('No files changed')
+  exit(1)
