@@ -41,9 +41,9 @@ def process(file):
 parser = argparse.ArgumentParser(description='Reform lines to fit your screen width')
 
 group = parser.add_mutually_exclusive_group()
-group.add_argument('-m', '--middle', action='store_true', help='Eliminate the middle of lines (default mode)')
+group.add_argument('-m', '--middle', action='store_true', help='Eliminate the middle of lines')
 group.add_argument('-b', '--beginning', action='store_true', help='Eliminate the beginning of lines')
-group.add_argument('-e', '--ending', action='store_true', help='Eliminate the ending of lines')
+group.add_argument('-e', '--ending', action='store_true', help='Eliminate the ending of lines (default mode)')
 
 parser.add_argument('-w', '--width', type=int, default=BrunoUtils.cols(), help='Set specific width (default: {})'.format(BrunoUtils.cols()))
 parser.add_argument('files', metavar='file', nargs='*', help='Zero or more files to process')
@@ -59,7 +59,7 @@ signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 ellipses = " ... "
 
 if not any([args.beginning, args.middle, args.ending]):
-  args.middle = True
+  args.ending = True
 
 if args.files:
   for filename in args.files:
