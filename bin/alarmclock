@@ -50,7 +50,7 @@ def parse_count_down(s):
 def parse_count_until(s):
   stop_time = None
 
-  pattern = r'^(?:(\d{4})-(\d{2})-(\d{2})\s+)?(\d{2}):(\d{2})(?::(\d{2}))?$'
+  pattern = r'^(?:(\d{4})-(\d{2})-(\d{2})\s+)?(\d{1,2}):(\d{2})(?::(\d{2}))?$'
   match = re.search(pattern, s)
   if match:
     log.info(f'From {pattern!r}: {match.groups()}')
@@ -81,7 +81,7 @@ group.add_argument('--down', '--count-down', action='store_true', help='Run for 
 group.add_argument('--until', action='store_true', help='Run until a specified time')
 
 parser.add_argument('time', nargs='?', help='Time specification')
-parser.add_argument('-i', '--interval', type=float, default=5, help='Interval between messages in seconds (default: 5)')
+parser.add_argument('-i', '--interval', type=float, default=1, help='Interval between messages in seconds (default: 1)')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -148,5 +148,5 @@ while not done:
     ################################################################################
     output_line += f'  {closed*int(10*pcent)}{open*int(10*(1-pcent))}'
 
-  print(output_line)
+  print('\r' + output_line, end='')
   time.sleep(args.interval)
