@@ -21,7 +21,8 @@ if sys.stdin.isatty():
 
 for line in sys.stdin.read().splitlines():
   line = line.rstrip()
-  print(repr(line)[1:-1])
+  if args.line:
+    print(repr(line)[1:-1])
   for c in line:
     if c not in "\"'":
       escaped = repr(c)[1:-1]
