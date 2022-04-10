@@ -29,7 +29,7 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`bingrep`](doc/bingrep.md)                                 |                   | Searches for a regular expression in arbitrary data from stdin                                       |
 | [`br`](doc/br.md)                                           | Yes               | Browse a file.  Sounds simple?  Maybe, but give it a try                                             |
 | [`capture`](doc/capture.md)                                 |                   | Saves output and other information from a command                                                    |
-| [`char-by-char`](doc/char-by-char.md)                       | Yes               | Display a file character-by-character                                                                |
+| [`chars`](doc/chars.md)                                     | Yes               | Display a file character-by-character                                                                |
 | [`columns`](doc/columns.md)                                 | Yes               | Prints _columns_ of stdin where columns are separated by a character or regular expression           |
 | [`comm2`](doc/comm2.md)                                     |                   | Alternate version of `comm` that does not expect the data to be sorted                               |
 | [`cores`](doc/cores.md)                                     |                   | Prints CPU core information in a simple way                                                          |
