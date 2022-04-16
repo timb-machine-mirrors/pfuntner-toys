@@ -14,9 +14,9 @@ Syntax: fitwidth [--width INT] [--beginning|--middle|--ending] [file ...]
 | Option | Description | Default |
 | ------ | ----------- | ------- |
 |  `--width INT` | Specifies the maximum length of lines to print out | The default width is based on `tput cols` which reports the current width of the shell window. |
-| `--beginning` | Remove characters from the beginning of the each line until it is no longer than the desired width | `--middle` is the default behavior | 
-| `--middle` | Remove characters from the middle of the each line until it is no longer than the desired width | `--middle` is the default behavior | 
-| `--ending` | Remove characters from the ending of the each line until it is no longer than the desired width | `--middle` is the default behavior | 
+| `--beginning` | Remove characters from the beginning of the each line until it is no longer than the desired width | `--ending` is the default behavior | 
+| `--middle` | Remove characters from the middle of the each line until it is no longer than the desired width | `--ending` is the default behavior | 
+| `--ending` | Remove characters from the ending of the each line until it is no longer than the desired width | `--ending` is the default behavior | 
 
 ## Example
 
@@ -43,3 +43,5 @@ This example makes use of my [`peval`](peval.md) tool.
 - When data is removed from a line in order to meet the desired width, they are replaced by three periods surrounded by a blank on either side.
 
   When a line is short enough to fit the desired width, it is not changed when it is printed.
+
+- At first the `--middle` option was the default but I found myself overriding it with `--ending` more often than not.  I finally just changed the default to `--ending`.
