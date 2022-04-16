@@ -21,7 +21,11 @@ Syntax: br [-g] [-n] [ [ OPTS ] FILENAME ... ]
 - If you don't supply any filenames, the script copies all the data from stdin into a temporary file and launches `vi` on that file.
 
 ## Example
-The script is too interactive to give a good example. Just try it out.
+The script is too interactive to give a good example with just text.  You can learn a lot by just trying it out.  I've also created a desktop video to help.
+### Example from Linux shell
+Click the image below to watch a video demonstrating the tool from Linux:
+
+[![Linux example](http://img.youtube.com/vi/hv6MxXnc3k0/0.jpg)](http://www.youtube.com/watch?v=hv6MxXnc3k0 "br walkthrough on Linux")
 
 ## Notes
 
