@@ -27,6 +27,11 @@ Click the image below to watch a video demonstrating the tool from Linux:
 
 [![Linux example](http://img.youtube.com/vi/hv6MxXnc3k0/0.jpg)](http://www.youtube.com/watch?v=hv6MxXnc3k0 "br walkthrough on Linux")
 
+### Example from Windoze command prompt
+Click the image below to watch a video demonstrating the tool from Windoze:
+
+[![Windoze example](http://img.youtube.com/vi/8tmSunerp4Y/0.jpg)](http://www.youtube.com/watch?v=8tmSunerp4Y "br walkthrough on Windoze")
+
 ## Notes
 
 - It is expected that you haven't redirected stdout.  The script prints and error message and exits if this is not the case.
