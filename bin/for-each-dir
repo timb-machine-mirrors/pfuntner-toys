@@ -78,6 +78,6 @@ for dir in args.dirs:
   else:
     log.error(f'{dir!r} does not exist')
 
-if args.json:
+if args.json and output:
   json.dump(output, sys.stdout, indent=2, sort_keys=True)
   print()
