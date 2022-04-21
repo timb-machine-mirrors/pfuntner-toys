@@ -22,6 +22,7 @@ def findDir(templates):
   exit(1)
   
 parser = argparse.ArgumentParser(description='Search for recently downloaded files')
+parser.add_argument('--print0', action='store_true', help='Use \\0 to separate files - useful for use with `xargs -0`')
 parser.add_argument('-v', '--verbose', dest='verbose', action='count', help='Enable debugging')
 parser.add_argument('time', nargs='?', help='Time: FLOAT(s|m|h|d)? - Default: 1 hour')
 args = parser.parse_args()
@@ -64,7 +65,7 @@ else:
 
 dir = findDir(["%(USERPROFILE)s/downloads", "%(HOME)s/downloads"])
 
-cmd = ["find", dir, "-maxdepth", "1", "-follow", "!", "-name", "*.swp", "-type", "f", "-mtime", str(mtime)]
+cmd = ["find", dir, "-maxdepth", "1", "-follow", "!", "-name", "*.swp", "-type", "f", "-mtime", str(mtime)] + (['-print0'] if args.print0 else [])
 log.debug("%s" % cmd)
 p = subprocess.Popen(cmd)
 exit(p.wait())
