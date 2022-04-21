@@ -25,7 +25,7 @@ parser.add_argument('-o', '--output', help='Specify output separator')
 parser.add_argument('-f', '--file', dest='filename', help='Specify file')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 
-parser.add_argument('columns', metavar='column', nargs='+', help='Specify columns')
+parser.add_argument('columns', metavar='column', nargs='*', help='Specify columns')
 args = parser.parse_args()
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
@@ -54,6 +54,8 @@ else:
   stream = sys.stdin
 
 values = []
+
+args.columns = args.columns or []
 
 """
   expand ranges of fields
@@ -114,24 +116,30 @@ for line in stream:
     match = regexp.search(line)
     log.debug('{line!r}: {groups}'.format(groups=match.groups() if match else None, **locals()))
     if match:
-      print(delimOrBlank().join([match.group(field) for field in desiredFields]))
+      if args.columns:
+        print(delimOrBlank().join([match.group(field) for field in desiredFields]))
+      else:
+        print(match.groups())
   else:
     if args.csv:
       tokens = line
     else:
       tokens = delim.split(line)
 
-    log.debug('{line!r}: {tokens}'.format(line=repr(line), tokens=tokens))
-    skip = False
-    for curr in range(len(values)):
-      value = values[curr]
-      if (value != None) and (curr < len(tokens)) and (value != tokens[curr]):
-        skip = True
-        break
-
-    if not skip:
-      for field in desiredFields:
-        if field < len(tokens):
-          output += [tokens[field]]
-      if output:
-        print(delimOrBlank().join(output))
+    if args.columns:
+      log.debug('{line!r}: {tokens}'.format(line=repr(line), tokens=tokens))
+      skip = False
+      for curr in range(len(values)):
+        value = values[curr]
+        if (value != None) and (curr < len(tokens)) and (value != tokens[curr]):
+          skip = True
+          break
+  
+      if not skip:
+        for field in desiredFields:
+          if field < len(tokens):
+            output += [tokens[field]]
+        if output:
+          print(delimOrBlank().join(output))
+    else:
+      print(tokens)

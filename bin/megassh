@@ -39,11 +39,15 @@ log.setLevel(logging.WARNING - 10*(args.verbose or 0))
 
 log.info(f'args: {args}')
 
-p = subprocess.Popen(['docker', 'ps'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-(stdout, stderr) = p.communicate()
-stdout = stdout.decode('utf-8')
-stderr = stderr.decode('utf-8')
-rc = p.wait()
+(rc, stdout, stderr) = (0, '', '')
+try:
+  p = subprocess.Popen(['docker', 'ps'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  (stdout, stderr) = p.communicate()
+  stdout = stdout.decode('utf-8')
+  stderr = stderr.decode('utf-8')
+  rc = p.wait()
+except Exception:
+  pass
 docker_instances = [line.split()[-1] for line in stdout.splitlines()[1:]]
 log.info(f'docker_instances: {docker_instances}')
 
