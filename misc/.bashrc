@@ -79,6 +79,7 @@ alias kill-docker-containers='docker ps -qa | xargs -r docker rm -f'
 
 alias newdir='dir=$(date +%Y%m%d%H%M%S%N) && mkdir -v $dir && cd $dir'
 alias olddir='. olddir.sh'
+alias olddirs='find . -name "[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]"'
 
 alias ansiblehost=ansiblehelper.py
 alias color=color.py
