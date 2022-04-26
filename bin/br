@@ -26,7 +26,7 @@ def add_crs(s):
     s = '\r\n'.join(s.splitlines()) + '\r\n'
   return s
 
-parser = argparse.ArgumentParser(description='Launch vi on a file/data stream in read-only mode')
+parser = argparse.ArgumentParser(description='Launch editor (vi, et al) on a file/data stream, in read-only mode if possible')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 
 group = parser.add_mutually_exclusive_group()
@@ -66,7 +66,12 @@ elif args.gedit:
 elif args.notepad:
   editor = 'notepad'
 
-log.debug('editor: {editor!r}'.format(**locals()))
+exrc_path = os.path.expanduser('~/.exrc')
+log.info(f'exrc_path: {exrc_path!r}')
+if editor == 'vi' and os.path.exists(exrc_path):
+  editor_options += ['-u', exrc_path]
+
+log.debug(f'editor: {editor!r}')
 
 if args.files:
   """
