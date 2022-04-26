@@ -326,37 +326,38 @@ class Instances(object):
 
     self.backfill_aws_image_info(instances)
 
-    provider = 'gcp'
-    key_filename = os.path.join(ssh_root_raw, 'google_compute_engine')
-    (rc, stdout, stderr) = self.run('gcloud --format json compute instances list')
-    if rc == 0 and stdout:
-      raw = json.loads(stdout)
-      for instance in raw:
-        id = instance.get('id')
-
-        image_id = None
-        image_name = None
-        distro = None
-        user = None
-        ip = self.extract(instance, 'networkInterfaces/0/accessConfigs/0/natIP')
-        active = instance.get('status') == 'RUNNING'
-
-        self.log.info(f'gcp instance id: {id}')
-        name = instance.get('name', '')
-        match = name_regexp.search(name)
-        if match:
-          true_name = name
-          self.log.debug(f'instance {name} is desired')
-          if remove_regexp:
-            name = name[:match.start(0)] + name[match.end(0):]
-            self.log.debug(f'after removing regular expression, instance name is {name}')
-          disks = instance.get('disks', [])
-          if disks:
-            instances.append(Instance(provider, true_name, name, id, disks[0].get('deviceName'), image_name, distro, user, ip, key_filename, active))
-          else:
-            self.log.info(f'No device name for {id}/{name}')
-
-    self.backfill_gcp_image_info(instances)
+    if 'args' in globals() and not args.aws_only:
+      provider = 'gcp'
+      key_filename = os.path.join(ssh_root_raw, 'google_compute_engine')
+      (rc, stdout, stderr) = self.run('gcloud --format json compute instances list')
+      if rc == 0 and stdout:
+        raw = json.loads(stdout)
+        for instance in raw:
+          id = instance.get('id')
+  
+          image_id = None
+          image_name = None
+          distro = None
+          user = None
+          ip = self.extract(instance, 'networkInterfaces/0/accessConfigs/0/natIP')
+          active = instance.get('status') == 'RUNNING'
+  
+          self.log.info(f'gcp instance id: {id}')
+          name = instance.get('name', '')
+          match = name_regexp.search(name)
+          if match:
+            true_name = name
+            self.log.debug(f'instance {name} is desired')
+            if remove_regexp:
+              name = name[:match.start(0)] + name[match.end(0):]
+              self.log.debug(f'after removing regular expression, instance name is {name}')
+            disks = instance.get('disks', [])
+            if disks:
+              instances.append(Instance(provider, true_name, name, id, disks[0].get('deviceName'), image_name, distro, user, ip, key_filename, active))
+            else:
+              self.log.info(f'No device name for {id}/{name}')
+  
+      self.backfill_gcp_image_info(instances)
 
     provider = 'vultr'
     if vultr_apikey:
@@ -467,6 +468,7 @@ if __name__ == '__main__':
   instances_class = Instances(log)
 
   parser = argparse.ArgumentParser(description='Operations on AWS/GCP instances: discover, make Ansible files, stop/start')
+
   group = parser.add_mutually_exclusive_group()
   group.add_argument('-m', '--make', action='store_true', help=f'Refresh /etc/ansible/hosts and {ssh_config_filename} with instance information')
   group.add_argument('-A', '--ansible-make', action='store_true', help='Refresh /etc/ansible/hosts only')
@@ -475,6 +477,7 @@ if __name__ == '__main__':
   group.add_argument('--restart', action='store_true', help='Stop started instances')
 
   parser.add_argument('hosts', metavar='host', nargs='*', help='Zero or more hosts to start, stop, restart')
+  parser.add_argument('--aws-only', action='store_true', help='Process AWS instances only')
   parser.add_argument('-c', '--clean', action='store_true', help='Clean instances before --make')
   parser.add_argument('-u', '--user', help='Default user if cannot be determined from the image, etc')
   parser.add_argument('-o', '--out', default='/etc/ansible/hosts', help='Ansible hosts yaml destination file.  Default: /etc/ansible/hosts')
