@@ -80,10 +80,14 @@ def see(o):
     return o.strftime('%Y-%m-%d %H:%M')
   return o
 
+def see_node(root):
+  attribs = f' {" ".join(f"{key}={value!r}" for (key,value) in root.attrib.items())}' if root.attrib else ''
+  return f'<{root.tag}{attribs}>{root.text.strip() if root.text else ""}'
+
 def html_dive(root, indent=0):
   attribs = f' {" ".join(f"{key}={value!r}" for (key,value) in root.attrib.items())}' if root.attrib else ''
 
-  print(f'{" "*(indent*2)}<{root.tag}{attribs}>{root.text.strip() if root.text else ""}')
+  print(see_node(root))
   for node in root:
     html_dive(node, indent+1)
   print(f'{" "*(indent*2)}</{root.tag}>{root.tail.strip() if root.tail else ""}')
@@ -99,7 +103,7 @@ def flat_dive(root, path=[]):
     flat_dive(node, path + [root.tag])
 
 def travel(root, *tags):
-  log.debug(f'travel({root.tag!r}, {tags}')
+  # log.debug(f'travel({root.tag!r}, {tags}')
   if tags:
     ret = empty_node
   else:
@@ -203,6 +207,7 @@ if body:
       else:
         server = None
     elif server and len(row) >= 2 and row[0].tag == 'td' and row[1].tag == 'td':
+      log.debug(f'agent row: {see_node(row)}')
       servers[server].append(row[1].text or 'Busy')
       total_agents.append(row[1].text or 'Busy')
 
