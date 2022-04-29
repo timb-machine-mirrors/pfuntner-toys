@@ -82,7 +82,14 @@ def see(o):
 
 def see_node(root):
   attribs = f' {" ".join(f"{key}={value!r}" for (key,value) in root.attrib.items())}' if root.attrib else ''
-  return f'<{root.tag}{attribs}>{root.text.strip() if root.text else ""}'
+  return f'<{root.tag}{attribs}>{repr(root.text.strip())[1:-1] if root.text else ""}'
+
+def see_nodes(root):
+  ret = see_node(root)
+  for child in root:
+    ret += ret + see_nodes(child)
+  ret += f'</{root.tag}{repr(root.tail.strip())[1:-1] if root.tail else ""}>'
+  return ret
 
 def html_dive(root, indent=0):
   attribs = f' {" ".join(f"{key}={value!r}" for (key,value) in root.attrib.items())}' if root.attrib else ''
@@ -206,10 +213,14 @@ if body:
         servers[server] = list()
       else:
         server = None
-    elif server and len(row) >= 2 and row[0].tag == 'td' and row[1].tag == 'td':
-      log.debug(f'agent row: {see_node(row)}')
-      servers[server].append(row[1].text or 'Busy')
-      total_agents.append(row[1].text or 'Busy')
+    else:
+      row_nodes = see_nodes(row)
+      if server and """class='pane'""" in row_nodes:
+        log.debug(f'agent row: {row_nodes}')
+        servers[server].append('Idle' if 'Idle' in row_nodes else 'Busy')
+        total_agents.append(servers[server][-1])
+
+  log.info(f'server: {servers}')
 
   for server in sorted(servers.keys()):
      busy = [True for subserver in servers[server] if subserver == 'Busy']
