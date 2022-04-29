@@ -204,7 +204,7 @@ if body:
   server = None
   servers = dict()
   total_agents = []
-  table = Table('Server', 'Busy agents', '% busy', 'Disk usage')
+  table = Table('Server', 'Busy executors', '% busy', 'Disk usage')
   for row in find(get_servers_table(root), 'tr'):
     image = travel(row, 'th', 'a', 'img')
     if 'icon-computer' in image.attrib.get('class', '').split():
