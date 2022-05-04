@@ -33,7 +33,23 @@ def run(cmd, stdin=None, capture=True, shell=False):
   log.debug('Executed {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
   return (rc, stdout, stderr)
 
+def process(source):
+  stream = None
+  if isinstance(source, str):
+    try:
+      stream = open(source)
+    except Exception as e:
+      log.warning(f'Could not open {source!r}: {e!s}')
+  else:
+    stream = source
+
+  if stream:
+    print('\n'.join(stream.read().splitlines()[:lines-2]))
+    if isinstance(source, str):
+      stream.close()
+
 parser = argparse.ArgumentParser(description='Display the top of stdin, filling the screen')
+parser.add_argument('files', metavar='file', nargs='*', help='Zero or more files')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -43,8 +59,8 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
-if sys.stdin.isatty():
-  parser.error('stdin must be redirected')
+if not args.files and sys.stdin.isatty():
+  parser.error('stdin must be redirected if no files are specified')
 
 lines = 0
 (rc, stdout, stderr) = run('tput lines')
@@ -54,8 +70,16 @@ if rc == 0:
   except:
     pass
 
-  if lines > 1:
-    print('\n'.join(sys.stdin.read().splitlines()[:lines-2]))
-
 if lines <= 1:
-  log.warning('Cannot determine screen size')
+  log.error('Cannot determine screen size')
+  exit(1)
+
+if args.files:
+  for (pos, filename) in enumerate(args.files):
+    if len(args.files) > 1:
+      if pos > 0:
+        print()
+      print(f'##### {filename} #####')
+    process(filename)
+else:
+  process(sys.stdin)
