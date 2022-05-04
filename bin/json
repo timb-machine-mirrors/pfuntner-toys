@@ -73,10 +73,15 @@ def load(stream):
   top = 0
 
   if args.ansible:
-    for (pos, ansible_line) in enumerate(data):
-      if ansible_regexp.search(ansible_line):
+    pos = 0
+    while pos < len(data):
+      ansible_line = data[pos]
+      match = ansible_regexp.search(ansible_line)
+      if match:
         log.info('Removing {ansible_line!r}'.format(**locals()))
-        data[pos] = '{'
+        data[pos] = f'{{ "hosts": "{" ".join([token for token in match.groups() if token])}",'
+      pos += 1
+       
 
   # read what we can, trashing the rest
 
