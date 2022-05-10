@@ -67,7 +67,7 @@ if args.step:
 for extra_var in args.extra_vars or []:
   cmd += ['-e', extra_var]
 cmd.append(playbook.name)
-log.debug(cmd)
+log.log(logging.WARNING if args.dry_run else logging.DEBUG, cmd)
 if not args.dry_run:
   if args.directory:
     os.chdir(args.directory)

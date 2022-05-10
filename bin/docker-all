@@ -120,9 +120,10 @@ if rc == 0:
         (parse_date(process['State'].get('FinishedAt')) if process['State']['Status'] == 'exited' else now) - parse_date(process['Created']),
         get_shortest_tag(image) if image else process['Image'].split(':')[1][:12],
         process['Image'].split(':')[1][:12],
+        image.get('Architecture'),
         process['State']['Status']
       ))
-    table = Table('ID', 'Name', 'Created', 'Elapsed', 'Image', 'Image ID', 'Status')
+    table = Table('ID', 'Name', 'Created', 'Elapsed', 'Image', 'Image ID', 'Arch', 'Status')
     for row in sorted(rows, key=lambda row: row[2], reverse=True):
       table.add(*row)
     table.close()
@@ -146,11 +147,12 @@ if images:
     rows.append((
       image['Id'].split(':')[1][:12],
       shortest_tag,
+      image.get('Architecture'),
       redate(parse_date(image['Created'])),
       ', '.join(tags),
     ))
 
-  table = Table('ID', 'Tag', 'Created', 'Other tags')
+  table = Table('ID', 'Tag', 'Arch', 'Created', 'Other tags')
   for row in sorted(rows, key=lambda row: row[2], reverse=True):
     table.add(*row)
   table.close()

@@ -326,7 +326,7 @@ class Instances(object):
 
     self.backfill_aws_image_info(instances)
 
-    if 'args' in globals() and not args.aws_only:
+    if 'args' not in globals() or not args.aws_only:
       provider = 'gcp'
       key_filename = os.path.join(ssh_root_raw, 'google_compute_engine')
       (rc, stdout, stderr) = self.run('gcloud --format json compute instances list')
