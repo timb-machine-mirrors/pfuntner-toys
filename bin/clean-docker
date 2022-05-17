@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import re
+import os
 import sys
 import signal
 import logging
@@ -46,19 +47,46 @@ print(f'Containers: {containers}')
 images = stdout.splitlines()
 print(f'Images: {images}')
 
-if containers or images:
+manifest_dir = os.path.expanduser('~/.docker/manifests')
+manifests = []
+if os.path.isdir(manifest_dir):
+  """
+    Files that define a manifest are stored like this:
+
+      /home/ubuntu/.docker/manifests/containers.cisco.com_sto-ccc-cloud9-dev_alma8-latest/containers.cisco.com_sto-ccc-cloud9-dev_alma8-amd64
+      /home/ubuntu/.docker/manifests/containers.cisco.com_sto-ccc-cloud9-dev_alma8-latest/containers.cisco.com_sto-ccc-cloud9-dev_alma8-arm64
+
+    The name of the manifest is not present in the components.  We can turn:
+
+      "containers.cisco.com_sto-ccc-cloud9-dev_alma8-latest"
+
+    info:
+
+      "containers.cisco.com/sto-ccc-cloud9-dev/alma8:latest"
+
+    Assumptions:
+      1) *All* underscores can be replaced with slashes
+      2) The *last* hyphen can be replaced with a colon
+  """
+  manifests = [re.sub(r'-([^-]*)$', r':\1', dir.replace('_', '/')) for dir in os.listdir(manifest_dir)]
+print(f'Manifests: {manifests}')
+
+if containers or images or manifests:
   if args.force:
     ans = None
   else:
-    print('\nDelete container and images? ', end='')
+    print('\nDelete container, images, and manifests? ', end='')
     ans = sys.stdin.readline()
   if args.force or re.match(r'y(e(s?))?', ans, flags=re.IGNORECASE):
     if containers:
-      run('docker rm -f {}'.format(' '.join(containers)), capture=False)
+      run(['docker', 'rm', '-f'] + containers, capture=False)
       print()
     if images:
-      run('docker rmi -f {}'.format(' '.join(images)), capture=False)
+      run(['docker', 'rmi', '-f'] + images, capture=False)
+      print()
+    if manifests:
+      run(['docker', 'manifest', 'rm'] + manifests, capture=False)
   else:
-    print('Images/containers not cleaned')
+    print('Images/containers/manifests not cleaned')
 else:
-  print('No container or images to clean')
+  print('No container, images, or manifests to clean')
