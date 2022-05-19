@@ -69,7 +69,7 @@ class Table(object):
     self.p.wait()
 
 parser = argparse.ArgumentParser(description='Get information from remote Docker repo') # sys.argv[0])
-parser.add_argument('-a', '--authorization', required=True, help='Remote Docker repository authorization (eg `user:token`)')
+parser.add_argument('-a', '--authorization', help='Remote Docker repository authorization (eg `user:token`)')
 parser.add_argument('-s', '--server', required=True, help='Remote Docker repository server')
 parser.add_argument('-o', '--organization', required=True, help='Remote Docker repository organization')
 parser.add_argument('-r', '--repository', required=True, help='Remote Docker repository')
@@ -86,8 +86,12 @@ time_delta_regexp = re.compile(r'(-?)(\d{2}):?(\d{2})$') # '-07:00' or '-0000'
 timestamp1_regexp = re.compile(r'^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3})') # '2022-03-15T09:06:50.000'
 timestamp2_regexp = re.compile(r'^(\S{3}, \d{2} \S{3} \d{4} \d{2}:\d{2}:\d{2})') # 'Fri, 01 Oct 2021 09:24:26'
 
-docker_auth = tuple(args.authorization.split(':'))
-log.debug(f'auth: {docker_auth}')
+if args.authorization:
+  docker_auth = tuple(args.authorization.split(':'))
+  log.debug(f'auth: {docker_auth}')
+else:
+  docker_auth = None
+
 page = 1
 while True:
   docker_url = f'{args.server}/api/v1/repository/{args.organization}/{args.repository}?page={page}'
