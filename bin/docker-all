@@ -94,7 +94,7 @@ signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 now = datetime.datetime.utcnow()
 
 images = list()
-(rc, stdout, stderr) = run('docker images --format {{.ID}}')
+(rc, stdout, stderr) = run('docker images -q')
 if rc == 0:
   if stdout:
     ids = set(stdout.splitlines())
@@ -104,7 +104,7 @@ else:
   log.error(f'`docker images` failed: {rc}, {stdout!r}, {stderr!r}')
   exit(1)
 
-(rc, stdout, stderr) = run('docker ps -a --format {{.ID}}')
+(rc, stdout, stderr) = run('docker ps -aq')
 if rc == 0:
   if stdout:
     ids = set(stdout.splitlines())
@@ -121,9 +121,10 @@ if rc == 0:
         get_shortest_tag(image) if image else process['Image'].split(':')[1][:12],
         process['Image'].split(':')[1][:12],
         image.get('Architecture'),
-        process['State']['Status']
+        process['State']['Status'],
+        process.get('GraphDriver', {}).get('Data', {}).get('UpperDir', 'n/a'),
       ))
-    table = Table('ID', 'Name', 'Created', 'Elapsed', 'Image', 'Image ID', 'Arch', 'Status')
+    table = Table('ID', 'Name', 'Created', 'Elapsed', 'Image', 'Image ID', 'Arch', 'Status', 'Path')
     for row in sorted(rows, key=lambda row: row[2], reverse=True):
       table.add(*row)
     table.close()
