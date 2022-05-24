@@ -6,7 +6,7 @@ import signal
 import logging
 import argparse
 
-potential_delimiters = '|%&$@#!/\\'
+potential_delimiters = '|%&$@#!/\\*^¦'
 strip_leading_quote = re.compile('^ ')
 
 parser = argparse.ArgumentParser(description='side diff parser')
