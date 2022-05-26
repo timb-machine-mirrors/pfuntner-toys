@@ -65,6 +65,7 @@ formats = [
   Format(r'(\d{2}/\d{2}/\d{4} \d{2}:\d{2} (?:AM|PM))', '%m/%d/%Y %I:%M %p'), # Note that the AM/PM portion must be a non-capturing substring so only a single substring is extracted when it matches.
   Format(r'(\d{2}/\d{2}/\d{4} - \d{2}:\d{2}:\d{2})', '%m/%d/%Y - %H:%M:%S'),
   Format(r'(\S{3} \S{3} \d{2} \d{2}:\d{2}:\d{2})\s+\S+\s+(\d{4})', '%a %b %d %H:%M:%S %Y'), # the regular expression extracts two substrings, excluding the timezone. After the substrings are joined into a new string, they can be parsed.
+  Format(r'\b(\d{4}-\d{2}-\d{2})\b', '%Y-%m-%d'),
 ]
 
 if args.files:

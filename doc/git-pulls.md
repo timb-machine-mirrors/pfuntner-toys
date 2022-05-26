@@ -70,12 +70,31 @@ I honestly don't use `--dry-run` very often.  If I had it to do over again, I wo
 ### Live run
 I didn't have any commits I was aware of needing.  While working on this documentation, I pushed it while _halfway-done_ and used `git-pulls` on another machine to freshen it.
 ```
+$ git pulls
+***************************
+* /home/ubuntu/repos/toys *
+***************************
+Updating e46584a..d24e741
+Fast-forward
+ doc/git-pulls.md | 81 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 81 insertions(+)
+ create mode 100644 doc/git-pulls.md
+From github.com:pfuntner/toys
+   e46584a..d24e741  master     -> origin/master
+Path                               Branch  Old SHA1  Old Date             Old Text              New SHA1  New Date             New Text
+/home/ubuntu/repos/fun             master  96fb36e   2022-05-10 15:01:51  Trying setting of ne
+/home/ubuntu/repos/toys            master  e46584a   2022-05-24 15:08:28  Adding more potentia  d24e741   2022-05-26 12:15:45  Preliminary doc for
+/home/ubuntu/repos/bruno-ansible   master  b1452a9   2022-05-17 06:54:19  Creating playbook to
+/home/ubuntu/repos/examples        master  c1ba3dc   2022-01-24 12:27:39  Create README.md
+$
 ```
+Again, if I had it to do over, I think I might get rid of all the nonsense at the start and make it more silent if it's there are no errors or unexpected behavior.
 
 ## Notes
 
 - There are a few reasons I use this script:
     - I typically have the same repos cloned on various machines so they're not hard to get out of sync if I don't do `git pull` on them.  I usually have four or more (see above) repos on each machine and I don't like to have to think or do a lot of unnecessary keystrokes.
     - In my full-time job, I work on a team where we have literally a couple of dozen repos.  It would drive me crazy to freshen them all up manually so I love to use the script there.
+- I've gotten into the habit of using hyphens a lot in my script names.  This is rather fortunate in this case because the standard `git` command is _smart enough_ to be able to accept `git pulls`, equate that to `git-pulls`, and run my script just by virtue of the fact that the script is in my `$PATH`.  Some might say that's a bad thing but I like it.
 - I typically clone all of my _working_ repos into `~/repos` so that's the reason for the default value of the `root` argument.  I don't know how common this is but I think it's a good practice.
 - I sometimes forget the style of the argument and need to use _trial-and-error_.  For example, `~/repos` is fine usually for me but sometimes I want to target repos in another directory I'm not sure if I need to specify the parent directory (`.` or some other relative or absolute path) or one or more of the actual repositories.  I go back and forth about which to use.  If I had it to do over again, I might allow it to work either way and just seek out any directory that has a `.git` directory.  Perhaps I'll go back and work on this.

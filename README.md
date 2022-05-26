@@ -21,10 +21,10 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`ansible-distros`](doc/ansible-distros.md)                 |                   | Prints OS information about Ansible hosts                                                            |
 | [`ansible-host-data`](doc/ansible-host-data.md)             |                   | Extracts specific information about a host in an ansible inventory                                   |
 | [`ansible-hosts`](doc/ansible-hosts.md)                     | Yes               | Lists host information from an Ansible inventory                                                     |
-| [`aws-image`](doc/aws-image.md)                             |                | Displays details about an AWS EC2 AMI                                                                |
-| [`aws-images`](doc/aws-images.md)                           |                | Search for AWS EC2 AMIs                                                                              |
+| [`aws-image`](doc/aws-image.md)                             |                   | Displays details about an AWS EC2 AMI                                                                |
+| [`aws-images`](doc/aws-images.md)                           |                   | Search for AWS EC2 AMIs                                                                              |
 | [`banner`](doc/banner.md)                                   | Yes               | Prints text in a _banner_                                                                            |
-| [`bashprofiles`](doc/bashprofiles.md)                       |                   | Prints profile script(s) `bash` will use                                                             |
+| [`bashprofiles`](doc/bashprofiles.md)                       | Yes               | Prints profile script(s) `bash` will use                                                             |
 | [`beeper`](doc/beeper.md)                                   |                   | Beeps over and over                                                                                  |
 | [`bingrep`](doc/bingrep.md)                                 |                   | Searches for a regular expression in arbitrary data from stdin                                       |
 | [`br`](doc/br.md)                                           | Yes               | Browse a file.  Sounds simple?  Maybe, but give it a try                                             |
@@ -42,12 +42,13 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`flow`](doc/flow.md)                                       | Yes               | Flow lines from stdin into columnar form                                                             |
 | [`fulltime`](doc/fulltime.md)                               |                   | Execute a command using standard `time` utility and all options available to it                      |
 | [`git-cat`](doc/git-cat.md)                                 | Yes               | Display a file from another git branch                                                               |
+| [`git-pulls`](doc/git-pulls.md)                             | Yes               | Do `git pull` on one or more repositories                                                            |
 | [`git-refresh-after-merge`](doc/git-refresh-after-merge.md) | Yes               | Refresh local git master branch after merging a feature branch                                       |
-| [`gitstatus`](doc/gitstatus.md)                             |                   | Show files in a local git repo that have been changed, etc.                                          |
-| [`grep-cat`](doc/grep-cat.md)                               |                   | Show lines in a file based on line numbers and/or regular expressions, ranges.                       |
+| [`gitstatus`](doc/gitstatus.md)                             | Yes               | Show files in a local git repo that have been changed, etc.                                          |
+| [`grep-cat`](doc/grep-cat.md)                               | Yes               | Show lines in a file based on line numbers and/or regular expressions, ranges.                       |
 | [`headtail`](doc/headtail.md)                               | Yes               | Print out the top and bottom of stdin or one or more files                                           |
 | [`hex`](doc/hex.md)                                         |                   | Print out data or a file in hex and character form                                                   |
-| [`indent`](doc/indent.md)                                   |                   | Indent stdin by a specified number of columns                                                        |
+| [`indent`](doc/indent.md)                                   | Yes               | Indent stdin by a specified number of columns                                                        |
 | [`json`](doc/json.md)                                       | Yes               | JSON magic - it's a disservice to try to summarize this tool in a single string.  Check out its page |
 | [`jsoncompare`](doc/jsoncompare.md)                         |                   | Compares JSON and/or YAML files, element by element                                                  |
 | [`lexec`](doc/lexec.md)                                     | Yes               | Locate executable files by pattern                                                                   |
@@ -56,7 +57,7 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`nocrs`](doc/nocrs.md)                                     |                   | Remove carriage returns from files                                                                   |
 | [`oldtable`](doc/oldtable.md)                               |                   | Parse data into a tabular form using a few input and output forms - replaced by _table_              |
 | [`peval`](doc/peval.md)                                     | Yes               | Evaluate Python expression strings                                                                   |
-| [`pycomment`](doc/pycomment.md)                             |                   | vi command to toggle Python-style comments, similar to PyCharm `ctrl-/` command                      |
+| [`pycomment`](doc/pycomment.md)                             | Yes               | vi command to toggle Python-style comments, similar to PyCharm `ctrl-/` command                      |
 | [`pythons`](doc/pythons.md)                                 |                   | Show versions of Python/Python2/Python3 interpreters                                                 |
 | [`recentdownloads`](doc/recentdownloads.md)                 |                   | Find recently downloaded files                                                                       |
 | [`SecureKeyValues`](doc/SecureKeyValues.md)                 |                   | Manage secure key value stores                                                                       |
