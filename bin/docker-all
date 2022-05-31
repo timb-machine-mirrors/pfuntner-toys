@@ -79,7 +79,9 @@ def get_image(id):
   return ret
 
 def get_shortest_tag(image):
-  return sorted(image['RepoTags'], key=lambda tag: len(tag))[0]
+  log.info(f'get_shortest_tag: {image}')
+  tags = sorted(image['RepoTags'], key=lambda tag: len(tag))
+  return tags[0] if tags else ''
 
 parser = argparse.ArgumentParser(description='Display Docker containers and images')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
@@ -144,10 +146,11 @@ if images:
     log.info(f'id: {image["Id"]!r}')
     shortest_tag = get_shortest_tag(image)
     tags = image['RepoTags']
-    tags.remove(shortest_tag)
+    if shortest_tag in tags:
+      tags.remove(shortest_tag)
     rows.append((
       image['Id'].split(':')[1][:12],
-      shortest_tag,
+      shortest_tag or '<none>',
       image.get('Architecture'),
       redate(parse_date(image['Created'])),
       ', '.join(tags),
