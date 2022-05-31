@@ -2,6 +2,7 @@
 
 import sys
 import time
+import json
 import logging
 import argparse
 import subprocess
@@ -64,13 +65,21 @@ if len(stdout.splitlines()) == 1:
   else:
     parser.error(f'Could not pull {args.image!r}')
 
+(rc, stdout, stderr) = run(['docker', 'inspect', args.image])
+images = json.loads(stdout)
+if len(images) != 1:
+  log.error(f'`docker inspect {args.image}` error: {rc}, {stdout!r}, {stderr!r}')
+  exit(1)
+arch = images[0]['Architecture']
+
 run(['docker', 'images', args.image], capture=False)
 
 network_option = ' --network host' if args.networking else ''
 privileged_option = ' --privileged' if args.privileged else ''
 name_option = f' --name {args.name}' if args.name else ''
+arch_option = ' --platform arm64 -v /usr/bin/qemu-aarch64-static:/usr/bin/qemu-aarch64-static:ro' if arch == 'arm64' else ''
 
-cmd = f'docker run -it -d{network_option}{privileged_option}{name_option} {args.image}'
+cmd = f'docker run -it -d{network_option}{privileged_option}{name_option}{arch_option} {args.image}'
 if args.dry_run:
   print(cmd)
 else:
