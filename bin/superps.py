@@ -99,7 +99,7 @@ def get_gutter(start_obj, stop_obj):
   :return: The column of the gutter (start <= return value <= stop)
   """
   log.debug(f'get_gutter({start_obj.group(0)}, {stop_obj.group(0)})')
-  start = start_obj.end_time(0)
+  start = start_obj.end(0)
   stop = stop_obj.start(0)-1
   gutters = list()
   for column in range(start, stop+1):
