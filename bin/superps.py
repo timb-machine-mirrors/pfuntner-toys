@@ -119,7 +119,7 @@ def get_gutter(start_obj, stop_obj):
     exit(1)
 
 SECURE_SHELL_EXECUTABLE = '/usr/bin/ssh'
-PS_OPTIONS = 'pid,ppid,etime,time,%cpu,args'
+PS_OPTIONS = 'user,pid,ppid,etime,time,%cpu,args'
 
 parser = argparse.ArgumentParser(description='Get process information')
 
