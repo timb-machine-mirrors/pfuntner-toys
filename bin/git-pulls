@@ -95,10 +95,25 @@ def get_api_url():
     ret = f'https://api.{match.group(1)}/repos/{match.group(2)}/commits'
   return ret 
 
+def find_files(roots):
+  ret = []
+  for base in roots:
+    if os.path.isdir(base) and not os.path.islink(base):
+      log.info(f'find_files base={base!r}')
+      paths = [os.path.join(base, child) for child in os.listdir(base)]
+      for path in paths:
+        log.info(f'find_files path={path!r}')
+        if os.path.basename(path) == '.git' and os.path.isdir(path):
+          ret.append(os.path.dirname(path))
+      ret += find_files(paths)
+  return ret
+
+DEFAULT_ROOTS = [os.path.expanduser('~/repos')]
+
 parser = argparse.ArgumentParser(description='Refresh git repositories')
-parser.add_argument('root', nargs='?', help='Root in which to find repos (default: {HOME}/repos'.format(**os.environ))
+parser.add_argument('root', nargs='*', default=DEFAULT_ROOTS, help=f'Directory in which to find repos (default: {DEFAULT_ROOTS})')
 parser.add_argument('-b', '--branch', action='store_true', help='Do not require master branch')
-parser.add_argument('-d', '--dry-run', action='store_true', help='Perform no git operations')
+parser.add_argument('-d', '--dry-run', action='store_true', help='Make no changes - do not pull new commits')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -119,64 +134,53 @@ date_regexp = re.compile('^Date:\s*([a-z]{3} [a-z]{3} \d{1,2} \d{2}:\d{2}:\d{2} 
 text_regexp = re.compile('^\s+(\S?.*)$')
 up_to_date_regexp = re.compile('^Already up[- ]to[- ]date\.$')
 
-if not args.root:
-  args.root = os.path.join(os.environ['HOME'], 'repos')
+table = Table('Path', 'Branch', 'Old SHA1', 'Old Date', 'Old Text', 'New SHA1', 'New Date', 'New Text')
 
-if os.path.exists(args.root):
-  if os.path.isdir(args.root):
-    cwd = os.getcwd()
-    table = Table('Path', 'Branch', 'Old SHA1', 'Old Date', 'Old Text', 'New SHA1', 'New Date', 'New Text')
-    for filename in os.listdir(args.root):
-      cols = ['']*8
-      path = os.path.join(args.root, filename)
-      realpath = os.path.realpath(path)
-      if os.path.isdir(path) and os.path.isdir(os.path.join(path, '.git')):
-        log.info('Processing {path!r} ({realpath!r})'.format(**locals()))
-        os.chdir(path)
-        branch = get_branch()
-        if (branch in ['master', 'main']) or args.branch:
-          (date, sha1, text) = get_last_commit()
-          cols = [path, branch, sha1, date, text]
-          if args.dry_run:
-            api_url = get_api_url()
-            log.info(f'api_url: {api_url!r}')
-            if api_url:
-              try:
-                resp = requests.get(api_url)
-              except Exception as e:
-                resp = Mock(ok=False, text=str(e))
-              if resp.ok:
-                top_remote_commit = resp.json()[0]
-                if sha1 != top_remote_commit['sha'][:7]:
-                  cols += [top_remote_commit['sha'][:7], top_remote_commit['commit']['author']['date'].replace('T', ' '), top_remote_commit['commit']['message'][:20]]
-                else:
-                  cols += ['']*3
-              else:
-                log.info(f'{api_url} failed for {path}: {resp.text!r}')
-                cols += ['?']*3
-            else:
-              log.warning(f'Could not determine API URL for {path}')
-              cols += ['']*3
+cwd = os.getcwd()
+
+files = find_files(args.root)
+log.info(f'find_files({args.root}): {files}')
+for path in files:
+  cols = ['']*8
+  log.info(f'Processing {path!r}')
+  os.chdir(path)
+  branch = get_branch()
+  if (branch in ['master', 'main']) or args.branch:
+    (date, sha1, text) = get_last_commit()
+    cols = [path, branch, sha1, date, text]
+    if args.dry_run:
+      api_url = get_api_url()
+      log.info(f'api_url: {api_url!r}')
+      if api_url:
+        try:
+          resp = requests.get(api_url)
+        except Exception as e:
+          resp = Mock(ok=False, text=str(e))
+        if resp.ok:
+          top_remote_commit = resp.json()[0]
+          if sha1 != top_remote_commit['sha'][:7]:
+            cols += [top_remote_commit['sha'][:7], top_remote_commit['commit']['author']['date'].replace('T', ' '), top_remote_commit['commit']['message'][:20]]
           else:
-            (rc, stdout, stderr) = run('git pull', readonly=False)
-            up_to_date = up_to_date_regexp.search(stdout.strip())
-            if rc != 0 or not stdout or not up_to_date:
-              log.warning(f'Error pulling {path}: {rc}, {stdout!r}, {stderr!r}')
-            if not up_to_date:
-              (date, sha1, text) = get_last_commit()
-              cols += [sha1, date, text]
-            else:
-              cols += ['']*3
+            cols += ['']*3
         else:
-          # handle non-master, non-main repo
-          cols += ['']*3
-        log.info(f'cols: {cols}')
-        table.add(cols)
-        os.chdir(cwd)
+          log.info(f'{api_url} failed for {path}: {resp.text!r}')
+          cols += ['?']*3
       else:
-        log.info('{path!r} ({realpath!r}) is not a git repository'.format(**locals()))
-    print(str(table), end='')
+        log.warning(f'Could not determine API URL for {path}')
+        cols += ['']*3
+    else:
+      (rc, stdout, stderr) = run('git pull', readonly=False)
+      up_to_date = up_to_date_regexp.search(stdout.strip())
+      if not up_to_date:
+        (date, sha1, text) = get_last_commit()
+        cols += [sha1, date, text]
+      else:
+        cols += ['']*3
   else:
-    parser.error('{args.root!r} is not a directory'.format(**locals()))
-else:
-  parser.error('{args.root!r} does not exist'.format(**locals()))
+    # handle non-master, non-main repo
+    cols += ['']*3
+  log.info(f'cols: {cols}')
+  table.add(cols)
+  os.chdir(cwd)
+
+print(str(table), end='')
