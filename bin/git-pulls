@@ -6,9 +6,15 @@ import sys
 import logging
 import argparse
 import datetime
+import requests
 import subprocess
 
 from table import Table
+
+class Mock(object):
+  def __init__(self, **kwargs):
+    for (key, value) in kwargs.items():
+      setattr(self, key, value)
 
 def run(cmd, readonly=True):
   (rc, stdout, stderr) = (None, '', '')
@@ -69,7 +75,26 @@ def get_last_commit():
  
   log.debug('get_last_commit() returning date={date}, sha1={sha1}, text={text}'.format(**locals()))
   return (date, sha1[:7], text)
-  
+
+def get_api_url():
+  """
+    Output from `git remote -v`:
+      origin  git@github.com:pfuntner/temp.git (fetch)
+      origin  git@github.com:pfuntner/temp.git (push)
+
+    I'm not sure I have a git clone using http but I did a dry-run clone and it has:
+
+      git clone https://github.com/pfuntner/temp.git
+  """
+  ret = None
+
+  (rc, stdout, stderr) = run('git remote -v')
+  match = re.match(r'^origin\s+\S+[/@]([^ /:]+)[/:](\S+)\.git', stdout, flags=re.MULTILINE)
+  log.info(f'get_api_url() groups from {stdout!r}: {match.group() if match else None}')
+  if match:
+    ret = f'https://api.{match.group(1)}/repos/{match.group(2)}/commits'
+  return ret 
+
 parser = argparse.ArgumentParser(description='Refresh git repositories')
 parser.add_argument('root', nargs='?', help='Root in which to find repos (default: {HOME}/repos'.format(**os.environ))
 parser.add_argument('-b', '--branch', action='store_true', help='Do not require master branch')
@@ -78,16 +103,16 @@ parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
-log = logging.getLogger()
+log = logging.getLogger('git-pulls')
 
-if args.dry_run and not args.verbose:
-  log.setLevel(logging.INFO)
-else:
-  log.setLevel(logging.WARNING - (args.verbose or 0)*10)
+log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 if os.getuid() == 0:
   log.error('Do not run as root')
   exit(1)
+
+if args.dry_run:
+  log.warning('Note: local repos are not being changed cause of --dry-run')
 
 sha1_regexp = re.compile('commit ([0-9a-f]{40})$')
 date_regexp = re.compile('^Date:\s*([a-z]{3} [a-z]{3} \d{1,2} \d{2}:\d{2}:\d{2} \d{4})', flags=re.IGNORECASE)
@@ -109,26 +134,41 @@ if os.path.exists(args.root):
         log.info('Processing {path!r} ({realpath!r})'.format(**locals()))
         os.chdir(path)
         branch = get_branch()
-        (date, sha1, text) = get_last_commit()
-        cols = [path, branch, sha1, date, text]
-        if not args.dry_run:
-          if (branch == 'master') or args.branch:
+        if (branch in ['master', 'main']) or args.branch:
+          (date, sha1, text) = get_last_commit()
+          cols = [path, branch, sha1, date, text]
+          if args.dry_run:
+            api_url = get_api_url()
+            log.info(f'api_url: {api_url!r}')
+            if api_url:
+              try:
+                resp = requests.get(api_url)
+              except Exception as e:
+                resp = Mock(ok=False, text=str(e))
+              if resp.ok:
+                top_remote_commit = resp.json()[0]
+                if sha1 != top_remote_commit['sha'][:7]:
+                  cols += [top_remote_commit['sha'][:7], top_remote_commit['commit']['author']['date'].replace('T', ' '), top_remote_commit['commit']['message'][:20]]
+                else:
+                  cols += ['']*3
+              else:
+                log.info(f'{api_url} failed for {path}: {resp.text!r}')
+                cols += ['?']*3
+            else:
+              log.warning(f'Could not determine API URL for {path}')
+              cols += ['']*3
+          else:
             (rc, stdout, stderr) = run('git pull', readonly=False)
             up_to_date = up_to_date_regexp.search(stdout.strip())
             if rc != 0 or not stdout or not up_to_date:
-              print('*' * (len(path) + 4))
-              print(f'* {path} *')
-              print('*' * (len(path) + 4))
-              sys.stdout.write(stdout)
-              sys.stderr.write(stderr)
+              log.warning(f'Error pulling {path}: {rc}, {stdout!r}, {stderr!r}')
             if not up_to_date:
               (date, sha1, text) = get_last_commit()
               cols += [sha1, date, text]
             else:
               cols += ['']*3
-          else:
-            cols += ['']*3
         else:
+          # handle non-master, non-main repo
           cols += ['']*3
         log.info(f'cols: {cols}')
         table.add(cols)
