@@ -618,7 +618,7 @@ if __name__ == '__main__':
         p.stdin.write('[targets]\n'.encode())
         for instance in instances:
           if instance.active:
-            p.stdin.write(f'{instance.name} ansible_host={instance.ip} ansible_user={instance.user} ansible_ssh_private_key_file={instance.key_filename}\n'.encode())
+            p.stdin.write(f'''{instance.name} ansible_host={instance.ip} ansible_user={instance.user} ansible_ssh_private_key_file={instance.key_filename} ansible_ssh_extra_args='-o ProxyCommand="nc -X connect -x  proxy.esl.cisco.com:80 %h %p"'\n'''.encode())
         p.stdin.close()
         rc = p.wait()
 
