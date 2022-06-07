@@ -478,7 +478,7 @@ if __name__ == '__main__':
 
   parser.add_argument('hosts', metavar='host', nargs='*', help='Zero or more hosts to start, stop, restart')
   parser.add_argument('--aws-only', action='store_true', help='Process AWS instances only')
-  parser.add_argument('--no-fingerprints', action='store_true', help='Do not add SSH fingerprints using add_to_knownhosts')
+  parser.add_argument('--fingerprints', action='store_true', help='Add SSH fingerprints using add_to_knownhosts')
   parser.add_argument('-c', '--clean', action='store_true', help='Clean instances before --make')
   parser.add_argument('-u', '--user', help='Default user if cannot be determined from the image, etc')
   parser.add_argument('-o', '--out', default='/etc/ansible/hosts', help='Ansible hosts yaml destination file.  Default: /etc/ansible/hosts')
@@ -629,7 +629,7 @@ if __name__ == '__main__':
             stream.write(f'Host {instance.name}\n\tHostname {instance.ip}\n\tUser {instance.user}\n\tIdentityFile {instance.key_filename}\n\tProxyCommand nc -X connect -x proxy.esl.cisco.com:80 %h %p\n')
         
         active_instances = [instance.name for instance in instances if instance.active]
-        if active_instances and not args.no_fingerprints:
-          subprocess.Popen(['add-to-knownhosts'] + active_instances).wait()
+        if active_instances and args.fingerprints:
+          subprocess.Popen(['add-to-knownhosts', '--no-fingerprint'] + active_instances).wait()
   else:
     print('No instances!')
