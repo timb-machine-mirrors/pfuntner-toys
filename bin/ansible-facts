@@ -49,9 +49,14 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
 if args.docker:
-  (rc, stdout, stderr) = run(f'ansible -c docker -i {",".join(args.hosts)}, -m setup all')
+  cmd = f'ansible -c docker -i {",".join(args.hosts)}, -m setup all'
 else:
-  (rc, stdout, stderr) = run(f'ansible -m setup {",".join(args.hosts)}')
+  cmd = f'ansible -m setup {",".join(args.hosts)}'
+
+(rc, stdout, stderr) = run(cmd)
+
+if rc != 0:
+  log.warning(f'{cmd!r} failed: {rc}, {stderr!r}')
 
 """
        1 localhost | SUCCESS => {
