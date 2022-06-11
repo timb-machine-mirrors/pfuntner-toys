@@ -95,17 +95,17 @@ def get_api_url():
     ret = f'https://api.{match.group(1)}/repos/{match.group(2)}/commits'
   return ret 
 
-def find_files(roots):
+def find_files(roots, depth=0):
   ret = []
   for base in roots:
-    if os.path.isdir(base) and not os.path.islink(base):
+    if os.path.isdir(base) and (depth == 0 or not os.path.islink(base)):
       log.info(f'find_files base={base!r}')
       paths = [os.path.join(base, child) for child in os.listdir(base)]
       for path in paths:
         log.info(f'find_files path={path!r}')
         if os.path.basename(path) == '.git' and os.path.isdir(path):
           ret.append(os.path.dirname(path))
-      ret += find_files(paths)
+      ret += find_files(paths, depth+1)
   return ret
 
 DEFAULT_ROOTS = [os.path.expanduser('~/repos')]
