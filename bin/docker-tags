@@ -68,7 +68,7 @@ class Table(object):
     self.p.stdin.close()
     self.p.wait()
 
-parser = argparse.ArgumentParser(description='Get information from remote Docker repo') # sys.argv[0])
+parser = argparse.ArgumentParser(description='Get information from remote Docker repo (such as Quay)')
 parser.add_argument('-l', '--long', action='store_true', help='Report long manifest hash IDs')
 parser.add_argument('-a', '--authorization', help='Remote Docker repository authorization (eg `user:token`)')
 parser.add_argument('-s', '--server', required=True, help='Remote Docker repository server')
