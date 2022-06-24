@@ -69,6 +69,7 @@ class Table(object):
     self.p.wait()
 
 parser = argparse.ArgumentParser(description='Get information from remote Docker repo') # sys.argv[0])
+parser.add_argument('-l', '--long', action='store_true', help='Report long manifest hash IDs')
 parser.add_argument('-a', '--authorization', help='Remote Docker repository authorization (eg `user:token`)')
 parser.add_argument('-s', '--server', required=True, help='Remote Docker repository server')
 parser.add_argument('-o', '--organization', required=True, help='Remote Docker repository organization')
@@ -99,7 +100,7 @@ while True:
   req = requests.get(docker_url, auth=docker_auth)
   if req.ok:
     log.debug(f'req.json: {req.json()}')
-    table = Table('Tag', 'Image ID', 'Created')
+    table = Table('Tag', 'Manifest ID', 'Created')
     tags = req.json().get('tags', {})
     """
     [
@@ -120,7 +121,8 @@ while True:
     for (tag, image) in tags.items():
       # "last_modified": "Mon, 21 Mar 2022 10:15:07 -0000"
       # timestamp = datetime.datetime.strptime(image.get('last_modified', '')[:-6], '%a, %d %b %Y %H:%M:%S')
-      table.add(tag, image.get('manifest_digest')[7:][:12], normalize_timestamp(image.get('last_modified', '')))
+      manifest_digest = image.get('manifest_digest')[7:]
+      table.add(tag, manifest_digest if args.long else manifest_digest[:12], normalize_timestamp(image.get('last_modified', '')))
     if req.json().get('has_additional', False):
       page += 1
     else:
