@@ -120,7 +120,7 @@ while True:
     for (tag, image) in tags.items():
       # "last_modified": "Mon, 21 Mar 2022 10:15:07 -0000"
       # timestamp = datetime.datetime.strptime(image.get('last_modified', '')[:-6], '%a, %d %b %Y %H:%M:%S')
-      table.add(tag, image.get('image_id')[:12], normalize_timestamp(image.get('last_modified', '')))
+      table.add(tag, image.get('manifest_digest')[7:][:12], normalize_timestamp(image.get('last_modified', '')))
     if req.json().get('has_additional', False):
       page += 1
     else:
