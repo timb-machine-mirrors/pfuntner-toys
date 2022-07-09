@@ -16,9 +16,9 @@ class Mock(object):
     for (key, value) in kwargs.items():
       setattr(self, key, value)
 
-def run(cmd, readonly=True):
+def run(cmd):
   (rc, stdout, stderr) = (None, '', '')
-  if (not args.dry_run) or readonly:
+  if not args.dry_run:
     if isinstance(cmd, str):
       cmd = cmd.split()
     log.info('Executing {cmd}'.format(**locals()))
@@ -168,8 +168,10 @@ for path in files:
         log.warning(f'Could not determine API URL for {path}')
         cols += ['']*3
     else:
-      (rc, stdout, stderr) = run('git pull', readonly=False)
-      up_to_date = up_to_date_regexp.search(stdout.strip())
+      # Non-dry-run: try to pull updates
+      (rc, stdout, stderr) = run('git pull')
+      up_to_date = bool(up_to_date_regexp.search(stdout.strip()))
+      log.debug(f'up_to_date: {up_to_date}')
       if not up_to_date:
         (date, sha1, text) = get_last_commit()
         cols += [sha1, date, text]
