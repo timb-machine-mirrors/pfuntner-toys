@@ -16,9 +16,18 @@ class Mock(object):
     for (key, value) in kwargs.items():
       setattr(self, key, value)
 
-def run(cmd):
+def run(cmd, readonly=False):
+  """
+  Run a command
+  :param cmd: Command to run as a string or array of strings
+  :param readonly: Run the command even if --dry-run is specified
+  :return: A 3-element tuple:
+    #1: the exit status
+    #2: stdout as a string
+    #3: stderr as a string
+  """
   (rc, stdout, stderr) = (None, '', '')
-  if not args.dry_run:
+  if readonly or not args.dry_run:
     if isinstance(cmd, str):
       cmd = cmd.split()
     log.info('Executing {cmd}'.format(**locals()))
@@ -41,7 +50,7 @@ def extract(s, regexp):
 
 def get_branch():
   ret = None
-  (rc, stdout, stderr) = run('git branch')
+  (rc, stdout, stderr) = run('git branch', readonly=True)
   for line in stdout.splitlines():
     if line and line[0] == '*':
       ret = line.split()[1]
@@ -59,7 +68,7 @@ def get_last_commit():
   date = None
   sha1 = None
   text = []
-  (rc, stdout, stderr) = run('git log -1')
+  (rc, stdout, stderr) = run('git log -1', readonly=True)
   for line in stdout.splitlines():
     sha1 = sha1 or extract(line, sha1_regexp)
     date = date or extract(line, date_regexp)
@@ -88,7 +97,7 @@ def get_api_url():
   """
   ret = None
 
-  (rc, stdout, stderr) = run('git remote -v')
+  (rc, stdout, stderr) = run('git remote -v', readonly=True)
   match = re.match(r'^origin\s+\S+[/@]([^ /:]+)[/:](\S+)\.git', stdout, flags=re.MULTILINE)
   log.info(f'get_api_url() groups from {stdout!r}: {match.group() if match else None}')
   if match:
@@ -163,6 +172,7 @@ for path in files:
             cols += ['']*3
         else:
           log.info(f'{api_url} failed for {path}: {resp.text!r}')
+          log.warning(f'Note: {os.path.basename(path)!r} might be a private repo')
           cols += ['?']*3
       else:
         log.warning(f'Could not determine API URL for {path}')
