@@ -54,10 +54,16 @@ print(f"""- name: Print expression
   hosts: {args.host or 'localhost'}
   tasks:
   - debug:
-      msg: "{args.expr}: [{args.expr}]"
-""".replace('[', '{{ ').replace(']', ' }}'), file=playbook)
+      msg: "{args.expr}: &lbrace;{args.expr}&rbrace;"
+""".replace('&lbrace;', '{{ ').replace('&rbrace;', ' }}'), file=playbook)
 
 playbook.flush()
+
+(rc, stdout, stderr) = run(f'cat {playbook.name}')
+log.debug(f'{playbook.name}:')
+for line in stdout.splitlines():
+  log.debug(f'  {line}')
+
 extra_vars = list()
 for extra_var in args.extra_vars or []:
   extra_vars += ['-e', extra_var]
