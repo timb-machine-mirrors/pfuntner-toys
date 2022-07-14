@@ -1,3 +1,5 @@
+#! /usr/bin/env bash
+
 if [ X$(uname -s) = "XOS/390" ]
 then
   set -o korn
