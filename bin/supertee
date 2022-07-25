@@ -51,7 +51,7 @@ if sys.stdin.isatty():
 
 if os.path.exists(args.filename):
   if os.path.isfile(args.filename):
-    new_filename = f'{args.filename}.{datetime.datetime.now().isoformat()}'
+    new_filename = f'{args.filename}.{datetime.datetime.fromtimestamp(os.path.getmtime(args.filename).isoformat()}'
     (rc, stdout, stderr) = run(['mv', '--verbose', '--no-clobber', args.filename, new_filename], capture=False)
     if rc != 0:
       log.error(f'Could not backup to {new_filename!r}')
