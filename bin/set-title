@@ -77,11 +77,21 @@ def set_title(title):
   log.info(f'Writing: {msg!r}')
   sys.stdout.write(msg)
 
+def simplify(s):
+  log.info(f'simplify({s!r}')
+  tokens = s.split('+')
+  log.info(f'simplify(): tokens: {tokens}')
+  if len(tokens) == 2 and tokens[1]:
+    s = tokens[1]
+  log.info(f'simplify() returning {s!r}')
+  return s
+
 parser = argparse.ArgumentParser(description='Set window title')
 parser.add_argument('title', nargs='*', help='Title to use (default: assumes --self)')
 parser.add_argument('-s', '--self', dest='_self', action='store_true', help='Use `user@node` as title')
 parser.add_argument('-d', '--debug', action='store_true', help='Enable interactive debugging')
 parser.add_argument('-v', '--verbose', action='store_true', help='Enable debugging messages')
+parser.add_argument('--who-am-i', action='store_true', help='Print out the title line')
 args = parser.parse_args()
 
 if args.debug:
@@ -94,6 +104,9 @@ log.setLevel(logging.WARNING - 10*(args.verbose or 0))
 if args._self and args.title:
   parser.error('Specify either --self or a title string but not both')
 
-title = (os.environ.get('USER', '?') + '@' + platform.node()) if args._self or not args.title else ' '.join(args.title)
+title = (simplify(os.environ.get('USER', '?')) + '@' + platform.node()) if args._self or not args.title else ' '.join(args.title)
 
-set_title(title)
+if args.who_am_i:
+  print(title)
+else:
+  set_title(title)
