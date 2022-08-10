@@ -19,7 +19,7 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 log.info('args: {args}'.format(**locals()))
 
-cmd = '{tool} {context} <(char-by-char < {args.file1!r}) <(char-by-char < {args.file2!r})'.format(
+cmd = '{tool} {context} <(chars < {args.file1!r}) <(chars < {args.file2!r})'.format(
   tool='sidediff' if args.side_by_side else 'diff',
   context='' if args.context is None else '-C {args.context}'.format(**locals()),
   **locals()
