@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import sys
 import random
@@ -28,12 +28,12 @@ class Data:
 
   @staticmethod
   def getName():
-    return ''.join([random.choice(string.lowercase) for iter in
+    return ''.join([random.choice(string.ascii_lowercase) for iter in
                     range(random.randint(Data.MIN_NAME_LENGTH, Data.MAX_NAME_LENGTH))])
 
   @staticmethod
   def getDatetime():
-    return datetime.datetime(1, 1, 1) + datetime.timedelta(seconds=random.randint(0, Data.MAX_YEAR*365*24*60*60*1000)/1000.0)
+    return (datetime.datetime(1, 1, 1) + datetime.timedelta(seconds=random.randint(0, Data.MAX_YEAR*365*24*60*60*1000)/1000.0)).isoformat()
 
   @staticmethod
   def getUuid():
@@ -68,7 +68,7 @@ if __name__ == "__main__":
       "numbers": [data.getNumber() for iter in iterations],
       "integers": [data.getInteger() for iter in iterations],
       "names": [data.getName() for iter in iterations],
-      "dates": [data.getDatetime().isoformat() for iter in iterations],
+      "dates": [data.getDatetime() for iter in iterations],
       "uids": [data.getUuid() for iter in iterations],
       "booleans":  [data.getBoolean() for iter in iterations],
       "listOfDicts": data.getListOfDicts(),
