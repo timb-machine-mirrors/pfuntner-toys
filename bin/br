@@ -23,7 +23,7 @@ def cleanup(signum=None, frame=None):
 
 def add_crs(s):
   if windoze and args.notepad:
-    s = '\r\n'.join(s.splitlines()) + '\r\n'
+    s = b'\r\n'.join(s.splitlines()) + b'\r\n'
   return s
 
 parser = argparse.ArgumentParser(description='Launch editor (vi, et al) on a file/data stream, in read-only mode if possible')
@@ -91,9 +91,11 @@ name = None
 signal.signal(signal.SIGINT, cleanup)
 signal.signal(signal.SIGTERM, cleanup)
 
+binary_stdin = os.fdopen(sys.stdin.fileno(), mode='rb')
+
 (fd, name) = tempfile.mkstemp()
 log.info("Created %s" % repr(name))
-os.write(fd, add_crs(sys.stdin.read()).encode('utf-8'))
+os.write(fd, add_crs(binary_stdin.read()))
 os.close(fd)
 
 with open("/dev/tty", 'r') as tty:
