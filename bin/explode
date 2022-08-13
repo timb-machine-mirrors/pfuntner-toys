@@ -14,6 +14,7 @@ import re
 import os
 import sys
 import logging
+import copy
 import argparse
 import subprocess
 
@@ -97,7 +98,7 @@ def process(path):
         sys.stderr.write('Cannot create {base!r}: {e}\n'.format(**locals()))
         return
       os.chdir(base)
-      extractor = cmd
+      extractor = copy.deepcopy(cmd)
       if cmd != ['unzip']:
         extractor.append('-xvf')
       extractor.append(qualify(path))
