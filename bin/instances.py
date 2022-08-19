@@ -11,6 +11,7 @@ import inspect
 import logging
 import requests
 import argparse
+import platform
 import subprocess
 
 ssh_root_raw = '~/.ssh'
@@ -489,8 +490,8 @@ if __name__ == '__main__':
   log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 
-  if args.make and 'JPFUNTNE-GCEYJ.cisco.com' in socket.gethostbyname_ex(socket.gethostname()):
-    parser.error('Avoiding running with --make on work laptop')
+  if args.make and 'win' in platform.system().lower():
+    parser.error('Avoiding running with --make on Windoze')
 
   count = 0
 
