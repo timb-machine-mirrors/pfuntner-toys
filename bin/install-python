@@ -24,6 +24,24 @@ class Apt(object):
     else:
       return False
 
+class Apk(object):
+  def __init__(self, host):
+    self.host = host
+
+  def install(self, package):
+    log.info(f'{self.host}: installing {package}')
+    (rc, stdout, stderr) = run(self.host, f'apk add {package}')
+    return rc == 0
+
+class Yum(object):
+  def __init__(self, host):
+    self.host = host
+
+  def install(self, package):
+    log.info(f'{self.host}: installing {package}')
+    (rc, stdout, stderr) = run(self.host, f'yum install -y {package}')
+    return rc == 0
+
 def run(target, cmd, capture=True):
   if isinstance(cmd, list):
     cmd = shlex.join(cmd)
@@ -124,9 +142,9 @@ signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 package_managers = {
   'debian': Apt,
   'ubuntu': Apt,
-  # 'redhat': Yum,
-  # 'centos': Yum,
-  # 'alpine': Apk,
+  'redhat': Yum,
+  'centos': Yum,
+  'alpine': Apk,
 }
 
 for host in args.hosts:
