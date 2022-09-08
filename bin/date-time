@@ -84,10 +84,10 @@ class EpochProcessor(object):
     ret = None
 
     log.debug(f'{cls.__name__} testing {specimen!r}')
-    match = re.search(r'(\d{10,})(\.\d*)?', specimen)
-    log.debug(f'match groups: {match.groups() if match else None}')
-    if match and len(match.group(1)) == 10:
-      ret = datetime.datetime.fromtimestamp(float(match.group(0)))
+    try:
+      ret = datetime.datetime.fromtimestamp(float(specimen))
+    except Exception as e:
+      log.debug(f'Caught {e!s} from float({specimen!r})')
 
     if ret is None:
       log.debug(f'{cls.__name__} does not recognize {specimen!r}')
