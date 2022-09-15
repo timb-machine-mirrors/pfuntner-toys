@@ -50,7 +50,7 @@ def run(target, cmd, capture=True):
     cmd = f'HTTP_PROXY={args.proxy} {cmd}'
 
   if args.docker:
-    cmd = ['docker', 'exec', target, 'bash', '-c', cmd]
+    cmd = ['docker', 'exec', target, 'sh', '-c', cmd]
   else:
     cmd = ['ssh'] + (['-q'] if args.quiet else []) + [target, '--', f'echo {base64.b64encode(cmd.encode()).decode()} | base64 -d | sudo -i']
 
