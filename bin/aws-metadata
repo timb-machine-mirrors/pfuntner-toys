@@ -87,13 +87,16 @@ def process(host, path=[]):
     system
     [centos@ip-172-31-60-9 ~]$
   """
-  (rc, stdout, stderr) = run(['ssh', '-q', host, f'curl http://169.254.169.254/latest/meta-data/{"/".join(path)}'])
-  for attr in stdout.splitlines():
-    if attr.endswith('/'):
-      process(host, path + [attr[:-1]])
-    else:
-      (rc, stdout, stderr) = run(['ssh', '-q', host, f'curl http://169.254.169.254/latest/meta-data/{"/".join(path + [attr])}'])
-      table.add(host, '/'.join(path + [attr]), repr(stdout.strip())[1:-1])
+  (rc, stdout, stderr) = run(['ssh', host, f'curl http://169.254.169.254/latest/meta-data/{"/".join(path)}'])
+  if not path and rc != 0:
+    log.error(f'ssh to {host!r} failed: {stderr!r}')
+  else:
+    for attr in stdout.splitlines():
+      if attr.endswith('/'):
+        process(host, path + [attr[:-1]])
+      else:
+        (rc, stdout, stderr) = run(['ssh', '-q', host, f'curl http://169.254.169.254/latest/meta-data/{"/".join(path + [attr])}'])
+        table.add(host, '/'.join(path + [attr]), repr(stdout.strip())[1:-1])
 
 parser = argparse.ArgumentParser(description='Retrieve AWS metadata')
 parser.add_argument('hosts', metavar='host', nargs='+', help='One or more hosts')
