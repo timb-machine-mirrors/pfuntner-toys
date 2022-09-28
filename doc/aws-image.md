@@ -57,7 +57,7 @@ $ aws-image ami-0a4b1fdc2301bf1f1
   "UsageOperation": "RunInstances",
   "VirtualizationType": "hvm"
 }
-$ 
+$
 ```
 
 ## Notes

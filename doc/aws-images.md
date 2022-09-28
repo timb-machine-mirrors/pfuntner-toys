@@ -12,8 +12,8 @@ Syntax: aws-images [--glob] [--region REGION ]
 ## Options and Arguments
 | Option           | Description                                                                                                                                | Default                                                                                                                 |
 |------------------|--------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
-| `-g`, `--glob`   | Pattern is in the style of [filename expansion](https://www.gnu.org/software/bash/manual/html_node/Pattern-Matching.html) in a Linux shell | Pattern is in the style of a [regular expression](https://en.wikipedia.org/wiki/Regular_expression) like used by `grep` |
-| `-r`, `--region` | Override the AWS EC2 region                                                                                                                | The default region set in your AWS credentials is used.  I think a default region does not need to chosen in an AWS configuration but that I believe a default is very common and I know it's very useful.                                                                   
+| `--regexp`   | Pattern is in the style of a [regular expression](https://en.wikipedia.org/wiki/Regular_expression) like used by `grep` | Pattern is in the style of [filename expansion](https://www.gnu.org/software/bash/manual/html_node/Pattern-Matching.html) in a Linux shell |
+| `--region` | Override the AWS EC2 region                                                                                                                | The default region set in your AWS credentials is used.  I think a default region does not need to chosen in an AWS configuration but that I believe a default is very common and I know it's very useful.                                                                   
 | `-v`             | Enable verbose debugging                                                                                                                   | Debugging is not enabled                                                                                                |
 
 
@@ -23,7 +23,7 @@ I found the AWS owner by looking at the details of an Ubuntu AMI.  See the [`aws
 ### All images from the owner
 You could use a simple name pattern that will match everything to show all images.
 ```
-$ aws-images -o 099720109477 -n . | headtail
+$ aws-images -o 099720109477 --regexp -n . | headtail
        1 Image name                                                                                              Image ID               Created
        2 ubuntu/images-testing/hvm-ssd/ubuntu-jammy-daily-amd64-server-20220313                                  ami-048161b37204478fd  2022-03-13T07:40:45.000Z
        3 ubuntu/images-testing/hvm-ssd/ubuntu-jammy-daily-arm64-server-20220313                                  ami-0ff349ebceeced8a1  2022-03-13T07:40:14.000Z
@@ -43,7 +43,7 @@ $
 ### Showing specific releases
 You can specify more to the pattern to select only certain images.
 ```
-$ aws-images -o 099720109477 -n 'ubuntu-.*-20.10-arm64' | headtail
+$ aws-images -o 099720109477 --regexp -n 'ubuntu-.*-20.10-arm64' | headtail
        1 Image name                                                         Image ID               Created
        2 ubuntu/images/hvm-ssd/ubuntu-groovy-20.10-arm64-server-20210720    ami-0e7a5554e82452478  2021-07-21T13:02:53.000Z
        3 ubuntu/images/hvm-ssd/ubuntu-groovy-20.10-arm64-server-20210622    ami-0d57f0639aae57eb6  2021-06-22T20:12:19.000Z
@@ -60,12 +60,12 @@ $ aws-images -o 099720109477 -n 'ubuntu-.*-20.10-arm64' | headtail
 $ 
 ```
 
-### Using `--glob` pattern
-A `glob` pattern works a little differently:
+### Using a _glob_ pattern
+A _glob_ pattern works a little differently:
 - The biggest difference is that a `glob` pattern is _anchored_ on both ends so you likely need wildcards at the start and finish.
-- The `*` `glob` metacharacter does not apply to the previous regular expression so it's slightly easier to use.
+- The `*` glob metacharacter does not apply to the previous regular expression so it's slightly easier to use.
 ```
-$ aws-images -o 099720109477 -g -n '*ubuntu-*-20.10-arm64*' | headtail
+$ aws-images -o 099720109477 -n '*ubuntu-*-20.10-arm64*' | headtail
        1 Image name                                                         Image ID               Created
        2 ubuntu/images/hvm-ssd/ubuntu-groovy-20.10-arm64-server-20210720    ami-0e7a5554e82452478  2021-07-21T13:02:53.000Z
        3 ubuntu/images/hvm-ssd/ubuntu-groovy-20.10-arm64-server-20210622    ami-0d57f0639aae57eb6  2021-06-22T20:12:19.000Z
