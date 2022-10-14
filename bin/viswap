@@ -22,7 +22,7 @@ def process(file):
 
 parser = argparse.ArgumentParser(description='Find vi swap files', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
-parser.add_argument('--print0', action='store_true', help='Use find\'s -print0 option')
+parser.add_argument('-0', '--print0', action='store_true', help='Use find\'s -print0 option')
 parser.add_argument('files', metavar='file', default='.', nargs='*', help='Zero or more files')
 args = parser.parse_args()
 
