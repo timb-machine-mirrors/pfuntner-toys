@@ -52,6 +52,7 @@ def run(target, cmd, capture=True, read_only=True):
   if args.docker:
     cmd = ['docker', 'exec', target, 'sh', '-c', cmd]
   else:
+    log.debug(f'Encoding {cmd!r} for the trip!')
     cmd = ['ssh'] + (['-q'] if args.quiet else []) + [target, '--', f'echo {base64.b64encode(cmd.encode()).decode()} | base64 -d | sudo -i']
 
   if read_only or not args.dry_run:
