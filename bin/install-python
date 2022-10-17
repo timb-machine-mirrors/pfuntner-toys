@@ -72,8 +72,8 @@ def run(target, cmd, capture=True, read_only=True):
   
     log.debug('Executed {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
   else:
-    log.debug('Skipping {cmd} because of --dry-run'.format(**locals()))
-    (rc, stdout, sderr) = (0, None, None)
+    log.warning('Skipping {cmd} because of --dry-run'.format(**locals()))
+    (rc, stdout, stderr) = (0, None, None)
 
   return (rc, stdout, stderr)
 
