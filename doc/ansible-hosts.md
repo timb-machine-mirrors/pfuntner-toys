@@ -11,11 +11,11 @@ Syntax: ansible-hosts [-h] [-c] [-n] [-v] [hosts [hosts ...]]
 ### Options and arguments
 `hosts` is one or more regular expressions to select hosts.  By default, all hosts are turned.
 
-| Option | Description | Default |
-| ------ | ----------- | ------- |
-| `-c`, `--commas` | Join hosts with a comma.  `--name-only` is also implied | Print all information in tabular form |
-| `-n`, `--names-only` | Report names only, not even a heading | Print all information in tabular form |
-|  `-v`  | Enable verbose debugging | Debugging is not enabled |
+| Option                         | Description                                             | Default                               |
+|--------------------------------|---------------------------------------------------------|---------------------------------------|
+| `-c`, `--commas`               | Join hosts with a comma.  `--name-only` is also implied | Print all information in tabular form |
+| `-n`, `--names`, `-l`, `--list` | List names only, not even a heading                     | Print host names one line at a time   |
+| `-v`                           | Enable verbose debugging                                | Debugging is not enabled              |
 
 ## Example
 
