@@ -5,7 +5,7 @@ I use this tool as a replacement (or frontend) to `cd`.  It will seek my home di
 
 ## Syntax
 ```
-Syntax: supercd.sh [-verbose] pattern
+Syntax: supercd.sh [--verbose] pattern
 ```
 
 ### Options and arguments

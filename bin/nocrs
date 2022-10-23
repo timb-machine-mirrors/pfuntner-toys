@@ -38,7 +38,7 @@ def backup(filename):
     else:
       log.error('Could not backup {filename!r}: cp status: {rc}'.format(**locals()))
     backup_filename = None
-  
+
   return backup_filename
 
 def process(filename):

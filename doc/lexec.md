@@ -6,7 +6,7 @@ Locate executables
 ## Syntax
 ### Unix
 ```
-Syntax: lexec [-verbose] pattern ...
+Syntax: lexec [--verbose] pattern ...
 ```
 Note that the pattern is a Python-style regular expression, not bash:
 
@@ -16,7 +16,7 @@ Note that the pattern is a Python-style regular expression, not bash:
 
 ### Windoze only
 ```
-Syntax: lexec [-verbose] [-s] pattern ...
+Syntax: lexec [--verbose] [-s] pattern ...
 ```
 
 ### Options and arguments

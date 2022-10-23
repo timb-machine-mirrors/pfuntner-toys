@@ -6,7 +6,7 @@ then
   false
 else
   eval files=$(supercd.py --bash "$@")
-  
+
   if [ ${#files[@]} -eq 1 ]
   then
     echo "${files[0]}"

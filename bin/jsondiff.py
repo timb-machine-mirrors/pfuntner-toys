@@ -55,7 +55,7 @@ class JsonDiff(object):
 
   def compare(self, root1, root2, path=[]):
     ret = True
-    
+
     self.log.debug(f'Comparing {path}: {root1!r} vs {root2!r}')
     if root1 != root2:
       ret = False
@@ -99,19 +99,19 @@ class JsonDiff(object):
         ))
 
     return ret
-    
+
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Compare json/yaml structures')
   parser.add_argument('file1', help='Path to file 1')
   parser.add_argument('file2', help='Path to file 2')
   parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
   args = parser.parse_args()
-  
+
   logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
   log = logging.getLogger()
   log.setLevel(logging.WARNING - (args.verbose or 0)*10)
-  
+
   signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
-  
+
   diff = JsonDiff(log=log)
   exit(0 if diff.compare(read(args.file1), read(args.file2)) else 1)

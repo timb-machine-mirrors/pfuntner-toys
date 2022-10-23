@@ -27,7 +27,7 @@ class Measurement(object):
         elif units in measurement['metric'].keys():
           return Measurement(amt, units, 'metric', measurement)
     parser.error('Unknown units: {units!r}'.format(**locals()))
-  
+
   def __init__(self, amt, units, system, measurement):
     self.amt = amt
     self.original_amt = amt
@@ -42,8 +42,8 @@ class Measurement(object):
     self.converter = measurement['conversion']['convert']
 
     self.sorted_units = [key for (key,value) in sorted(
-      measurement[system].items(), 
-      reverse=True, 
+      measurement[system].items(),
+      reverse=True,
       key=lambda suffix: suffix[1] # sort on value
     )]
     log.debug('sorted_units: {self.sorted_units}'.format(**locals()))

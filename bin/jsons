@@ -162,7 +162,7 @@ def parse_list(buf):
     else:
       raise Exception('Not list object')
   return root
-      
+
 def parse_dict(buf):
   done = False
   root = {}
@@ -204,7 +204,7 @@ def parse_root(buf):
   done = False
   while not done:
     c = buf.next_nonwhitespace()
-  
+
     if c:
       if c == '"':
         root = parse_string(buf)

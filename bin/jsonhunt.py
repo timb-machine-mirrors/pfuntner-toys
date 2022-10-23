@@ -43,8 +43,8 @@ class Jsonhunt(object):
                     valueMatch = True
                 else:
                     """
-                      Try to turn a native type (int, float, boolean, simple list, 
-                      simple dictionary, etc.) into a string that might pass regular 
+                      Try to turn a native type (int, float, boolean, simple list,
+                      simple dictionary, etc.) into a string that might pass regular
                       expression checking.
                     """
                     try:
@@ -76,7 +76,7 @@ class Jsonhunt(object):
         if not path:
             """
               Before the top-level method returns its result, it simplifies the lists and dictionaries
-              in the results so we only see the elements that matched the search and nothing below them. 
+              in the results so we only see the elements that matched the search and nothing below them.
               We turn the values of lists and dictionaries into strings that simply describe the
               lists/dictionaries.
             """

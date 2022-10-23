@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 
 """
-   Replace a timestamp expressed as seconds second the epoch with a more meaningful string of 
+   Replace a timestamp expressed as seconds second the epoch with a more meaningful string of
    the format "YYYY-mm-dd HH:MM:SS".
 
    The script assumes that the number of seconds is expressed in 10 decimal digits.  This is

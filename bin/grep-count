@@ -20,7 +20,7 @@ def process(source):
 
   for line in stream.read().splitlines():
     count += 1 if regexp.search(line) else 0
-  
+
   if not use_stdin:
     stream.close()
 

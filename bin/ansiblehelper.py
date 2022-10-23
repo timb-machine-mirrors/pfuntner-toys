@@ -32,7 +32,7 @@ class AnsibleHelper(object):
   def get_hosts():
     """
     Extracts all hosts from /etc/ansible/hosts files of the following formats:
-    
+
       INI:
         remotehost ansible_user=centos ansible_host=100.101.102.103 ansible_ssh_private_key_file=/home/foo/bar.pem
 
@@ -47,7 +47,7 @@ class AnsibleHelper(object):
     """
 
     hosts = {}
-    
+
     private_inventory_filename = os.path.expanduser('~/.ansible/hosts.ini')
     inventory_filename = private_inventory_filename if os.path.exists(private_inventory_filename) else '/etc/ansible/hosts'
 
@@ -67,7 +67,7 @@ class AnsibleHelper(object):
       # handle file as INI lines
       name_regexp = re.compile('^(\w\S+)')
       key_regexp = re.compile('(\S+)=(\S+)')
-    
+
       for line in data.splitlines():
         match = name_regexp.search(str(line))
         if match:
@@ -131,7 +131,7 @@ class AnsibleHelper(object):
           ret = AnsibleHelper.get_host_using_yaml(name, value)
         if ret:
           break
-          
+
     return ret
 
 if __name__ == '__main__':

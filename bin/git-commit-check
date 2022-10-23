@@ -95,7 +95,7 @@ if (rc == 0) and stdout:
     say('required_commit')
     hunt(os.environ['HOME'])
   else:
-    parser.error('Could not determine last commit SHA1') 
+    parser.error('Could not determine last commit SHA1')
 else:
   parser.error('Could not determine last commit for {original_dir}'.format(**locals()))
 

@@ -5,7 +5,7 @@ This is a template.  Please fill in the details and rock on.
 
 ## Syntax
 ```
-Syntax: template [-verbose] arg ...
+Syntax: template [--verbose] arg ...
 ```
 
 ### Options and arguments

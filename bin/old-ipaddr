@@ -7,14 +7,14 @@ import re
 
 """
   Classic Linux style:
-    eth0      Link encap:Ethernet  HWaddr 00:50:56:b4:0f:2f  
+    eth0      Link encap:Ethernet  HWaddr 00:50:56:b4:0f:2f
               inet addr:10.47.12.150  Bcast:10.47.12.255  Mask:255.255.255.0
               inet6 addr: fe80::250:56ff:feb4:f2f/64 Scope:Link
     .
     .
     .
-    
-    lo        Link encap:Local Loopback  
+
+    lo        Link encap:Local Loopback
               inet addr:127.0.0.1  Mask:255.0.0.0
               inet6 addr: ::1/128 Scope:Host
 
@@ -27,7 +27,7 @@ import re
             RX errors 0  dropped 0  overruns 0  frame 0
             TX packets 38301  bytes 12621698 (12.0 MiB)
             TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
-    
+
     docker0: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500
             inet 172.17.0.1  netmask 255.255.0.0  broadcast 0.0.0.0
             ether 02:42:e5:9a:11:26  txqueuelen 0  (Ethernet)
@@ -35,7 +35,7 @@ import re
             RX errors 0  dropped 0  overruns 0  frame 0
             TX packets 0  bytes 0 (0.0 B)
             TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
-    
+
     enccw0.0.1000: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
             inet 148.100.5.40  netmask 255.255.254.0  broadcast 148.100.5.255
             inet6 2620:91:0:653:a1:11ff:fe0e:ea5b  prefixlen 64  scopeid 0x0<global>
@@ -45,7 +45,7 @@ import re
             RX errors 0  dropped 0  overruns 0  frame 0
             TX packets 55405  bytes 12678003 (12.0 MiB)
             TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
-    
+
     lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
             inet 127.0.0.1  netmask 255.0.0.0
             inet6 ::1  prefixlen 128  scopeid 0x10<host>
@@ -54,7 +54,7 @@ import re
             RX errors 0  dropped 0  overruns 0  frame 0
             TX packets 4  bytes 340 (340.0 B)
             TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
-    
+
 """
 
 verbose = ("-v" in sys.argv) or ("--verbose" in sys.argv)
@@ -68,11 +68,11 @@ if "linux" in sys.platform:
   if rc != 0:
     sys.stderr.write(stderr)
     exit(rc)
-  
+
   if verbose:
     print(stdout)
     print("")
-  
+
   interface = None
   for line in stdout.split('\n'):
     tokens = line.split()
@@ -115,7 +115,7 @@ elif "win" in sys.platform:
   if rc != 0:
     sys.stderr.write(stderr)
     exit(rc)
-  
+
   if verbose:
     sys.stdout.write(stdout)
 

@@ -96,7 +96,7 @@ while (not quit) and ((not args.iterations) or iteration <= args.iterations):
   results['results'][-1]['stdout'] = stdout.decode()
   results['results'][-1]['stderr'] = stderr.decode()
   results['results'][-1]['duration'] = str(datetime.datetime.now() - start)
-    
+
   write_results(results)
 
   iteration += 1

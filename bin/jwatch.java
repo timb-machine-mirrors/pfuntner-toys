@@ -28,16 +28,16 @@ class jwatch extends Thread implements ActionListener {
     cmd[2] = args[0];
 
     debug("creating frame");
-    frame = new JFrame(args[0]);   
+    frame = new JFrame(args[0]);
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
     pane = new JTextArea();
     pane.setFont(new Font("Monospaced", Font.PLAIN, 15));
     pane.setEditable(false);
-    
+
     button = new JButton("Pause");
     button.addActionListener(this);
-    
+
     frame.getContentPane().setLayout(new BorderLayout());
     frame.getContentPane().add(new JScrollPane(pane), BorderLayout.CENTER);
     frame.getContentPane().add(button, BorderLayout.SOUTH);
@@ -94,7 +94,7 @@ class jwatch extends Thread implements ActionListener {
           Process p = Runtime.getRuntime().exec(cmd);
           String text = read(p.getInputStream()) + read(p.getErrorStream());
           pane.setText(text);
-  
+
           int rc = p.waitFor();
           if (!frame.isVisible()) {
             int rows = 1;
@@ -110,21 +110,21 @@ class jwatch extends Thread implements ActionListener {
                 if (col > maxcols) maxcols = col;
               }
             }
-  
+
             if (rows < 5) {
               rows = 5;
             }
             else if (rows > 25) {
               rows = 25;
             }
-  
+
             if (maxcols < 25) {
               maxcols = 25;
             }
             else if (maxcols > 80) {
               maxcols = 80;
             }
-  
+
             debug("rows=" + rows + ", cols=" + maxcols);
 
             pane.setRows(rows);
@@ -157,7 +157,7 @@ class jwatch extends Thread implements ActionListener {
     else {
       button.setText("Resume");
       button.setBackground(Color.RED);
-    }   
+    }
     paused = !paused;
   }
 }

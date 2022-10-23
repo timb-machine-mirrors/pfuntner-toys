@@ -29,9 +29,9 @@ def subset(root, path):
         assert False, "%s is not a component of a dictionary with keys %s" % (comp, ', '.join(root.keys()))
     else:
       assert False, "Don't know what to do with %s for %s" % ('/'.join(path), type(root))
-         
+
   return ret
-  
+
 rawdata = None
 evalData = False
 

@@ -70,7 +70,7 @@ for system in systems:
       if (not args.quiet) and (not args.json):
         print("%s" % (system["name"]))
       cmd = [args.cmd] + args.args
-  
+
     else:
       # for src in args[:-1]:
       #   if not quiet:
@@ -100,22 +100,22 @@ for system in systems:
       cmd.append(dst)
 
       print("%s: %s" % (name, ' '.join(cmd)))
-  
+
     if isSSH:
       cmd = ["%s@%s" % (system["user"], system["host"])] + cmd
-  
+
     if "key" in system:
       cmd = ["-i", system["key"]] + cmd
-  
+
     cmd = ["-o", "LogLevel=quiet"] + cmd
-  
+
     if isSCP and args.recursive:
       cmd.insert(0, "-r") # -r should only be able to be specified if we're "megascp"
 
     cmd = ["ssh" if isSSH else "scp"] + cmd
-  
+
     log.debug(cmd)
-  
+
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (stdout, stderr) = p.communicate()
     stdout = stdout.decode('utf-8')

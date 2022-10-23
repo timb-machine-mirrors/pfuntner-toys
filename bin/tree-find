@@ -23,7 +23,7 @@ def contains(haystack, needle):
 
   log.debug(f'contains({haystack}, {needle}) => {ret}')
   return ret
-  
+
 def dive(filename, root):
   if isinstance(root, list):
     for node in root:
@@ -61,7 +61,7 @@ def parse(data, filename):
         parser.error(f'Could not parse {filename!r}: {e!s}')
     if not root:
       parser.error('Could not parse stdin as JSON or YAML')
-      
+
   return root
 
 def process(filename=None):

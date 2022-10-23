@@ -53,14 +53,14 @@ def process(filename):
     sys.stdout.write("%s: " % filename)
     if os.path.isfile(filename):
       if ((filename == None) and (not decompress)) or match(filename):
-        compressedSize = os.path.getsize(filename) 
+        compressedSize = os.path.getsize(filename)
         try:
           with gzip.open(filename, 'r') as inFile:
             uncompressedSize = len(inFile.read())
         except Exception as e:
           sys.stdout.write("Cannot uncompress: %s" % e)
       else:
-        uncompressedSize = os.path.getsize(filename) 
+        uncompressedSize = os.path.getsize(filename)
         try:
           buf = io.StringIO()
           with open(filename, 'r') as inFile:
@@ -95,7 +95,7 @@ def process(filename):
     else:
       sys.stdout.write("Does not exist")
   sys.stdout.write("\n")
- 
+
 tracing = False
 
 regexps = [

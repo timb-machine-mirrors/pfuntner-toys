@@ -123,13 +123,13 @@ class VirtualHosts(object):
             if 'user' not in kv:
               # kv['user'] = 'centos' if 'centos' in kv['name'].lower() else (getpass.getuser() if 'rhel' in kv['name'] else None)
               kv['user'] = os.environ.get('CEC_ID') or getpass.getuser()
-                
+
             if 'key' not in kv:
               kv['key'] = os.path.join(os.environ['HOME'], '.ssh/google_compute_engine')
 
             ret.append(Host(**kv))
     return ret
-    
+
   def get_ansible_hosts(self):
     ret = []
     if os.path.isfile(self.ANSIBLE_HOSTS_FILE):

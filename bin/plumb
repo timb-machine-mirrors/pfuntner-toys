@@ -34,7 +34,7 @@ class Dev:
 
   def __str__(self):
     return "(%s, %s, %s, %d)" % (self.mountpoint, self.st, self.dev, self.usable)
-    
+
 class Stats:
   def __init__(self):
     self.size = 0

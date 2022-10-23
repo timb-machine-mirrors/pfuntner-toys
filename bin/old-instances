@@ -31,7 +31,7 @@ def keyhunt(keys, key_type_name, key_type, key_value_name):
       return key[key_value_name]
   log.info('Could not find {key_type} from {keys}'.format(**locals()))
   return None
-  
+
 def run(cmd):
 
   if isinstance(cmd, str):
@@ -52,10 +52,10 @@ def run(cmd):
     ret['stdout'] = stdout.decode('utf-8')
     ret['stderr'] = stderr.decode('utf-8')
     ret['rc'] = p.wait()
-      
+
   log.debug('{cmd}: {ret}'.format(**locals()))
   return ret
-  
+
 def match(name):
   return name and (bool(regexp.search(str(name))) if args.regexp else True)
 
@@ -77,7 +77,7 @@ def extract(cmd, *element_names):
         element_pos += 1
   # log.debug('extract({cmd!r}, {element_names}) = {root}'.format(**locals()))
   return root
-  
+
 parser = argparse.ArgumentParser(description='Manage AWS & GCP instances')
 parser.add_argument('regexp', nargs='?', help='Specify regular expression with which to match instance names')
 parser.add_argument('-a', '--all', action='store_true', help='Display all instances')

@@ -17,6 +17,6 @@ else:
   table = Table(("Name", "User", "Host"), desiredSep='\t')
   for system in systems:
     table.add((system["name"], system["user"], system["host"]))
-  
+
   table.sort(0)
   print(str(table))

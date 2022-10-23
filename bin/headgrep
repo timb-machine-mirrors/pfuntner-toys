@@ -36,7 +36,7 @@ def syntax(msg=None):
     sys.stderr.write(msg + "\n")
   sys.stderr.write("Syntax: %s [-v|--negate] REGEXP\n" % sys.argv[0])
   exit(1)
- 
+
 base = os.path.basename(sys.argv[0])
 expectedBases = ["headgrep", "tailgrep"]
 if not os.path.basename(base) in expectedBases:

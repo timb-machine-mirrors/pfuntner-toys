@@ -41,7 +41,7 @@ class Boxes(object):
       log.log(logging.DEBUG if forgive or rc == 0 else logging.ERROR, '{rc}, {stdout!r}, {stderr!r}'.format(**locals()))
       if (not forgive) and (rc != 0):
         parser.error('{cmd} failed'.format(**locals()))
-        
+
     return (rc, stdout, stderr)
 
   def boxes(self):

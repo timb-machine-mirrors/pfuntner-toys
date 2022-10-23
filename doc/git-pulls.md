@@ -7,7 +7,7 @@ By default, it will only try to do `git pull` in a repository if the current bra
 
 ## Syntax
 ```
-Syntax: git-pulls [-verbose] [--dry-run] [---branch] [root]
+Syntax: git-pulls [--verbose] [--dry-run] [---branch] [root]
 ```
 
 ### Options and arguments

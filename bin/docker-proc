@@ -47,7 +47,7 @@ class Proc:
 
   def __str__(self):
     return "%d %s (%s)" % (self.pid, str(self.args), Util.time(self.elapsedSecs))
- 
+
   @staticmethod
   def getPids():
     pids = {}
@@ -116,7 +116,7 @@ def onlyChildren(pid):
       ret.append(curr)
       ret += onlyChildren(curr)
   return ret
-  
+
 pids = Proc.getPids()
 
 mother = None

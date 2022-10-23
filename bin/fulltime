@@ -69,7 +69,7 @@ for (pos, line) in enumerate(lines):
           description += ' ' + lines[pos+1].strip()
       description = multiblank.sub(' ', description).replace('%', '%%')
       log.debug('Captured format {char!r}: {description!r}'.format(**locals()))
-      
+
       format_string += '\n  %{char}: {description}'.format(**locals())
 
 if format_string:

@@ -14,7 +14,7 @@ def handler(signum, stack):
 
 def safe_max(l):
   return max(l) if l else None
-  
+
 def getmtime(root, depth=0):
   if dir:
     if os.path.isfile(root):
@@ -56,7 +56,7 @@ while True:
   log.debug('lastcopy: {lastcopy!s}, mtime: {mtime!s}'.format(**locals()))
   if mtime and ((not lastcopy) or (mtime > lastcopy)):
     log.info('Copying {args.src!r} to {args.dest!r}{elapsed}'.format(
-      elapsed=', last copy was {elapsed!s} ago'.format(elapsed=mtime-lastcopy) if lastcopy else '', 
+      elapsed=', last copy was {elapsed!s} ago'.format(elapsed=mtime-lastcopy) if lastcopy else '',
       **locals()))
     cmd = [
             'scp',

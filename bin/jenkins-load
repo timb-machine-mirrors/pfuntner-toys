@@ -139,7 +139,7 @@ def get_servers_table(root):
         break
 
   return ret
-    
+
 def find(root, tag):
   ret = list()
   if root.tag == tag:

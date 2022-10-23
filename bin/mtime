@@ -8,7 +8,7 @@ def syntax(s=None):
     sys.stderr.write(s + "\n")
   sys.stderr.write("Syntax: %s [NUMd][NUMh][NUMm][NUMs]\n" % sys.argv[0])
   exit(1)
-  
+
 if ("--help" in sys.argv) or (len(sys.argv) != 2):
   syntax()
 

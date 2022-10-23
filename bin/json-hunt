@@ -10,7 +10,7 @@ import argparse
 
 # def new_dest(o):
 #   return list() if isinstance(o, int) else dict()
-# 
+#
 # def report(path):
 #   if path:
 #     src = root
@@ -30,7 +30,7 @@ import argparse
 #         else:
 #           dest.append(src[key])
 #       src = src[key]
-#     
+#
 #     print(f'{filename!r}')
 #     json.dump(ret, sys.stdout, indent=2, sort_keys=True)
 #     print('\n')
@@ -86,12 +86,12 @@ for filename in args.files:
       if [line for line in file_contents.splitlines() if not empty_line.search(line)]:
         # process a non-empty file
         root = None
-  
+
         try:
           root = json.loads(file_contents)
         except Exception as e:
           log.info(f'Could not process {filename!r} as json: {e!s}')
-  
+
         if root is None:
           if yaml is None:
             yaml = __import__('yaml')
@@ -99,7 +99,7 @@ for filename in args.files:
             root = yaml.load(file_contents, Loader=yaml.BaseLoader)
           except Exception as e:
             log.info(f'Could not process {filename!r} as yaml: {e!s}')
-  
+
         if root is None:
           log.warning(f'Could not process {filename!r} as either json or yaml')
         else:

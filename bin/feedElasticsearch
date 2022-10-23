@@ -22,13 +22,13 @@ def syntax():
   sys.stderr.write("Syntax: %s --index index ...\n" % sys.argv[0])
   sys.stderr.write("Optional options: %s\n" % ", ".join(optionalOptions))
   exit(1)
-  
+
 class TimestampPattern:
   def __init__(self, regexp, pat):
     self.regexp = re.compile(regexp)
     self.pat = pat
 
-  def parse(self, line):   
+  def parse(self, line):
     ret = None
     match = self.regexp.search(line)
     # print "search(%s, %s) => %s" % (repr(self.regexp.pattern), repr(line), match)
@@ -117,7 +117,7 @@ if num == None:
         if timestamp:
           secs = (timestamp-datetime.datetime.utcfromtimestamp(0)).total_seconds()
           num = int(secs*1000)
- 
+
 assert (num) and (type(num) == int), "No number for the item"
 
 cmd = ["curl"]

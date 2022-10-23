@@ -21,7 +21,7 @@ def sorter(obj1, obj2):
     return 0
   else:
     return 1
-  
+
 def run(cmd, shell=False):
   if shell:
     if isinstance(cmd, list):
@@ -92,7 +92,7 @@ if args.all:
     commit cdc0ecc93b139c958160436523396b57183693d0 (origin/CCC-2072, CCC-2072)
     Author: John Pfuntner <jpfuntne@cisco.com>
     Date:   Fri Mar 26 08:57:24 2021 -0400
-    
+
         CCC-2072: Ignore files in Docker volumes for some tests
   """
   commit_regexp = re.compile(r'^commit\s+(\S+)', flags=re.MULTILINE)
@@ -114,7 +114,7 @@ else:
     branches = [no_asterisk.sub('', branch) for branch in repos[repo]]
     branches += [''] * (cols - len(branches))
     log.info(f'{repo} has {branches}')
-  
+
     if args.simple or args.list:
       for branch in branches:
         if branch:

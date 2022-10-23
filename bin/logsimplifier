@@ -46,6 +46,6 @@ for line in sys.stdin.read().splitlines():
       base = os.path.basename(match.group(1))
       linenum = match.group(2)
       msg = match.group(3)
-  
+
       print(msg if args.simple else '{base}:{linenum} {msg}'.format(**locals()))
       break

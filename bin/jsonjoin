@@ -30,7 +30,7 @@ def syntax(msg=None):
     sys.stderr.write(msg + "\n")
   sys.stderr.write("Syntax: %s [-v|--verbose] [-d|--debug] [-f=FILE|--file=FILE]\n")
   exit(1)
-  
+
 verbose = False
 stream = None
 junk = False

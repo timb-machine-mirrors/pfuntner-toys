@@ -40,7 +40,7 @@ class Reader(object):
       log.debug('Encountered eof')
       return ''
     else:
-      c = self.stream.read(1)   
+      c = self.stream.read(1)
       if c:
         if c == '\n':
           self.line += 1
@@ -138,7 +138,7 @@ def readNode(reader):
     if c != '=':
       log.error('Expected `=` after identifier for <{tag}> but got {c!r} at {where}'.format(where=reader.where(), **locals()))
       exit(1)
-  
+
     c = reader.read()
     if c not in '\'"':
       log.error('Expected single or double quote to start {name!r} attribute value for <{tag}> at {where}'.format(where=reader.where(), **locals()))
@@ -164,7 +164,7 @@ def readNode(reader):
     node.attrs[name] = value
 
     c = reader.nextNonSpace()
-  
+
   log.debug('<{tag}> ends at {where}'.format(where=reader.where(), **locals()))
 
   reader.push(reader.nextNonSpace())
@@ -223,7 +223,7 @@ def readNode(reader):
     else:
       reader.push(c)
       break
-  
+
   if tag != node.tag:
     if args.lazy and (tag or reader.eof):
       # forgive lack of closing tag when operating in lazy mode

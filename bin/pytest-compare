@@ -17,7 +17,7 @@ def load(filename):
       parser.error(f'Not a JSON file: {filename!r}')
   else:
     parser.error(f'Not a file: {filename!r}')
-  
+
 def get_test(tests, description):
   for test in tests:
     if test['description'] == description:

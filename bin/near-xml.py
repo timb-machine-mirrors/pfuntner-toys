@@ -78,7 +78,7 @@ class Stream(object):
 
   def skip_whitespace(self):
     if self.eof():
-      return 
+      return
     else:
       while True:
         if self.peek() not in [None, ' ', '\t']:

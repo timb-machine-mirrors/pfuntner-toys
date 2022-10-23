@@ -2,9 +2,9 @@
 
 """
   Takes a json object and dumps out all of the values (one per line)
-  with the absolute path of the keys to get to the value.  A key 
+  with the absolute path of the keys to get to the value.  A key
   composed of an integer is likely an index into a list although you
-  could have a string that looks like an integer that's a key to a 
+  could have a string that looks like an integer that's a key to a
   dictionary element.
 """
 

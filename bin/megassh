@@ -16,7 +16,7 @@ def echo(host, stream, data):
   else:
     for line in data.splitlines():
       print((f'{host}: ' if multiple_hosts else '') + f'{line}', file=stream)
-  
+
 parser = argparse.ArgumentParser(description='ssh to multiple machines')
 parser.add_argument('hosts', help='One or more comma-separated hosts')
 parser.add_argument('cmd', help='Command')
@@ -58,7 +58,7 @@ if args.hosts == 'all':
     stdout = stdout.decode('utf-8')
     stderr = stderr.decode('utf-8')
     rc = p.wait()
-    args.hosts = ','.join(json.loads(stdout)['targets']['hosts'] + docker_instances) 
+    args.hosts = ','.join(json.loads(stdout)['targets']['hosts'] + docker_instances)
   except Exception as e:
     log.debug(f'Ignoring {e!s} from ansible-inventory')
 
@@ -129,8 +129,8 @@ while processes:
         output[host]['start'] = output[host]['start'].isoformat()
 
       else:
-        echo(host, sys.stdout, stdout)  
-        echo(host, sys.stderr, stderr)  
+        echo(host, sys.stdout, stdout)
+        echo(host, sys.stderr, stderr)
       del processes[host]
       if not args.json:
         print('')

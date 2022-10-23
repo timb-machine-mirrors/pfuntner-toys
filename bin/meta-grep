@@ -43,7 +43,7 @@ def visit(file_name, mode, root, parent=None):
         log.fatal(f'Unexpected mode: {mode!r}')
       prefix = f'{file_name}: ' or ''
       print('\n'.join([f'{prefix}{line}' for line in lines]) + '\n')
-    
+
 def process(file_name=None):
   data = None
   mode = None

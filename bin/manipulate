@@ -2,11 +2,11 @@
 
 """
   Make changes to a stream.  Here's an example:
-  
+
     ibmadmin@pfuntner-dev-0:~/fcm/issues/collectd$ date | manipulate '(\S+)' 'hit[::-1]'
     euT Jun  6 09:49:03 EDT 2017
     ibmadmin@pfuntner-dev-0:~/fcm/issues/collectd$
-  
+
   Notes:
     - The first parameter must be a regular expression and must have one or more subexpressions.  If there are no
       subexpressions, the script will fail

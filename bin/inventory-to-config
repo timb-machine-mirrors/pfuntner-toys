@@ -39,7 +39,7 @@ with open(args.inventory_file) as stream:
   for line in stream.read().splitlines():
     hostname_match = extract_hostname.search(line)
     if hostname_match:
-      inventory[hostname_match.group(1)] = {} 
+      inventory[hostname_match.group(1)] = {}
       for parm in extract_parameters.findall(hostname_match.group(2)):
         inventory[hostname_match.group(1)][parm[0]] = parm[1]
 log.info(f'inventory: {inventory}')

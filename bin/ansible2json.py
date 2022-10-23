@@ -48,7 +48,7 @@ while True:
     buf += line
     try:
       results.append(json.loads(buf))
-    except Exception as e: 
+    except Exception as e:
       pass
     else:
       results[-1]['host'] = host

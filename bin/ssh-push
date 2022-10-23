@@ -46,7 +46,7 @@ def dump(host, cmd, rc, stdout, stderr):
     sys.stderr.write('\n'.join([f'{host}: {line}' for line in stderr]))
     if stderr:
       sys.stderr.write('\n')
-  
+
 parser = argparse.ArgumentParser(description='Push script to remote one or more remote hosts and run it')
 parser.add_argument('hosts', help='One or more comma-delimited hosts')
 parser.add_argument('cmd', nargs='+', help='Command and arguments')

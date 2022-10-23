@@ -72,7 +72,7 @@ def syntax(msg=None):
 def redirect(p, stream_name, filename):
   global threads
   threads.append(Redirect(stream_name, getattr(p, stream_name), getattr(sys, stream_name), filename))
-  threads[-1].start() 
+  threads[-1].start()
 
 """
 past_options = False

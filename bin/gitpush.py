@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 
 """
-  This solves the problem of pushing commits to a git server when the 
+  This solves the problem of pushing commits to a git server when the
   branch doesn't exist on the git server yet.  git helpfully gives you
   a command that will create the branch and push it but you have to
   copy and paste it.  This script simplifies that use case by simply

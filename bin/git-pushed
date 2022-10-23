@@ -50,13 +50,13 @@ for dir in args.dirs:
         if match:
           commit = match.group(1)
           log.info(f'last commit: {commit}')
-  
+
           (rc, stdout, stderr) = run('git branch')
           match = branch_regexp.search(stdout)
           if match:
             branch = match.group(1)
             log.info(f'current branch: {branch}')
-  
+
             (rc, stdout, stderr) = run(f'git log origin/{branch}')
             if stdout:
               remote_commits = commit_regexp.findall(stdout)

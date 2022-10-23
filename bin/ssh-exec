@@ -3,6 +3,7 @@
 import os
 import re
 import sys
+import shlex
 import logging
 import argparse
 import tempfile
@@ -49,16 +50,33 @@ def replace_imports(path):
   tmp.flush()
   return tmp
 
+def command(cmd, trap=True, apply_interp_and_env=False):
+  if isinstance(cmd, str):
+    cmd = cmd.split()
+
+  if apply_interp_and_env:
+    if args.interpreter:
+      cmd = args.interpreter.split() + cmd
+
+    if args.env:
+      cmd = args.env + cmd
+
+  if args.docker:
+    (rc, stdout, stderr) = run(['docker', 'exec', args.host, 'sh', '-c', shlex.join(cmd)], trap=trap)
+  else:
+    (rc, stdout, stderr) = run(['ssh'] + (['-q'] if args.quiet else []) + [args.host] + (['sudo'] if args.become else []) + cmd, trap=trap)
+
+  return (rc, stdout, stderr)
+
 parser = argparse.ArgumentParser(description='Run a local script on a remote machine')
 parser.add_argument('host', help='Name of remote host')
 parser.add_argument('script', help='Path to script')
 parser.add_argument('args', metavar='arg', nargs='*', help='Arguments to script')
 parser.add_argument('-i', '--interpreter', help='Optional interpreter, arguments')
+parser.add_argument('-d', '--docker', action='store_true', help='Treat target as Docker container')
 parser.add_argument('-q', '--quiet', action='store_true', help='Use ssh -q option')
 parser.add_argument('-b', '--become', action='store_true', help='Become superuser')
 parser.add_argument('-e', '--env', action='append', help='Set environment variable: NAME=VALUE')
-parser.add_argument('-c', '--no-clean', action='store_true', help='Do not remove remote script')
-parser.add_argument('-t', '--no-trap', action='store_true', help='Do not trap stdout/stderr')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -76,13 +94,14 @@ if os.path.isfile(args.script):
   src = replace_imports(args.script)
 
   dest = os.path.join('/tmp', basename)
-  (rc, stdout, stderr) = run(['scp', src.name, f'{args.host}:{dest}'])
+  if args.docker:
+    (rc, stdout, stderr) = run(['docker', 'cp', src.name, f'{args.host}:{dest}'])
+  else:
+    (rc, stdout, stderr) = run(['scp', src.name, f'{args.host}:{dest}'])
   if rc == 0:
-    run(['ssh', args.host, 'chmod', 'a+x', dest])
-    (rc, stdout, stderr) = run(['ssh'] + (['-q'] if args.quiet else []) + [args.host] + (['sudo'] if args.become else []) + (args.env or []) + (args.interpreter.split() if args.interpreter else []) + [dest] + args.args, trap=not bool(args.no_trap))
-    sys.stdout.write(stdout)
-    sys.stderr.write(stderr)
-    run(['ssh', args.host, 'rm', dest])
+    command(['chmod', 'a+rx', dest])
+    (rc, foo, foo) = command([dest] + args.args, trap=False, apply_interp_and_env=True)
+    command(['rm', dest])
   else:
     parser.error(f'Could not copy to {dest} @ {args.host}')
 else:

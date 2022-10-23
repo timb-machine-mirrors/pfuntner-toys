@@ -36,17 +36,17 @@ class Ps(object):
           ret = ret.decode()
     except Exception as e:
       self.log.debug(f'Could not read {path!r}: {e!s}')
-  
+
     self.log.debug(f'{path!r}: {ret!r}')
-  
+
     return ret
-  
+
   def int_or_none(self, s):
     ret = s
     if s is not None:
       ret = int(s)
     return ret
-  
+
   def kv_parse(self, s):
     ret = dict()
     if s is not None:
@@ -54,45 +54,45 @@ class Ps(object):
         match = self.kv_regexp.search(line)
         if match:
           ret[match.group(1)] = match.group(2).strip()
-      
+
     return ret
-  
+
   def get_processes(self):
     processes = {}
-    
+
     now_seconds = time.time()
     now = datetime.datetime.fromtimestamp(now_seconds)
-    
+
     up_time_seconds = float(self.read('/proc/uptime').split()[0])
     boot_time_seconds = now_seconds - up_time_seconds
-    
+
     seconds_per_jiffy = os.sysconf(os.sysconf_names['SC_CLK_TCK'])
-    
+
     for path in glob.glob(os.path.join('/proc', '[0-9]*')):
       pid = int(os.path.basename(path))
-    
+
       cmdline = self.read(os.path.join(path, 'cmdline'), 'b')
       if cmdline is not None:
         cmdline = cmdline.strip('\0').split('\0')
         if cmdline == ['']:
           cmdline = []
         cmdline = ' '.join(cmdline)
-    
+
       stat = self.read(os.path.join(path, 'stat'))
       stat_tokens = stat.split() if stat else [None] * 52
-    
+
       statm = self.read(os.path.join(path, 'statm'))
       statm_tokens = statm.split() if stat else [None] * 7
-    
+
       status_dict = self.kv_parse(self.read(os.path.join(path, 'status')))
       self.log.info(f'status_dict: {status_dict}')
-    
+
       processes[pid] = {
         'pid': pid,
         'ppid': self.int_or_none(stat_tokens[3]),
-    
+
         'cmdline': cmdline,
-    
+
         'state': stat_tokens[2],
         'pgrp': self.int_or_none(stat_tokens[4]),
         'session': self.int_or_none(stat_tokens[5]),
@@ -111,9 +111,9 @@ class Ps(object):
         'nice': self.int_or_none(stat_tokens[18]),
         'num_threads': self.int_or_none(stat_tokens[19]),
         'itrealvalue': self.int_or_none(stat_tokens[20]),
-    
+
         'starttime': self.int_or_none(stat_tokens[21]),
-    
+
         'vsize': self.int_or_none(stat_tokens[22]),
         # 'rss': self.int_or_none(stat_tokens[23]), # inaccurate -> see /proc/PID/statm
         'rsslim': self.int_or_none(stat_tokens[24]),
@@ -144,7 +144,7 @@ class Ps(object):
         'env_start': self.int_or_none(stat_tokens[49]),
         'env_end': self.int_or_none(stat_tokens[50]),
         'exit_code': self.int_or_none(stat_tokens[51]),
-    
+
         'size': self.int_or_none(statm_tokens[0]),
         'resident': self.int_or_none(statm_tokens[1]),
         'shared': self.int_or_none(statm_tokens[2]),
@@ -152,7 +152,7 @@ class Ps(object):
         # 'lib': self.int_or_none(statm_tokens[4]), # unused, always 0
         'data': self.int_or_none(statm_tokens[5]),
         'dt': self.int_or_none(statm_tokens[6]), # unused, always 0
-    
+
         'umask': status_dict.get('Umask'),
         'vmpeak': status_dict.get('VmPeak'),
         'vmsize': status_dict.get('VmSize'),
@@ -189,9 +189,9 @@ class Ps(object):
         'voluntary_ctxt_switches': status_dict.get('voluntary_ctxt_switches'),
         'nonvoluntary_ctxt_switches': status_dict.get('nonvoluntary_ctxt_switches'),
       }
-    
+
       processes[pid]['starttime_seconds'] = boot_time_seconds + processes[pid]['starttime'] / seconds_per_jiffy
-    
+
       starttime = datetime.datetime.fromtimestamp(processes[pid]['starttime_seconds'])
       processes[pid]['starttime_iso'] = starttime.isoformat()
       elapsed = now - starttime
@@ -202,18 +202,18 @@ class Ps(object):
 
 if __name__ ==  '__main__':
   parser = argparse.ArgumentParser(description='Generate process information in JSON')
-  
+
   # group = parser.add_mutually_exclusive_group()
   # group.add_argument('-s', '--ssh', help='Remote ssh host to query')
   # group.add_argument('-d', '--docker', help='Docker container query')
-  
+
   parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
   args = parser.parse_args()
-  
+
   logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
   log = logging.getLogger()
   log.setLevel(logging.WARNING - (args.verbose or 0)*10)
-  
+
   signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
-  
+
   json.dump(Ps(log).get_processes(), sys.stdout, indent=2)

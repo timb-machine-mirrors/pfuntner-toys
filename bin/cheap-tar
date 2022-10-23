@@ -32,7 +32,7 @@ def encode(path):
   except Exception as e:
     log.warning(f'Could not read {path!r}: {e!s}')
   return ret
-  
+
 def decode(path, b64data):
   try:
     with open(path, 'wb') as stream:

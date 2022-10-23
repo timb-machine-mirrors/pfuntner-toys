@@ -12,18 +12,18 @@ if test -t 0
 then
   echo "stdin must be redirected" >&2
   false
-elif ! expr match "$sys" CYGWIN >/dev/null && ! expr match "$sys" MINGW64 >/dev/null 
+elif ! expr match "$sys" CYGWIN >/dev/null && ! expr match "$sys" MINGW64 >/dev/null
 then
   echo "Not supported on platform $sys" >&2
   false
 elif [ "X$viewer" = X ]
-then 
+then
   echo "No gvim.exe executable found" >&2
-  false   
+  false
 else
   tmpfile="/tmp/$(basename "$0")-$(date +%s)-$$.tmp"
   trap "rm -fv $tmpfile" EXIT
-  
+
   # use awk to add carriage returns
   awk '{ printf("%s\r\n", $0) }' > "$tmpfile"
   "$viewer" "c:/cygwin64$tmpfile"

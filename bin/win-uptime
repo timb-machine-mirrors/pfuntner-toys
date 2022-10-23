@@ -15,7 +15,7 @@ def mod(dividend, divisor):
   quotient = int(dividend / divisor)
   remainder = dividend % divisor
   return (quotient, remainder)
-  
+
 parser = argparse.ArgumentParser(description='Report uptime for Windoze')
 parser.add_argument('-p', '--pretty', action='store_true', help='Print in pretty form')
 parser.add_argument('-s', '--since', action='store_true', help='Print time up in ISO format')
@@ -54,7 +54,7 @@ if 'win' in sys.platform.lower():
     else:
       now = datetime.datetime.now()
       now_hms = now.strftime('%H:%M:%S')
-  
+
       seconds = (now - timestamp).total_seconds()
       see('seconds')
       (days, seconds) = mod(seconds, 24*60*60)
@@ -63,7 +63,7 @@ if 'win' in sys.platform.lower():
       see('(hours, seconds)')
       (minutes, seconds) = mod(seconds, 60)
       see('(minutes, seconds)')
-  
+
       if args.pretty:
         (weeks, days) = mod(days, 7)
         if weeks > 0:
@@ -87,7 +87,7 @@ if 'win' in sys.platform.lower():
           elapsed = '{minutes} min'.format(**locals())
         elif minutes > 0:
           elapsed = '{seconds} sec'.format(**locals())
-    
+
         print(' {now_hms} {elapsed}'.format(**locals()))
   else:
     log.error('Could not extract system boot time from `systeminfo`')

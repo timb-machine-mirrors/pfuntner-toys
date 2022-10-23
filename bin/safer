@@ -5,7 +5,7 @@
   scripts.  Here's the scenario:
     1) I decided that a beloved script should be included so I push to the repo from system A
     2) On system B, I try do a `git pull` but it fails because I already have a copy - is it the same as what I just committed?  Is it older or newer?  I worry that I'll lose something important
-  
+
   Use case:
     1) Commit and push the script on system A
     2) Try to do a `git pull` on system B
@@ -30,7 +30,7 @@ def md5sum(filename):
   with open(filename, 'r') as f:
     hasher.update(f.read().encode('utf-8'))
   return hasher.hexdigest()
-    
+
 for filename in sys.argv[1:]:
   if os.path.isfile(filename):
     comps = filename.split('/')

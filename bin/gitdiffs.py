@@ -38,7 +38,7 @@ def watch(*names):
     if name.startswith('text'):
       value = repr(value[:20])
     out.append('{name}: {value}'.format(**locals()))
-  log.info(', '.join(out)) 
+  log.info(', '.join(out))
 
 def compare():
   lines = []

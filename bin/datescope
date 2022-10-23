@@ -13,7 +13,7 @@ class Pattern:
     self.regexp = re.compile(regexp)
     self.pat = pat
 
-  def parse(self, line):   
+  def parse(self, line):
     ret = None
     match = self.regexp.search(line)
     if match:
@@ -128,13 +128,13 @@ for line in sys.stdin:
       else:
         if not first:
           first = timestamp
-  
+
         if last:
           diff = timestamp - last
           diffs.append(diff)
           if verbose:
             print("%s %s %s" % (last, timestamp, diff))
-  
+
         last = timestamp
 
   if (after or before) and emit:

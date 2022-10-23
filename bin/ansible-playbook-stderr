@@ -75,7 +75,7 @@ while pos < len(lines):
         table.add(task, node, status, repr(curr['stderr'])[1:-1])
     elif result:
       result.append(line)
-    
+
   pos += 1
 
 table.close()

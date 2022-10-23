@@ -27,7 +27,7 @@ def extract(cmd, pattern, default_value):
       log.debug('{stdout!r} failed to match {pattern!r}'.format(**locals()))
   except Exception as e:
     log.debug('Caught `{e!s}`'.format(**locals()))
-    
+
   return ret
 
 def finish(filename, failure):

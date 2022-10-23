@@ -51,7 +51,7 @@ if secret is None:
 hash = hashlib.md5()
 hash.update(secret.encode('utf-8'))
 fernet = Fernet(base64.b64encode(hash.hexdigest()))
-  
+
 data = sys.stdin.read()
 if encrypt:
   result = fernet.encrypt(data)

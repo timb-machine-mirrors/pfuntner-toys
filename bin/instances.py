@@ -5,7 +5,7 @@ import re
 import sys
 import json
 import time
-import socket 
+import socket
 import getpass
 import inspect
 import logging
@@ -224,7 +224,7 @@ class Instances(object):
         root = None
     elif isinstance(root, dict):
       root = root.get(key)
-    
+
     if root and path:
       return self.extract(root, path)
     else:
@@ -289,7 +289,7 @@ class Instances(object):
             key_name = instance.get('KeyName')
             key_filename = os.path.join(ssh_root_raw, key_name + '.pem') if key_name else None
             active = self.extract(instance, 'State/Name') == 'running'
-  
+
             if not id:
               raise Exception(f'No instance ID in {instance}')
             self.log.info(f'aws instance id: {id}')
@@ -317,10 +317,10 @@ class Instances(object):
                 if remove_regexp:
                   name = name[:match.start(0)] + name[match.end(0):]
                   self.log.debug(f'after removing regular expression, instance name is {name}')
-  
+
                 image_id = instance.get('ImageId')
                 self.log.debug(f'Instance {name} ({id}) uses image {image_id}')
-  
+
                 instances.append(Instance(provider, true_name, name, id, image_id, image_name, distro, user, ip, key_filename, active))
             else:
               self.log.debug(f'No name for instance {id}')
@@ -335,14 +335,14 @@ class Instances(object):
         raw = json.loads(stdout)
         for instance in raw:
           id = instance.get('id')
-  
+
           image_id = None
           image_name = None
           distro = None
           user = None
           ip = self.extract(instance, 'networkInterfaces/0/accessConfigs/0/natIP')
           active = instance.get('status') == 'RUNNING'
-  
+
           self.log.info(f'gcp instance id: {id}')
           name = instance.get('name', '')
           match = name_regexp.search(name)
@@ -357,7 +357,7 @@ class Instances(object):
               instances.append(Instance(provider, true_name, name, id, disks[0].get('deviceName'), image_name, distro, user, ip, key_filename, active))
             else:
               self.log.info(f'No device name for {id}/{name}')
-  
+
       self.backfill_gcp_image_info(instances)
 
     provider = 'vultr'
@@ -628,7 +628,7 @@ if __name__ == '__main__':
         with open(ssh_config_filename, 'w') as stream:
           for instance in instances:
             stream.write(f'Host {instance.name}\n\tHostname {instance.ip}\n\tUser {instance.user}\n\tIdentityFile {instance.key_filename}\n')
-        
+
         active_instances = [instance.name for instance in instances if instance.active]
         if active_instances and not args.no_fingerprints:
           subprocess.Popen(['add-to-knownhosts'] + active_instances).wait()

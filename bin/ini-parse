@@ -20,11 +20,11 @@ def process(filename=None):
   config = configparser.ConfigParser(strict=strict)
   config.read_file(stream)
   for section in config.sections():
-    root[section] = dict(config[section]) 
+    root[section] = dict(config[section])
 
   if filename:
     stream.close()
-  
+
 parser = argparse.ArgumentParser(description='Using configparser to read a ini file')
 parser.add_argument('files', metavar='file', nargs='*', help='Names of zero or more ini file to read')
 parser.add_argument('-s', '--strict', action='count', help='Toggle `strict` flag - default: True')

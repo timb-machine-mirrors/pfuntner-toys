@@ -31,7 +31,7 @@ def process(filename):
   if len(tokens) == 1:
     try:
       with open(filename) as stream:
-        data = stream.read() 
+        data = stream.read()
     except Exception as e:
       sys.stderr.write('Cannot read {filename}: {e!s}\n'.format(**locals()))
       return
@@ -40,8 +40,8 @@ def process(filename):
     if not useKeys:
       cmd += ['-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no']
     cmd += [
-            tokens[0], 
-            'cat', 
+            tokens[0],
+            'cat',
             tokens[1]
            ]
     debug(cmd)

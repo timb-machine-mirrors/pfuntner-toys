@@ -51,11 +51,11 @@ $ speedtest | cat
      Server: Spectrum - Durham, NC (id = 16970)
         ISP: Ting Fiber
     Latency:    33.10 ms   (0.31 ms jitter)
-   Download:   724.70 Mbps (data used: 1.2 GB)                               
-     Upload:   757.14 Mbps (data used: 837.5 MB)                               
+   Download:   724.70 Mbps (data used: 1.2 GB)
+     Upload:   757.14 Mbps (data used: 837.5 MB)
 Packet Loss: Not available.
  Result URL: https://www.speedtest.net/result/c/8a910da9-180b-467b-9c2e-39547f5b8951
-$ 
+$
 """
 
 common_regexp = re.compile(r'([^:=()]*)\s*[:=]\s+([^:=()]*)')
@@ -92,7 +92,7 @@ for line in stdout.splitlines():
   match = jitter_regexp.search(line)
   if match:
     stats[match.group(2)] = match.group(1)
-  
+
 stats['Server'] = {
   'name': stats.get('Server'),
   'ID': stats.get('id'),

@@ -102,7 +102,7 @@ if rc == 0:
           log.info(f'Removing {hostname!r} because it did not match {args.hosts}')
           del hosts[hostname]
           hostnames = sorted(hosts.keys())
-    
+
   table = None if args.names_only else Table('host', 'ip', 'user', 'key')
   names = []
   for name in sorted(hosts.keys()):
@@ -116,5 +116,5 @@ if rc == 0:
     sys.stdout.write(str(table))
   else:
     print((',' if args.commas else '\n').join(names))
-    
+
 exit(rc)

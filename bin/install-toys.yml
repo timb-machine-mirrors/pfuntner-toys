@@ -29,7 +29,7 @@
         path: "{{ peon_home }}/.ssh"
         mode: 0700
         state: directory
-  
+
     - name: Share ssh keys
       copy:
         src: "{{ local_home_directory.stdout }}/.ssh/{{ item }}"
@@ -49,7 +49,7 @@
   - name: Install packages
     package:
       name: "{{ item }}"
-    loop: 
+    loop:
       - "{{ python_pkg }}"
       - git
     become: true
@@ -134,7 +134,7 @@
     - name: Capture root home directory
       set_fact:
         root_home: "{{ root_pwd.stdout_lines[0] }}"
-  
+
     - name: Display root home directory
       debug:
         msg: "{{ root_home }}"
@@ -158,12 +158,12 @@
         state: present
       register: test_for_root_bash_profile
       failed_when: false
-  
+
     - name: "Use {{ root_home }}/.bash_profile"
       set_fact:
         root_bash_profile: ".bash_profile"
       when: not test_for_root_bash_profile.failed
-  
+
     - name: "Test for {{ root_home }}/.bash_login"
       file:
         path: "{{ root_home }}/.bash_login"
@@ -171,35 +171,35 @@
       register: test_for_root_bash_login
       when: test_for_root_bash_profile.failed
       failed_when: false
-  
+
     - name: "Use {{ root_home }}/.bash_login"
       set_fact:
         root_bash_profile: ".bash_login"
       when: test_for_root_bash_profile.failed and not test_for_root_bash_login.failed
-  
+
     - name: "Test for toys changes to {{ root_home }}/{{ root_bash_profile }}"
       command: "grep 'This is a fragment of a bash profile that I liked to use' '{{ root_home }}/{{ root_bash_profile }}'"
       register: test_for_toys_changes_to_profile
       failed_when: false
-  
+
     - block:
       - name: "Make changes to {{ root_home }}/{{ root_bash_profile }}"
         shell: "cat '{{ peon_home }}/repos/toys/misc/.profile' >> '{{ root_home }}/{{ root_bash_profile }}'"
-  
+
       - name: "Make changes to {{ root_home }}/.bashrc"
         shell: "cat '{{ peon_home }}/repos/toys/misc/.bashrc' >> '{{ root_home }}/.bashrc'"
       when: (test_for_toys_changes_to_profile | default(empty_stdout)).stdout == ''
-  
+
     - name: Try a tool for root
       shell: "source '{{ root_home }}/{{ root_bash_profile }}' && whatami"
       args:
         executable: /bin/bash
       register: root_try_a_tool
-  
+
     - name: See trial output for root
       debug:
         var: root_try_a_tool.stdout_lines
-  
+
     become: true
     when: bool(add_to_root | default(false))
 

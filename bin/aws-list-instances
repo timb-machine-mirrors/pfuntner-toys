@@ -193,7 +193,7 @@ if rc == 0 and stdout:
         instance.get('KeyName', ''),
         instance.get('LaunchTime', ''),
       )
-      
+
   print(str(table), end='')
 else:
   parser.error(f'describe-instances failed: {stderr!r}')

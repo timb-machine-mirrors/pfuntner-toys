@@ -43,5 +43,5 @@ for become in [False, True]:
   banner('become: {become}'.format(**locals()))
   cmd = ['ansible-playbook', '-e', json.dumps(variables)] + (['-b'] if become else []) + [playbook]
   see('cmd')
-  
+
   rc = subprocess.Popen(cmd).wait()

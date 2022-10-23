@@ -24,7 +24,7 @@ class Gzipper(object):
     compressed_data = s.getvalue()
     log.debug('compressed_data: {compressed_data!r}'.format(**locals()))
     return compressed_data
-    
+
   def uncompress(self, data):
     clear_data = gzip.GzipFile(fileobj=io.StringIO(data), mode='r').read()
     log.debug('clear_data: {clear_data!r}'.format(**locals()))
@@ -44,7 +44,7 @@ class Xzipper(object):
     stderr = stderr.decode('utf-8')
     p.wait()
     return compressed_data
-    
+
   def uncompress(self, data):
     p = subprocess.Popen(['xz', '--decompress', '--stdout'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     (clear_data, stderr) = p.communicate(data)

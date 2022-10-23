@@ -37,13 +37,13 @@ while path:
       elem = int(elem)
     except Exception as e:
       log.error('You must use a numeric index for a list')
-      exit(1)     
+      exit(1)
 
     if 0 <= elem < len(data):
       data = data[elem]
     else:
       log.error(f'Element {elem} out of range')
-      exit(1)     
+      exit(1)
 
 if data:
   if isinstance(data, list):

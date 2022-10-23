@@ -89,7 +89,7 @@ class SecureKeyValues:
           self.simpleKey = key
         else:
           self.simpleKey = getpass.getpass("Key for %s: " % repr(self.simpleFilename))
-  
+
         hash = hashlib.md5()
         hash.update(self.simpleKey.encode('utf-8'))
         self.key = base64.b64encode(hash.hexdigest())
@@ -100,9 +100,9 @@ class SecureKeyValues:
         except Exception as e:
           log.info('Caught `{e!s}` trying to load cryptography.fernet'.format(**locals()))
           return
-  
+
         if os.path.isfile(self.filename):
-          with open(self.filename, 'r') as f: 
+          with open(self.filename, 'r') as f:
             try:
               self.store = json.loads(self.fernet.decrypt(f.read()))
               self.exists = True
@@ -165,7 +165,7 @@ class SecureKeyValues:
       if not os.path.isdir(dir):
         os.mkdir(dir, 0o700)
     log.info('Saving store to {self.filename}'.format(**locals()))
-    with open(self.filename, 'w') as f: 
+    with open(self.filename, 'w') as f:
       f.write(self.fernet.encrypt(json.dumps(self.store)))
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')

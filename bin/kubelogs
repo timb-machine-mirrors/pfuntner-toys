@@ -32,7 +32,7 @@ def run(cmd):
       else:
         break
   return (rc, stdout, stderr)
-  
+
 parser = argparse.ArgumentParser(description='Get logs from Kubernetes pods')
 parser.add_argument('pods', metavar='pod', nargs='*', help='Zero or more Kubernetes pods')
 parser.add_argument('-j', '--json', action='store_true', help='Show logs in JSON form')

@@ -12,7 +12,7 @@ def secs(s):
     return ((int(match.group(1) or 0)*24 + int(match.group(2) or 0))*60 + int(match.group(3) or 0))*60 + int(match.group(4) or 0)
   else:
     parser.error('{s!r} cannot be parsed by {inner_regexp.pattern!r}'.format(inner_regexp=inner_regexp, **locals()))
- 
+
 def divmod(dividend, divisor):
   return (dividend // divisor, dividend % divisor)
 

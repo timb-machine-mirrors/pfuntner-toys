@@ -20,7 +20,7 @@ def dive(path):
 
     if match(os.path.basename(path)) and os.path.isdir(path) and not os.path.islink(path):
       ret.append(path)
-  
+
     if os.path.isdir(path):
       children = list()
       try:

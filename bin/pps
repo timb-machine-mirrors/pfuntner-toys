@@ -129,7 +129,7 @@ class Process(object):
   def __str__(self):
     return "%d %s (%s)" % (self.pid, str(self.args), Util.time(self.elapsedSecs))
   """
- 
+
   @staticmethod
   def getPids():
     pids = []

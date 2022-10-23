@@ -41,11 +41,11 @@ if __name__ == '__main__':
   parser.add_argument('-u', '--unix-style', action='store_true', help='Use Unix style slashes')
   parser.add_argument('paths', metavar='path', nargs='*', help='Zero or more paths')
   args = parser.parse_args()
-  
+
   logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
   log = logging.getLogger()
   log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
-  
+
   if not args.paths:
     args.paths = ['.']
 

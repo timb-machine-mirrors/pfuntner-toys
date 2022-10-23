@@ -12,7 +12,7 @@ def scan(filename=None):
   data = stream.read()
 
   log.debug(f'{filename if filename else "stdin"}: {len(data)} bytes read')
-  
+
   for hit in list(re.finditer(args.regexp.encode(), data)):
     log.info(f'{filename if filename else "stdin"}: Hit at {hit.start(0)}:{hit.end(0)}')
     start = hit.start(0) - args.context

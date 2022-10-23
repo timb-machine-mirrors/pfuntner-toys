@@ -98,7 +98,7 @@ def look_for(target, dir=None):
             author = None
             date = None
             message = None
-  
+
             for line in stdout.splitlines():
               commit = extract(commit_regexp, line) or commit
               author = extract(author_regexp, line) or author
@@ -110,7 +110,7 @@ def look_for(target, dir=None):
                 match = messages_regexp.search(line)
                 if match:
                   message = match.group(1)
-  
+
             log.info('Commit extractions: {date} {commit} {author} {message}'.format(**locals()))
             if commit and author and date and message:
               version = '{date} {commit} {author} {message}'.format(**locals())

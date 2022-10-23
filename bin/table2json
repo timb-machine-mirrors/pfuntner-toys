@@ -88,7 +88,7 @@ for (opt, arg) in opts:
   if opt in ['-s', '--sample']:
     sample = not sample
   else:
-    syntax('Unrecognized option: {opt!r}'.format(**locals())) 
+    syntax('Unrecognized option: {opt!r}'.format(**locals()))
 
 if sample:
   stream = io.StringIO(sample_data)

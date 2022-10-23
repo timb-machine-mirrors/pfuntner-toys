@@ -9,7 +9,7 @@ the login-shell, the vnc processes, etc.  For example, here is the chain from a 
       1     0 root     /usr/lib/systemd/systemd --switched-root --system --deserialize 21
    6709 20828 jpfuntne /bin/bash
   20828     1 jpfuntne kdeinit4: konsole [kdeinit] -session 1017c14016df9000153858566600000218250015_1542113609_237485
-  $ 
+  $
 
 I used this to solve a problem I had where I had been using the same vnc server on a machine for several months but had gotten into a
 state where I could no longer open any GUI windows such as xclock or PyCharm.
@@ -61,7 +61,7 @@ while True:
 
 log.debug('myself: {myself}'.format(**locals()))
 
-to_kill = list(set(pids.keys()) - set(myself)) 
+to_kill = list(set(pids.keys()) - set(myself))
 
 log.debug('to_kill: {to_kill}'.format(**locals()))
 

@@ -23,7 +23,7 @@ class Key(object):
     ret = hash(self.key)
     log.debug(f'__hash__({self!s}) = {ret}')
     return ret
-  
+
 parser = argparse.ArgumentParser(description='Reveal failures from Ansible playbook')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
@@ -72,5 +72,5 @@ for task in tasks:
 for (key, items) in keys.items():
   log.info(f'{key!s}: {items}')
   table.add(key.args + [', '.join(items)])
-  
+
 print(str(table), end='')

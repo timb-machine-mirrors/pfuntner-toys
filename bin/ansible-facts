@@ -62,14 +62,14 @@ if rc != 0:
        1 localhost | SUCCESS => {
        2     "ansible_facts": {
        3         "ansible_all_ipv4_addresses": [
-       4             "172.17.0.1", 
-       5             "64.102.189.72", 
+       4             "172.17.0.1",
+       5             "64.102.189.72",
          .
          .
          .
-     982         ], 
+     982         ],
      983         "module_setup": true
-     984     }, 
+     984     },
      985     "changed": false
      986 }
 """

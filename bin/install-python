@@ -62,14 +62,14 @@ def run(target, cmd, capture=True, read_only=True):
       p = subprocess.Popen(cmd, stdout=subprocess.PIPE if capture else None, stderr=subprocess.PIPE if capture else None)
     except Exception as e:
       (rc, stdout, stderr) = (-1, '', f'Caught {e!s} running {cmd!r}')
-  
+
     if p:
       if capture:
         (stdout, stderr) = tuple([s.decode('utf-8') for s in p.communicate()])
       else:
         (stdout, stderr) = ('', '')
       rc = p.wait()
-  
+
     log.debug('Executed {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
   else:
     log.warning('Skipping {cmd} because of --dry-run'.format(**locals()))
@@ -94,12 +94,12 @@ def get_os_info(host):
 
     aws-ubuntu2204: ID=ubuntu
     aws-ubuntu2204: ID_LIKE=debian
-    
+
     ubuntu: ID=ubuntu
     ubuntu: ID_LIKE=debian
-    
+
     debian: ID=debian
-    
+
     gcp-ubuntu2204: ID=ubuntu
     gcp-ubuntu2204: ID_LIKE=debian
   """

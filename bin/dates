@@ -75,7 +75,7 @@ for curr in args.strings:
       ts = datetime.datetime.fromtimestamp(float(curr))
     except Exception as e:
       log.info(f'Error converting {curr!r} as seconds since epoch: {e!s}')
-  
+
     if ts is None:
       for fmt_string in fmt_strings:
         log.debug(f'Trying {fmt_string!r}')

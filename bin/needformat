@@ -98,10 +98,10 @@ def process(filename):
                 tripled = True
               else:
                 reader.push(follow)
-        
+
         if in_comment and (c == '\n'):
           in_comment = False
-      
+
   else:
     log.warning('{filename!r} is not a file'.format(**locals()))
 

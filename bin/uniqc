@@ -53,7 +53,7 @@ if total:
     digits = int(digits+1)
   else:
     digits = int(math.ceil(digits))
-  
+
   def comparator(token1, token2):
     if tokens[token1] == tokens[token2]:
       if token1 < token2:
@@ -64,7 +64,7 @@ if total:
         return 0
     else:
       return tokens[token1] - tokens[token2]
-    
+
   # for token in sorted(tokens.keys(), key=lambda token: tokens[token], reverse=True):
   for token in order if args.fifo else sorted(tokens.keys(), key=cmp_to_key(comparator), reverse=True):
     print("%*d %6.2f%% %s" % (digits, tokens[token], (tokens[token]*100.0)/total, token))

@@ -5,7 +5,7 @@ This script leverages the `diff --side-by-side` option but its biggest strength 
 
 ## Syntax
 ```
-Syntax: side-diff [-verbose] [--wide] [--width WIDTH] [--ignore-space-change] file1 file2
+Syntax: side-diff [--verbose] [--wide] [--width WIDTH] [--ignore-space-change] file1 file2
 ```
 
 ### Options and arguments

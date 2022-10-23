@@ -20,7 +20,7 @@ def findDir(templates):
 
   log.error('Could not find a download directory from: {templates}'.format(**locals()))
   exit(1)
-  
+
 parser = argparse.ArgumentParser(description='Search for recently downloaded files')
 parser.add_argument('--print0', action='store_true', help='Use \\0 to separate files - useful for use with `xargs -0`')
 parser.add_argument('-v', '--verbose', dest='verbose', action='count', help='Enable debugging')

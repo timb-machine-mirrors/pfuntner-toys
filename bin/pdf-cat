@@ -26,12 +26,12 @@ print()
 
 #   for page_num in range(reader.numPages):
 #     text += reader.getPage(page_num).extractText()
-# 
+#
 # c = 0
 # while c+1 < len(text):
 #   if text[c] == '\n' and text[c+1] != '\n':
 #     text = text[:c] + text[c+1:]
 #   else:
 #     c += 1
-#   
+#
 # sys.stdout.write(text)

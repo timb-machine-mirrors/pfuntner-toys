@@ -125,7 +125,7 @@ Color.print_color(args.color)
 if args.args:
   process([' '.join(args.args)])
 else:
-  process(sys.stdin.read().strip('\n').split('\n')) 
+  process(sys.stdin.read().strip('\n').split('\n'))
 
 if args.color:
   reset()

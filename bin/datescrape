@@ -40,7 +40,7 @@ def process(filename=None):
           print('{filename}: {timestamp!s}'.format(**locals()))
         hits += 1
     if hits == 0:
-      log.debug('No hits for {line!r}'.format(**locals()))  
+      log.debug('No hits for {line!r}'.format(**locals()))
 
 parser = argparse.ArgumentParser(description='Time/date scraper')
 parser.add_argument('files', metavar='file', nargs='*', help='Zero or more files from which to scrape')

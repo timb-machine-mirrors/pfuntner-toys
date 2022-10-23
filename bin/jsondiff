@@ -70,7 +70,7 @@ def compare(path, tree1, tree2):
       emit(tree1 == tree2, path, '{tree1!r} vs {tree2!r}'.format(**locals()))
   else:
     emit(False, path, 'Type mismatch: {type1} vs {type2}'.format(type1=type_and_value(tree1), type2=type_and_value(tree2)))
-  
+
 parser = argparse.ArgumentParser(description='Compare json/yaml files')
 parser.add_argument('-a', '--all', dest='report_all', action='count', help='Report on everything - matches as well as differences')
 parser.add_argument('file1', help='Path to file 1 or `-` for stdin')

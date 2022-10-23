@@ -13,7 +13,7 @@ def vertical_border():
 
 def append(s1, s2):
   return s1 + (' ' if s1 else '') + s2
-    
+
 def emit(line):
   match = prefix_regexp.search(str(line))
   if line and match:
@@ -33,7 +33,7 @@ def emit(line):
       print('{args.border} {curr:{inner_width}} {right_border}'.format(curr=curr, **globals()))
   else:
     print('{args.border} {spaces} {right_border}'.format(**globals()))
-  
+
 parser = argparse.ArgumentParser(description='Generate block comment')
 parser.add_argument('-b', '--border', default='#', help='Specify border string')
 parser.add_argument('-w', '--width', default=80, type=int, help='Specify total width')

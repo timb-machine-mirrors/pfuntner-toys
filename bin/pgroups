@@ -14,4 +14,4 @@ for line in sys.stdin:
     # print "groups: %s" % repr(groups)
     if len(groups) > 0:
       print(' '.join([repr(groups[curr]) for curr in range(len(groups))]))
-        
+

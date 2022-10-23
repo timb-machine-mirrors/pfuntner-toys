@@ -63,7 +63,7 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 /2/licenses/0 'https://www.googleapis.com/compute/v1/projects/centos-cloud/global/licenses/centos-8'
 /2/name 'centos-8-v20191121'
 """
-    
+
 (rc, stdout, stderr) = run('gcloud compute images list --format=json')
 images = sorted(json.loads(stdout), key=lambda image: image['name'])
 

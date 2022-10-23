@@ -10,7 +10,7 @@ def is_text(data):
   total = len(data)*1.0
   binary = len([c for c in data if c not in string.printable])
   return (binary/total) <= 0.05 if total else True
-  
+
 def process(filename):
   log.info('Processing {filename!r}'.format(**locals()))
   if os.path.isfile(filename):

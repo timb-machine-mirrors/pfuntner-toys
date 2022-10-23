@@ -8,7 +8,7 @@ import commands
 
 def syntax():
   sys.stderr.write("Syntax: %s [--e2e] [--key public_key_file] user@remote ...\n" % sys.argv[0])
-  
+
 exitStatus = 0
 optind = 1
 
@@ -48,10 +48,10 @@ if len(sys.argv) >= 1 and sys.argv[1] == "--e2e":
   e2ePublicKey = "beehive_id_dsa.pub"
   if "TOP" in os.environ:
     publicKey = locate("%(TOP)s/test/config" % os.environ, e2ePublicKey)
-    assert publicKey, ("Could not find %%s in %(TOP)s/test/config" % os.environ) % e2ePublicKey 
+    assert publicKey, ("Could not find %%s in %(TOP)s/test/config" % os.environ) % e2ePublicKey
   else:
     publicKey = locate("%(HOME)s" % os.environ, e2ePublicKey)
-    assert publicKey, ("Could not find %%s in %(HOME)s" % os.environ) % e2ePublicKey 
+    assert publicKey, ("Could not find %%s in %(HOME)s" % os.environ) % e2ePublicKey
   print("e2e key: %s" % publicKey)
   optind += 1
 elif len(sys.argv) >= 2 and sys.argv[1] == "--key":

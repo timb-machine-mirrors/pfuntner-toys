@@ -67,7 +67,7 @@ def process(root):
               curr_branch = match.group(2)
             else:
               branches.append(match.group(2))
-  
+
         (rc, stdout, stderr) = run('git log -1')
         match = re.search(r'^commit\s+(\S+).*^Date:\s+(\S{3}\s\S{3}\s\d{1,2}\s\d{2}:\d{2}:\d{2}\s\d{4})\s', stdout,
                           re.MULTILINE + re.DOTALL)
@@ -79,17 +79,17 @@ def process(root):
           timestamp = '?'
 
         comment = repr('\n'.join([line.strip() for line in stdout.splitlines()][4:]))[:-1][1:45]
-  
+
         (rc, stdout, stderr) = run('git remote -v')
         match = re.search('^origin\s+(\S+)\s+\(fetch\)$', stdout, flags=re.MULTILINE)
         if match:
           url = match.group(1)
         else:
           url = None
-  
+
         (rc, stdout, stderr) = run('git status')
         clean = 'Clean' if 'nothing to commit, working directory clean' in stdout or 'nothing to commit, working tree clean' in stdout else 'Dirty'
-  
+
         table.add(root, url, curr_branch, clean, commit[:7], isotime(timestamp), comment)
       os.chdir(prev)
     if os.path.isdir(root):

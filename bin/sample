@@ -9,7 +9,7 @@ assert not sys.stdin.isatty(), "stdin must be redirected"
 
 def ratio(count, total):
   return "%6.2f%%" % ((count*100.0) / total)
-  
+
 groups = 10
 zeros = True
 

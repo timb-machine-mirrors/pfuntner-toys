@@ -53,15 +53,15 @@ def process(num):
   display = [''] * (width+1)
   for exp in range(bits-1, -1, -1):
     mask = 2**exp
-    log.info(f'exp: {exp}, mask: {mask}') 
+    log.info(f'exp: {exp}, mask: {mask}')
     display[0] += '1' if num & mask else '0'
- 
+
     for digit in range(width):
       log.info(f'digit: {digit}')
       display[digit+1] += str(int(((((bits-exp-1) if args.reverse else exp)+1) / (10**(width-digit-1))) % 10))
 
     log.info(f'display: {display}')
-      
+
   print('\n'.join(display))
 
 ctl = (

@@ -72,7 +72,7 @@ if len(channels) != 1:
 channel = channels[0][0]
 
 for (pos, line) in enumerate(lines):
-  channel_char = line[channel:channel+1].rstrip() 
+  channel_char = line[channel:channel+1].rstrip()
   if pos == 0 or (not args.only_diffs or channel_char):
     log.debug(list(enumerate([c for c in line])))
     print(

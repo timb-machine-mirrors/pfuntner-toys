@@ -175,7 +175,7 @@ login = {}
     space_id
 
   The login can return a proper JSON object but the login might have failed.
-  The above keys will not be in the dictionary but another key called `errors` 
+  The above keys will not be in the dictionary but another key called `errors`
   will be there.
 """
 
@@ -204,7 +204,7 @@ if bluemix["BLUEMIX_USERNAME"]:
       time.sleep(1)
 
   assert "errors" not in login, "Bluemix login error: %s" % login["errors"]
-    
+
   if verbose:
     sys.stderr.write("Logged into Bluemix\n%s\n" % json.dumps(login, indent=2, sort_keys=True))
 
@@ -248,7 +248,7 @@ if format == "json":
     """
     total = 0
     removed = 0
-  
+
     for actual in metrics:
       curr = 0
       while curr < len(actual["datapoints"]):
@@ -259,10 +259,10 @@ if format == "json":
           del actual["datapoints"][curr]
         else:
           curr += 1
-  
+
     if verbose:
       sys.stderr.write("Null removal has disposed of %d out of %d total data points\n" % (removed, total))
-     
+
   print(json.dumps(metrics, indent=2))
 elif format == "raw":
   sys.stdout.write(json.dumps(json.loads(stdout), indent=2))

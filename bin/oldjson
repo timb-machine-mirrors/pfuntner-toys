@@ -92,7 +92,7 @@ class KeyValue:
           """
           if match:
             ret = False
-            break 
+            break
         else:
           if match:
             keyMatches += 1
@@ -126,13 +126,13 @@ def trimNode(root):
       if type(root[pos]) not in natives:
         root[pos] = "...%s..." % type(root[pos])
   return root
-  
+
 def include(root, mustHave, keyValues, path="", ret={}):
   debug("include(%s, %s, %s, %s, %s)" % (root, mustHave, [kv.groups for kv in keyValues], repr(path), ret), 2)
   if type(root) == dict:
     match = False
     for keyValue in keyValues:
-      match = keyValue.has(root) 
+      match = keyValue.has(root)
       debug("include() test for %s: %s" % (keyValue.groups, match))
       if match:
         break
@@ -145,7 +145,7 @@ def include(root, mustHave, keyValues, path="", ret={}):
   elif type(root) == list:
     for pos in range(len(root)):
       include(root[pos], mustHave, keyValues, os.path.join(path, str(pos)), ret)
-      
+
   return ret
 
 def lopOff(root):
@@ -158,7 +158,7 @@ def lopOff(root):
   if len(indices) == 1:
     root = lopOff(root[indices[0]])
   return root
-  
+
 describe = False
 writer = regularWriter
 selects = []
@@ -259,7 +259,7 @@ if shallow:
 
 if lop:
   root = lopOff(root)
-  
+
 debug("root: %s" % root, 2)
 if selects:
   root = include(root, True, selects)

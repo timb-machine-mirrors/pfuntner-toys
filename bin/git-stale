@@ -80,7 +80,7 @@ for path in args.paths:
         parser.error(f'No remote url for {path!r}')
     else:
       parser.error(f'No local SHA1 for {path!r}')
-    
+
     os.chdir(original_dir)
   else:
     parser.error(f'Not a directory: {path!r}')

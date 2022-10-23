@@ -47,7 +47,7 @@ def interpret(arg):
     except Exception as e:
       log.debug('Cannot interpret {arg!r} as {name}: {e!s}'.format(**locals()))
   parser.error('Cannot interpret {arg!r}'.format(**locals()))
-    
+
 styles = {
   'standard': '%Y-%m-%d %H:%M:%S.%f',
   'seconds':  '{seconds}',
@@ -109,7 +109,7 @@ if args.time:
   now = datetime.datetime.fromtimestamp(interpret(args.time))
 elif args.gmt:
   epoch = datetime.datetime.utcfromtimestamp(0)
-  now = datetime.datetime.utcnow() 
+  now = datetime.datetime.utcnow()
 else:
   epoch = datetime.datetime.fromtimestamp(0)
   now = datetime.datetime.now()

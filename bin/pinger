@@ -25,7 +25,7 @@ def catcher(signum, currentStackFrame):
   sys.stderr.write("%s: Terminating upon receiving %s signal\n" % (datetime.datetime.now(), decodeSignum(signum)))
   exit(1)
 
-""" 
+"""
   I got these signal defintions from /usr/include/x86_64-linux-gnu/asm/signal.h
 """
 sigmap = {}
@@ -123,11 +123,11 @@ while True:
       mrbruno@bruno-meerkat:~/tmp$ ping -c1 -w5 timewarner.com
       PING timewarner.com (205.140.229.98) 56(84) bytes of data.
       64 bytes from 205.140.229.98 (205.140.229.98): icmp_seq=1 ttl=43 time=98.1 ms
-      
+
       --- timewarner.com ping statistics ---
       1 packets transmitted, 1 received, 0% packet loss, time 0ms
       rtt min/avg/max/mdev = 98.158/98.158/98.158/0.000 ms
-      mrbruno@bruno-meerkat:~/tmp$ 
+      mrbruno@bruno-meerkat:~/tmp$
     """
 
     debug("%d, %s, %s" % (rc, repr(stdout), repr(stderr)))

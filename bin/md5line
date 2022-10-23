@@ -16,7 +16,7 @@ def process(stream):
       sum=hash.hexdigest(),
       line=line,
     ))
-    
+
 parser = argparse.ArgumentParser(description='Calculate md5sum of lines of one or more files')
 parser.add_argument('files', metavar='file', nargs='*', help='Paths to zero or more files')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')

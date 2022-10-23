@@ -13,7 +13,7 @@ def handler(signum, stack):
   now = datetime.datetime.now()
   log.info('elapsed:{elapsed} done'.format(elapsed=now-start))
   exit(0)
-  
+
 logging.basicConfig(format='%(asctime)s %(msg)s')
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)

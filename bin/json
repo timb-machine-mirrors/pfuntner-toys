@@ -81,7 +81,7 @@ def load(stream):
         log.info('Removing {ansible_line!r}'.format(**locals()))
         data[pos] = f'{{ "hosts": "{" ".join([token for token in match.groups() if token])}",'
       pos += 1
-       
+
 
   # read what we can, trashing the rest
 

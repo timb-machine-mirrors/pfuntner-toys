@@ -61,7 +61,7 @@ def getTimedelta(s):
 
   if valid:
     ret = datetime.timedelta(days=components["days"], hours=components["hours"], minutes=components["minutes"], seconds=components["seconds"], microseconds=components["microseconds"])
-      
+
   return ret
 
 datetimeFormats = [

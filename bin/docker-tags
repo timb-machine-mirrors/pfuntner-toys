@@ -103,13 +103,13 @@ for repo in repositories:
   while True:
     docker_url = f'{args.server}/api/v1/repository/{args.organization}/{repo}?page={page}'
     log.info(f'url: {docker_url}')
-  
+
     try:
       req = requests.get(docker_url, auth=docker_auth)
     except Exception as e:
       log.warning(f'{docker_url} exception: {e!s}')
       break
-  
+
     if req.ok:
       log.debug(f'req.json: {req.json()}')
       tags = req.json().get('tags', {})

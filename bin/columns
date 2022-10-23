@@ -134,7 +134,7 @@ for line in stream:
         if (value != None) and (curr < len(tokens)) and (value != tokens[curr]):
           skip = True
           break
-  
+
       if not skip:
         for field in desiredFields:
           if field < len(tokens):

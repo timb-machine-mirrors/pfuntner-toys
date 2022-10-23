@@ -28,7 +28,7 @@ if home == dir:
 else:
   if not home.endswith('/'):
     home += '/'
-  
+
   if dir.startswith(home):
     print(dir[len(home):])
   else:

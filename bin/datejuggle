@@ -13,7 +13,7 @@ class Pattern:
     self.regexp = re.compile(regexp)
     self.pat = pat
 
-  def parse(self, line):   
+  def parse(self, line):
     ret = (None, None)
     match = self.regexp.search(line)
     if match:

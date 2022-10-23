@@ -29,7 +29,7 @@ if (len(sys.argv) >= 2) and (sys.argv[1] in config["verbs"]) and ("--help" not i
   repoNames = config["repos"].keys()
   for name in repoNames:
     expect += ["Username for 'https://%s':" % name, "Password for 'https://%s@%s':" % (config["repos"][name]["user"], name)]
-  
+
   child = pexpect.spawn("%s %s" % (REAL_GIT, ' '.join(sys.argv[1:])), timeout=300)
   done = False
   while not done:

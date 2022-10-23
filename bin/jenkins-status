@@ -124,7 +124,7 @@ if resp.ok:
         if match:
           build_id = f'#{match.group(1)}'
       row.append(build_id)
-      
+
       # find `<img src='/jenkins/sto/static/e823c9e3/images/16x16/red.png' alt='Failed > Console Output' tooltip='Failed > Console Output' ...` nodes
       status_nodes = find(job_root, lambda node: node.tag == 'img', lambda node: node.attrib.get('tooltip', '') != '')
       log.info(f'{len(status_nodes)} status nodes')

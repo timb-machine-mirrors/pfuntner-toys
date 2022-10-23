@@ -10,7 +10,7 @@ import os.path
 
     o -i regexp or --include regexp : the file must include the regular expression.
 
-      This is an "and" condition: If multiple `include` expressions are present, each 
+      This is an "and" condition: If multiple `include` expressions are present, each
       must pass at least once in the file.
 
     o -x regexp or --exclude regexp : the must must not include the regular expression.
@@ -18,7 +18,7 @@ import os.path
       This is an "or" condition: If multiple `exclude` expressions are present, the file
       will fail when the first expression is present.
 
-  You can follow --include expressions with --include or --exclude expressions but you can 
+  You can follow --include expressions with --include or --exclude expressions but you can
   only follow --exclude expressions with more --exclude expressions.
 """
 
@@ -63,8 +63,8 @@ def process(filename):
       break
 
   """
-    If ret == True, all the rules have passed: 
-      - all of the include expressions have matched at least one line in the file 
+    If ret == True, all the rules have passed:
+      - all of the include expressions have matched at least one line in the file
       - none of the exclude expressions have matched any line in the file
   """
 

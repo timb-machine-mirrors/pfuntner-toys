@@ -38,7 +38,7 @@ def process(filename=None):
         if args.list:
           print(filename)
           break
-  
+
         if filename:
           sys.stdout.write(filename)
           if args.line_numbers: sys.stdout.write(' ')
@@ -47,7 +47,7 @@ def process(filename=None):
         if filename or args.line_numbers:
           sys.stdout.write(':')
         sys.stdout.write("%s\n" % line)
-    
+
   if filename:
     f.close()
 

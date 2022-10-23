@@ -17,7 +17,7 @@ class Datum:
 fields = ["%cpu", "cputime", "rss", "%mem", "etime"]
 sortField = None
 defaultPsFields = "pid,args"
-psFields = defaultPsFields 
+psFields = defaultPsFields
 
 def syntax():
   global fields

@@ -134,7 +134,7 @@ exit(rc)
     to_stdout = to_tar.stdout.read()
   to_stderr = to_tar.stderr.read()
   to_rc = to_tar.wait()
-  
+
 if from_tar and to_tar:
   while (from_tar.poll() is None) or (to_tar.poll() is None):
     log.debug('Copy status: {from_poll} {to_poll}'.format(from_poll=from_tar.poll(), to_poll=to_tar.poll()))
@@ -144,15 +144,15 @@ if from_tar and to_tar:
   from_stdout = from_stdout.decode('utf-8')
   from_stderr = from_stderr.decode('utf-8')
   from_rc = from_tar.wait()
-  
+
   to_rc = to_tar.wait()
 
   log.debug('From: {from_rc}, {from_stdout!r}, {from_stderr!r}'.format(**locals()))
   log.debug('To: {to_rc}, {to_stdout!r}, {to_stderr!r}'.format(**locals()))
-  
+
   if (from_rc != 0) and (not args.loud):
     sys.stderr.write(from_stderr)
-  
+
   if to_rc != 0:
     sys.stderr.write(to_stderr)
   exit(0 if (from_rc == 0) and (to_rc == 0) else 1)

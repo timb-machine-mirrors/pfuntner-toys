@@ -74,7 +74,7 @@ def see_group(gid):
   else:
     group = group.gr_name
     return '{group} ({gid})'.format(**locals())
-  
+
 def process(filename):
   global log, count
 

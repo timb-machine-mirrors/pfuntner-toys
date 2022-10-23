@@ -14,7 +14,7 @@ def get_second_filename(line):
       c = line[pos]
       if (c == '"'):
         if (line[pos-1] == '\\'):
-          pos -= 1   
+          pos -= 1
         else:
           break
       filename = c + filename

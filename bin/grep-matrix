@@ -42,5 +42,5 @@ for filename in args.files:
   for regexp in regexps:
     row.append(len([True for line in lines if regexp.search(line)]))
   table.add(row)
-    
+
 print(str(table), end='')

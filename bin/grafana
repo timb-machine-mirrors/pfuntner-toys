@@ -52,9 +52,9 @@ say("Starting graphite")
      -p 8125:8125/udp\
      -p 8126:8126\
      hopsoft/graphite-statsd
-    
+
   Mapped Ports
-    
+
     Host	Container	Service
     80		80		nginx
     2003	2003		carbon receiver - plaintext

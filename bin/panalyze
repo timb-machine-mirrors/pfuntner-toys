@@ -13,7 +13,7 @@ def typer(o):
     if isinstance(o, eval(curr)):
       ret = curr
       break
-  
+
   return ret or '?'
 
 def whatis(src, depth=0):
@@ -49,7 +49,7 @@ def whatis(src, depth=0):
     if len(lines) > 1:
       for line in lines:
         print('{indent}{line}'.format(indent=' '*(depth*2), line=line))
-  
+
 parser = argparse.ArgumentParser(description='Analyze a chunk of data')
 parser.add_argument('-j', '--json', action='store_true', help='Try to process as JSON first')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')

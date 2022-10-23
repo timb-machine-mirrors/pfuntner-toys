@@ -53,10 +53,10 @@ for line in stdout.splitlines():
   commit abdd398a89e618811dbbd057a5d5af7365f380f5
   Author: John Pfuntner <jpfuntne@cisco.com>
   Date:   Tue Mar 26 15:08:22 2019 -0400
-  
+
       Creating --version option
   """
-  
+
   match = commit_regexp.search(str(line))
   if match:
     new_commit = match.group(1)

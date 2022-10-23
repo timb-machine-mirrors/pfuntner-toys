@@ -27,7 +27,7 @@ import subprocess
 
 def getoption(args, globalName, short=None, long=None, hasArgument=False):
   """
-     Pull out a special option (and optional argument) from the args list without disturbing 
+     Pull out a special option (and optional argument) from the args list without disturbing
      options and arguments that aren't special.  For the purposes of this script, we want to
      be able to pass some command line options to `git diff` but some will be sent to the `diff`
      that we call directly.

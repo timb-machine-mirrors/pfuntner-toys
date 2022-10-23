@@ -10,11 +10,17 @@ def describe(src):
   return filename if isinstance(src, str) else "stdin"
 
 def process(src):
-  stream = open(src) if isinstance(src, str) else src
+  log.debug(f'Processing {describe(src)!r}')
+
+  try:
+    stream = open(src) if isinstance(src, str) else src
+    lines = stream.read().splitlines()
+  except Exception as e:
+    log.warning(f'Could not process {describe(src)!r}: {e!s}')
+    return
 
   hits = 0
   long_lines = list()
-  lines = stream.read().splitlines()
   for (linenum, line) in enumerate(lines):
     if regexp.search(line):
       hits += 1

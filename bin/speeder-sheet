@@ -63,7 +63,7 @@ for stat in stats:
   table.add(
     date_massage(get('start')),
     get('IP'),
-    stat.get('Server', []).get('name', ''), 
+    stat.get('Server', []).get('name', ''),
     get('Download'),
     get('Upload'),
     get('Latency'),

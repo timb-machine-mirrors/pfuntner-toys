@@ -22,7 +22,7 @@ def process(file_name=None):
     stream = open(file_name)
   else:
     stream =  sys.stdin
-  
+
   for line in stream.read().splitlines():
     log.debug('{line!r}'.format(**locals()))
     lines += 1

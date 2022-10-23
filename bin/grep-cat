@@ -228,14 +228,14 @@ parser = argparse.ArgumentParser(
   Regular expression selectors
     A regular expression can be used to select lines by matching the expression.  The expression must be delimited
     by punctuation characters which do not appear in the regular expression.  For instance: `/foo-bar/`.
-    
+
     A regular expression selector also accepts an "offset" of the form `+NUM` or `-NUM` to alter the selector to
     target lines before or after the the regular expression.
 
   Range selectors
     Two selectors can be combined using a hyphen between then to select a range of lines that begin with
     the first selector and end with the second selector.  For instance: `1:/foo/`.
-    
+
     An additional selector available on either side (but not both) of a range selector is a Reference selector of the form
     `.+NUM` or `.-NUM`.  The period stands in for hits from the other selector allowing you to refer to lines relative
     to the other selector.""",

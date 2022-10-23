@@ -217,7 +217,7 @@ def get_node():
 
   log.info(str(node))
   return node
-  
+
 def dive(node, writer=print, indent=0):
   if node:
     spaces = ' ' * (indent*2)

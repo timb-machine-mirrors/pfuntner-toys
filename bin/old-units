@@ -83,7 +83,7 @@ def convert(amt, suffix):
 
   (suffix_type, converter, isImperial) = findConverter(amt, suffix)
   if converter is None:
-    log.error('Did not find suffix {suffix!r}'.format(**locals()))     
+    log.error('Did not find suffix {suffix!r}'.format(**locals()))
     exit(1)
 
   log.info('converters[suffix_type]: {}'.format(str(converters[suffix_type])))
@@ -126,11 +126,11 @@ def convert(amt, suffix):
 
   if type(converters[suffix_type].conversion['amt']) == float:
     if converters[suffix_type].conversion['from'] == suffix:
-      amt *= converters[suffix_type].conversion['amt'] 
-      suffix = converters[suffix_type].conversion['to'] 
+      amt *= converters[suffix_type].conversion['amt']
+      suffix = converters[suffix_type].conversion['to']
     else:
-      amt /= converters[suffix_type].conversion['amt'] 
-      suffix = converters[suffix_type].conversion['from'] 
+      amt /= converters[suffix_type].conversion['amt']
+      suffix = converters[suffix_type].conversion['from']
   else:
     (amt, suffix) = converters[suffix_type].conversion['amt'](amt, suffix)
 
@@ -139,7 +139,7 @@ def convert(amt, suffix):
 
   (suffix_type, converter, isImperial) = findConverter(amt, suffix)
   if converter is None:
-    log.error('Did not find suffix {suffix!r}'.format(**locals()))     
+    log.error('Did not find suffix {suffix!r}'.format(**locals()))
     exit(1)
   original_converter = converter
 
@@ -153,7 +153,7 @@ def convert(amt, suffix):
       converter += 1
 
     log.debug('decrease to smaller units')
-    converter = original_converter 
+    converter = original_converter
     while converter > 0:
       amt = (amt / converters[suffix_type].imperial_list[converter][1]) * converters[suffix_type].imperial_list[converter-1][1]
       suffix = converters[suffix_type].imperial_list[converter-1][0]

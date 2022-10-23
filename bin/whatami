@@ -143,9 +143,9 @@ def get_version():
       commit {SHA1}
       Author: {FIRST_NAME} {LAST_NAME} <{EMAIL_ADDRESS}>
       Date:   Wed Jan 16 09:32:03 2019 -0500
-      . 
-      . 
-      . 
+      .
+      .
+      .
     """
     match = re.search(r'^commit\s+(\S+).*\nDate:\s+(([A-Z][a-z]{2} ){2}[ 0123]\d (\d{2}:){2}\d{2} \d{4})', str(stdout), re.DOTALL)
     log.debug('`git log 0` search groups: {groups}'.format(groups=match.groups() if match else None))
@@ -169,7 +169,7 @@ def get_version():
         log.debug('`git remote -v` groups: {groups}'.format(groups=match.groups() if match else None))
         if match:
           ret = '{timestamp!s}, {repo}, {branch}, {commit}'.format(repo=match.group(1), **locals())
-          git_used = True     
+          git_used = True
 
   os.chdir(cwd)
 
@@ -214,7 +214,7 @@ if 'win' in sys.platform.lower():
   out = run('ipconfig', silent=True)
   """
     Wireless LAN adapter Wi-Fi:
-    
+
        Connection-specific DNS Suffix  . : cisco.com
        IPv6 Address. . . . . . . . . . . : 2001:420:2160:1280:c87b:506d:9252:1a2f
        Link-local IPv6 Address . . . . . : fe80::8ce3:d8ea:8f47:19c2%24

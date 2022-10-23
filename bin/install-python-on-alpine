@@ -56,13 +56,13 @@ if rc == 0:
 else:
   print(f'Installing Python3 on {args.target}')
   (rc, stdout, stderr) = run([
-                              'docker', 
-                              'exec', 
-                              '-it', 
-                              args.target, 
-                              'sh', 
-                              '-c', 
+                              'docker',
+                              'exec',
+                              '-it',
+                              args.target,
+                              'sh',
+                              '-c',
                               'apk add --no-cache python3 py3-pip && rm -rf /usr/lib/python*/ensurepip && pip3 install --upgrade pip setuptools && rm -rf /root/.cache'
-                             ], 
+                             ],
                              capture=False)
   exit(rc)

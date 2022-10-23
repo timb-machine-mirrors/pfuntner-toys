@@ -5,7 +5,7 @@ Improved time utility, to replace /usr/bin/time.
 
   Sample /usr/bin/time behavior:
     $ time sleep 5
-    
+
     real	0m5.004s
     user	0m0.003s
     sys	0m0.001s
@@ -18,7 +18,7 @@ Improved time utility, to replace /usr/bin/time.
     real	0:00:05.002452
     user	0:00:00
     sys	0:00:00
-    $ 
+    $
 
 Differences:
   - Start and stop times are printed, which will be important for general usage
@@ -39,7 +39,7 @@ def protect(*args):
   ret = []
   for arg in args:
     ret.append(
-      '"' + 
+      '"' +
       ''.join(
                [
                  '{escape}{c}'.format(escape='\\' if c in metas else '', c=c) for c in arg

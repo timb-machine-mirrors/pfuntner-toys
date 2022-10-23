@@ -80,7 +80,7 @@ for filename in args.files:
     stdout_lines = stdout.splitlines()
     if rc == 0 and len(stdout_lines) == 2:
       (file_system, total_blocks, total_used, total_avail, total_used, mount_point) = stdout_lines[1].split()
-  
+
       cmd = (['ssh', '-o', 'StrictHostKeyChecking=no', args.ssh, '--'] if args.ssh else []) + ['du', '-k'] + (['-L'] if args.follow else []) + [filename]
       (rc, stdout, stderr) = run(cmd)
       stdout_lines = stdout.splitlines()

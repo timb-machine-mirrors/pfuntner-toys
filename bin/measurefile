@@ -17,12 +17,12 @@ def process(filename=None):
   stddev = math.sqrt(sum([math.pow(linelen - avglen, 2) for linelen in lengths]) / numlines) if lengths else 0
   shorts = len([linelen for linelen in lengths if linelen <= avglen])
   longs = len([linelen for linelen in lengths if linelen > avglen])
-  
+
   table.add(filename if filename else '-', numlines, maxlen, avglen, stddev, shorts, longs)
 
   if filename:
     stream.close()
-    
+
 parser = argparse.ArgumentParser(description='Measure files')
 parser.add_argument('files', metavar='file', nargs='*', help='Zero or more files to measure')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')

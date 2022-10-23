@@ -115,7 +115,7 @@ for host in args.hosts:
       stderr = stderr.decode('utf-8')
       rc = p.wait()
       log.info('{cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
-  
+
       if rc == 0 and stdout:
         break
       else:
@@ -148,7 +148,7 @@ for host in args.hosts:
 
 if changed:
   print('New known_hosts has {count} fingerprints'.format(count=len(known_hosts)))
-  
+
   if args.dry_run:
     print('Because you used --dry-run, {known_hosts_filename} will not be updated'.format(**locals()))
   else:

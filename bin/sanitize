@@ -41,13 +41,13 @@ while match:
   """
     Replace password
   """
-  data = data[:match.start(2)] + "secret" + data[match.end(2):] 
+  data = data[:match.start(2)] + "secret" + data[match.end(2):]
 
   if noUsers:
     """
       Replace user if asked
     """
-    data = data[:match.start(1)] + "secret" + data[match.end(1):] 
+    data = data[:match.start(1)] + "secret" + data[match.end(1):]
 
   pos = match.start(1)
   match = regexp.search(str(data), pos)

@@ -38,7 +38,7 @@ def run(cmd, readonly=False):
     rc = p.wait()
     log.debug('Executed {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
   return (rc, stdout, stderr)
-  
+
 def extract(s, regexp):
   ret = None
   match = regexp.search(s)
@@ -56,13 +56,13 @@ def get_branch():
       ret = line.split()[1]
   log.debug('get_branch() returning {ret!r}'.format(**locals()))
   return ret
-    
+
 def get_last_commit():
   """
     commit 00568eee3320fd22d2f1fa471a9312946df44fcb
     Author: belscher <belscher@cisco.com>
     Date:   Thu Dec 5 10:02:35 2019 -0500
-    
+
         CCC-1535: December release (#182)
   """
   date = None
@@ -81,7 +81,7 @@ def get_last_commit():
 
   if text:
     text = repr('\n'.join(text)[:20])[1:-1]
- 
+
   log.debug('get_last_commit() returning date={date}, sha1={sha1}, text={text}'.format(**locals()))
   return (date, sha1[:7], text)
 
@@ -102,7 +102,7 @@ def get_api_url():
   log.info(f'get_api_url() groups from {stdout!r}: {match.group() if match else None}')
   if match:
     ret = f'https://api.{match.group(1)}/repos/{match.group(2)}/commits'
-  return ret 
+  return ret
 
 def find_files(roots, depth=0):
   ret = []

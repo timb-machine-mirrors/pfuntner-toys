@@ -19,7 +19,7 @@ def syntax(msg=None):
 def debug(msg, loud=False):
   if verbose or loud:
     sys.stderr.write('{msg}\n'.format(**locals()))
- 
+
 cols = 80
 
 p = subprocess.Popen(["stty", "size"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)

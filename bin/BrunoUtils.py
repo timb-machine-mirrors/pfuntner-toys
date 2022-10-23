@@ -12,21 +12,21 @@ import subprocess
   as the calling script:
 
     #! /usr/bin/python
-    
+
     import os
     import sys
     import exceptions
-    
+
     try:
       import BrunoUtils
     except exceptions.ImportError as e:
       retry = False
-    
+
       if "PYTHONPATH" not in os.environ:
         retry = True
       else:
         retry = ("$(HOME)s/bin" % os.environ) not in os.environ["PYTHONPATH"].split(':')
-    
+
       if retry:
         sys.stderr.write("Retrying with PYTHONPATH=%(HOME)s/bin to find BrunoUtils...\n" % os.environ)
         os.environ["PYTHONPATH"] = "%(HOME)s/bin" % os.environ
@@ -91,18 +91,18 @@ class BrunoUtils:
   def divmod(a, b):
     x = int(a/b)
     return (x, a-(x*b))
-  
+
   @staticmethod
   def see(o, secondsOnly=False):
     """
       This is designed to format a timedelta object or the number of seconds between
-      two dates (a floating point number) in a nice standard way, optionally breaking 
+      two dates (a floating point number) in a nice standard way, optionally breaking
       it down into hours, minutes, etc.
 
       Arguments:
         - o: A timedelta object or a floating point number
         - secondsOnly: An optional boolean argument that tells the method whether or
-          not to break seconds into hours, minutes, etc or just leave them as seconds 
+          not to break seconds into hours, minutes, etc or just leave them as seconds
 
       Returns:
         A string like:
@@ -110,14 +110,14 @@ class BrunoUtils:
           "02h00m00.00s"
     """
     ret = ""
-  
+
     if type(o) in [float, datetime.timedelta]:
-  
+
       if type(o) == float:
         secs = o
       else:
         secs = o.total_seconds()
-  
+
       if secondsOnly:
         days = 0
         hours = 0
@@ -126,7 +126,7 @@ class BrunoUtils:
         (days, secs) = BrunoUtils.divmod(secs, 24*60*60)
         (hours, secs) = BrunoUtils.divmod(secs, 60*60)
         (mins, secs) = BrunoUtils.divmod(secs, 60)
-  
+
       if days > 0:
         ret += "%dd" % days
       if ret or (hours > 0):
@@ -136,7 +136,7 @@ class BrunoUtils:
       ret += "%05.2fs" % secs
     else:
       raise Exception("Don't know how to handle a %s" % str(type(o)))
-  
+
     return ret
 
   @classmethod

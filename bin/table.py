@@ -520,9 +520,9 @@ class FixedMethod(MethodBase):
       """
       Most columns are probably left-justified but some (like numeric data) might be right-justified.  We need to
       examine all the lines to see where each column begins and ends.  We'll consider a column complete when we reach
-      the end of a column where the same position is whitespace on all of the lines. 
+      the end of a column where the same position is whitespace on all of the lines.
       """
-  
+
       c = 0
       start = 0
       while any([c < len(line) for line in lines]):
@@ -534,7 +534,7 @@ class FixedMethod(MethodBase):
           columns.append((start, c))
           start = c
         c += 1
-  
+
       """
       Complete the trailing column
       """
@@ -729,7 +729,7 @@ class Table(object):
 
   def append(self, *args):
     """
-    This method performs the same function as add().  I added it because I can't 
+    This method performs the same function as add().  I added it because I can't
     remember if the method is add() or append() so this will allow either to work.
     """
     self.add(*args)

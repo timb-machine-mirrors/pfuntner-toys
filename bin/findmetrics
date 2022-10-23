@@ -105,7 +105,7 @@ if bluemix["BLUEMIX_USERNAME"]:
       time.sleep(1)
 
   assert "errors" not in login, "Bluemix login error: %s" % login["errors"]
-    
+
   if verbose:
     sys.stderr.write("Logged into Bluemix\n%s\n" % json.dumps(login, indent=2, sort_keys=True))
 

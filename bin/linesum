@@ -29,6 +29,6 @@ if sys.stdin.isatty():
 table = Table('Line number', 'md5sum', 'Line')
 
 for (pos, line) in enumerate(sys.stdin.read().splitlines()):
-  table.add(pos+1, md5sum(line), repr(line)[1:-1])   
+  table.add(pos+1, md5sum(line), repr(line)[1:-1])
 
 print(str(table), end='')

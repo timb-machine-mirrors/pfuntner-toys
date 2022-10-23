@@ -85,7 +85,7 @@ def emitRotated():
   for (rownum, row) in enumerate(data[1 if args.headings else 0:]):
     for (colnum, col) in enumerate(row):
       print('{rownum:>06d} {colnum:>02d} {name}{col}'.format(name=data[0][colnum].ljust(33) if args.headings else '', **locals()))
-    
+
 def emitJson():
   if args.headings:
     obj = []

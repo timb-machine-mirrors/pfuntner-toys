@@ -19,7 +19,7 @@ query = {
           "from": 0,
           "size": 10000,
 
-          "query": { 
+          "query": {
             "match_all": {
             }
           }
@@ -27,9 +27,9 @@ query = {
 
 """
 {
-  "query": { 
-    "match": { 
-      "account_number": 20 
+  "query": {
+    "match": {
+      "account_number": 20
     }
   }
 }
