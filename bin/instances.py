@@ -140,6 +140,7 @@ class Instances(object):
       (re.compile('^centos-8'),          'centos8'),
       (re.compile('^rhel-7'),            'rhel7'),
       (re.compile('^rhel-8'),            'rhel8'),
+      (re.compile('^rhel-9'),            'rhel9'),
       (re.compile('^debian-9'),          'debian9'),
       (re.compile('^debian-10'),         'debian10'),
       (re.compile('^debian-11'),         'debian11'),
