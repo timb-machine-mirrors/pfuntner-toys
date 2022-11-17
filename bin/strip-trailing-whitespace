@@ -29,7 +29,8 @@ def process(src):
       if not args.dry_run:
         lines[linenum] = regexp.sub('', line)
 
-  log.info(f'{describe(src)}: {len(lines)} total lines, {hits} lines with trailing whitespace')
+  if (hits or not args.quiet):
+    log.info(f'{describe(src)}: {len(lines)} total lines, {hits} lines with trailing whitespace')
   if args.long:
     for long_line in long_lines:
       log.info(f'  {long_line}')
@@ -47,6 +48,7 @@ parser = argparse.ArgumentParser(description='Strip trailing whitespace')
 parser.add_argument('files', metavar='file', nargs='*', help='Zero or more paths to files to process')
 parser.add_argument('--dry-run', action='store_true', help='Do not make changes, only report changes')
 parser.add_argument('-l', '--long', action='store_true', help='Report on each line being updated')
+parser.add_argument('-q', '--quiet', action='store_true', help='Do not report on files that don\'t have trailing blanks')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
