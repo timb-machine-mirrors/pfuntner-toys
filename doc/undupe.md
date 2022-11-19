@@ -80,5 +80,5 @@ This is a little more managable and easier to read.  Sure, there are advantages 
   | 36a7f0f4-55b3-4524-b060-5f86892a84d4 | jpfuntne-autoit-6-3-1 | ACTIVE | - | Running | management=192.168.100.41, 10.225.202.240 |
   +-+-+-+-+-+-+
   ```
-  
+
   As of 2019/01/07, I still hadn't gotten around to writing doc for `fitwidth` but the script is in the repo and I'll try to do get to the doc soon.

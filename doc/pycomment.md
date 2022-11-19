@@ -17,7 +17,7 @@ There are no options or arguments to the command itself.  However, its use requi
 Before invoking the command, consider that your edit buffer looks like:
 ```
 0001 #! /usr/bin/env python
-0002 
+0002
 0003 import sys
 0004
 0005 print 'Before `if`'
@@ -42,7 +42,7 @@ To comment out lines 11-13 and uncomment lines 14-15, you could use two `vi` com
 After the command runs, the comment status of lines 11 through 15 is swapped:
 ```
 0001 #! /usr/bin/env python
-0002 
+0002
 0003 import sys
 0004
 0005 print 'Before `if`'

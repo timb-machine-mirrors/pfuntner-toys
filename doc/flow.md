@@ -20,21 +20,21 @@ Syntax: flow [-w num|--width=num] [-v|--vertical] [-h|--horizontal] [--sep CHAR]
 
 ```
 $ peval '"\n".join([str(num) for num in range(25)])' | flow  -w 20
-0  1  2  3  4  5 
+0  1  2  3  4  5
 6  7  8  9  10 11
 12 13 14 15 16 17
 18 19 20 21 22 23
-24               
+24
 $ peval '"\n".join([str(num) for num in range(25)])' | flow  -w 20 --sep \|
-0 |1 |2 |3 |4 |5 
+0 |1 |2 |3 |4 |5
 6 |7 |8 |9 |10|11
 12|13|14|15|16|17
 18|19|20|21|22|23
-24|  |  |  |  |  
+24|  |  |  |  |
 $ peval '"\n".join([str(num) for num in range(25)])' | flow -v  -w 40 --sep \|
 0 |2 |4 |6 |8 |10|12|14|16|18|20|22|24
-1 |3 |5 |7 |9 |11|13|15|17|19|21|23|  
-$ 
+1 |3 |5 |7 |9 |11|13|15|17|19|21|23|
+$
 ```
 
 ## Notes

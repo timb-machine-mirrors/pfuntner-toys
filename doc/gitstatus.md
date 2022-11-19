@@ -42,7 +42,7 @@ whochat
 add '.gitignore'
 add 'README.md'
 add 'doc/gitstatus.md'
-~/toys/bin$ 
+~/toys/bin$
 ```
 
 ## Notes

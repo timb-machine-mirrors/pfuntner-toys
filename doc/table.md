@@ -33,8 +33,8 @@ table.py [-h] [-H] -i {csv,yaml,fixed,json,separator,xml} -o
 | `yaml` | ![Supported](images/Green_tick.png) | ![Supported](images/Green_tick.png) | Another popular structured format with the same strengths as `json` |
 | `xml` | ![Supported](images/Green_tick.png) | ![Supported](images/Green_tick.png) | Another popular structured format.  |
 | `html` | ![Not Supported](images/red_x.png) | ![Supported](images/Green_tick.png) | A format that can only be used for output to produce a table in [HTML](https://www.wikiwand.com/en/HTML) |
-| `markdown` | ![Not Supported](images/red_x.png) | ![Supported](images/Green_tick.png) | A format that can only be used for output to produce a table in [Markdown](https://www.wikiwand.com/en/Markdown).  Used extensively in [Slack](https://slack.com/) and [Github](https://www.wikiwand.com/en/GitHub): Issues (including pull requests), documentation, reviews, etc. | 
-| `bbcode` | ![Not Supported](images/red_x.png) | ![Supported](images/Green_tick.png) | A format that can only be used for output to produce a table in [BBCode](https://www.wikiwand.com/en/BBCode).  Used in some bulletin board systems such as [Ubuntu Forums](https://ubuntuforums.org) | 
+| `markdown` | ![Not Supported](images/red_x.png) | ![Supported](images/Green_tick.png) | A format that can only be used for output to produce a table in [Markdown](https://www.wikiwand.com/en/Markdown).  Used extensively in [Slack](https://slack.com/) and [Github](https://www.wikiwand.com/en/GitHub): Issues (including pull requests), documentation, reviews, etc. |
+| `bbcode` | ![Not Supported](images/red_x.png) | ![Supported](images/Green_tick.png) | A format that can only be used for output to produce a table in [BBCode](https://www.wikiwand.com/en/BBCode).  Used in some bulletin board systems such as [Ubuntu Forums](https://ubuntuforums.org) |
 
 ## Examples
 
@@ -98,38 +98,38 @@ This generates a list of lists but we could do better.
 $ df -k | table -i fixed -o json
 [
   [
-    "Filesystem", 
-    "1K-blocks", 
-    "Used", 
-    "Available", 
-    "Use%", 
+    "Filesystem",
+    "1K-blocks",
+    "Used",
+    "Available",
+    "Use%",
     "Mounted on"
-  ], 
+  ],
   [
-    "udev", 
-    "8133732", 
-    "0", 
-    "8133732", 
-    "0%", 
+    "udev",
+    "8133732",
+    "0",
+    "8133732",
+    "0%",
     "/dev"
-  ], 
+  ],
   .
   .
   .
   [
-    "tmpfs", 
-    "1631576", 
-    "16", 
-    "1631560", 
-    "1%", 
+    "tmpfs",
+    "1631576",
+    "16",
+    "1631560",
+    "1%",
     "/run/user/125"
-  ], 
+  ],
   [
-    "tmpfs", 
-    "1631576", 
-    "36", 
-    "1631540", 
-    "1%", 
+    "tmpfs",
+    "1631576",
+    "36",
+    "1631540",
+    "1%",
     "/run/user/1000"
   ]
 ]
@@ -141,38 +141,38 @@ Headings can rock!
 $ df -k | table -i fixed -o json --headings
 [
   {
-    "1K-blocks": "8133732", 
-    "Available": "8133732", 
-    "Filesystem": "udev", 
-    "Mounted on": "/dev", 
-    "Use%": "0%", 
+    "1K-blocks": "8133732",
+    "Available": "8133732",
+    "Filesystem": "udev",
+    "Mounted on": "/dev",
+    "Use%": "0%",
     "Used": "0"
-  }, 
+  },
   {
-    "1K-blocks": "1631580", 
-    "Available": "1629488", 
-    "Filesystem": "tmpfs", 
-    "Mounted on": "/run", 
-    "Use%": "1%", 
+    "1K-blocks": "1631580",
+    "Available": "1629488",
+    "Filesystem": "tmpfs",
+    "Mounted on": "/run",
+    "Use%": "1%",
     "Used": "2092"
-  }, 
+  },
   .
   .
   .
   {
-    "1K-blocks": "1631576", 
-    "Available": "1631560", 
-    "Filesystem": "tmpfs", 
-    "Mounted on": "/run/user/125", 
-    "Use%": "1%", 
+    "1K-blocks": "1631576",
+    "Available": "1631560",
+    "Filesystem": "tmpfs",
+    "Mounted on": "/run/user/125",
+    "Use%": "1%",
     "Used": "16"
-  }, 
+  },
   {
-    "1K-blocks": "1631576", 
-    "Available": "1631540", 
-    "Filesystem": "tmpfs", 
-    "Mounted on": "/run/user/1000", 
-    "Use%": "1%", 
+    "1K-blocks": "1631576",
+    "Available": "1631540",
+    "Filesystem": "tmpfs",
+    "Mounted on": "/run/user/1000",
+    "Use%": "1%",
     "Used": "36"
   }
 ]
@@ -225,7 +225,7 @@ $ df -k | table -i fixed -o html --headings
 #### Markdown output, with headings
 Note that I only used `mark` for the name of the output format.  You can provide unique abbreviations format names.
 
-``` 
+```
 $ df -k | table -i fixed -o mark --headings
 | Filesystem | 1K-blocks | Used | Available | Use% | Mounted on |
 | - | - | - | - | - | - |
@@ -247,7 +247,7 @@ $ df -k | table -i fixed -o mark --headings
 | /dev/sda1 | 1922727728 | 89149004 | 1833562340 | 5% | /media/mrbruno/ExtraDrive1 |
 | tmpfs | 1631576 | 16 | 1631560 | 1% | /run/user/125 |
 | tmpfs | 1631576 | 36 | 1631540 | 1% | /run/user/1000 |
-$ 
+$
 ```
 
 ### Why is `--order` important?
@@ -259,26 +259,26 @@ For this example, I'm going to cheat a little bit, starting with fixed format, c
 
 ```
 $ df -k | table -i fixed -o json --headings | table -i json -o fixed
-1K-blocks  Available  Filesystem Mounted on                   Use% Used    
-8133732    8133732    udev       /dev                         0%   0       
-1631580    1629480    tmpfs      /run                         1%   2100    
+1K-blocks  Available  Filesystem Mounted on                   Use% Used
+8133732    8133732    udev       /dev                         0%   0
+1631580    1629480    tmpfs      /run                         1%   2100
 236102400  145011804  /dev/sdb2  /                            36%  79074164
-8157880    8049200    tmpfs      /dev/shm                     2%   108680  
-5120       5116       tmpfs      /run/lock                    1%   4       
-8157880    8157880    tmpfs      /sys/fs/cgroup               0%   0       
-8704       0          /dev/loop1 /snap/canonical-livepatch/77 100% 8704    
-304256     0          /dev/loop0 /snap/pycharm-community/132  100% 304256  
-304256     0          /dev/loop2 /snap/pycharm-community/128  100% 304256  
-90624      0          /dev/loop3 /snap/core/7169              100% 90624   
-147840     0          /dev/loop5 /snap/skype/63               100% 147840  
-150912     0          /dev/loop4 /snap/skype/66               100% 150912  
-90624      0          /dev/loop6 /snap/core/7270              100% 90624   
-145280     0          /dev/loop7 /snap/skype/60               100% 145280  
-8704       0          /dev/loop8 /snap/canonical-livepatch/81 100% 8704    
+8157880    8049200    tmpfs      /dev/shm                     2%   108680
+5120       5116       tmpfs      /run/lock                    1%   4
+8157880    8157880    tmpfs      /sys/fs/cgroup               0%   0
+8704       0          /dev/loop1 /snap/canonical-livepatch/77 100% 8704
+304256     0          /dev/loop0 /snap/pycharm-community/132  100% 304256
+304256     0          /dev/loop2 /snap/pycharm-community/128  100% 304256
+90624      0          /dev/loop3 /snap/core/7169              100% 90624
+147840     0          /dev/loop5 /snap/skype/63               100% 147840
+150912     0          /dev/loop4 /snap/skype/66               100% 150912
+90624      0          /dev/loop6 /snap/core/7270              100% 90624
+145280     0          /dev/loop7 /snap/skype/60               100% 145280
+8704       0          /dev/loop8 /snap/canonical-livepatch/81 100% 8704
 1922727728 1833562324 /dev/sda1  /media/mrbruno/ExtraDrive1   5%   89149020
-1631576    1631560    tmpfs      /run/user/125                1%   16      
-1631576    1631536    tmpfs      /run/user/1000               1%   40      
-``` 
+1631576    1631560    tmpfs      /run/user/125                1%   16
+1631576    1631536    tmpfs      /run/user/1000               1%   40
+```
 This ordering may not be what you want.
 
 #### With `--order`
@@ -286,25 +286,25 @@ Let's supply an order for some of the columns.  Note that when you specify order
 
 ```
 $ df -k | table -i fixed -o json --headings | table -i json -o fixed --order filesystem,mounted\ on
-Filesystem Mounted on                   1K-blocks  Available  Use% Used    
-udev       /dev                         8133732    8133732    0%   0       
-tmpfs      /run                         1631580    1629480    1%   2100    
+Filesystem Mounted on                   1K-blocks  Available  Use% Used
+udev       /dev                         8133732    8133732    0%   0
+tmpfs      /run                         1631580    1629480    1%   2100
 /dev/sdb2  /                            236102400  145011904  36%  79074064
-tmpfs      /dev/shm                     8157880    8049200    2%   108680  
-tmpfs      /run/lock                    5120       5116       1%   4       
-tmpfs      /sys/fs/cgroup               8157880    8157880    0%   0       
-/dev/loop1 /snap/canonical-livepatch/77 8704       0          100% 8704    
-/dev/loop0 /snap/pycharm-community/132  304256     0          100% 304256  
-/dev/loop2 /snap/pycharm-community/128  304256     0          100% 304256  
-/dev/loop3 /snap/core/7169              90624      0          100% 90624   
-/dev/loop5 /snap/skype/63               147840     0          100% 147840  
-/dev/loop4 /snap/skype/66               150912     0          100% 150912  
-/dev/loop6 /snap/core/7270              90624      0          100% 90624   
-/dev/loop7 /snap/skype/60               145280     0          100% 145280  
-/dev/loop8 /snap/canonical-livepatch/81 8704       0          100% 8704    
+tmpfs      /dev/shm                     8157880    8049200    2%   108680
+tmpfs      /run/lock                    5120       5116       1%   4
+tmpfs      /sys/fs/cgroup               8157880    8157880    0%   0
+/dev/loop1 /snap/canonical-livepatch/77 8704       0          100% 8704
+/dev/loop0 /snap/pycharm-community/132  304256     0          100% 304256
+/dev/loop2 /snap/pycharm-community/128  304256     0          100% 304256
+/dev/loop3 /snap/core/7169              90624      0          100% 90624
+/dev/loop5 /snap/skype/63               147840     0          100% 147840
+/dev/loop4 /snap/skype/66               150912     0          100% 150912
+/dev/loop6 /snap/core/7270              90624      0          100% 90624
+/dev/loop7 /snap/skype/60               145280     0          100% 145280
+/dev/loop8 /snap/canonical-livepatch/81 8704       0          100% 8704
 /dev/sda1  /media/mrbruno/ExtraDrive1   1922727728 1833562312 5%   89149032
-tmpfs      /run/user/125                1631576    1631560    1%   16      
-tmpfs      /run/user/1000               1631576    1631536    1%   40      
+tmpfs      /run/user/125                1631576    1631560    1%   16
+tmpfs      /run/user/1000               1631576    1631536    1%   40
 ```
 
 I forced two columns to the start of the output but I just accepted the default for the remaining columns.
@@ -370,7 +370,7 @@ lrwxrwxrwx,1,mrbruno,mrbruno,10,Jun,29,08:42,toys -> repos/toys
 lrwxrwxrwx,1,mrbruno,mrbruno,26,Aug,4,2017,Videos -> /home/mrbruno/extra/Videos
 drwxrwxr-x,3,mrbruno,mrbruno,4096,Jun,8,08:19,VirtualBox VMs
 drwxrwxr-x,2,mrbruno,mrbruno,4096,Nov,19,2017,Webcam
-$ 
+$
 ```
 
 I used my [`drop` script](../doc/drop.md) to strip off the first line of output which doesn't lend itself to the columns of all the other lines and I didn't care about the line anyway.
@@ -392,11 +392,11 @@ table.add(['...cell21...', 'cell22', '23'])
 
 print str(table)
 $ ./tabular
-col 1        col 2  col 3 
+col 1        col 2  col 3
 cell11       cell12 cell13
 cell21       cell22 cell23
-...cell21... cell22 23    
-$ 
+...cell21... cell22 23
+$
 ```
 
 ## Notes
@@ -413,7 +413,7 @@ $
     alias fixed2sep='table.py -i fixed --headings -o sep --sep \|'
     alias fixed2json='table.py -i fixed --headings -o json'
     ```
-  I tend to use `fixed2sep` more often to create a table in a Word document.  I'll copy the table with the separators, paste them into Word, and then use _Insert -> Table -> Convert Text to Table_ and make sure I specify _Separate text at |_.  I'll even do this for a document I don't plan on saving because it's a good way to visualize the data.  
+  I tend to use `fixed2sep` more often to create a table in a Word document.  I'll copy the table with the separators, paste them into Word, and then use _Insert -> Table -> Convert Text to Table_ and make sure I specify _Separate text at |_.  I'll even do this for a document I don't plan on saving because it's a good way to visualize the data.
   Check out [this fragment I typically append to my `.bashrc` on my users](https://github.com/pfuntner/toys/blob/6422926d5c5c7201d2dc7a629a739082da236f88/misc/.bashrc#L91-L92).
 - There is minimal XML support:
   - When reading XML:

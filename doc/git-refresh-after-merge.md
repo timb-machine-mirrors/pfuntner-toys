@@ -36,7 +36,7 @@ While composing the bulk of the changes for this document, I deliberately did it
       (use "git restore --staged <file>..." to unstage)
         modified:   ../../README.md
         new file:   ../../doc/git-refresh-after-merge.md
-    
+
     $ git commit -m 'git-refresh-after-merge doc'
     [git-refresh-after-merge-doc 8a5287f] git-refresh-after-merge doc
      2 files changed, 90 insertions(+), 51 deletions(-)
@@ -55,10 +55,10 @@ While composing the bulk of the changes for this document, I deliberately did it
     Writing objects: 100% (5/5), 1.43 KiB | 1.43 MiB/s, done.
     Total 5 (delta 3), reused 0 (delta 0)
     remote: Resolving deltas: 100% (3/3), completed with 3 local objects.
-    remote: 
+    remote:
     remote: Create a pull request for 'git-refresh-after-merge-doc' on GitHub by visiting:
     remote:      https://github.com/pfuntner/toys/pull/new/git-refresh-after-merge-doc
-    remote: 
+    remote:
     To github.com:pfuntner/toys.git
      * [new branch]      git-refresh-after-merge-doc -> git-refresh-after-merge-doc
 ```
@@ -82,7 +82,7 @@ After pushing my branch to the github server, I did the following on github:
     32b4399ca2a64f12a71d167999a86893151aa5f6  jpfuntne@cisco.com                 2022-03-09 15:26:23  Painting error messages in red
     3dc842e95bd945d651058ac2641a5b1a8ee12f33  jpfuntne@cisco.com                 2022-03-08 20:02:55  add option to print a full line prior to printing characters
     a9b1df043e44a6cc0e80326e9577ffbc69929ae7  jpfuntne@cisco.com                 2022-03-07 13:29:23  Merge branch 'master' of github.com:pfuntner/toys
-    $ git-refresh-after-merge 
+    $ git-refresh-after-merge
     Switched to branch 'master'
     Your branch is up to date with 'origin/master'.
     remote: Enumerating objects: 1, done.
@@ -101,13 +101,13 @@ After pushing my branch to the github server, I did the following on github:
     Merge: 001098b 8a5287f
     Author: John Pfuntner <pfuntner@pobox.com>
     Date:   Sat Mar 12 15:09:16 2022 -0500
-    
+
         Merge pull request #93 from pfuntner/git-refresh-after-merge-doc
-        
+
         git-refresh-after-merge doc
     Master branch pulled.  Shall I remove 'git-refresh-after-merge-doc'? yes
     Deleted branch git-refresh-after-merge-doc (was 8a5287f).
-    $ 
+    $
 ```
 
 ## Notes

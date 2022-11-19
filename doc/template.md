@@ -18,7 +18,7 @@ Syntax: template [--verbose] arg ...
 ```
 $ template
 This is a template.  Please fill in the details and rock on.
-$ 
+$
 ```
 
 ## Notes

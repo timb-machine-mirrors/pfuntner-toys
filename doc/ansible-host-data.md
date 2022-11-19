@@ -53,7 +53,7 @@ $ ansible-host-data -k bruno-rh8
 /home/mrbruno/.ssh/bruno.pem
 $ ansible-host-data -u bruno-rh8
 ec2-user
-$ 
+$
 ```
 
 ## Notes

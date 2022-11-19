@@ -18,12 +18,12 @@ Syntax: fernet [-v|--verbose] [-d|--decrypt]
 
 ```
 $ date | fernet | tee /tmp/secret
-Encryption key: 
-gAAAAABcaH8gaUJzCzoOprHr3RxuNnQo9Utqc9bA4UiU3SiBm0MaPdxmYqpDXOUr_KY0yIJ-kBRQ78NmEo2qdWZNiYd4C1HX4bsGzjQX0lMD4nVy7pzRjNM=$ 
+Encryption key:
+gAAAAABcaH8gaUJzCzoOprHr3RxuNnQo9Utqc9bA4UiU3SiBm0MaPdxmYqpDXOUr_KY0yIJ-kBRQ78NmEo2qdWZNiYd4C1HX4bsGzjQX0lMD4nVy7pzRjNM=$
 $ fernet -d < /tmp/secret
-Encryption key: 
+Encryption key:
 Sat Feb 16 16:22:37 EST 2019
-$ 
+$
 ```
 
 ## Notes

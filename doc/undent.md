@@ -82,7 +82,7 @@ else:
         'name': self.repair_filename(tokens[2])
       })
 
-$ 
+$
 ```
 
 ## Notes

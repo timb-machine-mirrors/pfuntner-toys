@@ -5,7 +5,7 @@ Search for Amazon EC2 AMIs.
 
 ## Syntax
 ```
-Syntax: aws-images [--glob] [--region REGION ] 
+Syntax: aws-images [--glob] [--region REGION ]
         --owner OWNER_ID --name NAME_PATTERN
 ```
 
@@ -13,7 +13,7 @@ Syntax: aws-images [--glob] [--region REGION ]
 | Option           | Description                                                                                                                                | Default                                                                                                                 |
 |------------------|--------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
 | `--regexp`   | Pattern is in the style of a [regular expression](https://en.wikipedia.org/wiki/Regular_expression) like used by `grep` | Pattern is in the style of [filename expansion](https://www.gnu.org/software/bash/manual/html_node/Pattern-Matching.html) in a Linux shell |
-| `--region` | Override the AWS EC2 region                                                                                                                | The default region set in your AWS credentials is used.  I think a default region does not need to chosen in an AWS configuration but that I believe a default is very common and I know it's very useful.                                                                   
+| `--region` | Override the AWS EC2 region                                                                                                                | The default region set in your AWS credentials is used.  I think a default region does not need to chosen in an AWS configuration but that I believe a default is very common and I know it's very useful.
 | `-v`             | Enable verbose debugging                                                                                                                   | Debugging is not enabled                                                                                                |
 
 
@@ -36,8 +36,8 @@ $ aws-images -o 099720109477 --regexp -n . | headtail
    14606 ubuntu-lucid-i386-linux-image-2.6.32-301-ec2-v-2.6.32-301.4-ramdisk.20100108.smoser0.img                ari-86d439ef           2010-01-08T08:05:36.000Z
    14607 ubuntu-lucid-i386-linux-image-2.6.32-300-ec2-v-2.6.32-300.1-ramdisk.20100104.smoser0.img                ari-caf11ca3           2010-01-04T22:13:54.000Z
    14608 ubuntu-lucid-amd64-linux-image-2.6.32-300-ec2-v-2.6.32-300.1-ramdisk.20100104.smoser0.img               ari-14f11c7d           2010-01-04T21:55:21.000Z
-   14609 
-$ 
+   14609
+$
 ```
 
 ### Showing specific releases
@@ -56,8 +56,8 @@ $ aws-images -o 099720109477 --regexp -n 'ubuntu-.*-20.10-arm64' | headtail
       24 ubuntu/images/hvm-ssd/ubuntu-groovy-20.10-arm64-server-20201111    ami-01fd91c5afea9ccb1  2020-11-11T22:26:14.000Z
       25 ubuntu/images/hvm-ssd/ubuntu-groovy-20.10-arm64-server-20201030    ami-06284dd7c2ed5d8e7  2020-10-30T15:03:17.000Z
       26 ubuntu/images/hvm-ssd/ubuntu-groovy-20.10-arm64-server-20201022.1  ami-0ef42a98ef49bbb52  2020-10-22T18:04:02.000Z
-      27 
-$ 
+      27
+$
 ```
 
 ### Using a _glob_ pattern
@@ -78,8 +78,8 @@ $ aws-images -o 099720109477 -n '*ubuntu-*-20.10-arm64*' | headtail
       24 ubuntu/images/hvm-ssd/ubuntu-groovy-20.10-arm64-server-20201111    ami-01fd91c5afea9ccb1  2020-11-11T22:26:14.000Z
       25 ubuntu/images/hvm-ssd/ubuntu-groovy-20.10-arm64-server-20201030    ami-06284dd7c2ed5d8e7  2020-10-30T15:03:17.000Z
       26 ubuntu/images/hvm-ssd/ubuntu-groovy-20.10-arm64-server-20201022.1  ami-0ef42a98ef49bbb52  2020-10-22T18:04:02.000Z
-      27 
-$ 
+      27
+$
 ```
 
 ## Notes

@@ -20,7 +20,7 @@
         msg: Swap space is already available
       when: '"[SWAP]" in initial_state.stdout'
 
-    - name: Stop if there is no volume for swap space 
+    - name: Stop if there is no volume for swap space
       fail:
         msg: "No volume has been added for swap space.  Have you created it in the EC2 portal and added it to your instance?"
       when: 'not "xvdf" in initial_state.stdout'

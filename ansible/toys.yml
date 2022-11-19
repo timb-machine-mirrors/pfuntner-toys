@@ -61,13 +61,13 @@
     register: toys_stat
 
   - name: "Clone repo"
-    command: 
+    command:
       cmd: git clone https://github.com/pfuntner/toys.git
       chdir: "{{ ansible_env.HOME }}/repos"
     when: not toys_stat.stat.exists
 
   - name: "Update repo"
-    command: 
+    command:
       cmd: git pull
       chdir: "{{ ansible_env.HOME }}/repos/toys"
     when: toys_stat.stat.exists

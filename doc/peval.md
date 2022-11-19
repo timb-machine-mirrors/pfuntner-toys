@@ -18,7 +18,7 @@ Syntax: peval [-i|--import MODULE] expression ...
 ```
 $ peval --import datetime 'datetime.datetime.now().isoformat()', 'range(25)'
 ('2018-09-25T17:07:10.967965', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24])
-$ 
+$
 ```
 
 ## Notes

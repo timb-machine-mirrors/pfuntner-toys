@@ -33,7 +33,7 @@ $ recentdownloads 14                                        # let's try the last
 $ touch -t 300001010000 ~/downloads/foobar                  # create a file in the future
 $ recentdownloads                                           # the `future file` is found
 /home/mrbruno/downloads/foobar
-$ 
+$
 ```
 
 ## Notes

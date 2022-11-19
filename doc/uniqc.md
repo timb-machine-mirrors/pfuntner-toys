@@ -36,7 +36,7 @@ This is a rather complicated pipeline that involves another of my tools: <a href
 ```
 $ find . -type f -print0 | xargs -0 extensions | columns -F \| 2 | uniqc
 273 total items
- 97  35.53% 
+ 97  35.53%
  84  30.77% gz
  40  14.65% jpg
  32  11.72% out
@@ -51,7 +51,7 @@ $ find . -type f -print0 | xargs -0 extensions | columns -F \| 2 | uniqc
   1   0.37% odt
   1   0.37% png
   1   0.37% xls
-$ 
+$
 ```
 This is another non-trivial pipeline (do you see a running theme?) that involves the use of the <a href="extensions.md">`extensions`</a> utility.  You can see the current working directory has eighty-four `*.gz` files, forty `*.jpg` files, etc.  Many of the files also lack an extension so that's why you see ninety-seven appear to be blank.
 
@@ -79,7 +79,7 @@ So the most recently updated file was `misc/zaci-20/setup`.  Since this is the m
 
 You'll notice that I use three other scripts of mine: `gitfiles` (_I haven't been inspired to do doc for that yet_), [`columns`](columns.md), and [`headtail`](headtail.md).
 
-In this example, I'm not so interested in the number of times a file occurred but the info 
+In this example, I'm not so interested in the number of times a file occurred but the info
 
 Gee, another pipeline! :-)
 

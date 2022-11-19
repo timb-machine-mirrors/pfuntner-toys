@@ -27,18 +27,18 @@ $ comm2 <(echo -e one\\ntwo) <(echo -e two\\nthree) | cat -A
 ^Ione$
 two$
 ^I^Ithree$
-$ comm2 -12 <(echo -e one\\ntwo) <(echo -e two\\nthree) 
+$ comm2 -12 <(echo -e one\\ntwo) <(echo -e two\\nthree)
 two
-$ comm2 -12 --json <(echo -e one\\ntwo) <(echo -e two\\nthree) 
+$ comm2 -12 --json <(echo -e one\\ntwo) <(echo -e two\\nthree)
 [
   {
-    "line": "two", 
-    "pos1": 2, 
-    "pos2": 1, 
+    "line": "two",
+    "pos1": 2,
+    "pos2": 1,
     "status": "common"
   }
 ]
-$ 
+$
 ```
 
 ## Notes
@@ -58,12 +58,12 @@ $
 - Using the regular `comm` with one of these above examples:
 
   ```
-  $ comm <(echo -e one\\ntwo) <(echo -e two\\nthree) 
+  $ comm <(echo -e one\\ntwo) <(echo -e two\\nthree)
   one
 		two
   comm: file 2 is not in sorted order
 	three
-  $ 
+  $
 
   ```
 

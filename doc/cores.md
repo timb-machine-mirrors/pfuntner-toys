@@ -1,7 +1,7 @@
 # `cores`
 
 ## Purpose
-Summarizes output from the Linux `lscpu` command. I must confess that I don't often think of using this one but I probably need to get more into the habit of using it. I'm not crazy about the name `cores` - I wonder if `cpus` would be easier for me to remember, etc.	
+Summarizes output from the Linux `lscpu` command. I must confess that I don't often think of using this one but I probably need to get more into the habit of using it. I'm not crazy about the name `cores` - I wonder if `cpus` would be easier for me to remember, etc.
 
 ## Syntax
 ```

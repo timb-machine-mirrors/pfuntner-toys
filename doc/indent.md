@@ -1,7 +1,7 @@
 # `indent`
 
 ## Purpose
-Indent stdin a specific number of spaces.  This pads all lines on the left side. 
+Indent stdin a specific number of spaces.  This pads all lines on the left side.
 
 ## Syntax
 ```
@@ -23,7 +23,7 @@ $ date | banner | indent 4
     ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
     ┃ Sat Feb 23 07:36:00 EST 2019 ┃
     ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-$ 
+$
 ```
 
 ### `vi` command

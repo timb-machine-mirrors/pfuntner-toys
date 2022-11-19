@@ -42,7 +42,7 @@ $ ls | timestamps -e | head
 1 day, 0:38:12.686337 Decolorizer.pyc
 1 day, 1:34:24.223281 viswap
 6 days, 23:45:32.921321 recentdownloads
-$ 
+$
 ```
 
 I did take the liberty of removing some error messages from the script when `head` prevents it from writing more than 10 lines.

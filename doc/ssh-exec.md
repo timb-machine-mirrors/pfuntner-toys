@@ -96,7 +96,7 @@ Number of arguments: 3
 + env
 + grep '^FOO'
 FOO=bar
-$ 
+$
 ```
 
 ##### Docker example
@@ -111,7 +111,7 @@ Number of arguments: 3
 3: 3
 
 FOO=bar
-$ 
+$
 ```
 
 ```commandline
@@ -133,7 +133,7 @@ Number of arguments: 3
 3: 3
 
 FOO=bar
-$ 
+$
 ```
 
 #### Python script
@@ -156,7 +156,7 @@ if foo_env:
   print()
   for (key, value) in foo_env.items():
     print(f'{key}={value!r}')
-$ 
+$
 ```
 ##### Example
 ```commandline
@@ -164,9 +164,9 @@ $ ssh-exec localhost ~/tmp/HelloWorld.py
 Hello uid 1000, Python world
 
 Number of arguments: 0
-$ 
+$
 ```
 
 ## Notes
 
-- The script is most effective with `ssh` hosts if you enable password-less `ssh` using keys 
+- The script is most effective with `ssh` hosts if you enable password-less `ssh` using keys

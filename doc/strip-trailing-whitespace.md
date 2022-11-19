@@ -20,7 +20,7 @@ Syntax: strip-trailing-whitespace [-h] [--dry-run] [-l] [-v] [file [file ...]]
 I'll use a rather complicated `find` command to generate the files for the script to act upon.  I am excluding some files that have non-printable characters:
 
 ```commandline
-$ find ~/bin -follow ! -name \*.class ! -name \*.deb ! -name \*.pyc -type f -print0 | xargs -r0 strip-trailing-whitespace --dry 
+$ find ~/bin -follow ! -name \*.class ! -name \*.deb ! -name \*.pyc -type f -print0 | xargs -r0 strip-trailing-whitespace --dry
 2022-10-23 14:10:14,960 INFO /home/mrbruno/bin/strip-trailing-whitespace:27 /home/mrbruno/bin/table.py: 959 total lines, 4 lines with trailing whitespace
 2022-10-23 14:10:14,960 INFO /home/mrbruno/bin/strip-trailing-whitespace:27 /home/mrbruno/bin/acp: 79 total lines, 0 lines with trailing whitespace
 2022-10-23 14:10:14,960 INFO /home/mrbruno/bin/strip-trailing-whitespace:27 /home/mrbruno/bin/recentdownloads: 71 total lines, 1 lines with trailing whitespace
@@ -30,7 +30,7 @@ $ find ~/bin -follow ! -name \*.class ! -name \*.deb ! -name \*.pyc -type f -pri
 2022-10-23 14:10:15,039 INFO /home/mrbruno/bin/strip-trailing-whitespace:27 /home/mrbruno/bin/findmetrics: 137 total lines, 1 lines with trailing whitespace
 2022-10-23 14:10:15,039 INFO /home/mrbruno/bin/strip-trailing-whitespace:27 /home/mrbruno/bin/seejson: 72 total lines, 2 lines with trailing whitespace
 2022-10-23 14:10:15,039 INFO /home/mrbruno/bin/strip-trailing-whitespace:27 /home/mrbruno/bin/columns: 145 total lines, 1 lines with trailing whitespace
-$ 
+$
 ```
 
 ```commandline
@@ -63,7 +63,7 @@ $ find ~/bin -follow ! -name \*.class ! -name \*.deb ! -name \*.pyc -type f -pri
 2022-10-23 14:12:04,243 INFO /home/mrbruno/bin/strip-trailing-whitespace:30   /home/mrbruno/bin/seejson:34: '  '
 2022-10-23 14:12:04,244 INFO /home/mrbruno/bin/strip-trailing-whitespace:27 /home/mrbruno/bin/columns: 145 total lines, 1 lines with trailing whitespace
 2022-10-23 14:12:04,244 INFO /home/mrbruno/bin/strip-trailing-whitespace:30   /home/mrbruno/bin/columns:137: '  '
-$ 
+$
 ```
 
 ## Notes

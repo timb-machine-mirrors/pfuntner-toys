@@ -34,21 +34,21 @@ $ supercd foobar
 $ # Prove we have changed to the directory
 $ pwd
 /home/mrbruno/foobar
-$ 
+$
 ```
 
 ### Tool is not sourced
 ```
 $ supercd.sh foobar
 Note: /home/mrbruno/bin/supercd.sh is not sourced
-$ 
+$
 ```
 
 ### No directories match target pattern
 ```
 $ supercd foobar
 No matches for foobar
-$ 
+$
 ```
 
 ### Too many directories match target pattern & refining pattern
@@ -60,7 +60,7 @@ Too many matches for foobar
   /home/mrbruno/foobar
 $ supercd foobar\$
 /home/mrbruno/foobar
-$ 
+$
 ```
 
 ### Verbose output
@@ -71,7 +71,7 @@ $ supercd -v foobar
 Too many matches for -v foobar
   /home/mrbruno/foobar-foo
   /home/mrbruno/foobar
-$ 
+$
 ```
 
 ## Notes
@@ -81,4 +81,4 @@ $
     alias supercd='. supercd.sh'
     ```
   You might wish to add such an alias to your `$HOME/.bashrc`.
-- I'm lazy I often use this tool to jump into a directory without typing the entire name and without having to specify exactly where it is.  For example, I have worked on a team where we made changes to a few dozen different Git repos.  I was able to navigate to the easily by using unique targets to the repos without having to type the entire path. 
+- I'm lazy I often use this tool to jump into a directory without typing the entire name and without having to specify exactly where it is.  For example, I have worked on a team where we made changes to a few dozen different Git repos.  I was able to navigate to the easily by using unique targets to the repos without having to type the entire path.

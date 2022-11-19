@@ -32,7 +32,7 @@ $ find . -type f | extensions | headtail
      271 ./pinger-20180130.out.gz|gz
      272 ./pinger-20180201.out.gz|gz
      273 ./pingplot|
-$ 
+$
 ```
 ### Example notes
 - This example makes use of the [`headtail`](headtail.md) tool

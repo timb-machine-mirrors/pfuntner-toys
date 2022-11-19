@@ -28,7 +28,7 @@ Imagine a command that prints many lines:
          146     "ee11fa67-f37f-4fa3-996d-345057acb659"
          147   ]
          148 }
-    $ 
+    $
 
 You might want to view as much of the top of the output as possible without counting the number of lines on the screen.  This script will sense the number of lines on the screen and print one line less than the number of lines on the screen.  It does one less to allow for the command to remain on the screen:
 

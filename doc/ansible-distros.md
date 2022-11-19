@@ -28,7 +28,7 @@ $ cat /etc/ansible/hosts
 bruno-amazon1 ansible_host=3.83.98.175 ansible_user=ec2-user ansible_ssh_private_key_file=/home/mrbruno/.ssh/bruno.pem
 bruno-amazon2 ansible_host=100.25.192.145 ansible_user=ec2-user ansible_ssh_private_key_file=/home/mrbruno/.ssh/bruno.pem
 bruno-rh8 ansible_host=100.26.227.68 ansible_user=ec2-user ansible_ssh_private_key_file=/home/mrbruno/.ssh/bruno.pem
-$ 
+$
 ```
 I actually have another tool that can generate this file along with `~/.ssh/config` for cloud machines from _Amazon Web Services_ (AWS) or _Google Cloud Platform_ (GCP) but I'm not sure how universal the tool is.  I would love for someone to try it out so let me know if you're interested.
 
@@ -81,11 +81,11 @@ ok: [bruno-rh8] => {
 }
 
 PLAY RECAP ***************************************************************************************************************************************************************
-bruno-amazon1              : ok=2    changed=0    unreachable=0    failed=0   
-bruno-amazon2              : ok=2    changed=0    unreachable=0    failed=0   
-bruno-rh8                  : ok=2    changed=0    unreachable=0    failed=0   
+bruno-amazon1              : ok=2    changed=0    unreachable=0    failed=0
+bruno-amazon2              : ok=2    changed=0    unreachable=0    failed=0
+bruno-rh8                  : ok=2    changed=0    unreachable=0    failed=0
 
-$ 
+$
 ```
 
 #### localhost
@@ -94,7 +94,7 @@ Personally, I don't usually have `localhost` in my `/etc/ansible/hosts` but Ansi
 $ ansible-distros localhost
 Node       OS Family  Distro  Version  Major Version  Distro Release  Kernel              Package Manager  Service Manager
 localhost  Debian     Ubuntu  18.04    18             bionic          5.3.0-7648-generic  apt              systemd
-$ 
+$
 ```
 
 ## Notes

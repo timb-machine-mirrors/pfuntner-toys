@@ -59,7 +59,7 @@ $ head -8 -c40 /dev/urandom | hex
            db   81   2b   e9   11   05   ec   c3   38   a6   1c   21   28   6f   d7   49
 00000020 \x07 \xa2 \xa2 \x12    | \x88 \x01 \xc8
            07   a2   a2   12   7c   88   01   c8
-$ 
+$
 ```
 
 ### All characters!
@@ -99,7 +99,7 @@ $ peval '"".join([chr(num) for num in range(256)])' | hex
            f0   f1   f2   f3   f4   f5   f6   f7   f8   f9   fa   fb   fc   fd   fe   ff
 00000100   \n
            0a
-$ 
+$
 ```
 This last example uses my [`peval`](peval.md) tool.
 

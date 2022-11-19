@@ -1,7 +1,7 @@
 # `side-diff`
 
 ## Purpose
-This script leverages the `diff --side-by-side` option but its biggest strength is the ability to automatically detect the width of the shell window and adjust the output to fit the screen. 
+This script leverages the `diff --side-by-side` option but its biggest strength is the ability to automatically detect the width of the shell window and adjust the output to fit the screen.
 
 ## Syntax
 ```

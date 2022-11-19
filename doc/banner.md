@@ -33,7 +33,7 @@ $ echo -e "The time is\n$(date)" | banner --center --box
 #         The time is          #
 # Wed Nov  1 16:55:59 EDT 2017 #
 ################################
-$ 
+$
 ```
 
 ### Color

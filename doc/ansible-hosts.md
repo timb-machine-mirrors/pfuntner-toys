@@ -37,7 +37,7 @@ $ echo $(ansible-hosts --names)
 bruno-amazon1 bruno-amazon2 bruno-rh8
 $ ansible-hosts --commas
 bruno-amazon1,bruno-amazon2,bruno-rh8
-$ 
+$
 ```
 
 ### Making use of `--commas`
@@ -55,7 +55,7 @@ ip-172-31-49-27.ec2.internal
 bruno-rh8 | SUCCESS | rc=0 >>
 ip-172-31-58-255.ec2.internal
 
-$ 
+$
 ```
 
 ## Notes

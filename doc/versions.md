@@ -71,7 +71,7 @@ is 1.6.1. You can update by downloading from www.packer.io/downloads.html
 $
 ```
 
-### Simple use of the tool 
+### Simple use of the tool
 ```
 $ versions java bash ansible python docker packer
 Name     Location                 Version
@@ -84,7 +84,7 @@ packer   /home/centos/.local/bin  1.5.1
 $
 ```
 
-Note that annoying trailing characters are removed from the "version token" such as the comma from `docker`. 
+Note that annoying trailing characters are removed from the "version token" such as the comma from `docker`.
 
 ### Using `--dumb` option
 ```
@@ -101,7 +101,7 @@ $
 ```
 $ versions --version java
 11.0.8
-$ 
+$
 ```
 
 ### `git`-based example
@@ -134,5 +134,5 @@ $
 - The tool gets the version from:
   1. Output from `executable --version`
   2. Output from `executable -version` - I can't recall an example of an executable that works this way but it is supported
-  3. An attempt is made to generate information from `git` if the executable is part of a repository.  I did that mostly for my tools but honestly don't use it very much (see above example)   
+  3. An attempt is made to generate information from `git` if the executable is part of a repository.  I did that mostly for my tools but honestly don't use it very much (see above example)
 - See also the [`pythons`](pythons.md) tool

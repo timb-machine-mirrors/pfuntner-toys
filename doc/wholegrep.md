@@ -10,8 +10,8 @@ The regular expressions will match any occurrence in each file.
 ## Syntax
 ```
 usage: wholegrep [-h] [-v] [-a] [--ignorecase]
-                 [-i INCLUDE] [-i INCLUDE] ... 
-                 [-x EXCLUDE] [-x EXCLUDE] ... 
+                 [-i INCLUDE] [-i INCLUDE] ...
+                 [-x EXCLUDE] [-x EXCLUDE] ...
                  file [file ...]
 positional arguments:
   file                  One or more files to scan
@@ -95,7 +95,7 @@ $ wholegrep -a -i sys.argv bin/* | headtail -30
      270 - bin/ymd
      271 - bin/zerojoin
      272 - bin/zombies
-$ 
+$
 ```
 
 ## Notes

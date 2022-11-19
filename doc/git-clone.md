@@ -24,7 +24,7 @@ git clone git@github.com:pfuntner/toys.git
 Cloning into 'toys'...
 $ ls toys
 ansible  bin  _config.yml  doc	images	__init__.py  misc  README.md  test
-$ 
+$
 ```
 
 I could have done this without the `-u` option but I wanted to show a command that would work for more people.
@@ -33,4 +33,4 @@ I could have done this without the `-u` option but I wanted to show a command th
 
 - This is a very simple command and you can certainly go to the desired repository and copy the statement from there.  Or if you have a great memory, you can type if from memory.  I don't know about anyone else but I have better things to remember.  I find my command much easier.
 - I typically add `export GITHUB_USER=pfuntner` to my `~/.profile` because my id can vary depending on the system I'm on.
-- ssh-style Github URLs expect you have already shared your public ssh key on Github _(Settings -> SSH and GPG keys)_.  http-style URLs can work just as well to clone a repo but if you try to make changes to the remote repo on Github, you'll be challenged for your Github credentials. 
+- ssh-style Github URLs expect you have already shared your public ssh key on Github _(Settings -> SSH and GPG keys)_.  http-style URLs can work just as well to clone a repo but if you try to make changes to the remote repo on Github, you'll be challenged for your Github credentials.

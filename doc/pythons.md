@@ -29,7 +29,7 @@ Name     Location  Version
 python   /usr/bin  Python 2.7.17
 python2  /usr/bin  Python 2.7.17
 python3  /usr/bin  Python 3.6.9
-$ 
+$
 ```
 
 ### From a basic Amazon Linux 1 AWS instance
@@ -66,7 +66,7 @@ python   /usr/bin                     2.7.17
 python2  /usr/bin                     2.7.17
 python3  /media/mrbruno/tmp/venv/bin  3.6.9
 python3  /usr/bin                     3.6.9
-(venv) $ 
+(venv) $
 ```
 This shows you that `virtualenv` is basically prepending the `venv` directory to my `$PATH` in order to override the existing Python executables.
 

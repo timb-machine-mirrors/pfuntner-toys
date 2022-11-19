@@ -27,7 +27,7 @@ Syntax: install-python [--verbose] [-d] [-p PROXY] [--dry-run] [-q] host ...
 $ docker run -dit --rm --name alpine alpine
 Unable to find image 'alpine:latest' locally
 latest: Pulling from library/alpine
-213ec9aee27d: Pull complete 
+213ec9aee27d: Pull complete
 Digest: sha256:bc41182d7ef5ffc53a40b044e725193bc10142a1243f395ee852a8d9730fc2ad
 Status: Downloaded newer image for alpine:latest
 fba44ceda245255655253de5d0c2a5abc514f95048f2e63679e60fe2c0a2fd02
@@ -50,7 +50,7 @@ $ install-python -v --dry-run --docker alpine
 2022-10-22 07:42:48,986 INFO /home/mrbruno/bin/install-python:171 alpine: alive
 2022-10-22 07:42:49,065 INFO /home/mrbruno/bin/install-python:130 alpine: could not find python
 alpine: /usr/bin/python3: Python 3.10.5
-$ 
+$
 ```
 
 ## Notes

@@ -2,7 +2,7 @@
 ################################################################################
 # This is a fragment of a bash profile that I liked to use                     #
 ################################################################################
-# 
+#
 # Remember that bash looks for profile scripts in the following order:
 #   $HOME/.bash_profile
 #   $HOME/.bash_login
@@ -22,7 +22,7 @@ export PYTHONUNBUFFERED=true
 
 if tty >/dev/null 2>&1
 then
-  "$HOME/bin/set-title" --self 
+  "$HOME/bin/set-title" --self
 fi
 
 # Windoze setup

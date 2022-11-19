@@ -23,14 +23,14 @@ Selectors are the logic by which the user selects what lines to include.  There 
 #### Line number selectors
 A positive and negative integer can be used to select a line by its position in a file.  `1` is the first line, `-1` is the last line.
 #### Regular expression selectors
-A regular expression can be used to select lines by matching the 
-expression.  The expression must be delimited by punctuation characters 
+A regular expression can be used to select lines by matching the
+expression.  The expression must be delimited by punctuation characters
 which do not appear in the regular expression.  For instance: `/foo-bar/`.
 ##### Regular expression offsets
 A regular expression selector also accepts an "offset" of the form `+NUM` or `-NUM` to alter the selector to target lines before or after the the regular expression.
 
 #### Range selectors
-Two selectors (any combination of the previous selectors) can be combined using a colon between them to select a range 
+Two selectors (any combination of the previous selectors) can be combined using a colon between them to select a range
 of lines that begin with the first selector and end with the second selector.  For instance: `1:/foo/`.
 ##### Reference selectors
 An additional selector available on either side _(but not both)_ of a range selector is a _reference selector_ of the form
@@ -40,9 +40,9 @@ to the other selector.
 Here is how ranges involving regular expressions are processed:
 1. All lines of a specified file are read
 2. Regular expressions for the range selectors are processed against all lines
-3. The number of starting selector lines must match the number of ending selector lines.  A warning is raised if not and the 
-   processing for that range selector ends for that file. 
-   
+3. The number of starting selector lines must match the number of ending selector lines.  A warning is raised if not and the
+   processing for that range selector ends for that file.
+
    Note that the number of matching lines from
    a line number selector is either one (the file has a line at the position) or zero (the file
    does not have a line at the position).  A regular expression selector can result in
@@ -52,7 +52,7 @@ Here is how ranges involving regular expressions are processed:
    through the first line from the ending selector
    2. The second range is the second line from the starting selector
    through the second line of the ending selector
-   3. etc. 
+   3. etc.
 
 
 ## Examples
@@ -88,7 +88,7 @@ foo.txt:6: f
 foo.txt:7: g
 foo.txt:8: h
 foo.txt:9: i
-$ 
+$
 ```
 ### Processing by selectors
 
@@ -99,7 +99,7 @@ $ df -h . | grep-cat -s 1:-1 1
 Filesystem      Size  Used Avail Use% Mounted on
 /dev/sda1       1.8T   86G  1.8T   5% /media/mrbruno/ExtraDrive1
 Filesystem      Size  Used Avail Use% Mounted on
-$ 
+$
 ```
 
 ### Regular expression offsets
@@ -122,7 +122,7 @@ test.txt: jkl
 test.txt: mno
 test.txt: pqr
 test.txt: stu
-$ 
+$
 ```
 
 ### Reference selector
@@ -142,13 +142,13 @@ $ grep-cat /g/:.+2 test.txt
 test.txt: ghi
 test.txt: jkl
 test.txt: mno
-$ 
+$
 ```
 
 ## Notes
 
 - In default selector mode, a selector that targets a line that was targetted by a previous selector will toggle its visibility.
-For example, if the first selector makes line 1 visible but the second selector also selects line 1, the line becomes invisible. 
+For example, if the first selector makes line 1 visible but the second selector also selects line 1, the line becomes invisible.
 - Considering the previous note, overlapping ranges could result in undesirable results. For instance, consider this example:
     ```
     $ cat -n foo.txt
@@ -164,14 +164,14 @@ For example, if the first selector makes line 1 visible but the second selector 
     $ grep-cat -n /aaa/-/zzz/ foo.txt
     foo.txt:1: aaa
     foo.txt:4: zzz
-    $ 
+    $
     ```
     The first `grep-cat` command works as expected.  When combined in a range selector, the first set of matches toggles the state of
 lines one through three, making them visible. But then the second group of matches toggles the state of lines two through four,
 making lines two and three invisible, making four visible.
 
     Processing by selectors will generate different behavior:
-    
+
     ```
     $ grep-cat -s -n /aaa/:/zzz/ foo.txt
     foo.txt:1: aaa
@@ -180,10 +180,10 @@ making lines two and three invisible, making four visible.
     foo.txt:2: aaa
     foo.txt:3: zzz
     foo.txt:4: zzz
-    $ 
+    $
     ```
 
-    I'm not wild about this behavior but I think this is a reasonable way to handle regular expressions especially with respect to 
+    I'm not wild about this behavior but I think this is a reasonable way to handle regular expressions especially with respect to
 overlapping ranges.  I reserve the right to change my mind.
 
 - I bounded regular expression offsets and reference selectors by the number of lines in the file.
@@ -192,5 +192,5 @@ overlapping ranges.  I reserve the right to change my mind.
 
 - `.+1:1` and `2:.-1` are probably both invalid because the first selector is greater than the second reference
 
-- Initially I had designed range selectors to be delimited by a colon **or a hyphen** but once I introduced the ideas of reference selectors and regular expression offsets, I wanted to simplify the syntax and avoid ambiguities. 
-   
+- Initially I had designed range selectors to be delimited by a colon **or a hyphen** but once I introduced the ideas of reference selectors and regular expression offsets, I wanted to simplify the syntax and avoid ambiguities.
+

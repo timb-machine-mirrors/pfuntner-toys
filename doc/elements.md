@@ -45,7 +45,7 @@ whhx                      |plbjzlnq
 0263-04-16 08:10:04.371000|27310623-088a-44f6-ba94-3dfbc2b73a14
 1149-08-27 22:08:21.266998|33e50693-d06e-43f5-8cd8-5e5dc1372a03
 2115-10-27 02:58:47.524002|092e5537-b041-4cd8-82e8-2a72191986cd
-$ 
+$
 ```
 
 ## Notes
@@ -69,8 +69,8 @@ $
   - A syntax message will remind you of the syntax of the command
   - A message will display the available keys of the first element (see the `--help` option).
 - Originally, I stared writing this tool to process data from a private tool of mine _(maybe I'll make it available **some day**)_ - it continually pings a remote host to see if it's alive and the network connection is working.  I created the private tool because my sucky ISP at home (I don't mind calling them out it's **Time Warner / RoadRunner / Spectrum /** whatever!) often drops me and I wanted to monitor the situation.  Anyway, halfway through writing what _became_ `elements`, I thought:
-  
+
   > Hey, other people mightappreciate this tool!
-  
+
   Honestly, that's how many of my tools begin!!
 - The examples make use of my `Data.py` class/command.  I actually wrote it **because** I wanted something to generate random data for the examples for `elements`!

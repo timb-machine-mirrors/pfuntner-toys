@@ -22,24 +22,24 @@ Syntax: lexec [--verbose] [-s] pattern ...
 ### Options and arguments
 | Option | Description | Default |
 | ------ | ----------- | ------- |
-| `-s` or `--system` | Windoze only option: Search in _system_ directories as well as non-system directories.  See the _note_ for a definition of system directories and explanation.  | Do not search in system directories | 
+| `-s` or `--system` | Windoze only option: Search in _system_ directories as well as non-system directories.  See the _note_ for a definition of system directories and explanation.  | Do not search in system directories |
 |  `-v`  | Enable verbose debugging | Debugging is not enabled |
 
 ## Example
 Here's an example that uses my [flow](flow.md) tool on Linux:
 ```
 [mrbruno@bruno-meerkat ~]$ lexec git | flow
-/usr/bin/git-shell                 /usr/bin/sgitopnm                  /usr/bin/git-receive-pack          /usr/bin/git                      
-/usr/bin/git-upload-archive        /usr/bin/git-upload-pack           /home/mrbruno/bin/git-log          /home/mrbruno/bin/gitpush.sh      
-/home/mrbruno/bin/gitstatus.py     /home/mrbruno/bin/old-git          /home/mrbruno/bin/gitrepos         /home/mrbruno/bin/gitstatus       
-/home/mrbruno/bin/git-files        /home/mrbruno/bin/git-pushed       /home/mrbruno/bin/isgit            /home/mrbruno/bin/gitdiffs        
-/home/mrbruno/bin/gitdiff          /home/mrbruno/bin/gitter           /home/mrbruno/bin/gitsubs          /home/mrbruno/bin/gityup.py       
-/home/mrbruno/bin/git-stale        /home/mrbruno/bin/git-diff         /home/mrbruno/bin/git-pulls        /home/mrbruno/bin/gitbranches.py  
-/home/mrbruno/bin/gitpulls.sh      /home/mrbruno/bin/git-recent-files /home/mrbruno/bin/git-branches     /home/mrbruno/bin/gitdiff.py      
-/home/mrbruno/bin/whatgit          /home/mrbruno/bin/git-new-files    /home/mrbruno/bin/gitloggrep       /home/mrbruno/bin/gitpush.py      
-/home/mrbruno/bin/git-commit-check /home/mrbruno/bin/git-clone        /home/mrbruno/bin/git-extract      /home/mrbruno/bin/git-push        
-/home/mrbruno/bin/git-cat                                                                                                                  
-[mrbruno@bruno-meerkat ~]$ 
+/usr/bin/git-shell                 /usr/bin/sgitopnm                  /usr/bin/git-receive-pack          /usr/bin/git
+/usr/bin/git-upload-archive        /usr/bin/git-upload-pack           /home/mrbruno/bin/git-log          /home/mrbruno/bin/gitpush.sh
+/home/mrbruno/bin/gitstatus.py     /home/mrbruno/bin/old-git          /home/mrbruno/bin/gitrepos         /home/mrbruno/bin/gitstatus
+/home/mrbruno/bin/git-files        /home/mrbruno/bin/git-pushed       /home/mrbruno/bin/isgit            /home/mrbruno/bin/gitdiffs
+/home/mrbruno/bin/gitdiff          /home/mrbruno/bin/gitter           /home/mrbruno/bin/gitsubs          /home/mrbruno/bin/gityup.py
+/home/mrbruno/bin/git-stale        /home/mrbruno/bin/git-diff         /home/mrbruno/bin/git-pulls        /home/mrbruno/bin/gitbranches.py
+/home/mrbruno/bin/gitpulls.sh      /home/mrbruno/bin/git-recent-files /home/mrbruno/bin/git-branches     /home/mrbruno/bin/gitdiff.py
+/home/mrbruno/bin/whatgit          /home/mrbruno/bin/git-new-files    /home/mrbruno/bin/gitloggrep       /home/mrbruno/bin/gitpush.py
+/home/mrbruno/bin/git-commit-check /home/mrbruno/bin/git-clone        /home/mrbruno/bin/git-extract      /home/mrbruno/bin/git-push
+/home/mrbruno/bin/git-cat
+[mrbruno@bruno-meerkat ~]$
 ```
 
 Yes, I have a lot of files with "git" in the name and not all of them are even in this repo.  I might not even use some of them anymore.  I'm a packrat!

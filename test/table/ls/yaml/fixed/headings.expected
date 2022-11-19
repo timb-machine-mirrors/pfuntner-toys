@@ -1,4 +1,4 @@
-datetime     group   l name                                       perms      size   user   
+datetime     group   l name                                       perms      size   user
 Jun 29 08:43 mrbruno 1 bin -> toys/bin                            lrwxrwxrwx 8      mrbruno
 Aug 11  2017 mrbruno 1 bruno -> /home/mrbruno/extra/bruno         lrwxrwxrwx 25     mrbruno
 Jan 27  2018 mrbruno 2 Desktop                                    drwxr-xr-x 4096   mrbruno

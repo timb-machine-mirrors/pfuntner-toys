@@ -31,46 +31,46 @@ usage: oldtable [-h] [-c | -s SEPARATOR | -f] [-H | -m | -b | -r | -j]
 
 ### Input: regular expression / Output: JSON
 ```
-$ df | head -5 | oldtable -s \\s+ -j 
+$ df | head -5 | oldtable -s \\s+ -j
 [
   [
-    "Filesystem", 
-    "1K-blocks", 
-    "Used", 
-    "Available", 
-    "Use%", 
+    "Filesystem",
+    "1K-blocks",
+    "Used",
+    "Available",
+    "Use%",
     "Mounted_on"
-  ], 
+  ],
   [
-    "udev", 
-    "8133756", 
-    "0", 
-    "8133756", 
-    "0%", 
+    "udev",
+    "8133756",
+    "0",
+    "8133756",
+    "0%",
     "/dev"
-  ], 
+  ],
   [
-    "tmpfs", 
-    "1631580", 
-    "2132", 
-    "1629448", 
-    "1%", 
+    "tmpfs",
+    "1631580",
+    "2132",
+    "1629448",
+    "1%",
     "/run"
-  ], 
+  ],
   [
-    "/dev/sdb2", 
-    "236102400", 
-    "31740828", 
-    "192345140", 
-    "15%", 
+    "/dev/sdb2",
+    "236102400",
+    "31740828",
+    "192345140",
+    "15%",
     "/"
-  ], 
+  ],
   [
-    "tmpfs", 
-    "8157880", 
-    "34564", 
-    "8123316", 
-    "1%", 
+    "tmpfs",
+    "8157880",
+    "34564",
+    "8123316",
+    "1%",
     "/dev/shm"
   ]
 ]
@@ -81,39 +81,39 @@ Note that this is a list of lists because the headings row were treated as just 
 $ df | head -5 | oldtable -s \\s+ -j  --headings
 [
   {
-    "1K-blocks": "8133756", 
-    "Available": "8133756", 
-    "Filesystem": "udev", 
-    "Mounted_on": "/dev", 
-    "Use%": "0%", 
+    "1K-blocks": "8133756",
+    "Available": "8133756",
+    "Filesystem": "udev",
+    "Mounted_on": "/dev",
+    "Use%": "0%",
     "Used": "0"
-  }, 
+  },
   {
-    "1K-blocks": "1631580", 
-    "Available": "1629448", 
-    "Filesystem": "tmpfs", 
-    "Mounted_on": "/run", 
-    "Use%": "1%", 
+    "1K-blocks": "1631580",
+    "Available": "1629448",
+    "Filesystem": "tmpfs",
+    "Mounted_on": "/run",
+    "Use%": "1%",
     "Used": "2132"
-  }, 
+  },
   {
-    "1K-blocks": "236102400", 
-    "Available": "192345136", 
-    "Filesystem": "/dev/sdb2", 
-    "Mounted_on": "/", 
-    "Use%": "15%", 
+    "1K-blocks": "236102400",
+    "Available": "192345136",
+    "Filesystem": "/dev/sdb2",
+    "Mounted_on": "/",
+    "Use%": "15%",
     "Used": "31740832"
-  }, 
+  },
   {
-    "1K-blocks": "8157880", 
-    "Available": "8123452", 
-    "Filesystem": "tmpfs", 
-    "Mounted_on": "/dev/shm", 
-    "Use%": "1%", 
+    "1K-blocks": "8157880",
+    "Available": "8123452",
+    "Filesystem": "tmpfs",
+    "Mounted_on": "/dev/shm",
+    "Use%": "1%",
     "Used": "34428"
   }
 ]
-$ 
+$
 ```
 By using the `--headings` option, we now get a list of dictionaries and the heading for each column is used for the keys of the dictionaries.
 ### Input: regular expression with headings / Output: HTML
@@ -246,7 +246,7 @@ $ df | head -5 | oldtable -s \\s+ -r  --headings
 My _rotated_ style is a little hard to describe but it basically prints every column of every row on a separate line, indicating the row and column numbers.  Since headings were specified, the heading also appears along on every line.
 ### Input: regular expression without headings / Output: rotated
 ```
-$ df | head -5 | oldtable -s \\s+ -r  
+$ df | head -5 | oldtable -s \\s+ -r
 000000 00 Filesystem
 000000 01 1K-blocks
 000000 02 Used
@@ -277,7 +277,7 @@ $ df | head -5 | oldtable -s \\s+ -r
 000004 03 8123448
 000004 04 1%
 000004 05 /dev/shm
-$ 
+$
 ```
 Without the `--headings` option, the rotated output is a little different but not much.
 ### Input: fixed width / Output: JSON
@@ -285,102 +285,102 @@ Without the `--headings` option, the rotated output is a little different but no
 $ ls -l | drop 1 | oldtable --simple -f -j | head -40
 [
   [
-    "-rwxr-xr-x", 
-    "1", 
-    "mrbruno", 
-    "mrbruno", 
-    "1440", 
-    "Jan", 
-    "26", 
-    "07:15", 
+    "-rwxr-xr-x",
+    "1",
+    "mrbruno",
+    "mrbruno",
+    "1440",
+    "Jan",
+    "26",
+    "07:15",
     "abspath"
-  ], 
+  ],
   [
-    "-rwxr-xr-x", 
-    "1", 
-    "mrbruno", 
-    "mrbruno", 
-    "2771", 
-    "Mar", 
-    "29", 
-    "18:04", 
+    "-rwxr-xr-x",
+    "1",
+    "mrbruno",
+    "mrbruno",
+    "2771",
+    "Mar",
+    "29",
+    "18:04",
     "acp"
-  ], 
+  ],
   [
-    "-rwxr-xr-x", 
-    "1", 
-    "mrbruno", 
-    "mrbruno", 
-    "999", 
-    "Aug", 
-    "11", 
-    "2018", 
+    "-rwxr-xr-x",
+    "1",
+    "mrbruno",
+    "mrbruno",
+    "999",
+    "Aug",
+    "11",
+    "2018",
     "addcrs"
-  ], 
+  ],
 ```
 While coming up with this example, I actually had to add the `--simple-headings` option to treat the `ls` output a little differently because the headings were so close together.  I had code to try to retain embedded blanks in heading strings and the `--simple-headings` option disables that code.
 
 Note this example makes use of my [`drop`](drop.md) tool.
 ### Input: CSV / Output: JSON
 ```
-$ head -5 /home/mrbruno/repos/iyt/csv/20190407_102324_846368.csv 
+$ head -5 /home/mrbruno/repos/iyt/csv/20190407_102324_846368.csv
 Category,Game,GameID,User,UserID,WinLoss,Moves,Color,Date,Time
 Regular,Anti-Backgammon,15300064812762,Donna D,15200000663034,Win,189,white,18/12/16,16:58:00
 Regular,Anti-Backgammon,15300065319531,Danny Bad Boy,15200000782400,Win,31,black,18/08/28,08:53:00
 Regular,Anti-Backgammon,15300064893256,supermanwuvsme,15200003044703,Win,290,black,18/07/05,22:28:00
 Regular,Anti-Backgammon,15300064965692,pandagirl,15200003408150,Win,11,white,18/05/20,17:58:00
-$ head -5 /home/mrbruno/repos/iyt/csv/20190407_102324_846368.csv | oldtable --csv -j --headings 
+$ head -5 /home/mrbruno/repos/iyt/csv/20190407_102324_846368.csv | oldtable --csv -j --headings
 [
   {
-    "Category": "Regular", 
-    "Color": "white", 
-    "Date": "18/12/16", 
-    "Game": "Anti-Backgammon", 
-    "GameID": "15300064812762", 
-    "Moves": "189", 
-    "Time": "16:58:00", 
-    "User": "Donna D", 
-    "UserID": "15200000663034", 
+    "Category": "Regular",
+    "Color": "white",
+    "Date": "18/12/16",
+    "Game": "Anti-Backgammon",
+    "GameID": "15300064812762",
+    "Moves": "189",
+    "Time": "16:58:00",
+    "User": "Donna D",
+    "UserID": "15200000663034",
     "WinLoss": "Win"
-  }, 
+  },
   {
-    "Category": "Regular", 
-    "Color": "black", 
-    "Date": "18/08/28", 
-    "Game": "Anti-Backgammon", 
-    "GameID": "15300065319531", 
-    "Moves": "31", 
-    "Time": "08:53:00", 
-    "User": "Danny Bad Boy", 
-    "UserID": "15200000782400", 
+    "Category": "Regular",
+    "Color": "black",
+    "Date": "18/08/28",
+    "Game": "Anti-Backgammon",
+    "GameID": "15300065319531",
+    "Moves": "31",
+    "Time": "08:53:00",
+    "User": "Danny Bad Boy",
+    "UserID": "15200000782400",
     "WinLoss": "Win"
-  }, 
+  },
   {
-    "Category": "Regular", 
-    "Color": "black", 
-    "Date": "18/07/05", 
-    "Game": "Anti-Backgammon", 
-    "GameID": "15300064893256", 
-    "Moves": "290", 
-    "Time": "22:28:00", 
-    "User": "supermanwuvsme", 
-    "UserID": "15200003044703", 
+    "Category": "Regular",
+    "Color": "black",
+    "Date": "18/07/05",
+    "Game": "Anti-Backgammon",
+    "GameID": "15300064893256",
+    "Moves": "290",
+    "Time": "22:28:00",
+    "User": "supermanwuvsme",
+    "UserID": "15200003044703",
     "WinLoss": "Win"
-  }, 
+  },
   {
-    "Category": "Regular", 
-    "Color": "white", 
-    "Date": "18/05/20", 
-    "Game": "Anti-Backgammon", 
-    "GameID": "15300064965692", 
-    "Moves": "11", 
-    "Time": "17:58:00", 
-    "User": "pandagirl", 
-    "UserID": "15200003408150", 
+    "Category": "Regular",
+    "Color": "white",
+    "Date": "18/05/20",
+    "Game": "Anti-Backgammon",
+    "GameID": "15300064965692",
+    "Moves": "11",
+    "Time": "17:58:00",
+    "User": "pandagirl",
+    "UserID": "15200003408150",
     "WinLoss": "Win"
   }
 ]
-$ 
+$
 ```
 This input file is a list of games I've played.
 ## Notes

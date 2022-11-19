@@ -55,7 +55,7 @@ $ bingrep jobs < /bin/bash
 911874 'ns/../.././builtins/jobs.def\x00lpnxrs\x00jobs_bui'
 911890 'ins/jobs.def\x00lpnxrs\x00jobs_builtin\x00ahr\x00Unknown'
 914528 'pell\x00checkhash\x00checkjobs\x00checkwinsize\x00cmdhis'
-$ 
+$
 ```
 
 ## Notes

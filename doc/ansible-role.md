@@ -38,7 +38,7 @@ ok: [localhost] => {
 }
 
 PLAY RECAP ***************************************************************************************************************************************************************
-localhost                  : ok=2    changed=0    unreachable=0    failed=0   
+localhost                  : ok=2    changed=0    unreachable=0    failed=0
 
 $
 ```
@@ -65,7 +65,7 @@ ok: [localhost] => {
 }
 
 PLAY RECAP ***************************************************************************************************************************************************************
-localhost                  : ok=2    changed=0    unreachable=0    failed=0   
+localhost                  : ok=2    changed=0    unreachable=0    failed=0
 
 $
 ```
@@ -107,12 +107,12 @@ META: ran handlers
 META: ran handlers
 
 PLAY RECAP ***************************************************************************************************************************************************************
-localhost                  : ok=2    changed=0    unreachable=0    failed=0   
+localhost                  : ok=2    changed=0    unreachable=0    failed=0
 
-$ 
+$
 ```
 
 ## Notes
 
 - A temporary playbook is created and removed after running `ansible-playbook`.
-- You can use a relative or full path to the role directory which just gets specified in the playbook. 
+- You can use a relative or full path to the role directory which just gets specified in the playbook.

@@ -44,7 +44,7 @@
       regexp: "^{{item}}$"
       line: "{{item}}"
     with_items: "{{desired_lines}}"
-     
+
   vars:
     desired_lines:
       - "set -o vi"

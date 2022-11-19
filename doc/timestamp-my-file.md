@@ -17,9 +17,9 @@ Specify one or more files.
 $ touch foo
 $ timestamp-my-file foo
 renamed 'foo' -> 'foo_2022-03-13_15.47.55.525369'
-$ timestamp-my-file foo_2022-03-13_15.47.55.525369 
+$ timestamp-my-file foo_2022-03-13_15.47.55.525369
 2022-03-13 15:48:10,319 WARNING /home/mrbruno/bin/timestamp-my-file:56 foo_2022-03-13_15.47.55.525369 appears to already have timestamp
-$ 
+$
 ```
 
 ## Notes
