@@ -89,9 +89,6 @@ for host in hosts:
   processes[host] = subprocess.Popen(cmd, stdin=subprocess.PIPE if args.encode or args.tty else None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   if args.encode:
     processes[host].stdin.write(base64.b64encode(' '.join(remote_cmd).encode('utf-8')))
-    processes[host].stdin.close()
-  elif args.tty:
-    processes[host].stdin.close()
 
 secs = .1
 while processes:
@@ -103,39 +100,42 @@ while processes:
   for host in hosts:
     log.info(f'host: {host}')
     p = processes[host]
-    if p.poll() is not None:
-      if args.tty:
-        """
-          I'm not sure why this has to be done this but it isn't, output is screwed up (new lines seem advance the row but don't reset to column 1)
-          and I have to run the command myself to restore my login shell - command input is not echoed otherwise.
-        """
-        subprocess.Popen(['stty', 'sane']).wait()
+    if args.tty:
+      """
+        I'm not sure why this has to be done this but it isn't, output is screwed up (new lines seem advance the row but don't reset to column 1)
+        and I have to run the command myself to restore my login shell - command input is not echoed otherwise.
+      """
+      subprocess.Popen(['stty', 'sane']).wait()
 
-      if args.encode:
-        stdout = p.stdout.read().decode('utf-8')
-        stderr = p.stderr.read().decode('utf-8')
-      else:
-        (stdout, stderr) = p.communicate()
-        stdout = stdout.decode('utf-8')
-        stderr = stderr.decode('utf-8')
-      rc = p.wait()
-      if args.json:
-        output[host]['rc'] = rc
-        output[host]['stdout'] = stdout.splitlines()
-        output[host]['stderr'] = stderr.splitlines()
-        output[host]['stop'] = datetime.datetime.now()
-        output[host]['elapsed'] = str(output[host]['stop'] - output[host]['start'])
-        output[host]['stop'] = output[host]['stop'].isoformat()
-        output[host]['start'] = output[host]['start'].isoformat()
+    all_stdout = b''
+    all_stderr = b''
+    while p.poll() is None:
+      # try:
+      (stdout, stderr) = p.communicate(timeout=5)
+      all_stdout += stdout
+      all_stderr += stderr
+      log.info(f'stdout:{len(stdout)}, stderr:{len(stderr)}, all_stdout:{len(all_stdout)}, all_stderr:{len(all_stderr)}')
+      # except Exception as e:
+      #   log.info(f'Caught {e!s}')
 
-      else:
-        echo(host, sys.stdout, stdout)
-        echo(host, sys.stderr, stderr)
-      del processes[host]
-      if not args.json:
-        print('')
+    stdout = all_stdout.decode('utf-8')
+    stderr = all_stderr.decode('utf-8')
+
+    rc = p.wait()
+    if args.json:
+      output[host]['rc'] = rc
+      output[host]['stdout'] = stdout.splitlines()
+      output[host]['stderr'] = stderr.splitlines()
+      output[host]['stop'] = datetime.datetime.now()
+      output[host]['elapsed'] = str(output[host]['stop'] - output[host]['start'])
+      output[host]['stop'] = output[host]['stop'].isoformat()
+      output[host]['start'] = output[host]['start'].isoformat()
     else:
-      log.debug(f'{host} still running')
+      echo(host, sys.stdout, stdout)
+      echo(host, sys.stderr, stderr)
+    del processes[host]
+    if not args.json:
+      print('')
 
 if args.json:
   print(json.dumps(output, indent=2, sort_keys=True))
