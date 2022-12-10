@@ -53,6 +53,7 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`jsoncompare`](doc/jsoncompare.md)                             |                   | Compares JSON and/or YAML files, element by element                                                  |
 | [`lexec`](doc/lexec.md)                                         | Yes               | Locate executable files by pattern                                                                   |
 | [`megadiff`](doc/megadiff.md)                                   |                   | Compare two directories trees                                                                        |
+| [`megassh`](doc/megassh.md)                                     | Yes               | Execute a command on one or more remote targets                                                      |
 | [`more-head`](doc/more-head.md)                                 |                   | Display the top of a file, filling up the the screen                                                 |
 | [`nocrs`](doc/nocrs.md)                                         |                   | Remove carriage returns from files                                                                   |
 | [`oldtable`](doc/oldtable.md)                                   |                   | Parse data into a tabular form using a few input and output forms - replaced by _table_              |
@@ -62,7 +63,7 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`recentdownloads`](doc/recentdownloads.md)                     |                   | Find recently downloaded files                                                                       |
 | [`SecureKeyValues`](doc/SecureKeyValues.md)                     |                   | Manage secure key value stores                                                                       |
 | [`side-diff`](doc/side-diff.md)                                 | Yes               | Perform side-by-side compare, utilizing all of the screen width                                      |
-| [`ssh-exec`](doc/ssh-exec.md)                                  |                   | Execute a script on a remote host                                                                    |
+| [`ssh-exec`](doc/ssh-exec.md)                                   |                   | Execute a script on a remote host                                                                    |
 | [`strip-trailing-whitespace`](doc/strip-trailing-whitespace.md) |                   | Strip trailing whitespace from one or more files                                                     |
 | [`supercd.sh`](doc/supercd.sh.md)                               | Yes               | Change to a directory that matches a pattern                                                         |
 | [`table`](doc/table.md)                                         | Yes               | Parse data into a tabular form using several input and output forms - more flexible than _oldtable_  |
