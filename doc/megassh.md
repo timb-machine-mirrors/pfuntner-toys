@@ -187,3 +187,4 @@ Thinking back, I probably could have done this without `megassh` as long as esca
     ```
 
     In fact, I think Ansible inspired me to come up with this tool but such adhoc commands can be kind of cryptic.  Ansible has its own way of marshalling actions on a remote machine so it avoids the problem with encoding commands.  I think it uses temporary custom Python scripts.
+- I feel like I should apologize for the examples.  I wish I could have started some diverse remote systems but there are no cloud providers where I could create an instance for free.  So what I did was I created local virtual machines with VirtualBox set up so I could `ssh` into them.  I probably could have found more diverse systems than two Ubuntu 20 machines but I didn't.
