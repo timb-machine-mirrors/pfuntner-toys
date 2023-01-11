@@ -28,6 +28,7 @@ def formatTime(secs=None):
 parser = argparse.ArgumentParser(description='dowhile')
 parser.add_argument('-d', '--delay', type=int, default=15, help='Number of seconds between execution (default: 15 seconds)')
 parser.add_argument('-v', '--debug', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
+parser.add_argument('-m', '--max-iterations', type=int, help='Maxium number of iterations (default: none)')
 
 group = parser.add_mutually_exclusive_group()
 group.add_argument('-i', '--include', help='Execute as long as the output contains regular expression')
@@ -89,6 +90,10 @@ while not done:
     break
   elif args.fail and rc == 0:
     log.info(f'Command exited with {rc}')
+    break
+
+  if args.max_iterations is not None and iteration >= args.max_iterations:
+    log.warning(f'Bailing out after {iteration} iterations')
     break
 
   time.sleep(args.delay)
