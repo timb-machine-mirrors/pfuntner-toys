@@ -45,8 +45,8 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-if not any([bool(args.include != None), bool(args.exclude != None), bool(args.successful), bool(args.fail)]):
-  parser.error('At least -i/-x or -s/-f must be specified')
+if not any([bool(args.include != None), bool(args.exclude != None), bool(args.successful), bool(args.fail), args.max_iterations is not None]):
+  parser.error('At least -i/-x, -s/-f, or --max-iterations must be specified')
 
 if args.include:
   args.include = re.compile(args.include)
@@ -93,7 +93,7 @@ while not done:
     break
 
   if args.max_iterations is not None and iteration >= args.max_iterations:
-    log.warning(f'Bailing out after {iteration} iterations')
+    log.warning(f'Stopping after {iteration} iterations')
     break
 
   time.sleep(args.delay)
