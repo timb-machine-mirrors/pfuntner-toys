@@ -36,7 +36,6 @@ def process(filename, amt):
       print('\n'.join(lines[:end]))
 
   if file and filename:
-    print("")
     file.close()
 
 amt = None
