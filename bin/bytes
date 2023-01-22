@@ -16,7 +16,7 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
-control_chracter_map = {
+control_character_map = {
   '\n': '\\n',
   '\t': '\\t',
   '\b': '\\b',
@@ -26,8 +26,8 @@ control_chracter_map = {
 if sys.stdin.isatty():
   parser.error('stdin must be redirected')
 
-while true:
+while True:
   c = sys.stdin.read(1)
-  if c is None:
+  if c is None or c == '':
     break
-  print(control_chracter_map.get(c, c))
+  print(control_character_map.get(c, c))
