@@ -64,7 +64,10 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 /2/name 'centos-8-v20191121'
 """
 
-(rc, stdout, stderr) = run('gcloud compute images list --format=json')
+cmd = 'gcloud compute images list --format=json'
+if args.project:
+  cmd += f' --project {args.project}'
+(rc, stdout, stderr) = run(cmd)
 images = sorted(json.loads(stdout), key=lambda image: image['name'])
 
 pos = 0
