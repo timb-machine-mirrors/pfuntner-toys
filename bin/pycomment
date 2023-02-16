@@ -19,6 +19,7 @@ def all_commented_out(lengths):
 
 parser = argparse.ArgumentParser(description='vi filter to comment out code (Python, etc)')
 parser.add_argument('-t', '--token', default='#', help='Token to comment out a line.  Default: `#`')
+parser.add_argument('-a', '--all', action='store_true', help='Comment all lines, even blank lines')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -53,7 +54,10 @@ else:
     least_indent = min(indents)
     regexp = re.compile('(^\s{{{least_indent}}})'.format(**locals()))
     for (pos, newline) in enumerate(newlines):
-      newlines[pos] = regexp.sub(r'\1' + args.token + ' ', newline)
+      if regexp.search(newline):
+        newlines[pos] = regexp.sub(r'\1' + args.token + ' ', newline)
+      elif args.all:
+        newlines[pos] = f'{" "*least_indent}# {newline}'
 
 if errors:
   print('\n'.join(lines))
