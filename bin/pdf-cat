@@ -21,7 +21,7 @@ text = ''
 
 with open(args.file, 'rb') as stream:
   for canvas in SimplePDFViewer(stream):
-    print(''.join(canvas.strings), end='')
+    print(' '.join(canvas.strings), end='')
 print()
 
 #   for page_num in range(reader.numPages):
