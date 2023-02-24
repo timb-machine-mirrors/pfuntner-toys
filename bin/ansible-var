@@ -23,6 +23,7 @@ parser = argparse.ArgumentParser(description='Print values of Ansible variables'
 parser.add_argument('vars', help='Ansible variable(s) to report, comma-delimited')
 parser.add_argument('hosts', help='Host(s) to examine, comma-delimited')
 parser.add_argument('-d', '--docker', action='store_true', help='Use docker connection')
+parser.add_argument('-b', '--become', action='store_true', help='Escalate user')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -54,4 +55,4 @@ for var in args.vars.split(','):
 stream.flush()
 
 run(f'cat {stream.name}')
-run('ansible-playbook {opts} {stream_name}'.format(stream_name=stream.name, opts=f'-c docker -i {args.hosts},' if args.docker else ''), capture=False)
+run('ansible-playbook {become} {opts} {stream_name}'.format(stream_name=stream.name, become='--become' if args.become else '', opts=f'-c docker -i {args.hosts},' if args.docker else ''), capture=False)
