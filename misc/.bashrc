@@ -91,6 +91,7 @@ alias vact='. venv/bin/activate'
 
 alias fixed2json='table.py -i fixed --headings -o json'
 alias fixed2sep='table.py -i fixed --headings -o sep --sep \|'
+alias fixed2markdown='table.py -i fixed --headings -o markdown'
 
 unalias docker 2>/dev/null
 # set up docker alias if docker is not available but podman is
