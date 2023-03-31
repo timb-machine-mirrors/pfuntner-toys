@@ -18,10 +18,10 @@ def dive(path):
 
   if not ('/.' in path or '/Downloads' in path or '/third-party' in path or '/__pycache__' in path):
 
-    if match(os.path.basename(path)) and os.path.isdir(path) and not os.path.islink(path):
-      ret.append(path)
+    if not os.path.islink(path) and os.path.isdir(path):
+      if match(os.path.basename(path)):
+        ret.append(path)
 
-    if os.path.isdir(path):
       children = list()
       try:
         children = os.listdir(path)
