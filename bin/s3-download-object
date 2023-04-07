@@ -5,13 +5,14 @@ import sys
 import shlex
 import logging
 import argparse
+import configparser
 
 import boto3
 
 parser = argparse.ArgumentParser(description='Manage signatures of container images')
 parser.add_argument('s3_bucket_name', help='Name of S3 bucket')
 parser.add_argument('s3_object_name', help='Name of S3 object')
-parser.add_argument('-e', '--encoding', default='utf-8', help='Encoding with which to decode the byte string')
+parser.add_argument('-p', '--profile', default='default', help='Profile (section) to use from ~/.aws/credentials')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -19,9 +20,25 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger(sys.argv[0])
 log.setLevel(logging.INFO - (args.verbose or 0)*10)
 
+config_filename = os.path.expanduser('~/.aws/credentials')
+access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
+secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
+if not (access_key_id and secret_access_key):
+  if os.path.isfile(config_filename):
+    config_parser = configparser.ConfigParser()
+    with open(config_filename) as stream:
+      config_parser.read_file(stream)
+    if args.profile in config_parser.sections():
+      access_key_id = config_parser[args.profile].get('aws_access_key_id')
+      secret_access_key = config_parser[args.profile].get('aws_secret_access_key')
+    else:
+      parser.error(f'Cannot find {args.profile} profile in {config_filename}')
+if not (access_key_id and secret_access_key):
+  parser.error(f'Set your AWS credentials via AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY environment variables or {config_filename}')
+
 s3_session = boto3.Session(
-    aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
-    aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY')
+    aws_access_key_id=access_key_id,
+    aws_secret_access_key=secret_access_key,
 )
 s3_client = s3_session.client('s3', region_name='us-east-1')
 
