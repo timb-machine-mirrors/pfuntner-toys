@@ -1,0 +1,52 @@
+#! /usr/bin/env python3
+
+import os
+import sys
+import shlex
+import logging
+import argparse
+
+import boto3
+
+parser = argparse.ArgumentParser(description='Manage signatures of container images')
+parser.add_argument('s3_bucket_name', help='Name of S3 bucket')
+parser.add_argument('s3_object_name', help='Name of S3 object')
+parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
+args = parser.parse_args()
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger(sys.argv[0])
+log.setLevel(logging.INFO - (args.verbose or 0)*10)
+
+s3_session = boto3.Session(
+    aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
+    aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY')
+)
+s3_client = s3_session.client('s3', region_name='us-east-1')
+
+try:
+    response = s3_client.get_object(
+        Bucket=args.s3_bucket_name,
+        Key=args.s3_object_name,
+    )
+except Exception as get_exception:
+    parser.error(f'Could not get {args.s3_object_name} object in {args.s3_bucket_name}: {get_exception!s}')
+
+log.debug(f'Got: {response}')
+
+print(f'Delete {args.s3_object_name} object in {args.s3_bucket_name}?')
+print('Type `yes` to delete ===> ', end='')
+answer = sys.stdin.readline()
+
+if answer.strip() == 'yes':
+  try:
+      response = s3_client.delete_object(
+          Bucket=args.s3_bucket_name,
+          Key=args.s3_object_name,
+      )
+  except Exception as delete_exception:
+    parser.error(f'Could not delete {args.s3_object_name} object in {args.s3_bucket_name}: {delete_exception!s}')
+
+  print(f'{args.s3_object_name} deleted from {args.s3_bucket_name}')
+else:
+  print(f'{args.s3_object_name} NOT deleted from {args.s3_bucket_name}')
