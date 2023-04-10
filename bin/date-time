@@ -160,6 +160,33 @@ class Date002Processor(object):
     return ret
 
 
+class Date996Processor(object):
+  # Process '00:00:00'
+  date_time_format = '%H:%M:%S'
+
+  @classmethod
+  def get_specimen(cls):
+    return now.strftime(cls.date_time_format)
+
+  @classmethod
+  def process(cls, specimen):
+    ret = None
+
+    log.debug(f'{cls.__name__} testing {specimen!r}')
+    pattern = make_regexp_pattern(cls.date_time_format)
+    match = re.search(pattern, specimen)
+    log.debug(f'match groups from {pattern!r}: {match.groups() if match else None}')
+    if match:
+      ret = datetime.datetime.strptime(match.group(0), cls.date_time_format)
+
+    if ret is None:
+      log.debug(f'{cls.__name__} does not recognize {specimen!r}')
+    else:
+      log.info(f'{cls.__name__} interpreted {specimen!r} as {ret!r}')
+
+    return ret
+
+
 class Date997Processor(object):
   # Process '1970-01-01T00:00:00'
   date_time_format = '%Y-%m-%dT%H:%M:%S'
