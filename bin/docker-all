@@ -135,7 +135,7 @@ if rc == 0:
         process['State']['Status'],
         process.get('GraphDriver', {}).get('Data', {}).get('UpperDir', 'n/a'),
       ))
-    table = Table('ID', 'Name', 'Created', 'Elapsed', 'Image', 'Image ID', 'Arch', 'Status', 'Path')
+    table = Table('ID', 'Name', 'Created (UTC)', 'Elapsed', 'Image', 'Image ID', 'Arch', 'Status', 'Path')
     for row in sorted(rows, key=lambda row: row[2], reverse=True):
       table.add(*row)
     table.close()
@@ -165,7 +165,7 @@ if images:
       ', '.join(tags),
     ))
 
-  table = Table('ID', 'Tag', 'Arch', 'Created', 'Other tags')
+  table = Table('ID', 'Tag', 'Arch', 'Created (UTC)', 'Other tags')
   for row in sorted(rows, key=lambda row: row[2], reverse=True):
     table.add(*row)
   table.close()
