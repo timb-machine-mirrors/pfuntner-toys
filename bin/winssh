@@ -57,13 +57,13 @@ command += [args.dest] + args.command
 
 log.info(f'command: {command}')
 
-if not args.no_title:
+if sys.stdout.isatty() and not args.no_title:
   subprocess.Popen(f'set-title {args.dest}', shell=True).wait()
 
 p = subprocess.Popen(command)
 rc = p.wait()
 
-if not args.no_title:
+if sys.stdout.isatty() and not args.no_title:
   subprocess.Popen('set-title --self', shell=True).wait()
 
 exit(rc)
