@@ -5,6 +5,7 @@ import sys
 import signal
 import string
 import logging
+import datetime
 import argparse
 
 from color import Color
@@ -20,6 +21,9 @@ def toCenter(s, width):
   return s.center(width)
 
 def process(lines):
+  if args.timestamp:
+    lines = [datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')] + lines
+
   if args.wide_enough:
     banner_width = max([max([len(word) for word in line.split()]) for line in lines])
   else:
@@ -74,6 +78,7 @@ group.add_argument('-w', '--width', type=int, help='Specify the maximum width of
 group.add_argument('-s', '--screen-width', action='store_true', help='Restrict banner width to screen width')
 group.add_argument('-W', '--wide-enough', action='store_true', help='Restrict banner to longest word - useful when you have long words')
 
+parser.add_argument('-t', '--timestamp', action='store_true', help='Include timestamp in message')
 parser.add_argument('--color', type=Color.get_color,
                     help='Choose a color: {colors}'.format(colors=', '.join(Color.colors.keys())))
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
@@ -125,7 +130,7 @@ Color.print_color(args.color)
 if args.args:
   process([' '.join(args.args)])
 else:
-  process(sys.stdin.read().strip('\n').split('\n'))
+  process(sys.stdin.read().splitlines())
 
 if args.color:
   reset()
