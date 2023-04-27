@@ -7,7 +7,7 @@ import logging
 import argparse
 
 def see(s):
-  ret = repr(s.decode())
+  ret = repr(s.decode() if args.files else s)
   if args.hits_only and len(ret) >= 1:
     ret = ret[1:-1]
   return ret
@@ -52,7 +52,7 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 if not args.files and sys.stdin.isatty():
   parser.error('stdin must be redirected if no filenames are specified on command line')
 
-regexp = re.compile(args.regexp.encode())
+regexp = re.compile(args.regexp.encode() if args.files else args.regexp)
 
 if args.files:
   for filename in args.files:
