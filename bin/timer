@@ -39,7 +39,7 @@ start = datetime.datetime.now()
 if args.count_up:
   while True:
     now = datetime.datetime.now()
-    sys.stdout.write(("\r%s %.2f      " % (now, (now-start).total_seconds())))
+    sys.stdout.write(("\r%s %s      " % (now, str(now-start))))
     time.sleep(0.25)
 else:
   stop = start + datetime.timedelta(seconds=secs)
