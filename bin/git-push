@@ -47,5 +47,7 @@ if match:
     log.warning(f'Not running: {cmd!r}')
   else:
     (rc, stdout, stderr) = run(cmd, capture=False)
+    exit(rc)
 else:
   parser.error('Could not determine current branch')
+  exit(1)
