@@ -70,3 +70,4 @@ $
 
 - If no files are specified, the script will read from stdin and write the updated lines to stdout
 - The script is not designed for binary files but it does pass over them without much fuss.
+- I like to use this at work for repos where several engineers contribute.  Trailing blanks are easy to overlook and they look silly in `git diff` output.  I like to clean them up, even if it is just appeasing my OCD.
