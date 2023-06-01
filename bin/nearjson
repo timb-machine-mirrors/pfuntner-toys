@@ -43,7 +43,7 @@ def pop(c):
       #   - None, True, False are present - null, true, false are "ok" but only because we have "aliases"
       #   - Single or double quotes are used for strings
       struct = eval(substr)
-      print(json.dumps(struct))
+      json.dump(struct, sys.stdout, indent=2)
     except Exception as e:
       log.info(f'Caught {e!s} processing {substr!r} as JSON')
       try:
@@ -54,7 +54,7 @@ def pop(c):
         #   - There are no unicode, byte strings
         log.info(f'Re-evaluating as JSON structure')
         struct = json.loads(substr)
-        print(json.dumps(struct))
+        json.dump(struct, sys.stdout, indent=2)
       except Exception as e:
         log.info(f'Caught {e!s} processing {substr!r} as JSON')
 
