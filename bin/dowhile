@@ -29,6 +29,7 @@ parser = argparse.ArgumentParser(description='dowhile')
 parser.add_argument('-d', '--delay', type=int, default=15, help='Number of seconds between execution (default: 15 seconds)')
 parser.add_argument('-v', '--debug', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 parser.add_argument('-m', '--max-iterations', type=int, help='Maxium number of iterations (default: none)')
+parser.add_argument('-b', '--brief', action='store_true', help='Use brief display mode')
 
 group = parser.add_mutually_exclusive_group()
 group.add_argument('-i', '--include', help='Execute as long as the output contains regular expression')
@@ -61,7 +62,8 @@ iteration = 0
 done = False
 while not done:
   iteration += 1
-  banner(f'''{iteration}: {formatTime()} (+{remove_fractions_of_seconds.sub('', str(datetime.datetime.now()-start))})''')
+  if not args.brief:
+    banner(f'''{iteration}: {formatTime()} (+{remove_fractions_of_seconds.sub('', str(datetime.datetime.now()-start))})''')
   log.info(args.cmd)
   p = subprocess.Popen(
     args.cmd,
@@ -75,10 +77,15 @@ while not done:
     stdout = ''
     stderr = ''
   rc = p.wait()
-  if args.include or args.exclude:
-    sys.stdout.write(stdout)
-    sys.stderr.write(stderr)
-  print('')
+
+  if args.brief:
+    print(f'''{iteration:4} {formatTime()} +{remove_fractions_of_seconds.sub('', str(datetime.datetime.now()-start))} {repr(stdout.strip())[1:-1]} {repr(stderr.strip())[1:-1]}''')
+  else:
+    if args.include or args.exclude:
+      sys.stdout.write(stdout)
+      sys.stderr.write(stderr)
+    print('')
+
   if args.include and not args.include.search(str(stdout + stderr)):
     log.info(f'Command does not have {args.include.pattern!r}')
     break
