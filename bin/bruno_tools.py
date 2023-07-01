@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+import re
 import shlex
 import subprocess
 
@@ -32,6 +33,18 @@ def run(cmd, stdin=None, capture=True, shell=False, log=None):
   if log:
     log.debug('Executed {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
   return (rc, stdout, stderr)
+
+
+class JustifyLeft(str):
+  pass
+
+
+class JustifyRight(str):
+  pass
+
+
+numeric_regexp = re.compile('^[+-]?\d*\.?\d\d*\.?%?$')
+
 
 class Table(object):
     """
@@ -68,11 +81,27 @@ class Table(object):
         # assure the number of cells matches the number of headings
         assert len(columns) == len(self.data[0])
 
-        self.data.append(list(map(str, columns)))
+        row = list()
+        for datum in columns:
+           if isinstance(datum, JustifyLeft) or isinstance(datum, JustifyRight):
+               row.append(datum)
+           else:
+               row.append(str(datum))
+        self.data.append(row)
 
         # recalculate the maximum columns widths
         for (column_number, column) in enumerate(self.data[-1]):
             self.widths[column_number] = max(self.widths[column_number], len(column))
+
+
+    @staticmethod
+    def justify(datum, width):
+        justifier = datum.ljust
+
+        if isinstance(datum, JustifyRight) or ((not isinstance(datum, JustifyLeft)) and numeric_regexp.search(datum)):
+            justifier = datum.rjust
+
+        return justifier(width)
 
     def __str__(self):
         """
@@ -86,7 +115,7 @@ class Table(object):
           self.banner = False
 
         for row_num in range(len(self.data)):
-            ret.append(('  '.join([self.data[row_num][col_num].ljust(self.widths[col_num]) for col_num in range(len(self.data[0]))])).rstrip())
+            ret.append(('  '.join([self.justify(self.data[row_num][col_num], self.widths[col_num]) for col_num in range(len(self.data[0]))])).rstrip())
 
         return '\n'.join(ret)
 
