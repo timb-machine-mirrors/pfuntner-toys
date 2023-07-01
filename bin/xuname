@@ -76,5 +76,4 @@ for host in args.hosts:
     log.info(f'host={host} option={option}: {rc}, {stdout!r}, {stderr!r}')
     if rc == 0 and stdout:
       resp[host][option] = stdout.strip()
-json.dump(resp, sys.stdout)
-print()
+json.dump(resp, sys.stdout, indent=2)
