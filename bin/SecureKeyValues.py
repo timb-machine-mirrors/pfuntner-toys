@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python
 
 import os
 import re
@@ -12,47 +12,25 @@ import logging
 import argparse
 import datetime
 
-def syntax(msg=None):
-  if msg:
-    sys.stderr.write(msg + "\n")
-  parser.print_help(sys.stderr)
-  exit(1)
-
 def berate(s):
   global output
 
   if args.jsonOutput:
-    if not ("errors" in output):
-      output["errors"] = [s]
+    if not ('errors' in output):
+      output['errors'] = [s]
     else:
-      output["errors"].append(s)
+      output['errors'].append(s)
   else:
-    log.info("%s" % s)
+    log.info(s)
 
 def announce(name, value, whisperName=False):
   if args.jsonOutput:
-    output["pairs"][name] = value
+    output['pairs'][name] = value
   else:
     if whisperName:
       print(value)
     else:
-      print("%s: %s" % (name, value))
-
-def tryHome(name):
-  ret = None
-  if (name in os.environ) and os.path.isdir(os.environ[name]):
-    ret = os.environ[name]
-  return ret
-
-def getHome():
-  ret = None
-
-  ret = tryHome("HOME")
-  if not ret:
-    ret = tryHome("USERPROFILE")
-
-  assert ret, "Cannot determine your home directory"
-  return ret
+      print(f'{name}: {value!r}')
 
 class SecureKeyValues:
   def __init__(self, filename, key=None, keyPromptForMissingFile=True, ssh=False):
@@ -69,15 +47,15 @@ class SecureKeyValues:
       else:
         self.filename = os.path.join(os.getcwd(), filename)
     else:
-      self.filename = os.path.join("%s/.private" % getHome(), filename)
+      self.filename = os.path.expanduser(os.path.join('~', '.private', filename))
 
-    log.debug('store is {self.filename}'.format(**locals()))
+    log.debug(f'store is {self.filename}')
 
     if ssh and (not key):
-      sshFilename = '%s/.ssh/id_rsa' % getHome()
+      sshFilename = os.path.expanduser('~/.ssh/id_rsa')
       if os.path.isfile(sshFilename):
-        log.debug('Reading {sshFilename}'.format(**locals()))
-        with open(sshFilename) as stream:
+        log.debug(f'Reading {sshFilename!r}')
+        with open(sshFilename, 'r') as stream:
           key = ''.join([line for line in stream.read().splitlines() if not re.match('---', str(line))])
           log.debug('ssh private key is {bytes} bytes long'.format(bytes=len(key)))
 
@@ -88,28 +66,24 @@ class SecureKeyValues:
         if key:
           self.simpleKey = key
         else:
-          self.simpleKey = getpass.getpass("Key for %s: " % repr(self.simpleFilename))
+          self.simpleKey = getpass.getpass(f'Enter key for {self.filename!r}: ')
 
         hash = hashlib.md5()
-        hash.update(self.simpleKey.encode('utf-8'))
-        self.key = base64.b64encode(hash.hexdigest())
+        hash.update(self.simpleKey.encode())
+        self.key = base64.b64encode(hash.hexdigest().encode())
 
         try:
           fernet = __import__('cryptography.fernet', fromlist=['Fernet'])
           self.fernet = fernet.Fernet(self.key)
         except Exception as e:
-          log.info('Caught `{e!s}` trying to load cryptography.fernet'.format(**locals()))
-          return
+          raise Exception(f'Caught `{e!s}` trying to load cryptography.fernet')
 
-        if os.path.isfile(self.filename):
-          with open(self.filename, 'r') as f:
-            try:
-              self.store = json.loads(self.fernet.decrypt(f.read()))
-              self.exists = True
-              done = True
-            except Exception as e:
-              sys.stderr.write("Exception: %s ... try again\n" % repr(e))
-              key = None
+        if os.path.isfile(self.filename) and os.path.getsize(self.filename):
+          with open(self.filename, 'rb') as f:
+            self.store = json.loads(self.fernet.decrypt(f.read()))
+            log.debug('Store is read')
+            self.exists = True
+            done = True
         else:
           """
             The lack of a store file is not a problem.  It will get created once
@@ -123,7 +97,7 @@ class SecureKeyValues:
       root = self.store
 
     if type(key) != list:
-      key = key.split("/")
+      key = key.split('/')
 
     if key[0] in root:
       return root[key[0]] if len(key) == 1 else self.get(key[1:], root[key[0]])
@@ -135,7 +109,7 @@ class SecureKeyValues:
       root = self.store
 
     if type(key) != list:
-      key = key.split("/")
+      key = key.split('/')
 
     if len(key) > 1:
       if key[0] not in root:
@@ -157,22 +131,23 @@ class SecureKeyValues:
     global log
 
     if os.path.isfile(self.filename):
-      backup =  self.filename + "D" + datetime.datetime.now().isoformat().replace(':', '')
-      log.info('Backing up {self.filename} to {backup}'.format(**locals()))
+      backup =  f'{self.filename}D{datetime.datetime.now().isoformat().replace(":", "")}'
+      log.info(f'Backing up {self.filename!r} to {backup!r}')
       os.rename(self.filename, backup)
     else:
       dir = os.path.dirname(self.filename)
       if not os.path.isdir(dir):
         os.mkdir(dir, 0o700)
-    log.info('Saving store to {self.filename}'.format(**locals()))
-    with open(self.filename, 'w') as f:
-      f.write(self.fernet.encrypt(json.dumps(self.store)))
+    log.info(f'Saving store to {self.filename}')
+    with open(self.filename, 'wb') as f:
+      os.chmod(self.filename, 0o600)
+      f.write(self.fernet.encrypt(json.dumps(self.store).encode()))
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
 
-if __name__ == "__main__":
-  output = {"pairs": {}}
+if __name__ == '__main__':
+  output = {'pairs': {}}
 
   """
     `staticStringRegexp` is a regular expression that let's us
@@ -186,10 +161,10 @@ if __name__ == "__main__":
       -u fooar -p bar
       $
   """
-  staticStringRegexp = re.compile("^['\"](.+)['\"]$")
+  staticStringRegexp = re.compile('''^['"](.+)['"]$''')
 
   parser = argparse.ArgumentParser(description='A manager of secure stores')
-  parser.add_argument('-o', '--operation', dest='operation', help='Secure store operation', choices=['read', 'get', 'set', 'remove', 'test'], required=True)
+  parser.add_argument('-o', '--operation', dest='operation', help='Secure store operation', choices=['read', 'list', 'get', 'set', 'remove', 'test'], required=True)
   parser.add_argument('-s', '--store', dest='storeName', help='Name of secure store')
 
   group = parser.add_mutually_exclusive_group()
@@ -201,36 +176,37 @@ if __name__ == "__main__":
   parser.add_argument('args', metavar='arg', nargs='*', help='Additional arguments, dependent on operation')
   args = parser.parse_args()
 
-  log.setLevel(logging.DEBUG if args.verbose else logging.ERROR)
+  log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-  if args.operation != "test" and (not args.storeName):
-    syntax('Use -s/--store to specify secure store')
+  if args.operation != 'test' and (not args.storeName):
+    parser.error('Use -s/--store to specify secure store')
 
-  if args.operation == "test":
-    store = SecureKeyValues("test", "this is a test")
-    print("store file: %s" % store.filename)
+  if args.operation == 'test':
+    store = SecureKeyValues('test', 'this is a test')
+    print(f'store file: {store.filename!r}')
     keys = store.keys()
-    print("keys: %s" % keys)
+    print(f'keys: {list(keys)}')
+    now = str(datetime.datetime.now())
     if keys:
       for key in keys:
-        print("%s: %s" % (key, store.get(key)))
-      store.put("runs", [str(datetime.datetime.now())] + store.get("runs"))
+        print(f'{key}: {store.get(key)!r}')
+      store.put('runs', [now] + store.get('runs'))
     else:
-      store.put("one", 1)
-      store.put("two", 2)
-      store.put("one hundred", 100)
-      store.put("runs", [])
+      store.put('one', 1)
+      store.put('two', 2)
+      store.put('one hundred', 100)
+      store.put('runs', [now])
     store.write()
   else:
-    store = SecureKeyValues(args.storeName, args.key, keyPromptForMissingFile=(args.operation != "read"), ssh=args.ssh)
-    keyvalue_regexp = re.compile("^([^=]+)=(.+)$")
-    key_regexp = re.compile("^(\w[^=]*\w+)$")
-    if args.operation == "read":
+    store = SecureKeyValues(args.storeName, args.key, keyPromptForMissingFile=(args.operation != 'read'), ssh=args.ssh)
+    keyvalue_regexp = re.compile('^([^=]+)=(.+)$')
+    key_regexp = re.compile('^(\w[^=]*\w+)$')
+    if args.operation == 'read':
       if not store.exists:
-        berate("%s does not exist" % repr(store.filename))
+        berate(f'{store.filename!r} does not exist')
       for key in store.keys():
         announce(key, store.get(key))
-    elif args.operation == "set":
+    elif args.operation == 'set':
       if not args.args and sys.stdin.isatty():
         args.args = sys.stdin.read().strip('\n').split('\n')
       for arg in args.args:
@@ -242,20 +218,29 @@ if __name__ == "__main__":
           if match:
             store.put(match.group(1), getpass.getpass('Enter value for {name!r}: '.format(name=match.group(1))))
           else:
-            parser.error('{arg!r} is neither a valid key nor key/value pair'.format(**locals()))
+            raise Exception(f'{arg!r} is neither a valid key nor key/value pair')
       store.write()
-    elif args.operation == "remove":
+    elif args.operation == 'remove':
       for arg in args.args:
         store.remove(arg)
       store.write()
-    elif args.operation == "get":
-      for arg in args.args:
-        match = staticStringRegexp.search(str(arg))
-        if match:
-          if (not args.jsonOutput):
-            print(match.group(1))
-        else:
-          announce(arg, store.get(arg), whisperName=True)
+    elif args.operation == 'list':
+      print(f'Keys: {list(store.keys())}')
+    elif args.operation == 'get':
+      if sys.stdout.isatty():
+        log.fatal('Stdout must be redirected')
+        exit(1)
+
+      if args.args:
+        for arg in args.args:
+          match = staticStringRegexp.search(str(arg))
+          if match:
+            if (not args.jsonOutput):
+              print(match.group(1))
+          else:
+            announce(arg, store.get(arg), whisperName=True)
+      else:
+        parser.error('At least one key is required for `get` operation')
 
   if args.jsonOutput:
     print(json.dumps(output, indent=2, sort_keys=True))
