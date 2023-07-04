@@ -38,24 +38,24 @@ if args.ssh:
   sshFilename = '%s/.ssh/id_rsa' % (os.environ.get('HOME') or os.environ.get('USERPROFILE'))
 
   if os.path.isfile(sshFilename):
-    log.debug('Reading {sshFilename}'.format(**locals()))
+    log.debug(f'Reading {sshFilename!r}')
     with open(sshFilename) as stream:
       secret = ''.join([line for line in stream.read().splitlines() if not re.match('---', str(line))])
       log.debug('ssh private key is {bytes} bytes long'.format(bytes=len(secret)))
   else:
-    log.info('Did not find {sshFielname}'.format(**locals()))
+    log.info(f'Did not find {sshFilename!r}')
 
 if secret is None:
   secret = getpass.getpass('Encryption key: ')
 
 hash = hashlib.md5()
 hash.update(secret.encode('utf-8'))
-fernet = Fernet(base64.b64encode(hash.hexdigest()))
+fernet = Fernet(base64.b64encode(hash.hexdigest().encode()))
 
-data = sys.stdin.read()
+data = os.fdopen(sys.stdin.fileno(), 'rb').read()
 if encrypt:
   result = fernet.encrypt(data)
 else:
   result = fernet.decrypt(data)
 
-sys.stdout.write(result)
+sys.stdout.write(result.decode())
