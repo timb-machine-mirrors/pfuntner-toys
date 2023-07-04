@@ -33,8 +33,25 @@ def announce(name, value, whisperName=False):
       print(f'{name}: {value!r}')
 
 class SecureKeyValues:
-  def __init__(self, filename, key=None, keyPromptForMissingFile=True, ssh=False):
-    global log
+  """
+  Manage a secure dictionary file
+  """
+
+  def __init__(self, filename, key=None, keyPromptForMissingFile=True, ssh=False, log=None):
+    """
+    Constructor
+
+    Args:
+      filename (str): Path to secure file.  If it has no directory component, `~/private/` is used as the parent directory
+      key (str): Encryption key
+      keyPromptForMissingFile (bool): Control whether the class will prompt for a key it not supplied
+      ssh (bool): Control whether to use `~/.ssh/rsa_id` for the encryption key
+      log (logging.RootLogger): The caller's Logger for debugging.  This can be `None` if the caller doesn't have a
+                                logger or doesn't want to use its logger for some reason.  In that case, an internal
+                                logger is used.
+
+    """
+    self.log = log if log else globals()['log']
 
     self.simpleFilename = filename
     self.store = {}
@@ -49,15 +66,15 @@ class SecureKeyValues:
     else:
       self.filename = os.path.expanduser(os.path.join('~', '.private', filename))
 
-    log.debug(f'store is {self.filename}')
+    self.log.debug(f'store is {self.filename}')
 
     if ssh and (not key):
       sshFilename = os.path.expanduser('~/.ssh/id_rsa')
       if os.path.isfile(sshFilename):
-        log.debug(f'Reading {sshFilename!r}')
+        self.log.debug(f'Reading {sshFilename!r}')
         with open(sshFilename, 'r') as stream:
           key = ''.join([line for line in stream.read().splitlines() if not re.match('---', str(line))])
-          log.debug('ssh private key is {bytes} bytes long'.format(bytes=len(key)))
+          self.log.debug('ssh private key is {bytes} bytes long'.format(bytes=len(key)))
 
     if keyPromptForMissingFile or os.path.exists(self.filename):
       done = False
@@ -81,7 +98,7 @@ class SecureKeyValues:
         if os.path.isfile(self.filename) and os.path.getsize(self.filename):
           with open(self.filename, 'rb') as f:
             self.store = json.loads(self.fernet.decrypt(f.read()))
-            log.debug('Store is read')
+            self.log.debug('Store is read')
             self.exists = True
             done = True
         else:
@@ -93,6 +110,17 @@ class SecureKeyValues:
           done = True
 
   def get(self, key, root=None):
+    """
+    Get a value for a key in the store
+
+    Args:
+      key (str): Key for the value for extract.  This can be structured with slashes: `a/b/c` => ['a']['b']['c']
+      root (dict): Portion of the store to process.  Typically, the caller leaves as `None`.  The method is recursive
+                   and invokes itself overriding the root for structured keys
+
+    Returns:
+      value (str): The value for the key.  This could be `None` if the key does not exist in the store
+    """
     if root == None:
       root = self.store
 
@@ -105,6 +133,17 @@ class SecureKeyValues:
       return None
 
   def put(self, key, value, root=None):
+    """
+    Set a value for a key in the store
+
+    Args:
+      key (str): Key for the value to store.  This can be structured with slashes: `a/b/c` => ['a']['b']['c']
+      value (str): Value for the key to store.
+      root (dict): Portion of the store to process.  Typically, the caller leaves as `None`.  The method is recursive
+                   and invokes itself overriding the root for structured keys
+    Returns:
+      None
+    """
     if root == None:
       root = self.store
 
@@ -119,26 +158,52 @@ class SecureKeyValues:
       root[key[0]] = value
 
   def keys(self):
+    """
+    Returns top-level keys of the store
+
+    Returns:
+      keys (list): A list of strings for the keys in the root of the store.
+
+    To do:
+      This method only list keys in the root, not structured keys.  If I get the ambition, I might fix this but
+      I don't think I even use structured keys.
+    """
     return self.store.keys()
 
   def remove(self, key):
+    """
+    Set a value for a key in the store
+
+    Args:
+      key (str): Key from the store root to remove.
+
+    Returns:
+      value (str): Value from the key removed.  This can be `None` if the key was not in the store.
+
+    To do:
+      This method only list keys in the root, not structured keys.  If I get the ambition, I might fix this but
+      I don't think I even use structured keys.
+    """
     if key in self.store:
       return self.store.pop(key)
     else:
       return None
 
   def write(self):
+    """
+    Commit a store to the file system
+    """
     global log
 
     if os.path.isfile(self.filename):
       backup =  f'{self.filename}D{datetime.datetime.now().isoformat().replace(":", "")}'
-      log.info(f'Backing up {self.filename!r} to {backup!r}')
+      self.log.info(f'Backing up {self.filename!r} to {backup!r}')
       os.rename(self.filename, backup)
     else:
       dir = os.path.dirname(self.filename)
       if not os.path.isdir(dir):
         os.mkdir(dir, 0o700)
-    log.info(f'Saving store to {self.filename}')
+    self.log.info(f'Saving store to {self.filename}')
     with open(self.filename, 'wb') as f:
       os.chmod(self.filename, 0o600)
       f.write(self.fernet.encrypt(json.dumps(self.store).encode()))
