@@ -38,8 +38,8 @@ if not args.force:
       parser.error('{args.file!r} already imports the logging and argparse modules'.format(**locals()))
 
 basic = lookfor(
-  '{HOME}/python/basic'.format(**os.environ),
-  '{pgm}/../python/basic'.format(pgm=os.path.dirname(sys.argv[0])),
+  os.path.expanduser('~/python/basic'),
+  f'{os.path.dirname(sys.argv[0])}/../python/basic',
 )
 
 if not basic:
@@ -53,6 +53,11 @@ if not basic:
   else:
     log.warning('{url}: {req.status_code}, {req.text!r}'.format(**locals()))
     parser.error('Cannot locate basic template!')
+
+tools_path = os.path.join(os.path.dirname(args.file), 'bruno_tools.py')
+if not os.path.exists(tools_path):
+  print(f'Creating {tools_path!r} symbolic link')
+  os.symlink(os.path.expanduser('~/bin/bruno_tools.py'), tools_path)
 
 with open(args.file, 'a') as work:
   work.write(basic)
