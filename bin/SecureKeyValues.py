@@ -90,7 +90,7 @@ class SecureKeyValues:
         self.key = base64.b64encode(hash.hexdigest().encode())
 
         try:
-          fernet = __import__('cryptography.fernet', fromlist=['Fernet'])
+          fernet = __import__('fernet')
           self.fernet = fernet.Fernet(self.key)
         except Exception as e:
           raise Exception(f'Caught `{e!s}` trying to load cryptography.fernet')
