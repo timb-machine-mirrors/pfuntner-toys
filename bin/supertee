@@ -69,7 +69,7 @@ while not eof:
   if line:
     lines += 1
     print(line.strip('\n') .strip('\r'))
-    print(line.strip('\n') .strip('\r'), file=stream)
+    print(line.strip('\n') .strip('\r'), file=stream, flush=True)
   else:
     eof = True
 
