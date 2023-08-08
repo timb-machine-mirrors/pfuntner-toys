@@ -2,131 +2,67 @@
 
 import sys
 import time
-import select
+import shlex
+import signal
 import logging
 import argparse
 import datetime
 import threading
 import subprocess
 
-class Redirect(threading.Thread):
-  def __init__(self, stream_name, in_stream, out_stream, filename):
-    self.stream_name = stream_name
-    self.in_stream = in_stream
-    self.out_stream = out_stream
-    self.filename = filename
-    self.file = open(filename, 'wb', 0) if filename else None
-    self.prev = datetime.datetime.now()
-    super(Redirect, self).__init__()
-
-  def write(self, msg):
-    if msg:
-      msg = msg.strip('\n')
-      lock.acquire()
-      now = datetime.datetime.now()
-      elapsed = now - start
-      sincelast = (now - self.prev).total_seconds()
-      self.prev = now
-      self.out_stream.write('{now} +{elapsed} {sincelast:9.3f} {self.stream_name} {msg!r}\n'.format(**locals()))
-      lock.release()
+class OutputThread(threading.Thread):
+  def __init__(self, output_type, input_pipe, output_stream):
+    self.output_type = output_type
+    self.input_pipe = input_pipe
+    self.output_stream = output_stream
+    super().__init__()
+    self.start()
 
   def run(self):
     buf = ''
-    read_list = [self.in_stream]
-    write_list = []
-    excp_list = write_list
-    last_c = None
+    start_time = None
     while True:
-      (read_ready, write_ready, excp_ready) = select.select(read_list, write_list, excp_list, 0 if args.buffer else 1)
-      if read_ready:
-        c = self.in_stream.read(1).decode('utf-8')
-        if c:
-          if self.file:
-            self.file.write(c.encode('utf-8'))
-          if c == '\n':
-            self.write(buf)
-            buf = ''
-          else:
-            buf += c
-          last_c = c
-        else:
-          self.write(buf)
-          break
-      elif last_c not in [None, '\n'] and args.buffer:
-        """
-        The select() timed out.  If the command printed out some data without a newline, it likely printed out a prompt
-        and we would like to display it.
-        """
-        self.write(buf)
-        buf = ''
+      log.info(f'{self.output_type}: reading')
+      c = self.input_pipe.read(1)
+      if c == '':
+        break
+      else:
+        if start_time is None:
+          start_time = datetime.datetime.now().isoformat()
+        buf += c
+        if c == '\n':
+          print(f'{start_time} {buf}', file=self.output_stream, end='')
+          buf = ''
+          start_time = None
+    log.info(f'{self.output_type}: EOF')
+    if buf:
+      print(f'{start_time} {buf}', file=self.output_stream)
 
-    if self.file:
-      self.file.close()
-
-def syntax(msg=None):
-  if msg:
-    sys.stderr.write('{msg}\n'.format(**locals()))
-  sys.stderr.write('{pgm} cmd ...\n'.format(pgm=sys.argv[0]))
-  exit(1)
-
-def redirect(p, stream_name, filename):
-  global threads
-  threads.append(Redirect(stream_name, getattr(p, stream_name), getattr(sys, stream_name), filename))
-  threads[-1].start()
-
-"""
-past_options = False
-options = []
-for arg in sys.argv[1:]:
-  if past_options:
-    options.append(arg)
-  elif (arg == '--'):
-    options.append(arg)
-    past_options = True
-  else:
-    if not arg.startswith('-'):
-      past_options = True
-      options.append('--')
-    options.append(arg)
-"""
-
-parser = argparse.ArgumentParser(description='Capture output from a command')
-parser.add_argument('-o', '--out', '--stdout', dest='stdout', help='Redirect stdout to a file')
-parser.add_argument('-e', '--err', '--stderr', dest='stderr', help='Redirect stderr to a file')
-parser.add_argument('-b', '--buffer', action='store_true', help='Do not buffer output to stdout')
-parser.add_argument('-v', '--verbose', action='store_true', help='Enable debugging')
-parser.add_argument('cmd', help='Command to execute')
-parser.add_argument('args', metavar='arg', nargs='*', help='Arguments for command')
-# args = parser.parse_args(options)
+parser = argparse.ArgumentParser(description='Capture stdout/stderr of a command')
+parser.add_argument('command', nargs='+', help='Command and arguments')
+parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
-log = logging.getLogger()
-log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+log = logging.getLogger(sys.argv[0])
+log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
-# log.debug('options: {options}'.format(**locals()))
-log.debug('args: {args}'.format(**locals()))
+signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
-threads = []
-lock = threading.Lock()
 
-start = datetime.datetime.now()
-print('Started: {start}'.format(**locals()))
-command = [args.cmd] + args.args
 try:
-  p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-except Exception as e:
-  log.error('Caught {e!s} executing {command}'.format(**locals()))
+  # command = shlex.join(args.command)
+  command = ' '.join(args.command)
+  log.info(f'{command=!r}')
+  p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1, shell=True)
+except exception as e:
+  log.fatal(f'{command} failed: {e!s}')
   exit(1)
-redirect(p, 'stdout', args.stdout)
-redirect(p, 'stderr', args.stderr)
-rc = p.wait()
 
-finish = datetime.datetime.now()
-print('rc: {rc}'.format(**locals()))
+stdout = OutputThread('stdout', p.stdout, sys.stdout)
+stderr = OutputThread('stderr', p.stderr, sys.stderr)
 
-while any([thread.isAlive() for thread in threads]):
-  time.sleep(.1)
+while stdout.is_alive() or stdout.is_alive():
+  time.sleep(.05)
 
-print('Stopped: {finish}'.format(**locals()))
-print('Elapsed: {elapsed}s'.format(elapsed=finish-start))
+print(f'rc={p.wait()}')
