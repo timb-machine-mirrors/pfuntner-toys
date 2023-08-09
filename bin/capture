@@ -10,6 +10,16 @@ import datetime
 import threading
 import subprocess
 
+def human(specimen):
+  if isinstance(specimen, datetime.timedelta):
+    seconds = specimen.total_seconds()
+    (minutes, seconds) = divmod(seconds, 60)
+    return f'+{int(minutes):03}:{seconds:09.6f}'
+  elif isinstance(specimen, datetime.datetime):
+    return specimen.isoformat().replace('T', ' ')
+  else:
+    raise Exception(f'{specimen!r} is an unexpected {specimen.__class__.__name__}')
+
 class OutputThread(threading.Thread):
   def __init__(self, label, input_pipe, output_stream):
     self.label = label
@@ -19,8 +29,10 @@ class OutputThread(threading.Thread):
     self.start()
 
   def run(self):
+    label = f' {self.label} ' if args.label else ' '
     buf = ''
     start_time = None
+    last_time = None
     while True:
       log.info(f'{self.label}: reading')
       c = self.input_pipe.read(1)
@@ -28,18 +40,21 @@ class OutputThread(threading.Thread):
         break
       else:
         if start_time is None:
-          start_time = datetime.datetime.now().isoformat()
+          start_time = datetime.datetime.now()
         buf += c
         if c == '\n':
-          print(f'{start_time} {buf}', file=self.output_stream, end='')
+          now = datetime.datetime.now()
+          print(f'{human(start_time)} {human(now-(last_time or now))}{label}{buf}', file=self.output_stream, end='')
           buf = ''
+          last_time = start_time
           start_time = None
     log.info(f'{self.label}: EOF')
     if buf:
-      print(f'{start_time} {buf}', file=self.output_stream)
+      print(f'{human(start_time)} {human(now-(start_time or now))}{label}{buf}', file=self.output_stream)
 
 parser = argparse.ArgumentParser(description='Capture stdout/stderr of a command')
 parser.add_argument('command', nargs='+', help='Command and arguments')
+parser.add_argument('-l', '--label', action='store_true', help='Label output lines with `stdout` or `stderr`')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -49,7 +64,7 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
-
+start_time = datetime.datetime.now()
 try:
   # command = shlex.join(args.command)
   command = ' '.join(args.command)
@@ -65,4 +80,4 @@ stderr = OutputThread('stderr', p.stderr, sys.stderr)
 while stdout.is_alive() or stdout.is_alive():
   time.sleep(.05)
 
-print(f'rc={p.wait()}')
+print(f'rc={p.wait()}, elapsed: {datetime.datetime.now()-start_time!s}')
