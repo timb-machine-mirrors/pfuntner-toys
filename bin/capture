@@ -36,21 +36,21 @@ class OutputThread(threading.Thread):
     while True:
       log.info(f'{self.label}: reading')
       c = self.input_pipe.read(1)
-      if c == '':
+      if c == b'':
         break
       else:
+        c = c.decode()
         if start_time is None:
           start_time = datetime.datetime.now()
         buf += c
         if c == '\n':
-          now = datetime.datetime.now()
-          print(f'{human(start_time)} {human(now-(last_time or now))}{label}{buf}', file=self.output_stream, end='')
+          print(f'{human(start_time)} {human(start_time-(last_time or start_time))} {human(start_time-command_start_time)}{label}{buf}', file=self.output_stream, end='')
           buf = ''
           last_time = start_time
           start_time = None
     log.info(f'{self.label}: EOF')
     if buf:
-      print(f'{human(start_time)} {human(now-(start_time or now))}{label}{buf}', file=self.output_stream)
+      print(f'{human(start_time)} {human(start_time-(last_time or start_time))} {human(start_time-command_start_time)}{label}{buf}', file=self.output_stream)
 
 parser = argparse.ArgumentParser(description='Capture stdout/stderr of a command')
 parser.add_argument('command', nargs='+', help='Command and arguments')
@@ -64,12 +64,19 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
-start_time = datetime.datetime.now()
+command_start_time = datetime.datetime.now()
 try:
   # command = shlex.join(args.command)
   command = ' '.join(args.command)
   log.info(f'command={command!r}')
-  p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1, shell=True)
+  options = {
+    'stdout': subprocess.PIPE,
+    'stderr': subprocess.PIPE,
+    'bufsize': 0,
+    'shell': True,
+  }
+  #  text: True,
+  p = subprocess.Popen(command, **options)
 except Exception as e:
   log.fatal(f'{command} failed: {e!s}')
   exit(1)
@@ -80,4 +87,4 @@ stderr = OutputThread('stderr', p.stderr, sys.stderr)
 while stdout.is_alive() or stdout.is_alive():
   time.sleep(.05)
 
-print(f'rc={p.wait()}, elapsed: {datetime.datetime.now()-start_time!s}')
+print(f'rc={p.wait()}, total elapsed time: {datetime.datetime.now()-command_start_time!s}')
