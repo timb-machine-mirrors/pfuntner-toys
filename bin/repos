@@ -44,7 +44,10 @@ def isotime(s):
     s = t.isoformat().replace('T', ' ')
   return s
 
-def process(root):
+def process(root, depth=0):
+  if depth > 1:
+    return
+
   if os.path.exists(root):
     if os.path.isdir(os.path.join(root, '.git')):
       log.debug('root: {root!r}'.format(**locals()))
@@ -94,7 +97,7 @@ def process(root):
       os.chdir(prev)
     if os.path.isdir(root):
       for filename in os.listdir(root):
-        process(os.path.join(root, filename))
+        process(os.path.join(root, filename), depth+1)
   else:
     log.warning('Not found: {root!r}'.format(**locals()))
 
