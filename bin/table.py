@@ -101,15 +101,21 @@ class MethodBase(object):
     """
     order = []
     if root and isinstance(root[0], dict):
-      keys = set()
-      for item in root:
-        for key in item.keys():
-          keys.add(key)
-      for key in args.order or []:
-        key = self.get_key(key, keys)
-        keys.remove(key)
-        order.append(key)
-      order += sorted(list(keys))
+      if args.no_sort:
+        for item in root:
+          for key in item.keys():
+            if not key in order:
+              order.append(key)
+      else:
+        keys = set()
+        for item in root:
+          for key in item.keys():
+            keys.add(key)
+        for key in args.order or []:
+          key = self.get_key(key, keys)
+          keys.remove(key)
+          order.append(key)
+        order += sorted(list(keys))
     return order
 
 
@@ -901,6 +907,7 @@ parser.add_argument('-n', '--numeric_justify', action='store_true',
 parser.add_argument('--style', choices=['flow', 'block'], help='Specify an yaml output style')
 parser.add_argument('--rotate', action='store_true', help='Rotate so rows are columns, columns are rows')
 parser.add_argument('-f', '--file', help='File from which to read, instead of stdin')
+parser.add_argument('--no-sort', action='store_true', help='Do not sort columns')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 
 args = parser.parse_args() if __name__ == '__main__' else parser.parse_args(['-i', 'separator', '-o', 'fixed'])

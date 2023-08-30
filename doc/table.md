@@ -20,6 +20,7 @@ table.py [-h] [-H] -i {csv,yaml,fixed,json,separator,xml} -o
 | `-s SEPARATOR` or `--separator SEPARATOR` | One or more characters to use to seperate columns when writing with the `separator` or `fixed` formats | The default is to use a single blank to separate columns in `fixed` format and a single vertical bar when writing in `separator` format. |
 |  `--order COL,...`  | List of named headings to appear first in a list of columns. The option is important for situations when the heading order is not implied by the input format (`yaml` or `json` dictionaries) but is important in the output format (`separator`, `fixed` or `csv`). | For those headings that are not expressed in `--order` (even when none are specified), the headings are simply supplied in alphabetized order  |
 | `--sort COL,...` | Specify one or more comma-seperated columns by which to sort the rows | The default is to not sort the table |
+| `--no-sort` | Do not sort column headings |
 |  `-v`  | Enable verbose debugging | Debugging is not enabled |
 
 #### Formats
