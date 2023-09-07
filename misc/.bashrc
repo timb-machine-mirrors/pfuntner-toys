@@ -140,7 +140,7 @@ fi
 #   CURRBRANCH=true
 #   banner --color red 'Warning: Could not find the currbranch script' >&2
 # fi
-export PS1='[\u@\h \W`"'$CURRBRANCH'" --ps1`]\$ '
+export PS1='[\u@\h `date +%H:%M:%S` \W`"'$CURRBRANCH'" --ps1`]\$ '
 
 # My git frontend is not needed if you authenticate with an sshkey and use the ssh-style URL
 # for the repo such as git@github.com:USER/REPO.git
