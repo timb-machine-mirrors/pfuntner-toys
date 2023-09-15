@@ -134,4 +134,4 @@ for my_ip in socket.gethostbyname_ex(socket.gethostname())[2]:
         print(ip)
         exit(0)
 
-log.warn('Could not find meerkat system')
+log.warning('Could not find meerkat system')
