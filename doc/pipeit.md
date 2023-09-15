@@ -45,3 +45,4 @@ Note: Since `/dev/random` produces random data, your mileage will vary.
     scp: failed to upload file /dev/fd/63 to /dev/null
     $
     ```
+- I had started to work in a `--become` option but abandoned it when I was facing strange errors I couldn't correct.  If someone has a good use case, I might return to it and get it to work.  It should be possible!
