@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+import os
 import sys
 import base64
 import signal
@@ -22,10 +23,12 @@ signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 if sys.stdin.isatty():
   parser.error('stdin must be redirected')
 
+stream = os.fdopen(sys.stdin.fileno(), 'rb')
+
 tokens = args.dest.split(':')
 if len(tokens) == 2:
   (target, path) = tokens
-  (rc, stdout, stderr) = bruno_tools.run(['ssh', target, 'base64', '-d', '>', path], stdin=base64.b64encode(sys.stdin.read().encode()).decode(), log=log, capture=False)
+  (rc, stdout, stderr) = bruno_tools.run(['ssh', '-q', target, 'base64', '-d', '>', path], stdin=base64.b64encode(stream.read()).decode(), log=log, capture=False)
   exit(rc)
 else:
   parser.error('Use `system:path` to specify destination')
