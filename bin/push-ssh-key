@@ -13,7 +13,7 @@ def try_path(path):
 
 parser = argparse.ArgumentParser(description='Push public ssh key to remote authorized_keys')
 parser.add_argument('remote', help='ssh target: hostname/ip, user@hostname/ip')
-parser.add_argument('public_key_path', metavar='public-key', nargs='?', help='Path to public key to push')
+parser.add_argument('public_key_path', metavar='public-key-path', nargs='?', help='Path to public key to push')
 parser.add_argument('--dry-run', action='store_true', help='Do not run command')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
