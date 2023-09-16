@@ -8,13 +8,16 @@ Sends piped/redirected output to a file on a remote system
 Syntax: pipeit [--verbose] system:path
 ```
 
-### Options and arguments
+### Positional arguments
+| Option | Description | Default |
+| ------ | ----------- | ------- |
+| `dest` | Destination in form `system:path` | This is a required argument and there is no default |
+
+
+### Options
 | Option | Description | Default |
 | ------ | ----------- | ------- |
 |  `-v`  | Enable verbose debugging | Debugging is not enabled |
-
-### Argument
-The destination must be expressed as `system:path` where `system` is a target suitable for `ssh` or `scp`.
 
 ## Example
 
