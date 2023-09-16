@@ -32,8 +32,37 @@ Syntax: push-ssh-key [-h] [--dry-run] [-v] remote [public-key]
 <img alt="Under Construction" height="133" src="images/under-construction.jpg" title="Coming Soon" width="200"/>
 <br><a href="https://www.freepik.com/free-vector/coming-soon-construction-yellow-background-design_8562867.htm#query=work%20in%20progress&position=49&from_view=keyword&track=ais">Image by starline</a> on Freepik
 
+### Simple push
 ```
-# Coming soon to a markdown page near you!
+$ push-ssh-key mrbruno@192.168.1.14
+mrbruno@192.168.1.14's password:
+$ ssh mrbruno@192.168.1.14 hostname
+bruno-meerkat
+$
+```
+
+### Dry-run
+```
+$ push-ssh-key --dry mrbruno@192.168.1.14
+['ssh', 'mrbruno@192.168.1.14', 'echo', "'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDOkpspv29OTK9omB7sgqwLsUWBtDX/R8DjAYWJy8a/MzeduNWRSUDnnUaAyu1Qf9CYGu1oaahvINzUh7xnGUo1O2uHSWRN8P+6avqUqC9TyD7/+Ao2UvE6pUp/A048TuvpQ37o78U6oJDIiGeTIafZFf6RuBBuJTizAGLnW+hj4xU3DE0g3camDOv4j/kWECKHFM5CmH08roMhfgpQCs67MtZtX6IVBPvzLawP5sX8QnRoft9AxybCDEqbsYjDw8Z/MMQdOWCWf9i5cjCV6nsi/NtU1zzG8O0x0TdlWUODHvVpn+SpHfH/0PP0WLWQuEEIOcQOaPYXVHEjnX5nIcD6S+H1XvllJDsHs5n4HlIn3GTeVKNwTCIN1h9kIiQDMBRhLXiX7Dhz0Gy/t842yMiCfq3EMpFJSq4SnYsJHDXi1zdhP/cgzuAvcylQyuL/L8nxwic584m4bWLOqvco0ejiFQMIE4nSj6zmN/+dxjBpi68XT5l5AnAA2v/H9wIYNKs= mrbruno@DESKTOP-02TEPNS\\n'", '>>', '.ssh/authorized_keys', ';', 'chmod', '600', '.ssh/authorized_keys']
+$
+```
+
+### Level-one push
+```
+$ push-ssh-key -v mrbruno@192.168.1.14
+2023-09-16 09:11:10,471 INFO /home/mrbruno/repos/toys/bin/push-ssh-key:44 Pushing '/home/mrbruno/.ssh/id_rsa.pub': 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDOkpspv29OTK9omB7sgqwLsUWBtDX/R8DjAYWJy8a/MzeduNWRSUDnnUaAyu1Qf9CYGu1oaahvINzUh7xnGUo1O2uHSWRN8P+6avqUqC9TyD7/+Ao2UvE6pUp/A048TuvpQ37o78U6oJDIiGeTIafZFf6RuBBuJTizAGLnW+hj4xU3DE0g3camDOv4j/kWECKHFM5CmH08roMhfgpQCs67MtZtX6IVBPvzLawP5sX8QnRoft9AxybCDEqbsYjDw8Z/MMQdOWCWf9i5cjCV6nsi/NtU1zzG8O0x0TdlWUODHvVpn+SpHfH/0PP0WLWQuEEIOcQOaPYXVHEjnX5nIcD6S+H1XvllJDsHs5n4HlIn3GTeVKNwTCIN1h9kIiQDMBRhLXiX7Dhz0Gy/t842yMiCfq3EMpFJSq4SnYsJHDXi1zdhP/cgzuAvcylQyuL/L8nxwic584m4bWLOqvco0ejiFQMIE4nSj6zmN/+dxjBpi68XT5l5AnAA2v/H9wIYNKs= mrbruno@DESKTOP-02TEPNS\n' to mrbruno@192.168.1.14
+mrbruno@192.168.1.14's password:
+$
+```
+
+### Level-two verbosity
+```
+$ push-ssh-key -vv mrbruno@192.168.1.14
+2023-09-16 09:11:35,390 INFO /home/mrbruno/repos/toys/bin/push-ssh-key:44 Pushing '/home/mrbruno/.ssh/id_rsa.pub': 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDOkpspv29OTK9omB7sgqwLsUWBtDX/R8DjAYWJy8a/MzeduNWRSUDnnUaAyu1Qf9CYGu1oaahvINzUh7xnGUo1O2uHSWRN8P+6avqUqC9TyD7/+Ao2UvE6pUp/A048TuvpQ37o78U6oJDIiGeTIafZFf6RuBBuJTizAGLnW+hj4xU3DE0g3camDOv4j/kWECKHFM5CmH08roMhfgpQCs67MtZtX6IVBPvzLawP5sX8QnRoft9AxybCDEqbsYjDw8Z/MMQdOWCWf9i5cjCV6nsi/NtU1zzG8O0x0TdlWUODHvVpn+SpHfH/0PP0WLWQuEEIOcQOaPYXVHEjnX5nIcD6S+H1XvllJDsHs5n4HlIn3GTeVKNwTCIN1h9kIiQDMBRhLXiX7Dhz0Gy/t842yMiCfq3EMpFJSq4SnYsJHDXi1zdhP/cgzuAvcylQyuL/L8nxwic584m4bWLOqvco0ejiFQMIE4nSj6zmN/+dxjBpi68XT5l5AnAA2v/H9wIYNKs= mrbruno@DESKTOP-02TEPNS\n' to mrbruno@192.168.1.14
+2023-09-16 09:11:35,390 DEBUG /home/mrbruno/repos/toys/bin/push-ssh-key:45 cmd=['ssh', 'mrbruno@192.168.1.14', 'echo', "'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDOkpspv29OTK9omB7sgqwLsUWBtDX/R8DjAYWJy8a/MzeduNWRSUDnnUaAyu1Qf9CYGu1oaahvINzUh7xnGUo1O2uHSWRN8P+6avqUqC9TyD7/+Ao2UvE6pUp/A048TuvpQ37o78U6oJDIiGeTIafZFf6RuBBuJTizAGLnW+hj4xU3DE0g3camDOv4j/kWECKHFM5CmH08roMhfgpQCs67MtZtX6IVBPvzLawP5sX8QnRoft9AxybCDEqbsYjDw8Z/MMQdOWCWf9i5cjCV6nsi/NtU1zzG8O0x0TdlWUODHvVpn+SpHfH/0PP0WLWQuEEIOcQOaPYXVHEjnX5nIcD6S+H1XvllJDsHs5n4HlIn3GTeVKNwTCIN1h9kIiQDMBRhLXiX7Dhz0Gy/t842yMiCfq3EMpFJSq4SnYsJHDXi1zdhP/cgzuAvcylQyuL/L8nxwic584m4bWLOqvco0ejiFQMIE4nSj6zmN/+dxjBpi68XT5l5AnAA2v/H9wIYNKs= mrbruno@DESKTOP-02TEPNS\\n'", '>>', '.ssh/authorized_keys', ';', 'chmod', '600', '.ssh/authorized_keys']
+mrbruno@192.168.1.14's password:
+$
 ```
 
 ## Notes
