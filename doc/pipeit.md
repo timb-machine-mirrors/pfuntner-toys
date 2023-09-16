@@ -9,7 +9,7 @@ Syntax: pipeit [--verbose] system:path
 ```
 
 ### Positional arguments
-| Option | Description | Default |
+| Argument | Description | Default |
 | ------ | ----------- | ------- |
 | `dest` | Destination in form `system:path` | This is a required argument and there is no default |
 
