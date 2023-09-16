@@ -7,8 +7,13 @@ This is a template.  Please fill in the details and rock on.
 ```
 Syntax: template [--verbose] arg ...
 ```
+### Positional arguments
+| Argument | Description | Default |
+| ------ | ----------- | ------- |
+| `arg1` | Description | Default |
 
-### Options and arguments
+
+### Options
 | Option | Description | Default |
 | ------ | ----------- | ------- |
 |  `-v`  | Enable verbose debugging | Debugging is not enabled |
