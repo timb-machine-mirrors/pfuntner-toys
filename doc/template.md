@@ -15,6 +15,9 @@ Syntax: template [--verbose] arg ...
 
 ## Example
 
+<img alt="Under Construction" height="133" src="images/under-construction.jpg" title="Coming Soon" width="200"/>
+<br><a href="https://www.freepik.com/free-vector/coming-soon-construction-yellow-background-design_8562867.htm#query=work%20in%20progress&position=49&from_view=keyword&track=ais">Image by starline</a> on Freepik
+
 ```
 $ template
 This is a template.  Please fill in the details and rock on.
