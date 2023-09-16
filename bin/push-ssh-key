@@ -33,9 +33,9 @@ if args.public_key_path is None:
 
 authorized_keys = '.ssh/authorized_keys'
 
-(rc, stdout, stderr) = bruno_tools(f'ssh -q -o BatchMode=yes --connect-timeout 2 {args.remote} exit 42')
+(rc, stdout, stderr) = bruno_tools.run(f'ssh -q -o BatchMode=yes -o ConnectTimeout=2 {args.remote} exit 42', log=log)
 if rc == 42:
-  log.warning(f'Passwordless ssh to {remote} already seems to be enabled - there is no need to copy your public key')
+  log.warning(f'Passwordless ssh to {args.remote} already seems to be enabled - there is no need to copy your public key')
   exit(0)
 
 if os.path.exists(args.public_key_path):
@@ -48,7 +48,7 @@ if os.path.exists(args.public_key_path):
     else:
       log.info(f'Pushing {args.public_key_path!r}: {public_key!r} to {args.remote}')
       log.debug(f'{cmd=}')
-      (rc, stdout, stderr) = bruno_tools.run(cmd, capture=False)
+      (rc, stdout, stderr) = bruno_tools.run(cmd, capture=False, log=log)
       exit(rc)
   else:
     parser.error(f'{path!r} is a directory')
