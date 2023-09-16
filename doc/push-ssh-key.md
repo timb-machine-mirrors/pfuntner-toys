@@ -67,4 +67,4 @@ $
 - `ssh` is used under the covers but since password-less ssh is likely not enabled, your password will be prompted for
 - Not only is the public key appended to `~/.ssh/authorized_keys` but the script also ensures the permissions of `~/.ssh/authorized_keys` are `0600` - `ssh` can be super-picky about that so I think it's a good precaution, especially if the script _creates_ `~/.ssh/authorized_keys`!
 - If you don't have a public ssh key to push, remember that you can use [`ssh-keygen`](https://man7.org/linux/man-pages/man1/ssh-keygen.1.html) to create one.  I know the prompts can seem a little confusing - I always just accept all of the defaults!
-- The public key is just appended to the end of `~/.ssh/authorized_keys` on the remote target.  If you run the script twice to the same system, it will add two copies of the key.  It might make sense to do something to check to see if the key is already present.
+- The public key is not copied to the remote target if passwordless ssh appears to already be enabled.
