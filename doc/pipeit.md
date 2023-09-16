@@ -45,4 +45,5 @@ Note: Since `/dev/random` produces random data, your mileage will vary.
     scp: failed to upload file /dev/fd/63 to /dev/null
     $
     ```
+    I am often disappointed in Linux commands that don't allow `<(command)` for a file.  Some of my older tools might be the same way but lately instead of making sure a file is a regular file, I just make sure it **isn't** a directory - that way, I can support pipes.  Ansible is a good example of this - I think I learned that `ansible-playbook` doesn't like a temporary playbook that I build on the fly in a pipe.
 - I had started to work in a `--become` option but abandoned it when I was facing strange errors I couldn't correct.  If someone has a good use case, I might return to it and get it to work.  It should be possible!
