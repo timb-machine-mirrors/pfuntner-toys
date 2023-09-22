@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+import re
 import os
 import sys
 import base64
@@ -26,9 +27,9 @@ if sys.stdin.isatty():
 
 stream = os.fdopen(sys.stdin.fileno(), 'rb')
 
-tokens = args.dest.split(':')
-if len(tokens) == 2:
-  (target, path) = tokens
+match = re.search('^([^:]+):(.+)$', args.dest)
+if match:
+  (target, path) = match.groups()
   (rc, stdout, stderr) = bruno_tools.run(['ssh', '-q', target, 'base64', '-d', '>', path], stdin=base64.b64encode(stream.read()).decode(), log=log, capture=False)
   exit(rc)
 else:
