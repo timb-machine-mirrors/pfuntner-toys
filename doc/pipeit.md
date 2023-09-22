@@ -1,7 +1,7 @@
 # `pipeit`
 
 ## Purpose
-Sends piped/redirected output to a file on a remote system
+Sends piped/redirected output to/from a file on a remote system
 
 ## Syntax
 ```
@@ -11,7 +11,7 @@ Syntax: pipeit [--verbose] system:path
 ### Positional arguments
 | Argument | Description | Default |
 | ------ | ----------- | ------- |
-| `dest` | Destination in form `system:path` | This is a required argument and there is no default |
+| `dest` | Source/destination in form `system:path` | This is a required argument and there is no default |
 
 
 ### Options
@@ -50,3 +50,4 @@ Note: Since `/dev/random` produces random data, your mileage will vary.
     ```
     I am often disappointed in Linux commands that don't allow `<(command)` for a file.  Some of my older tools might be the same way but lately instead of making sure a file is a regular file, I just make sure it **isn't** a directory - that way, I can support pipes.  Ansible is a good example of this - I think I learned that `ansible-playbook` doesn't like a temporary playbook that I build on the fly in a pipe.
 - I had started to work in a `--become` option but abandoned it when I was facing strange errors I couldn't correct.  If someone has a good use case, I might return to it and get it to work.  It should be possible!
+- I originally came up with the idea for this script when I was getting a new work laptop and wanted to backup (store) some files on a remote Ubuntu machine I also use at work.  Writing the tarball to the remote system worked great but I wanted to do something similar to read the file too.  It took a little doing to do things quite right to preserve arbitrary data but I think both directions are working well. 
