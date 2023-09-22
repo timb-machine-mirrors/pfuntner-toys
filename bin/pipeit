@@ -36,7 +36,7 @@ if match:
   else:
     log.info(f'read from {path!r} on {target!r}')
     (rc, stdout, stderr) = bruno_tools.run(['ssh', '-q', target, 'base64', '<', path], log=log)
-    print(base64.b64decode(stdout.encode()), file=os.fdopen(sys.stdout.fileno(), 'wb'), end=b'')
+    os.write(sys.stdout.fileno(), base64.b64decode(stdout.encode()))
     print(stderr, file=sys.stderr)
   exit(rc)
 else:
