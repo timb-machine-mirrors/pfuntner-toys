@@ -31,7 +31,7 @@ stream = os.fdopen(sys.stdin.fileno(), 'rb')
 match = re.search('^([^:]+):(.+)$', args.dest)
 if match:
   (target, path) = match.groups()
-  if not sys.stdin:
+  if not sys.stdin.isatty():
     log.info(f'write to {path!r} on {target!r}')
     (rc, stdout, stderr) = bruno_tools.run(['ssh', '-q', target, 'base64', '-d', '>', path], stdin=base64.b64encode(stream.read()).decode(), log=log, capture=False)
   else:
