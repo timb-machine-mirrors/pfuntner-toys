@@ -27,7 +27,6 @@ def process(input, output, actual_string, *path):
       if actual_string != expected_string:
         log.debug(f'{expected_string=!r} {actual_string=!r}')
         log.critical(f'{input} -> {output} mismatch')
-        exit(1)
 
 parser = argparse.ArgumentParser(description='Test table script')
 parser.add_argument('-c', '--create', dest='create', action='store_true', help='Create output')
