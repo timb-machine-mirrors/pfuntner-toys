@@ -23,7 +23,7 @@ def run(cmd, stdin=None, capture=True, shell=False, log=None):
   if p:
     if stdin:
       p.stdin.write(stdin.encode())
-      p.stdin.close()
+      # p.stdin.close()
     if capture:
       (stdout, stderr) = tuple([s.decode('utf-8') for s in p.communicate()])
     else:
