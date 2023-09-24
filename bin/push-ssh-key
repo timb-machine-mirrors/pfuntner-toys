@@ -42,7 +42,7 @@ if os.path.exists(args.public_key_path):
   if not os.path.isdir(args.public_key_path):
     with open(args.public_key_path) as stream:
       public_key = stream.read()
-    cmd = ['ssh', args.remote, 'echo', repr(public_key), '>>', authorized_keys, ';', 'chmod', '600', authorized_keys]
+    cmd = ['ssh', args.remote, 'mkdir', '-pv', '.ssh', ';', 'chmod', '700', '.ssh', ';', 'echo', repr(public_key), '>>', authorized_keys, ';', 'chmod', '600', authorized_keys]
     if args.dry_run:
       print(cmd)
     else:
