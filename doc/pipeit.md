@@ -19,7 +19,8 @@ Syntax: pipeit [--verbose] system:path
 | ------ | ----------- | ------- |
 |  `-v`  | Enable verbose debugging | Debugging is not enabled |
 
-## Example
+## Examples
+### Writing example
 
 ```
 $ head -c10000 /dev/random > random
@@ -32,7 +33,19 @@ $ ssh -q ubuntu md5sum /tmp/random
 0bed19ac814a70a23065ac4842badc75  /tmp/random
 $
 ```
-Note: Since `/dev/random` produces random data, your mileage will vary.
+Note: Since `/dev/random` produces random data, your mileage will vary - the checksum will be different but the amount of data is the same.
+
+### Reading example
+
+```
+$ cat /dev/random | head -c10000 | pipeit vm1:/tmp/random
+$ ssh vm1 md5sum /tmp/random
+57adc4d45553de79f2ce5c6925b2ccdc  /tmp/random
+$ pipeit vm1:/tmp/random | md5sum
+
+57adc4d45553de79f2ce5c6925b2ccdc  -
+$ 
+```
 
 ## Notes
 
