@@ -71,17 +71,20 @@ $
 # This regular expression is the `step` prompt we're waiting for.  When we see it, we want to:
 #   1) run the desired command
 #   2) respond to the prompt affirmatively and have it continue the playbook - presumably stopping at the next task
-regexp = re.compile(r'Perform task: TASK: (.+) \(N\)o/\(y\)es/\(c\)ontinue: $')
+regexp = re.compile(r'Perform task: (TASK|HANDLER): (.+) \(N\)o/\(y\)es/\(c\)ontinue: $')
 
 # by turning off blocking, we can read one byte at a time without waiting for newlines
 (pipe_read, pipe_write) = os.pipe()
 os.set_blocking(pipe_read, False)
 
-# `output` contains all stdout/stderr concatenated together, always appended to the end
+# `output` contains all stdout/stderr concatenated together, always appended to the end.  Once a prompt
+# is observed, we'll empty out `output` so we don't re-recognize the same prompt again if there's a long
+# delay. Wiping it out will also help make the string more manageable so it doesn't explode to astronomical
+# size because it's not maintaining all the output over the lifetime of the playbook.
 output = ''
 
 # `last_char` is the time the last character was read
-last_char = datetime.datetime.fromtimestamp(0)
+last_char = datetime.datetime.now()
 
 log.info(f'Running {args.playbook_path!r} playbook')
 
@@ -105,25 +108,24 @@ while ansible_process.poll() is None:
 
   now = datetime.datetime.now()
   if c:
-    # we've read a new chracter
+    # we've read a new character
     print(c, end='')
     output += c
     last_char = now
   else:
-    # no character - wait a while to see if another character appears right away
-    if now - last_char > datetime.timedelta(seconds=.5):
+    # no character - check for eyecatcher if a character hasn't arrived recently
+    if now - last_char > datetime.timedelta(seconds=1):
       match = regexp.search(output)
       if match:
         # we've found an eyecatcher we've been waiting for!
-        task = match.group(1)
+        (task_type, task) = match.groups()
         print()
-        log.info(f'Running {args.command!r} before {task!r}')
+        log.info(f'Running {args.command!r} before {task_type} {task!r}')
         bruno_tools.run(args.command, capture=False)
         print()
         ansible_process.stdin.write('yes\n'.encode())
         ansible_process.stdin.flush()
-        last_char = now
-    else:
-      time.sleep(.1)
+        output = ''
+    time.sleep(.2)
 
 log.info(f'Finished running {args.playbook_path!r} playbook')
