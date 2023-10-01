@@ -40,13 +40,14 @@ class Color(object):
     return list(rets.keys())[0]
 
   @staticmethod
-  def get_color_code(color):
-    return '\x1b[{}m'.format(Color.colors.get(color) or color) if color else ''
+  def get_color_code(color, background_color=None):
+    return ('\x1b[{}m'.format(Color.colors.get(color) or color) if color else '') + \
+           ('\x1b[{}m'.format(Color.colors.get(background_color)+10) if background_color else '')
 
   @staticmethod
-  def print_color(color):
+  def print_color(color, background_color=None):
     if color:
-      sys.stdout.write(Color.get_color_code(color))
+      sys.stdout.write(Color.get_color_code(color, background_color))
 
   """
     I don't know where I got the color codes from originally but
@@ -85,9 +86,12 @@ if __name__ == '__main__':
 
   group = parser.add_mutually_exclusive_group(required=True)
   group.add_argument('color', type=Color.get_color, nargs='?',
-                      help='Choose a color: {colors}'.format(colors=', '.join(Color.colors.keys())))
+                      help='Choose a foreground color: {colors}'.format(colors=', '.join(Color.colors.keys())))
   group.add_argument('--test', action='store_true', required=False, help='Test all colors')
   group.add_argument('-r', '--reset', action='store_true', help='Reset a console to default color only')
+
+  parser.add_argument('-b', '--background-color', type=Color.get_color,
+                      help='Choose a background color: {colors}'.format(colors=', '.join(Color.colors.keys())))
 
   parser.add_argument('-p', '--persist', action='store_true', help='Set a console to the specified color')
   parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
@@ -108,22 +112,25 @@ if __name__ == '__main__':
 
   if args.reset:
     Color.print_color('0')
+    Color.print_color('10')
   elif args.test:
     table = Table([])
     for color in Color.colors.keys():
-      table.add(color, Color.get_color_code(color) + color + Color.get_color_code('0'))
+      table.add(color, Color.get_color_code(color) + color + Color.get_color_code('0') + Color.get_color_code('10'))
     print(str(table))
   elif args.text:
-    Color.print_color(Color.get_color(args.color))
+    Color.print_color(Color.get_color(args.color), args.background_color if args.background_color else None)
     sys.stdout.write(' '.join(args.text) + '\n')
     Color.print_color('0')
+    Color.print_color('10')
   elif args.persist:
-    Color.print_color(Color.get_color(args.color))
+    Color.print_color(Color.get_color(args.color), args.background_color if args.background_color else None)
     print('')
   else:
     if sys.stdin.isatty():
       parser.error('stdin must be redirected if text is not supplied on command line')
-    Color.print_color(Color.get_color(args.color))
+    Color.print_color(Color.get_color(args.color), args.background_color if args.background_color else None)
     sys.stdout.write(sys.stdin.read())
     if args.color:
       Color.print_color('0')
+      Color.print_color('10')
