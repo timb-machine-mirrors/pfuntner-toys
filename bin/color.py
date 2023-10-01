@@ -83,6 +83,7 @@ if __name__ == '__main__':
   group.add_argument('--test', action='store_true', required=False, help='Test all colors')
   group.add_argument('-r', '--reset', action='store_true', help='Reset a console to default color only')
 
+  parser.add_argument('-p', '--persist', action='store_true', help='Set a console to the specified color')
   parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
   parser.add_argument('text', nargs='*', help='Text to display')
 
@@ -90,6 +91,12 @@ if __name__ == '__main__':
 
   if (args.reset or args.test) and args.text:
     parser.error('--test and --reset are mutually exclusive with text')
+
+  if (args.reset or args.test or args.text) and args.persist:
+    parser.error('--test, --reset, and text are mutually exclusive with --persist')
+
+  if args.persist and not(args.color):
+    parser.error('color is required with --persist')
 
   log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
@@ -104,6 +111,9 @@ if __name__ == '__main__':
     Color.print_color(Color.get_color(args.color))
     sys.stdout.write(' '.join(args.text) + '\n')
     Color.print_color('0')
+  elif args.persist:
+    Color.print_color(Color.get_color(args.color))
+    print('')
   else:
     if sys.stdin.isatty():
       parser.error('stdin must be redirected if text is not supplied on command line')
