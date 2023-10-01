@@ -48,25 +48,31 @@ class Color(object):
     if color:
       sys.stdout.write(Color.get_color_code(color))
 
+  """
+    I don't know where I got the color codes from originally but
+    https://www.codeproject.com/Articles/5329247/How-to-Change-Text-Color-in-a-Linux-Terminal
+    seems to make more sense and guides me for doing foreground
+    and background colors.  The codes below are all foreground -
+    you can just add 10 to any code to get the background code.
+  """
   colors = {
-    'black': '0;30',
-    'white': '1;37',
-    'red': '0;31',
-    'blue': '0;34',
-    'purple': '0;35',
-    'cyan': '0;36',
-    'orange': '0;33',
-    'brown': '0;33',
-    'green': '0;32',
-    'yellow': '1;33',
-    'gray': '1;30',
-    'darkgray': '1;30',
-    'lightred': '1;31',
-    'lightgreen': '1;32',
-    'lightblue': '1;34',
-    'lightpurple': '1;35',
-    'lightcyan': '1;36',
-    'lightgray': '0;37',
+    'default':     29,
+    'black':       30,
+    'darkred':     31,
+    'darkgreen':   32,
+    'darkyellow':  33,
+    'darkblue':    34,
+    'darkmagenta': 35,
+    'darkcyan':    36,
+    'lightgray':   37,
+    'darkgray':    90,
+    'red':         91,
+    'green':       92,
+    'orange':      93,
+    'blue':        94,
+    'magenta':     95,
+    'cyan':        96,
+    'white':       97,
   }
 
 if __name__ == '__main__':
