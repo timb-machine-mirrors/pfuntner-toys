@@ -26,10 +26,10 @@ options:
 ```
 
 ### Positional arguments
-| Argument | Description          | Default                                                                                                                                                                       |
-|----------|----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `color`  | The foreground color | None, the foreground color is required                                                                                                                                        |
-| `text`   | Text to display      | If not specified, the script will read text from stdin.  Either `text` must be specified or stdin must be directed - the script will not read text directly from the terminal |
+| Argument | Description                      | Default                                                                                                                                                                       |
+|----------|----------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `color`  | The foreground color.  Choices: <ul><li>black</li><li>blue</li><li>cyan</li><li>darkblue</li><li>darkcyan</li><li>darkgray</li><li>darkgreen</li><li>darkmagenta</li><li>darkred</li><li>darkyellow</li><li>default</li><li>green</li><li>lightgray</li><li>magenta</li><li>orange</li><li>red</li><li>white</li></ul> | None, the foreground color is required                                                                                                                                        |
+| `text`   | Text to display                  | If not specified, the script will read text from stdin.  Either `text` must be specified or stdin must be directed - the script will not read text directly from the terminal |
 
 
 ### Options
