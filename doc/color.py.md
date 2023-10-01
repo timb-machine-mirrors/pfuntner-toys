@@ -75,10 +75,10 @@ The class could be used by another script - in fact, that's how the `--color` op
 
 Note: It helps when `color.py` is in the **same directory** as the script using the class.  I often do that as a symbolic link:
 
-    ```
-    $ ln -s ~/bin/color.py .
-    $
-    ```
+```
+$ ln -s ~/bin/color.py .
+$
+```
 
 ## Notes
 
