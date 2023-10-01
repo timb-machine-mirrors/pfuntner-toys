@@ -5,7 +5,7 @@ import sys
 import logging
 import argparse
 
-from table import Table
+# from table import Table
 
 class Color(object):
   @staticmethod
@@ -118,7 +118,7 @@ if __name__ == '__main__':
     Color.print_color('0')
     Color.print_color('10')
   elif args.test:
-    table = Table([])
+    table = __import__('table').Table([])
     for color in Color.color_codes.keys():
       table.add(color, Color.get_color_escape_code(color) + color + Color.get_color_escape_code('0') + Color.get_color_escape_code('10'))
     print(str(table))
