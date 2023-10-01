@@ -80,7 +80,7 @@ group.add_argument('-W', '--wide-enough', action='store_true', help='Restrict ba
 
 parser.add_argument('-t', '--timestamp', action='store_true', help='Include timestamp in message')
 parser.add_argument('--color', type=Color.get_color,
-                    help='Choose a color: {colors}'.format(colors=', '.join(Color.colors.keys())))
+                    help='Choose a color: {colors}'.format(colors=', '.join(Color.color_codes.keys())))
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 
 parser.add_argument('args', metavar='arg', nargs='*', help='Provide a message on the command line')
