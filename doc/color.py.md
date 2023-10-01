@@ -45,33 +45,33 @@ options:
 
 ### `--test`
 
-![color --test example](../color-test-example.png)
+![color --test example](images/color-test-example.png)
 
 Note: The background is white so the white text doesn't appear!
 
 ### Text from command line
 
-![color command line text example](color-commandline-text-example.png)
+![color command line text example](images/color-commandline-text-example.png)
 
 ### Text from command line
 
-![stdin text example](color-stdin-text-example.png)
+![stdin text example](images/color-stdin-text-example.png)
 
 ### Background color
 
-![background color example](color-background-color-example.png)
+![background color example](images/color-background-color-example.png)
 
 Note: I'm not crazy about the lingering background color when the prompt returns.  It doesn't seem to linger long... at least you don't have to use `--reset`!
 
 ### `--persist` and `--reset` options
 
-![example with --persist and --reset options](color-persist-and-reset-examples.png)
+![example with --persist and --reset options](images/color-persist-and-reset-examples.png)
 
 ### As a class
 
 The class could be used by another script - in fact, that's how the `--color` option of the [`banner`](../banner.md) does just that!
 
-![example as a class](color-class-example.png)
+![example as a class](images/color-class-example.png)
 
 Note: It helps when `color.py` is in the **same directory** as the script using the class.  I often do that as a symbolic link:
 
