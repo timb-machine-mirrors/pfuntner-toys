@@ -18,8 +18,8 @@ class Color(object):
     normalized_arg = re.sub(r'[-_ ]', '', arg).lower().replace('grey', 'gray')
     log.debug('normalized_arg: {normalized_arg!r}'.format(**locals()))
 
-    log.debug('colors: {Color.colors}'.format(**globals()))
-    for (key, value) in Color.colors.items():
+    log.debug('colors: {Color.color_codes}'.format(**globals()))
+    for (key, value) in Color.color_codes.items():
       log.debug('Testing {key!r}'.format(**locals()))
       if normalized_arg == key[:len(normalized_arg)]:
         rets[key] = value
@@ -29,7 +29,7 @@ class Color(object):
     if not rets:
       raise argparse.ArgumentTypeError('{arg!r} must be one of: {colors}'.format(
         arg=arg,
-        colors=', '.join(Color.colors.keys())
+        colors=', '.join(Color.color_codes.keys())
       ))
     elif len(rets) > 1:
       raise argparse.ArgumentTypeError('{arg!r} is ambiguous: {colors}'.format(
@@ -40,14 +40,18 @@ class Color(object):
     return list(rets.keys())[0]
 
   @staticmethod
-  def get_color_code(color, background_color=None):
-    return ('\x1b[{}m'.format(Color.colors.get(color) or color) if color else '') + \
-           ('\x1b[{}m'.format(Color.colors.get(background_color)+10) if background_color else '')
+  def get_color_escape_code(color, background_color=None):
+    return ('\x1b[{}m'.format(Color.get_color_code(color) or color) if color else '') + \
+           ('\x1b[{}m'.format(Color.get_color_code(background_color) + 10) if background_color else '')
 
   @staticmethod
   def print_color(color, background_color=None):
     if color:
-      sys.stdout.write(Color.get_color_code(color, background_color))
+      sys.stdout.write(Color.get_color_escape_code(color, background_color))
+
+  @classmethod
+  def get_color_code(cls, color_name):
+    return cls.color_codes.get(color_name)
 
   """
     I don't know where I got the color codes from originally but
@@ -56,7 +60,7 @@ class Color(object):
     and background colors.  The codes below are all foreground -
     you can just add 10 to any code to get the background code.
   """
-  colors = {
+  color_codes = {
     'default':     29,
     'black':       30,
     'darkred':     31,
@@ -86,12 +90,12 @@ if __name__ == '__main__':
 
   group = parser.add_mutually_exclusive_group(required=True)
   group.add_argument('color', type=Color.get_color, nargs='?',
-                      help='Choose a foreground color: {colors}'.format(colors=', '.join(Color.colors.keys())))
+                     help='Choose a foreground color: {colors}'.format(colors=', '.join(Color.color_codes.keys())))
   group.add_argument('--test', action='store_true', required=False, help='Test all colors')
   group.add_argument('-r', '--reset', action='store_true', help='Reset a console to default color only')
 
   parser.add_argument('-b', '--background-color', type=Color.get_color,
-                      help='Choose a background color: {colors}'.format(colors=', '.join(Color.colors.keys())))
+                      help='Choose a background color: {colors}'.format(colors=', '.join(Color.color_codes.keys())))
 
   parser.add_argument('-p', '--persist', action='store_true', help='Set a console to the specified color')
   parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
@@ -115,8 +119,8 @@ if __name__ == '__main__':
     Color.print_color('10')
   elif args.test:
     table = Table([])
-    for color in Color.colors.keys():
-      table.add(color, Color.get_color_code(color) + color + Color.get_color_code('0') + Color.get_color_code('10'))
+    for color in Color.color_codes.keys():
+      table.add(color, Color.get_color_escape_code(color) + color + Color.get_color_escape_code('0') + Color.get_color_escape_code('10'))
     print(str(table))
   elif args.text:
     Color.print_color(Color.get_color(args.color), args.background_color if args.background_color else None)
