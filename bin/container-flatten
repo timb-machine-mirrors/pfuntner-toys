@@ -59,6 +59,32 @@ if rc == 0 and stdout:
     $
   """
 
+  """
+    /0/Config/Cmd/0 '/bin/bash'
+    /0/Config/Domainname ''
+    /0/Config/Entrypoint None
+    /0/Config/Env/0 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+    /0/Config/Hostname 'c11d143fb16b'
+    /0/Config/Image 'almalinux:9'
+    /0/Config/Labels/cloud9_vin '651a8f7fb0f0e03bc170f422'
+    /0/Config/OnBuild None
+    /0/Config/OpenStdin True
+    /0/Config/StdinOnce False
+    /0/Config/Tty True
+    /0/Config/User ''
+    /0/Config/Volumes None
+    --
+    /0/ContainerConfig/Cmd/0 '/bin/bash'
+    /0/ContainerConfig/Domainname ''
+    /0/ContainerConfig/Entrypoint None
+    /0/ContainerConfig/Env/0 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+    /0/ContainerConfig/Hostname 'c11d143fb16b'
+    /0/ContainerConfig/Image 'almalinux:9'
+    /0/ContainerConfig/OnBuild None
+    /0/ContainerConfig/OpenStdin True
+    /0/ContainerConfig/StdinOnce False
+  """
+
   command = ['bash', '-c', f'docker export {container_id} | docker import - {tokens[0]}:flattened']
   (flatten_rc, flatten_stdout, flatten_stderr) = bruno_tools.run(command, log=log)
   if flatten_rc != 0:
