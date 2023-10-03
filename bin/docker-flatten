@@ -11,6 +11,8 @@ import bruno_tools
 
 parser = argparse.ArgumentParser(description='Flatten a container image - multiple layers to one layer')
 parser.add_argument('starting_image', metavar='starting-image', help='Starting image - presumably with multiple layers')
+parser.add_argument('new_image', metavar='new-image', nargs='?', help='New image to create - the default is the same as the starting image but with the tag `flattened`')
+parser.add_argument('-r', '--replace', action='store_true', help='Use name of starting image for flattened image')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -20,9 +22,16 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
-tokens = args.starting_image.split(':')
-if len(tokens) > 2:
+if args.new_image and args.replace:
+  parser.error('--replace and new-image are mutually exclusive')
+
+starting_image_tokens = args.starting_image.split(':')
+if len(starting_image_tokens) == 1:
+  starting_image_tokens.append('latest')
+elif len(starting_image_tokens) > 2:
   parser.error(f'Illegal tag {args.starting_image!r}')
+
+new_image = ':'.join(starting_image_tokens) if args.replace else (args.new_image if args.new_image else f'{starting_image_tokens[0]}:flattened')
 
 inspect_command = ['docker', 'inspect', args.starting_image]
 (inspect_rc, inspect_stdout, inspect_stderr) = bruno_tools.run(inspect_command, log=log)
@@ -149,7 +158,7 @@ if inspect_rc == 0 and inspect_stdout:
     for (label_name, label_value) in labels.items():
       flatten_shell_command += ' --change ' + repr(f'LABEL {label_name}={label_value}')
 
-    flatten_shell_command += f' - {tokens[0]}:flattened'
+    flatten_shell_command += f' - {new_image}'
 
     flatten_command = [
       'bash',
