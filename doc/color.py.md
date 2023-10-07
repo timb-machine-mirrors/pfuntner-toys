@@ -20,7 +20,7 @@ options:
   -r, --reset           Reset a console to default color only
   -b BACKGROUND_COLOR, --background-color BACKGROUND_COLOR
                         Choose a background color: default, black, darkred, darkgreen, darkyellow, darkblue, darkmagenta, darkcyan, lightgray, darkgray, red, green,
-                        orange, blue, magenta, cyan, white
+                        orange, yellow, blue, magenta, purple, cyan, white
   -p, --persist         Set a console to the specified color
   -v, --verbose         Enable debugging
 ```
@@ -28,7 +28,7 @@ options:
 ### Positional arguments
 | Argument | Description                      | Default                                                                                                                                                                       |
 |----------|----------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `color`  | The foreground color.  Choices: <ul><li>black</li><li>blue</li><li>cyan</li><li>darkblue</li><li>darkcyan</li><li>darkgray</li><li>darkgreen</li><li>darkmagenta</li><li>darkred</li><li>darkyellow</li><li>default</li><li>green</li><li>lightgray</li><li>magenta</li><li>orange</li><li>red</li><li>white</li></ul> | None, the foreground color is required                                                                                                                                        |
+| `color`  | The foreground color.  Choices: <ul><li>black</li><li>blue</li><li>cyan</li><li>darkblue</li><li>darkcyan</li><li>darkgray</li><li>darkgreen</li><li>darkmagenta</li><li>darkred</li><li>darkyellow</li><li>default</li><li>green</li><li>lightgray</li><li>magenta</li><li>orange</li><li>purple</li><li>red</li><li>white</li><li>yellow</li></ul> | None, the foreground color is required                                                                                                                                        |
 | `text`   | Text to display                  | If not specified, the script will read text from stdin.  Either `text` must be specified or stdin must be directed - the script will not read text directly from the terminal |
 
 
@@ -95,3 +95,4 @@ $
       color.py: error: argument color: 'b' is ambiguous: black, blue
       $
       ``` 
+- _yellow_ and _purple_ are technically not supported and that pisses me off.  To me, _orange_ and _magenta_ are close enough (respectively) so I'm making them equivalent.

@@ -74,8 +74,10 @@ class Color(object):
     'red':         91,
     'green':       92,
     'orange':      93,
+    'yellow':      93, # technically, this is known as "orange" but it looks "yellow" to me and it pisses me off that there IS no "yellow"
     'blue':        94,
     'magenta':     95,
+    'purple':      95, # technically, this is known as "magenta" but it looks "purple" to me and it pisses me off that there IS no "purple"
     'cyan':        96,
     'white':       97,
   }
