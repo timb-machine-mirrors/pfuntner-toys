@@ -203,6 +203,8 @@ class CsvMethod(MethodBase):
     :return: A two-element tuple: (the list of lists or dictionaries, a list of named column headings)
     """
     rows = [row for row in csv.reader(stream)]
+    if args.degunk and len(rows) > 0 and len(rows[0]) >= 1 and len(rows[0][0]) > 0 and rows[0][0][0] == '\ufeff':
+      rows[0][0] = rows[0][0][1:]
     if args.headings and rows:
       """
         Turn the list of lists into a list of dictionaries making use of the heading row
@@ -908,6 +910,7 @@ parser.add_argument('--style', choices=['flow', 'block'], help='Specify an yaml 
 parser.add_argument('--rotate', action='store_true', help='Rotate so rows are columns, columns are rows')
 parser.add_argument('-f', '--file', help='File from which to read, instead of stdin')
 parser.add_argument('--no-sort', action='store_true', help='Do not sort columns')
+parser.add_argument('--degunk', action='store_true', help='''Remove '\\ufeff' from beginning of CSV data''')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 
 args = parser.parse_args() if __name__ == '__main__' else parser.parse_args(['-i', 'separator', '-o', 'fixed'])
