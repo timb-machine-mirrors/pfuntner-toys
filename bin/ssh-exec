@@ -28,7 +28,7 @@ def replace_imports(path):
     imported = False
     for line in stream.read().splitlines():
       match = import_regexp.search(line)
-      if match:
+      if match and not args.raw:
         script = os.path.join(os.path.dirname(path), match.group(1) + '.py')
         cls = match.group(2)
         log.info(f'importing {cls} from {script}')
@@ -77,6 +77,7 @@ parser.add_argument('-d', '--docker', action='store_true', help='Treat target as
 parser.add_argument('-q', '--quiet', action='store_true', help='Use ssh -q option')
 parser.add_argument('-b', '--become', action='store_true', help='Become superuser')
 parser.add_argument('-e', '--env', action='append', help='Set environment variable: NAME=VALUE')
+parser.add_argument('-r', '--raw', action='store_true', help='Do not mess with importants')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
