@@ -118,6 +118,9 @@ for host in args.hosts:
 
       if rc == 0 and stdout:
         break
+      elif args.forgive:
+        log.warning(f'Giving up on {host} {ip}')
+        exit(0)
       else:
         retry -= 1
         if retry > 0:

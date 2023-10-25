@@ -632,6 +632,6 @@ if __name__ == '__main__':
 
         active_instances = [instance.name for instance in instances if instance.active]
         if active_instances and not args.no_fingerprints:
-          subprocess.Popen(['add-to-knownhosts'] + active_instances).wait()
+          subprocess.Popen(['add-to-knownhosts', '--forgive'] + active_instances).wait()
   else:
     print('No instances!')
