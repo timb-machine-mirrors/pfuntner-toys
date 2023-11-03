@@ -85,6 +85,7 @@ class Instances(object):
       (re.compile('^debian-11'),         'debian11', 'admin'),
       (re.compile('^amzn-'),             'amazon1',  'ec2-user'),
       (re.compile('^amzn2'),             'amazon2',  'ec2-user'),
+      (re.compile('^al2023'),            'al2023',   'ec2-user'),
       (re.compile('amazon-eks-node'),    'amazon2',  'ec2-user'),
       (re.compile('AmazonLinux2_'),      'amazon2',  'ec2-user'),
       (re.compile('^RHEL-7'),            'rhel7',    'ec2-user'),
