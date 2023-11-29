@@ -34,7 +34,7 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
-comment_regexp = re.compile(r'#.*$')
+comment_regexp = re.compile(r'\s*#.*$')
 all_whitespace_regexp = re.compile(r'^\s*$')
 
 if args.paths:
