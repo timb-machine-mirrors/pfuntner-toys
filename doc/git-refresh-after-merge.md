@@ -29,7 +29,7 @@ There are no options or arguments.
 While composing the bulk of the changes for this document, I deliberately did it in a feature branch to demonstrate the script:
 
 ```
-    $ gitstatus --changed --untrack | xargs git add
+    $ gitstatus --untrack | xargs git add
     $ git status
     On branch git-refresh-after-merge-doc
     Changes to be committed:

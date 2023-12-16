@@ -29,14 +29,14 @@ cmd = ['git', 'status', '--short'] + args.args
 if short_rc != 0:
   parser.error(f'{cmd} failed: {short_stderr!r}')
 
-(long_rc, long_stdout, long_stderr) = bruno_tools.run(['git', 'status'] + args.args)
-rebase_in_progress= 'rebase in progress' in long_stdout
-if rebase_in_progress:
-  log.warning('Rebase in progress!')
-
 lines = short_stdout.splitlines()
 
 if lines:
+  (long_rc, long_stdout, long_stderr) = bruno_tools.run(['git', 'status'] + args.args)
+  rebase_in_progress = 'rebase in progress' in long_stdout
+  if rebase_in_progress:
+    log.warning('Rebase in progress!')
+
   table = bruno_tools.Table('File', 'Status') if args.long else None
 
   conflicts = any([line.startswith('UU') for line in lines])
@@ -54,11 +54,11 @@ if lines:
       if status == '??':
         if args.long:
           table.add(remain, 'Untracked file')
-          if not conflicts:
-            if args.untracked:
-              print(remain)
-            else:
-              log.warning(f'Untracked file {remain!r}')
+        elif not conflicts:
+          if args.untracked:
+            print(remain)
+          else:
+            log.warning(f'Untracked file {remain!r}')
       elif status == 'A ':
         if args.long:
           table.add(remain, 'Staged new file')
