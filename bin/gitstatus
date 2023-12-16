@@ -89,7 +89,7 @@ if lines:
           if args.long:
             table.add(old_name, f'Staged rename to {new_name!r}')
           else:
-            staged_files.append(f'{remain}->{new_name}')
+            staged_files.append(f'{old_name}->{new_name}')
         else:
           log.warning(f'Cannot parse rename: {line!r}')
       elif status == 'UU':
@@ -104,7 +104,9 @@ if lines:
 
   if args.long:
     table.close()
-  elif not files_to_stage:
+  elif files_to_stage:
+    print('\n'.join(files_to_stage))
+  else:
     if staged_files:
       if rebase_in_progress:
         log.warning(f'No files to stage but ready to continue rebase: {", ".join(sorted(staged_files))}')
