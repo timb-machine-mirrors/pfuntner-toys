@@ -2,71 +2,99 @@
 
 import re
 import sys
-import getopt
+import logging
+import argparse
 import subprocess
 
-"""
-ibmadmin@pfuntner1:~/tmp/pseudo-logmet-login$ git status
-On branch master
-Your branch is up-to-date with 'origin/master'.
-Untracked files:
-  (use "git add <file>..." to include in what will be committed)
+def see(expression):
+  log.info('>>> {expression}: {value}'.format(expression=expression, value=eval(expression)))
 
-        Dockerfile
-        cert.pem
-        docker-compose.yml
-        pseudologin.json
-        pseudologin.py
-"""
+parser = argparse.ArgumentParser(description='Simplify `git status` output')
+parser.add_argument('-c', '--changes', '--changed', '--modified', dest='changes', action='store_true', help='Show changed files')
+parser.add_argument('-u', '--untracked', dest='untracked', action='store_true', help='Show untracked files')
+parser.add_argument('--unmerged', dest='unmerged', action='store_true', help='Show unmerged files')
+parser.add_argument('-a', '--all', dest='all', action='store_true', help='Show changed, unmerged, and untracked files')
+parser.add_argument('-v', '--verbose', dest='verbose', action='count', help='Enable debugging')
+parser.add_argument('files', metavar='file', nargs='*', help='Files to pass to `git status`')
+args = parser.parse_args()
 
-def syntax(msg=None):
-  if msg:
-    sys.stderr.write("%s\n" % msg)
-  sys.stderr.write("Syntax: %s --all|%s [--noparents]\n" % (sys.argv[0], '|'.join(["--%s" % section for section in sections])))
-  exit(1)
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-sections = ["untracked", "changes"]
+section_regexps = {
+  'modified': {
+     'header': re.compile('^#?\s*Changes not staged for commit:'),
+     'file': re.compile('^#?\s+modified:\s+(.*)$'),
+     'requested': False,
+  },
+  'unmerged': {
+     'header': re.compile('^#?\s*Unmerged paths:'),
+     'file': re.compile('^#?\s+both modified:\s+(.*)$'),
+     'requested': False,
+  },
+  'untracked': {
+     'header': re.compile('^#?\s*Untracked files:'),
+     'file': re.compile('^#?\t([^( ].*)$'),
+     'requested': False,
+  },
+}
 
-noParents = False
+if args.changes or args.all:
+  section_regexps['modified']['requested'] = not section_regexps['modified']['requested']
+if args.untracked or args.all:
+  section_regexps['untracked']['requested'] = not section_regexps['untracked']['requested']
+if args.unmerged or args.all:
+  section_regexps['unmerged']['requested'] = not section_regexps['unmerged']['requested']
 
-desired = {}
-inSection = {}
-for section in sections:
-  desired[section] = False
-  inSection[section] = False
+if not any([section_regexps[section]['requested'] for section in section_regexps.keys()]):
+  section_regexps['modified']['requested'] = True # default to modified only
 
-(opts,args) = getopt.getopt(sys.argv[1:], "", sections + ["all", "noparents", "noparent"])
-for (opt,arg) in opts:
-  short = opt[2:]
-  if short in sections:
-    desired[short] = not desired[short]
-  elif opt == "--all":
-    for section in sections:
-      desired[section] = True
-  elif opt in ["--noparents", "--noparent"]:
-    noParents = not noParents
-  else:
-    syntax("Unhandled option `%s`" % opt)
+see('section_regexps')
 
-if sum([desired[section] for section in sections]) == 0:
-  syntax()
-
-p = subprocess.Popen(["git", "status"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-(stdout,stderr) = p.communicate()
+cmd = ['git', 'status'] + args.files
+p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+(stdout, stderr) = p.communicate()
 stdout = stdout.decode('utf-8')
 stderr = stderr.decode('utf-8')
-assert p.wait() == 0, "`git status` rc=%d, %s, %s" % (p.returncode, stdout, stderr)
+rc = p.wait()
+if (rc != 0) or stderr:
+  log.critical('{cmd} failed: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
+  exit(1)
 
-for line in stdout.split('\n'):
-  if re.match("\S", str(line)):
-    for section in sections:
-      inSection[section] = re.match(section.title(), str(line)) != None
-  elif re.match("\s+[^ \t(]", str(line)) and ((not noParents) or ("../" not in line)):
-    for section in sections:
-      if inSection[section] and desired[section]:
-        if inSection["changes"]:
-          match = re.search("modified:\s+(\S*)", str(line))
-          if match:
-            print(match.group(1).strip(' \r'))
-        else:
-          print(line.strip(' \r'))
+section_end_regexp = re.compile('^(|# )[A-Za-z]')
+
+inside = None
+
+items = 0
+
+for line in stdout.splitlines():
+  if section_end_regexp.search(str(line)):
+    inside = None
+    for section in section_regexps.keys():
+      if section_regexps[section]['header'].search(str(line)):
+        inside = section
+
+  see('(line, inside)')
+
+  if section_regexps['modified']['requested'] and (inside == 'modified'):
+    match = section_regexps['modified']['file'].search(str(line))
+    if match:
+      print(match.group(1))
+      items += 1
+
+  if section_regexps['untracked']['requested'] and (inside == 'untracked'):
+    match = section_regexps['untracked']['file'].search(str(line))
+    if match:
+      print(match.group(1))
+      items += 1
+
+  if section_regexps['unmerged']['requested'] and (inside == 'unmerged'):
+    match = section_regexps['unmerged']['file'].search(str(line))
+    if match:
+      print(match.group(1))
+      items += 1
+
+if not items:
+  log.warning('No files changed')
+  exit(1)
