@@ -4,10 +4,13 @@ import re
 import shlex
 import subprocess
 
-def run(cmd, stdin=None, capture=True, shell=False, log=None):
+def run(cmd, stdin=None, capture=True, shell=False, log=None, simple_join=False):
   if shell:
     if isinstance(cmd, list):
-      cmd = shlex.join(cmd)
+      if simple_join:
+        cmd = ' '.join(cmd)
+      else:
+        cmd = shlex.join(cmd)
   elif isinstance(cmd, str):
     cmd = cmd.split()
 
