@@ -6,8 +6,10 @@ import logging
 import argparse
 import datetime
 
+DEFAULT_INTERVAL = 5
+
 parser = argparse.ArgumentParser(description='Print time periodically')
-parser.add_argument('-i', '--interval', type=float, default=15, help='Specifiy interval between printing in minutes (default: 60)')
+parser.add_argument('-i', '--interval', type=float, default=15, help=f'Specify interval between printing in minutes (default: {DEFAULT_INTERVAL})')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -26,4 +28,4 @@ while True:
   now = datetime.datetime.now()
   now_formatted = now.strftime("%a %Y-%m-%d %H:%M:%S.%f")
   print(f'\r{iteration:6}: {now_formatted} {now-start!s}', end='')
-  time.sleep(args.interval*60)
+  time.sleep((args.interval or DEFAULT_INTERVAL)*60)
