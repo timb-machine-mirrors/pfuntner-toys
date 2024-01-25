@@ -81,8 +81,8 @@ class Table(object):
             columns: A list of objects for the cells in the row.
         """
 
-        # assure the number of cells matches the number of headings
-        assert len(columns) == len(self.data[0])
+        # assure the number of headings matches the number of cells
+        assert len(self.data[0]) == len(columns), f'Expected {len(self.data[0])} columns but got {len(columns)}'
 
         row = list()
         for datum in columns:

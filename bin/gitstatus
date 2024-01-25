@@ -64,7 +64,7 @@ if lines:
           table.add(remain, 'Staged new file')
         else:
           staged_files.append(remain)
-      elif status == ' M':
+      elif status in [' M', 'MM']:
         if args.long:
           table.add(remain, 'Un-staged modified file')
         elif not conflicts:

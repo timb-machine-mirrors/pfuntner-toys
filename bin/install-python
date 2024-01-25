@@ -47,7 +47,7 @@ def run(target, cmd, capture=True, read_only=True):
     cmd = shlex.join(cmd)
 
   if args.proxy:
-    cmd = f'HTTP_PROXY={args.proxy} {cmd}'
+    cmd = f'HTTP_PROXY={args.proxy} HTTPS_PROXY={args.proxy} {cmd}'
 
   if args.docker:
     cmd = ['docker', 'exec', target, 'sh', '-c', cmd]
