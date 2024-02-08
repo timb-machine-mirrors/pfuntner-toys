@@ -30,21 +30,22 @@ args = parser.parse_args()
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
+logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
+log = logging.getLogger()
+log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
+
 if args.delim == '\\t':
   args.delim = '\t'
 
 if (not args.delim) and (not args.regexp):
   delim = re.compile('\s+')
 elif args.delim:
+  log.debug(f'Compiling {args.delim!r}')
   delim = re.compile(args.delim)
 else:
   delim = None
 
 regexp = re.compile(args.regexp) if args.regexp else None
-
-logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
-log = logging.getLogger()
-log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
 if args.filename:
   stream = open(args.filename)
