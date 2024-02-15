@@ -20,15 +20,16 @@ def process(source):
       vars = loader(stream)
 
   else:
+    data = sys.stdin.read()
     vars = None
     try:
-      vars = json.load(sys.stdin)
+      vars = json.loads(data)
     except Exception as e:
       log.info(f'Could not load stdin as json: {e!s}')
 
     if vars is None:
       try:
-        vars = yaml_load(sys.stdin)
+        vars = yaml_load(data)
       except Exception as e:
         log.info(f'Could not load stdin as yaml: {e!s}')
 
