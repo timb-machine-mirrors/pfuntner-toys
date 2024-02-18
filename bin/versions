@@ -156,8 +156,10 @@ log.debug('args: {args}'.format(**locals()))
 if args.version and len(args.targets) != 1:
   parser.error('You must specify exactly one target when you specify --version')
 
-# The version must contain a digit followed by a period
-version_regexp = re.compile(r'\d\.')
+# The version must either:
+#   - contain a digit followed by a period
+#   - or be composed entirely of digits and must have two or more digits
+version_regexp = re.compile(r'(\d\.)|(^\d{2,}$)')
 
 # This regular expression removes trash at beginning of the version
 remove_headings = re.compile(r'^"')
