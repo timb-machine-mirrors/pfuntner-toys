@@ -188,7 +188,7 @@ if args.hosts:
           facts.get('distro', ''),
           facts.get('uptime', ''),
           facts.get('ansible_kernel', ''),
-          facts.get('discovered_interpreter_python', ''),
+          run('which python3')[1].strip() if host == 'localhost' else facts.get('discovered_interpreter_python', ''),
           facts.get('ansible_python_version', ''),
           facts.get('ansible_architecture', ''),
           facts.get('ansible_pkg_mgr', ''),
