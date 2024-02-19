@@ -113,7 +113,7 @@ if args.hosts:
     print(('\n' if args.names else ',').join(args.hosts))
   else:
     setup_regexp = re.compile(r'^(\S+)\s+\|\s+(\S+)\s+=>\s+\{$')
-    table = Table('Host', 'User', 'Address', 'Distro', 'Up time', 'Kernel', 'Arch', 'Pkgmgr', 'Svcmgr')
+    table = Table('Host', 'User', 'Address', 'Distro', 'Up time', 'Kernel', 'Python location', 'Python version', 'Arch', 'Pkgmgr', 'Svcmgr')
 
     (rc, stdout, stderr) = run('ansible {} -m setup'.format(','.join(args.hosts)))
     lines = stdout.splitlines()
@@ -181,7 +181,19 @@ if args.hosts:
             facts['uptime'] = ''
         else:
           facts['uptime'] = dhms(datetime.timedelta(seconds=facts.get('ansible_uptime_seconds', 0)))
-        table.add(host, user, addr, facts.get('distro', ''), facts.get('uptime', ''), facts.get('ansible_kernel', ''), facts.get('ansible_architecture', ''), facts.get('ansible_pkg_mgr', ''), facts.get('ansible_service_mgr', ''))
+        table.add(
+          host,
+          user,
+          addr,
+          facts.get('distro', ''),
+          facts.get('uptime', ''),
+          facts.get('ansible_kernel', ''),
+          facts.get('discovered_interpreter_python', ''),
+          facts.get('ansible_python_version', ''),
+          facts.get('ansible_architecture', ''),
+          facts.get('ansible_pkg_mgr', ''),
+          facts.get('ansible_service_mgr', '')
+        )
       else:
         log.warning(f'Could not find host {host!r}')
 
