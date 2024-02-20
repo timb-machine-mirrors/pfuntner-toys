@@ -156,7 +156,7 @@ for pos, process in enumerate(processes):
             print()
         print(f'Host: {process.host}')
         print(process.stdout.buffer, end='')
-        print(process.stderr.buffer, file=sys.stdout, end='')
+        print(process.stderr.buffer, file=sys.stderr, end='')
 
 if args.json:
     json.dump(result, sys.stdout, indent=2)
