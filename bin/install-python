@@ -162,6 +162,7 @@ package_managers = {
   'centos': Yum,
   'debian': Apt,
   'redhat': Yum,
+  'rhel': Yum,
   'ubuntu': Apt,
 }
 
