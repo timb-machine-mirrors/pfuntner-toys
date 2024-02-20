@@ -83,18 +83,20 @@ class Process(threading.Thread):
 
 
 def read_ssh_config():
-    host_regexp = re.compile(r'^Host\s+(\w+)\s*$')
+    host_regexp = re.compile(r'^Host\s+(\S+)\s*$')
     attr_regexp = re.compile(r'^\s+(\w+)\s+(\S+)\s*$')
     host = None
     ret = dict()
     with open(os.path.expanduser('~/.ssh/config')) as stream:
         for line in stream.read().splitlines():
             match = host_regexp.search(line)
+            log.debug(f'{match.groups() if match else None} {line!r}')
             if match:
                 host = match.group(1)
                 ret[host] = dict()
             elif host:
                 match = attr_regexp.search(line)
+                log.debug(f'{match.groups() if match else None} {line!r}')
                 if match:
                     ret[host][match.group(1).lower()] = match.group(2)
 
