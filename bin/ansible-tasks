@@ -14,6 +14,7 @@ class Task(object):
     self.name = name
     self.item = item or ''
     self.hosts = {}
+    self.elapsed = None
 
   def __str__(self):
     if self.item:
@@ -59,7 +60,8 @@ def process(filename=None):
 
   task_groups = list()
   task_names = dict()
-  for (pos, line) in enumerate(stream.read().splitlines()):
+  lines = stream.read().splitlines()
+  for (pos, line) in enumerate(lines):
     line = remove_packer_overhead(line)
 
     if end_regexp.search(line):
@@ -68,6 +70,14 @@ def process(filename=None):
     match = task_regexp.search(str(line))
     log.debug('task match: {groups} {line!r}'.format(groups=match.groups() if match else None, **locals()))
     if match:
+      # check if we can backfill the timing information for the last task
+      if task_groups and pos+1 < len(lines):
+        timing_match = timing_regexp.search(lines[pos+1])
+        if timing_match:
+          for task in tasks:
+            if task.type == task_groups[0].lower() and task.role == (task_groups[1] or '') and task.name == task_groups[2] and task.elapsed is None:
+              task.elapsed = timing_match.groups()[-2]
+              log.info(f'After backfilling: {task!s}')
       # check if last task didn't have items that applied to any host
       if task_groups:
         task_check = [task for task in tasks if task.type == task_groups[0].lower() and task.role == (task_groups[1] or '') and task.name == task_groups[2]]
@@ -115,7 +125,7 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
-task_regexp = re.compile('^(?:RUNNING\s+)?(\S+)\s+\[([^:]*\s:\s)?\s*(.*)\]\s+\*{2,}$')
+task_regexp = re.compile(r'^(?:RUNNING\s+)?(\S+)\s+\[([^:]*\s:\s)?\s*(.*)\]\s+\*{2,}$')
 
 """
 host_regexp needs to be able to process all of these possibilities:
@@ -126,15 +136,18 @@ host_regexp needs to be able to process all of these possibilities:
   failed: [centos7] (item=OUTPUT) => {"ansible_loop_var": "item", "changed": false, "cmd": "/sbin/iptables -t filter -L OUTPUT", "item": "OUTPUT", "msg": "iptables v1.4.21: can\'t initialize iptables table `filter\': Permission denied (you must be root)\\nPerhaps iptables or your kernel needs to be upgraded.", "rc": 3, "stderr": "iptables v1.4.21: can\'t initialize iptables table `filter\': Permission denied (you must be root)\\nPerhaps iptables or your kernel needs to be upgraded.\\n", "stderr_lines": ["iptables v1.4.21: can\'t initialize iptables table `filter\': Permission denied (you must be root)", "Perhaps iptables or your kernel needs to be upgraded."], "stdout": "", "stdout_lines": []}
   fatal: [aws-rh8]: FAILED! => {"changed": true, "cmd": "cat '/home/ec2-user/repos/toys/misc/.bash_rc' >> '/home/ec2-user/.bashrc'", "delta": "0:00:00.005289", "end": "2020-10-18 13:42:04.813624", "msg": "non-zero return code", "rc": 1, "start": "2020-10-18 13:42:04.808335", "stderr": "cat: /home/ec2-user/repos/toys/misc/.bash_rc: No such file or directory", "stderr_lines": ["cat: /home/ec2-user/repos/toys/misc/.bash_rc: No such file or directory"], "stdout": "", "stdout_lines": []}
 """
-host_regexp = re.compile('^([a-z]+):\s+\[([^\]]*)\](?:)?(?: FAILED!)?(?: =>)?(?: \(item=([^)]+)\))?(?: =>)?(?: \{.*$)?')
+host_regexp = re.compile(r'^([a-z]+):\s+\[([^\]]*)\](?:)?(?: FAILED!)?(?: =>)?(?: \(item=([^)]+)\))?(?: =>)?(?: \{.*$)?')
 
 # Remove packer overhead if necessary
-packer_regexp = re.compile('^\x1b\[\d+;\d+2m\s+\S+:\s(.*)\x1b\[\d+m$')
+packer_regexp = re.compile(r'^\x1b\[\d+;\d+2m\s+\S+:\s(.*)\x1b\[\d+m$')
 
 # Simplify host: [foo -> bar] => [foo]
-host_simplifier_regexp = re.compile('^(\S+)\s+->\s+\S+$')
+host_simplifier_regexp = re.compile(r'^(\S+)\s+->\s+\S+$')
 
-end_regexp = re.compile('^PLAY RECAP')
+end_regexp = re.compile(r'^PLAY RECAP')
+
+# Saturday 09 March 2024  10:11:40 -0500 (0:00:00.027)       0:00:01.216 ********
+timing_regexp = re.compile(r'^(\w+)\s+(\d{2})\s+(\w+)\s+(\d{4})\s+(\d{2}:\d{2}:\d{2})\s+(-?\d{4})\s+\((\d+:\d{2}:\d{2}\.\d{3})\)\s+(\d+:\d{2}:\d{2}\.\d{3})\s+\*+')
 
 tasks = []
 eof = []
@@ -152,9 +165,22 @@ if tasks:
 
 hosts = sorted(list(hosts))
 
-table = Table('Task type', 'Role', 'Task', 'Item', *hosts)
+columns = ['Task type', 'Role', 'Task']
+if any([bool(task.elapsed) for task in tasks]):
+  has_elapsed = True
+  columns.append('Elapsed')
+else:
+  has_elapsed = False
+
+columns += ['Items']
+columns += hosts
+
+table = Table(*columns)
 for task in tasks:
-  row = [task.type, task.role, task.name, task.item]
+  row = [task.type, task.role, task.name]
+  if has_elapsed:
+    row.append(task.elapsed or '')
+  row.append(task.item)
   for host in hosts:
     row.append(task.hosts.get(host, ''))
   table.add(row)
