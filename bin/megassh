@@ -157,7 +157,7 @@ for pos, process in enumerate(processes):
             result[-1].update(ssh_config[process.host])
     else:
         if pos > 0:
-            print()
+            print('', file=sys.stderr)
         print(f'Host: {process.host}', file=sys.stderr)
         print(process.stdout.buffer, end='')
         print(process.stderr.buffer, file=sys.stderr, end='')
