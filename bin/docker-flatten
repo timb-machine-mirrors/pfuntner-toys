@@ -154,7 +154,7 @@ if inspect_rc == 0 and inspect_stdout:
       flatten_shell_command += f' --change "USER {user}"'
 
     labels = image_details['Config'].get('Labels', [])
-    for (label_name, label_value) in labels.items():
+    for (label_name, label_value) in (labels or {}).items():
       flatten_shell_command += ' --change ' + repr(f'LABEL {label_name}={label_value!r}')
 
     flatten_shell_command += f' - {new_image}'
