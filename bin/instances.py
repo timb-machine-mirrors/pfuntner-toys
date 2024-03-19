@@ -83,6 +83,7 @@ class Instances(object):
       (re.compile('^debian-stretch'),    'debian9',  'admin'),
       (re.compile('^debian-10'),         'debian10', 'admin'),
       (re.compile('^debian-11'),         'debian11', 'admin'),
+      (re.compile('^debian-12'),         'debian12', 'admin'),
       (re.compile('^amzn-'),             'amazon1',  'ec2-user'),
       (re.compile('^amzn2'),             'amazon2',  'ec2-user'),
       (re.compile('^al2023'),            'al2023',   'ec2-user'),
@@ -145,6 +146,7 @@ class Instances(object):
       (re.compile('^debian-9'),          'debian9'),
       (re.compile('^debian-10'),         'debian10'),
       (re.compile('^debian-11'),         'debian11'),
+      (re.compile('^debian-12'),         'debian12'),
       (re.compile('^ubuntu[-a-z]*-16'),  'ubuntu16'),
       (re.compile('^ubuntu[-a-z]*-18'),  'ubuntu18'),
       (re.compile('^ubuntu[-a-z]*-20'),  'ubuntu20'),
@@ -502,6 +504,8 @@ if __name__ == '__main__':
   if not args.hosts and any([args.start, args.stop, args.restart]):
     args.hosts = ['all']
 
+  remake = False # set to true for --start
+
   instances = instances_class.get_instances()
   if instances:
     from table import Table
@@ -540,8 +544,9 @@ if __name__ == '__main__':
       if args.hosts:
         parser.error(f'Did not find instances: {args.hosts}')
       if count > 0:
-        print('sleeping for 30 seconds to let instances restart')
-        time.sleep(30)
+        print('sleeping for 60 seconds to let instances restart')
+        time.sleep(60)
+        remake = True
       else:
         parser.error('No instances to start')
 
@@ -602,7 +607,7 @@ if __name__ == '__main__':
       else:
         parser.error('No instances to stop')
 
-    if args.make or args.ansible_make:
+    if remake or args.make or args.ansible_make:
         if args.clean:
           log.warning('--clean is no longer needed - clean-instances is run by default')
 
