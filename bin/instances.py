@@ -546,6 +546,7 @@ if __name__ == '__main__':
       if count > 0:
         print('sleeping for 60 seconds to let instances restart')
         time.sleep(60)
+        instances = instances_class.get_instances()
         remake = True
       else:
         parser.error('No instances to start')
