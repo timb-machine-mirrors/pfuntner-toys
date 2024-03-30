@@ -1,11 +1,8 @@
 #! /usr/bin/env python3
 
-import re
-import os
 import logging
 import datetime
-import platform
-import subprocess
+import shutil
 
 """
   A trick for bootstrapping this module when it's not in the same directory
@@ -42,30 +39,6 @@ log = logging.getLogger()
 
 class BrunoUtils:
 
-  @classmethod
-  def extract(cls, cmd, pattern, default_value):
-    ret = default_value
-    caster = type(ret)
-    if isinstance(cmd, list):
-      cmd = ' '.join(cmd)
-    log.debug('Running {cmd!r}'.format(**locals()))
-    try:
-      p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-      (stdout, stderr) = p.communicate()
-      stdout = stdout.decode('utf-8')
-      stderr = stderr.decode('utf-8')
-      rc = p.wait()
-      log.debug('{cmd!r}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
-      match = re.search(pattern, stdout)
-      if match:
-        log.debug('extracted: {}'.format(match.group(1)))
-        ret = caster(match.group(1))
-      else:
-        log.debug('{stdout!r} failed to match {pattern!r}'.format(**locals()))
-    except Exception as e:
-      log.debug('Caught `{e!s}`'.format(**locals()))
-
-    return ret
 
   @classmethod
   def cols(cls):
@@ -74,8 +47,7 @@ class BrunoUtils:
 
       Return value: The number of columns as an integer.
     """
-
-    return cls.extract('stty size < /dev/tty', '\d+\s+(\d+)', 80)
+    return shutil.get_terminal_size().columns
 
   @classmethod
   def rows(cls):
@@ -84,8 +56,7 @@ class BrunoUtils:
 
       Return value: The number of rows as an integer.
     """
-
-    return cls.extract('stty size < /dev/tty', '(\d+)\s+\d+', 24)
+    return shutil.get_terminal_size().lines
 
   @staticmethod
   def divmod(a, b):
@@ -139,16 +110,6 @@ class BrunoUtils:
 
     return ret
 
-  @classmethod
-  def get_file(cls, filename):
-    if os.path.exists(filename):
-      assert not os.path.isdir(filename), f'{filename} is a directory'
-      size = os.path.getsize(filename)
-      if size > 2**20:
-        altname = filename + '-' + datetime.datetime.now().strftime('%Y%m%dT%H%M%S%f')
-        subprocess.Popen(['mv', filename, altname]).wait()
-        subprocess.Popen(['gzip', altname]).wait()
-    return filename
 
 class TimezoneMagic(object):
   """
