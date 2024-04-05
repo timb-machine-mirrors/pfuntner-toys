@@ -36,7 +36,7 @@ for pat in args.pats:
 history = set()
 
 notLocal = re.compile("/c/WINDOWS|/c/Program Files", re.IGNORECASE)
-system_paths = [re.compile('^/usr/(local|ucb|bin|sbin)'), re.compile('^/s?bin')]
+system_paths = [re.compile('^/usr/(local|ucb|bin|sbin)'), re.compile('^/s?bin'), re.compile('^/mnt/c/Windows')]
 
 # Real Unix and CYGWIN separate paths in a list with a colon but Git bash uses a semicolon
 dirs = re.split('[;:]', os.environ["PATH"])
