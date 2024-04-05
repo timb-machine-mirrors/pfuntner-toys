@@ -17,6 +17,7 @@ import subprocess
 ssh_root_raw = '~/.ssh'
 ssh_root = os.path.expanduser(ssh_root_raw)
 ssh_config_filename = os.path.join(ssh_root, 'config')
+ssh_config_keep_filename = os.path.join(ssh_root, 'config.keep')
 
 private_ssh_keyfile = os.path.join(ssh_root, 'id_rsa')
 private_ssh_keyfile_raw = os.path.join(ssh_root_raw, 'id_rsa')
@@ -637,6 +638,9 @@ if __name__ == '__main__':
         with open(ssh_config_filename, 'w') as stream:
           for instance in instances:
             stream.write(f'Host {instance.name}\n\tHostname {instance.ip}\n\tUser {instance.user}\n\tIdentityFile {instance.key_filename}\n\tProxyCommand nc -X connect -x proxy.esl.cisco.com:80 %h %p\n')
+            if os.path.exists(ssh_config_keep_filename):
+              with open(ssh_config_keep_filename) as keep_config:
+                stream.write(keep_config.read())
 
         active_instances = [instance.name for instance in instances if instance.active]
         if active_instances and not args.no_fingerprints:
