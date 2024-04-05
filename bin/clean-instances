@@ -46,7 +46,10 @@ if not args.force:
 
 if args.force or re.search('^y(e(s?))?', resp, flags=re.IGNORECASE):
   run('sudo rm -fv /etc/ansible/hosts', capture=False)
-  run(['rm', '-fv', os.path.expanduser('~/.ssh/config')], capture=False)
+  if os.path.exists(os.path.expanduser('~/.ssh/config.keep')):
+    run(['cp', '-v', os.path.expanduser('~/.ssh/config.keep'), os.path.expanduser('~/.ssh/config')], capture=False)
+  else:
+    run(['rm', '-fv', os.path.expanduser('~/.ssh/config')], capture=False)
   run('clean-known-hosts', capture=False)
 else:
   print('Confirmation failed, no instances removed')
