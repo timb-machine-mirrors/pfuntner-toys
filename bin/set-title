@@ -104,7 +104,13 @@ log.setLevel(logging.WARNING - 10*(args.verbose or 0))
 if args._self and args.title:
   parser.error('Specify either --self or a title string but not both')
 
-title = (simplify(os.environ.get('USER', '?')) + '@' + platform.node()) if args._self or not args.title else ' '.join(args.title)
+set_title_text = None
+set_title_text_file = os.path.expanduser('~/set-title.txt')
+if os.path.isfile(set_title_text_file):
+  with open(set_title_text_file) as stream:
+    set_title_text = stream.read().strip()
+
+title = (set_title_text or (simplify(os.environ.get('USER', '?')) + '@' + platform.node())) if args._self or not args.title else ' '.join(args.title)
 
 if args.who_am_i:
   print(title)
