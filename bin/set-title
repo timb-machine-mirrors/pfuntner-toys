@@ -110,6 +110,8 @@ if os.path.isfile(set_title_text_file):
   with open(set_title_text_file) as stream:
     set_title_text = stream.read().strip()
 
+log.info(f'{set_title_text=}')
+
 title = (set_title_text or (simplify(os.environ.get('USER', '?')) + '@' + platform.node())) if args._self or not args.title else ' '.join(args.title)
 
 if args.who_am_i:
