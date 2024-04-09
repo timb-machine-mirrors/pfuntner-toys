@@ -18,7 +18,8 @@ def dive(path):
 
   if not ('/.' in path or '/Downloads' in path or '/third-party' in path or '/__pycache__' in path):
 
-    if not os.path.islink(path) and os.path.isdir(path):
+    if os.path.isdir(path):
+      log.debug(f'Trying {path!r}')
       if match(os.path.basename(path)):
         ret.append(path)
 
