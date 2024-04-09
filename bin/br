@@ -72,10 +72,10 @@ if getattr(args, 'gvim', False):
   if not editor:
     log.error('--gvim used but there is no GVIM environment variable')
     exit(1)
-elif getattr(args, 'gedit'):
+elif getattr(args, 'gedit', False):
   editor = 'gedit'
   editor_options = []
-elif getattr(args, 'notepad'):
+elif getattr(args, 'notepad', False):
   editor = notepad
 
 exrc_path = os.path.expanduser('~/.exrc')
@@ -89,7 +89,7 @@ if args.files:
   """
     We'll act like the old `br` script and just invoke `vi -R argv[1] ...`
   """
-  cmd = [editor] + ([] if getattr(args, 'notepad') else editor_options) + [truepath.process(path, log) for path in args.files]
+  cmd = [editor] + ([] if getattr(args, 'notepad', False) else editor_options) + [truepath.process(path, log) for path in args.files]
   log.debug(str(cmd))
   os.execvp(editor, cmd)
   assert False, "os.execvp() of `vi` returned control to us!"
@@ -111,7 +111,7 @@ os.write(fd, add_crs(binary_stdin.read()))
 os.close(fd)
 
 with open("/dev/tty", 'r') as tty:
-  cmd = [editor] + ([] if getattr(args, 'notepad') else editor_options) + [truepath.process(name, log=log)]
+  cmd = [editor] + ([] if getattr(args, 'notepad', False) else editor_options) + [truepath.process(name, log=log)]
   log.debug(str(cmd))
   p = subprocess.Popen(cmd, stdin=tty)
   rc = p.wait()
