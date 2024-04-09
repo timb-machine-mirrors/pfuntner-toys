@@ -26,27 +26,39 @@ def add_crs(s):
     s = b'\r\n'.join(s.splitlines()) + b'\r\n'
   return s
 
+notepads = [
+  '/cygdrive/c/Windows/system32/notepad',
+  '/mnt/c/Windows/system32/notepad.exe',
+]
+
+notepad = None
+for curr in notepads:
+  if os.path.isfile(curr):
+    notepad = curr
+windoze = bool(notepad)
+
 parser = argparse.ArgumentParser(description='Launch editor (vi, et al) on a file/data stream, in read-only mode if possible')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enable debugging')
 
 group = parser.add_mutually_exclusive_group()
-windoze = 'win' in sys.platform
-if windoze:
+if notepad:
   # Windoze only options
-  group.add_argument('-g', '--gvim', action='store_true', help='Use gvim instead of vi (Windoze only)')
+  # group.add_argument('-g', '--gvim', action='store_true', help='Use gvim instead of vi (Windoze only)')
   group.add_argument('-n', '--notepad', action='store_true', help='Use notepad instead of vi (Windoze only)')
-else:
+if sys.platform == 'linux':
   group.add_argument('-g', '--gedit', action='store_true', help='Use gedit instead of vi (Unix only)')
 
 parser.add_argument('files', metavar='file', nargs='*', help='Zero or more files')
 args = parser.parse_args()
 
 
+"""
 if not windoze:
   args.gvim = False
   args.notepad = False
 else:
   args.gedit = False
+"""
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
 log = logging.getLogger()
@@ -55,16 +67,16 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 editor = 'vi'
 editor_options = ['-R']
 
-if args.gvim:
+if getattr(args, 'gvim', False):
   editor = os.environ['GVIM']
   if not editor:
     log.error('--gvim used but there is no GVIM environment variable')
     exit(1)
-elif args.gedit:
+elif getattr(args, 'gedit'):
   editor = 'gedit'
   editor_options = []
-elif args.notepad:
-  editor = 'notepad'
+elif getattr(args, 'notepad'):
+  editor = notepad
 
 exrc_path = os.path.expanduser('~/.exrc')
 log.info(f'exrc_path: {exrc_path!r}')
@@ -77,7 +89,7 @@ if args.files:
   """
     We'll act like the old `br` script and just invoke `vi -R argv[1] ...`
   """
-  cmd = [editor] + ([] if args.notepad else editor_options) + [truepath.process(path, log) for path in args.files]
+  cmd = [editor] + ([] if getattr(args, 'notepad') else editor_options) + [truepath.process(path, log) for path in args.files]
   log.debug(str(cmd))
   os.execvp(editor, cmd)
   assert False, "os.execvp() of `vi` returned control to us!"
@@ -99,7 +111,7 @@ os.write(fd, add_crs(binary_stdin.read()))
 os.close(fd)
 
 with open("/dev/tty", 'r') as tty:
-  cmd = [editor] + ([] if args.notepad else editor_options) + [truepath.process(name, log=log)]
+  cmd = [editor] + ([] if getattr(args, 'notepad') else editor_options) + [truepath.process(name, log=log)]
   log.debug(str(cmd))
   p = subprocess.Popen(cmd, stdin=tty)
   rc = p.wait()
