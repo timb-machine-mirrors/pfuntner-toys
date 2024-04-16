@@ -88,7 +88,7 @@ class Ps(object):
       status_dict = self.kv_parse(self.read(os.path.join(path, 'status')))
       self.log.info(f'status_dict: {status_dict}')
 
-      uid = status_dict.get('Uid').split()[0]
+      uid = (status_dict.get('Uid') or '?').split()[0]
 
       processes[pid] = {
         'pid': pid,
