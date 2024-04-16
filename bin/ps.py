@@ -6,6 +6,7 @@
 
 import os
 import re
+import pwd
 import sys
 import glob
 import json
@@ -87,6 +88,8 @@ class Ps(object):
       status_dict = self.kv_parse(self.read(os.path.join(path, 'status')))
       self.log.info(f'status_dict: {status_dict}')
 
+      uid = status_dict.get('Uid').split()[0]
+
       processes[pid] = {
         'pid': pid,
         'ppid': self.int_or_none(stat_tokens[3]),
@@ -153,6 +156,8 @@ class Ps(object):
         'data': self.int_or_none(statm_tokens[5]),
         'dt': self.int_or_none(statm_tokens[6]), # unused, always 0
 
+        'uid': uid,
+        'user': pwd.getpwuid(int(uid)).pw_name,
         'umask': status_dict.get('Umask'),
         'vmpeak': status_dict.get('VmPeak'),
         'vmsize': status_dict.get('VmSize'),
