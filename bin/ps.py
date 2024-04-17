@@ -104,7 +104,7 @@ class Ps(object):
         'session': self.int_or_none(stat_tokens, 5),
         'tty_nr': self.int_or_none(stat_tokens, 6),
         'tpgid': self.int_or_none(stat_tokens, 7),
-        'flags': '0x{:08x}'.format(int(stat_tokens[8])),
+        'flags': None if stat_tokens[8] is None else '0x{:08x}'.format(int(stat_tokens[8])),
         'minflt': self.int_or_none(stat_tokens, 9),
         'cminflt': self.int_or_none(stat_tokens, 10),
         'majflt': self.int_or_none(stat_tokens, 11),
@@ -160,7 +160,7 @@ class Ps(object):
         'dt': self.int_or_none(statm_tokens, 6), # unused, always 0
 
         'uid': uid,
-        'user': pwd.getpwuid(int(uid)).pw_name,
+        'user': uid if uid == '?' else pwd.getpwuid(int(uid)).pw_name,
         'umask': status_dict.get('Umask'),
         'vmpeak': status_dict.get('VmPeak'),
         'vmsize': status_dict.get('VmSize'),
