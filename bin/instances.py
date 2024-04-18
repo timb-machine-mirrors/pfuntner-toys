@@ -276,6 +276,9 @@ class Instances(object):
 
     provider = 'aws'
     (rc, stdout, stderr) = self.run('aws ec2 describe-instances')
+
+    assert rc == 0, f'aws cli failed: {rc=}, {stdout=}, {stderr=}'
+
     if rc == 0 and stdout:
       raw = json.loads(stdout)
       for raw_reservation in raw.get('Reservations', []):

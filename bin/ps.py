@@ -6,6 +6,7 @@
 
 import os
 import re
+import pwd
 import sys
 import glob
 import json
@@ -41,10 +42,13 @@ class Ps(object):
 
     return ret
 
-  def int_or_none(self, s):
-    ret = s
-    if s is not None:
-      ret = int(s)
+  def int_or_none(self, l, pos):
+    if pos < len(l):
+      ret = l[pos]
+      if ret is not None:
+        ret = int(ret)
+    else:
+      ret = None
     return ret
 
   def kv_parse(self, s):
@@ -87,72 +91,76 @@ class Ps(object):
       status_dict = self.kv_parse(self.read(os.path.join(path, 'status')))
       self.log.info(f'status_dict: {status_dict}')
 
+      uid = (status_dict.get('Uid') or '?').split()[0]
+
       processes[pid] = {
         'pid': pid,
-        'ppid': self.int_or_none(stat_tokens[3]),
+        'ppid': self.int_or_none(stat_tokens, 3),
 
         'cmdline': cmdline,
 
         'state': stat_tokens[2],
-        'pgrp': self.int_or_none(stat_tokens[4]),
-        'session': self.int_or_none(stat_tokens[5]),
-        'tty_nr': self.int_or_none(stat_tokens[6]),
-        'tpgid': self.int_or_none(stat_tokens[7]),
-        'flags': '0x{:08x}'.format(int(stat_tokens[8])),
-        'minflt': self.int_or_none(stat_tokens[9]),
-        'cminflt': self.int_or_none(stat_tokens[10]),
-        'majflt': self.int_or_none(stat_tokens[11]),
-        'cmajflt': self.int_or_none(stat_tokens[12]),
-        'utime': self.int_or_none(stat_tokens[13]),
-        'stime': self.int_or_none(stat_tokens[14]),
-        'cutime': self.int_or_none(stat_tokens[15]),
-        'cstime': self.int_or_none(stat_tokens[16]),
-        'priority': self.int_or_none(stat_tokens[17]),
-        'nice': self.int_or_none(stat_tokens[18]),
-        'num_threads': self.int_or_none(stat_tokens[19]),
-        'itrealvalue': self.int_or_none(stat_tokens[20]),
+        'pgrp': self.int_or_none(stat_tokens, 4),
+        'session': self.int_or_none(stat_tokens, 5),
+        'tty_nr': self.int_or_none(stat_tokens, 6),
+        'tpgid': self.int_or_none(stat_tokens, 7),
+        'flags': None if stat_tokens[8] is None else '0x{:08x}'.format(int(stat_tokens[8])),
+        'minflt': self.int_or_none(stat_tokens, 9),
+        'cminflt': self.int_or_none(stat_tokens, 10),
+        'majflt': self.int_or_none(stat_tokens, 11),
+        'cmajflt': self.int_or_none(stat_tokens, 12),
+        'utime': self.int_or_none(stat_tokens, 13),
+        'stime': self.int_or_none(stat_tokens, 14),
+        'cutime': self.int_or_none(stat_tokens, 15),
+        'cstime': self.int_or_none(stat_tokens, 16),
+        'priority': self.int_or_none(stat_tokens, 17),
+        'nice': self.int_or_none(stat_tokens, 18),
+        'num_threads': self.int_or_none(stat_tokens, 19),
+        'itrealvalue': self.int_or_none(stat_tokens, 20),
 
-        'starttime': self.int_or_none(stat_tokens[21]),
+        'starttime': self.int_or_none(stat_tokens, 21),
 
-        'vsize': self.int_or_none(stat_tokens[22]),
-        # 'rss': self.int_or_none(stat_tokens[23]), # inaccurate -> see /proc/PID/statm
-        'rsslim': self.int_or_none(stat_tokens[24]),
-        'startcode': self.int_or_none(stat_tokens[25]),
-        'endcode': self.int_or_none(stat_tokens[26]),
-        'startstack': self.int_or_none(stat_tokens[27]),
-        'kstkesp': self.int_or_none(stat_tokens[28]),
-        'kstkeip': self.int_or_none(stat_tokens[29]),
-        # 'signal': self.int_or_none(stat_tokens[30]), # obsolete -> see /proc/PID/status
-        # 'blocked': self.int_or_none(stat_tokens[31]), # obsolete -> see /proc/PID/status
-        # 'sigignore': self.int_or_none(stat_tokens[32]), # obsolete -> see /proc/PID/status
-        # 'sigcatch': self.int_or_none(stat_tokens[33]), # obsolete -> see /proc/PID/status
-        'wchan': self.int_or_none(stat_tokens[34]), # obsolete -> see /proc/PID/status
-        # 'nswap': self.int_or_none(stat_tokens[35]), # not maintained
-        # 'cnswap': self.int_or_none(stat_tokens[36]), # not maintained
-        'exit_signal': self.int_or_none(stat_tokens[37]),
-        'processor': self.int_or_none(stat_tokens[38]),
-        'rt_priority': self.int_or_none(stat_tokens[39]),
-        'policy': self.int_or_none(stat_tokens[40]),
-        'delayacct_blkio_ticks': self.int_or_none(stat_tokens[41]),
-        'guest_time': self.int_or_none(stat_tokens[42]),
-        'cguest_time': self.int_or_none(stat_tokens[43]),
-        'start_data': self.int_or_none(stat_tokens[44]),
-        'end_data': self.int_or_none(stat_tokens[45]),
-        'start_brk': self.int_or_none(stat_tokens[46]),
-        'arg_start': self.int_or_none(stat_tokens[47]),
-        'arg_end': self.int_or_none(stat_tokens[48]),
-        'env_start': self.int_or_none(stat_tokens[49]),
-        'env_end': self.int_or_none(stat_tokens[50]),
-        'exit_code': self.int_or_none(stat_tokens[51]),
+        'vsize': self.int_or_none(stat_tokens, 22),
+        # 'rss': self.int_or_none(stat_tokens, 23), # inaccurate -> see /proc/PID/statm
+        'rsslim': self.int_or_none(stat_tokens, 24),
+        'startcode': self.int_or_none(stat_tokens, 25),
+        'endcode': self.int_or_none(stat_tokens, 26),
+        'startstack': self.int_or_none(stat_tokens, 27),
+        'kstkesp': self.int_or_none(stat_tokens, 28),
+        'kstkeip': self.int_or_none(stat_tokens, 29),
+        # 'signal': self.int_or_none(stat_tokens, 30), # obsolete -> see /proc/PID/status
+        # 'blocked': self.int_or_none(stat_tokens, 31), # obsolete -> see /proc/PID/status
+        # 'sigignore': self.int_or_none(stat_tokens, 32), # obsolete -> see /proc/PID/status
+        # 'sigcatch': self.int_or_none(stat_tokens, 33), # obsolete -> see /proc/PID/status
+        'wchan': self.int_or_none(stat_tokens, 34), # obsolete -> see /proc/PID/status
+        # 'nswap': self.int_or_none(stat_tokens, 35), # not maintained
+        # 'cnswap': self.int_or_none(stat_tokens, 36), # not maintained
+        'exit_signal': self.int_or_none(stat_tokens, 37),
+        'processor': self.int_or_none(stat_tokens, 38),
+        'rt_priority': self.int_or_none(stat_tokens, 39),
+        'policy': self.int_or_none(stat_tokens, 40),
+        'delayacct_blkio_ticks': self.int_or_none(stat_tokens, 41),
+        'guest_time': self.int_or_none(stat_tokens, 42),
+        'cguest_time': self.int_or_none(stat_tokens, 43),
+        'start_data': self.int_or_none(stat_tokens, 44),
+        'end_data': self.int_or_none(stat_tokens, 45),
+        'start_brk': self.int_or_none(stat_tokens, 46),
+        'arg_start': self.int_or_none(stat_tokens, 47),
+        'arg_end': self.int_or_none(stat_tokens, 48),
+        'env_start': self.int_or_none(stat_tokens, 49),
+        'env_end': self.int_or_none(stat_tokens, 50),
+        'exit_code': self.int_or_none(stat_tokens, 51),
 
-        'size': self.int_or_none(statm_tokens[0]),
-        'resident': self.int_or_none(statm_tokens[1]),
-        'shared': self.int_or_none(statm_tokens[2]),
-        'text': self.int_or_none(statm_tokens[3]),
-        # 'lib': self.int_or_none(statm_tokens[4]), # unused, always 0
-        'data': self.int_or_none(statm_tokens[5]),
-        'dt': self.int_or_none(statm_tokens[6]), # unused, always 0
+        'size': self.int_or_none(statm_tokens, 0),
+        'resident': self.int_or_none(statm_tokens, 1),
+        'shared': self.int_or_none(statm_tokens, 2),
+        'text': self.int_or_none(statm_tokens, 3),
+        # 'lib': self.int_or_none(statm_tokens, 4), # unused, always 0
+        'data': self.int_or_none(statm_tokens, 5),
+        'dt': self.int_or_none(statm_tokens, 6), # unused, always 0
 
+        'uid': uid,
+        'user': uid if uid == '?' else pwd.getpwuid(int(uid)).pw_name,
         'umask': status_dict.get('Umask'),
         'vmpeak': status_dict.get('VmPeak'),
         'vmsize': status_dict.get('VmSize'),
