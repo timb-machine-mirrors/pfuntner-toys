@@ -192,7 +192,7 @@ class Ps(object):
         'speculation_store_bypass': status_dict.get('Speculation_Store_Bypass'),
         'cpus_allowed': status_dict.get('Cpus_allowed'),
         'cpus_allowed_list': status_dict.get('Cpus_allowed_list'),
-        'mems_allowed': status_dict.get('Mems_allowed').split(','),
+        'mems_allowed': status_dict.get('Mems_allowed', '').split(','),
         'mems_allowed_list': status_dict.get('Mems_allowed_list'),
         'voluntary_ctxt_switches': status_dict.get('voluntary_ctxt_switches'),
         'nonvoluntary_ctxt_switches': status_dict.get('nonvoluntary_ctxt_switches'),
