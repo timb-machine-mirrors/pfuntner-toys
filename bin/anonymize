@@ -3,40 +3,38 @@
 import re
 import sys
 import string
+import random
+import signal
 import logging
 import argparse
 
-parser = argparse.ArgumentParser(description='Anonymize stdin data')
+def sub(data, pattern, sub_chars):
+  last_c = None
+  data = [c for c in data]
+  for (pos, c) in enumerate(data):
+    if (last_c != '\\' or not args.keep_escapes) and re.search(pattern, c):
+      data[pos] = random.choice(sub_chars)
+    last_c = c
+  return ''.join(data)
 
-group = parser.add_mutually_exclusive_group()
-group.add_argument('-d', '--digits', action='store_true', help='Remove only decimal digits')
-group.add_argument('-x', '--hexadecimal', action='store_true', help='Remove only hexadecimal digits')
-
+parser = argparse.ArgumentParser(description='Anonymize data')
+parser.add_argument('-e', '-k', '--keep-escapes', action='count', help='Do not anonymize escape sequences')
+parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
-log = logging.getLogger()
-log.setLevel(logging.DEBUG)
+log = logging.getLogger(sys.argv[0])
+log.setLevel(logging.WARNING - (args.verbose or 0)*10)
+
+signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
 if sys.stdin.isatty():
   parser.error('stdin must be redirected')
 
-if args.digits:
-  regexp = re.compile(r'\d+')
-elif args.hexadecimal:
-  regexp = re.compile(r'([0-9][0-9a-fA-F]*)|([0-9a-fA-F]*[0-9])|([0-9a-fA-F]*[0-9][0-9a-fA-F]*)')
-else:
-  regexp = re.compile(r'\w+')
+letters = [letter for letter in string.ascii_letters]
+digits = [digit for digit in string.digits]
 
-calendar_words = re.compile('(jan(unary)?)|(feb(ruary)?)|(mar(ch)?)|(apr(il)?)|may|(jun(e)?)|(jul(y)?)|(aug(ust)?)|(sep(tember)?)|(oct(ober)?)|(nov(ember)?)|(dec(ember)?)|((sun|mon|tue(s)?|wed(nes)?|thu(rs)?|fri|sat(ur)?)(day)?)', flags=re.IGNORECASE)
-
-unprintables = re.compile(f'[^{string.printable}]')
-while True:
-  line = sys.stdin.readline()
-  if line:
-    line = regexp.sub('#' if (args.digits or args.hexadecimal) else 'foo', line)
-    line = unprintables.sub('', line)
-    line = calendar_words.sub('foo', line)
-    sys.stdout.write(line)
-  else:
-    break
+data = sys.stdin.read()
+data = sub(data, r'^[a-zA-Z]$', letters)
+data = sub(data, r'^\d$', digits)
+print(data, end='')
