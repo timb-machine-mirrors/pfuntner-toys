@@ -49,7 +49,9 @@ Commands:
   ls                         # show keys of current element
 
   cd                         # make root element the current element
-  cd key                     # make `key` of the current element the current element
+  cd key                     # make `key` of the current element the current element - the key
+                             # must lead to a list or dictionary.  ints, strings, bools, etc don't
+                             # make sense!
 
   cat                        # display current object
   cat key                    # display `key` of current element
@@ -152,7 +154,7 @@ while True:
     else:
       log.warning(f'{"cd"!r} does not understand {pwd()!r} - it\'s not a list or dictionary!')
 
-  elif command == ['help']:
+  elif command_tokens == ['help']:
     help()
 
   elif command in ['exit', 'exit()', 'quit', 'quit()', 'q', 'qq']:
