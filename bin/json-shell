@@ -95,7 +95,10 @@ while True:
 
   command_tokens = shlex.split(command)
 
-  if command_tokens == ['ls']:
+  if not command_tokens:
+    print('Confoozed?  Try `help`')
+
+  elif command_tokens == ['ls']:
     for elem in elems(stack[-1].obj):
       print(elem)
 
