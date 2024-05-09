@@ -84,6 +84,8 @@ if not is_list_or_dict(curr_node()):
   display(curr_node())
   exit()
 
+print('Confoozed?  Try `help`')
+
 while True:
   try:
     # print the prompt with the current position and prompt for a command
