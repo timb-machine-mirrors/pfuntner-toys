@@ -8,6 +8,8 @@ args=$(argparse parse-args --parser "$parser" -- "$@")
 if test -n "$args" && echo "$args" | base64 -d >/dev/null 2>&1
 then
   log=$(logging --level=WARNING-$(argparse get --args $args verbose))
+  logging --log "$log" --info "parser=$(echo $parser | base64 -d)"
+  logging --log "$log" --info "args=$(echo $args | base64 -d)"
   logging --log "$log" --info "paths=$(argparse get --args $args paths)"
 else
   echo "$args" >&2

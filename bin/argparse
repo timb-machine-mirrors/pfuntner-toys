@@ -31,7 +31,7 @@ def dump(obj):
 
 parser = argparse.ArgumentParser(description='Bash implementation of Python argparse')
 parser.add_argument('action', choices=['argument-parser', 'add-argument', 'parse-args', 'get'], help='Action to perform')
-parser.add_argument('-p', '--parser', help='argparse payload created by argument-parser and add-argument')
+parser.add_argument('-p', '--parser', help='parser payload created by argument-parser and add-argument')
 parser.add_argument('--args', help='argparse payload created by parse-args')
 parser.add_argument('--name', help='Name for caller')
 parser.add_argument('-d', '--description', help='Description for argparser')
@@ -127,15 +127,21 @@ elif args.action == 'parse-args':
   # massage optional position arguments and boolean/integer options
   for (key, value) in args.items():
     if isinstance(value, bool):
+      # Give the bash script something it can use for booleans instead of 'True' or 'False'.
+      # 'true' and 'false' can be used in Bash conditions: `if $option; then ...`
       args[key] = 'true' if value else 'false'
     elif value is None:
+      # A `None` value is pretty useless, especially since a Bash script would just see "None" as a string.
       for argument in payload['arguments']:
         if any([re.match(f'(--)?{key}$', name) for name in argument['arguments']]):
           if argument['keywords'].get('nargs') == '?':
+            # An optional positional parameter that isn't expressed becomes the empty string ('')
             args[key] = ''
           elif argument['keywords'].get('action') == 'store_true':
+            # A boolean-style option (action='store_true') that's not expressed becomes 'false'
             args[key] = 'false'
           elif argument['keywords'].get('action') == 'count':
+            # An integer-style counting option (action='count') that's not expressed becomes '0'
             args[key] = 0
 
   log.info(f'{args=}')
