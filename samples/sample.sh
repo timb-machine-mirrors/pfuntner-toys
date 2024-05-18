@@ -10,5 +10,5 @@ then
   log=$(logging --level=WARNING-$(argparse get --args $args verbose))
   logging --log "$log" --info "paths=$(argparse get --args $args paths)"
 else
-  echo "$args" >&2
+  echo -n "$args" >&2
 fi
