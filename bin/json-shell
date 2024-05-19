@@ -1,30 +1,115 @@
 #! /usr/bin/env python3
 
+import pdb
+
 import os
+import cmd
 import sys
 import json
-import shlex
-import signal
+import inspect
 import logging
 import argparse
 
 import bruno_tools
 
+"""
+
+class CmdProcessor(cmd.Cmd):
+  def __init__(self):
+    self.possibles = set()
+    super(CmdProcessor, self).__init__()
+
+  def do_exit(self, args):
+    return True
+
+  def do_add(self, args):
+    self.possibles.update(set(args.split()))
+    print(f'{self.possibles=}')
+
+  def do_op(self, args):
+    print(f'op {args}')
+
+  def complete_op(self, text, line, start_index, end_index):
+    if text:
+      return [possible for possible in self.possibles if possible.startswith(text)]
+    else:
+      return list(self.possibles)
+
+CmdProcessor().cmdloop()
+"""
+
 class StackNode(object):
+  """
+  This class encapsulates a node in a tree along with the "index" used to get to that object.  The class is designed to be pushed onto a LIFO stack.
+
+  It's best to explain with an example.  Consider processing this object:
+
+  [
+    '1',
+    [
+      '2-1',
+    ],
+  ]
+
+  The stack starts out with the root object:
+
+    stack: [StackNode(None, ['a', ['b-a']])]
+
+  If you `cd` into element index 1, the stack becomes:
+
+    stack: [StackNode(None, ['a', ['b-a']]), StackNode(1, ['b-a'])]
+
+  The current item is always at the end of the stack and you you can use the indices of all the nodes on the stack (except the top!) as "bread crumbs" to
+  figure out the "cwd".  If you do `cd ..`, you'll pop the last end of the stack and be back in the root.
+  """
   def __init__(self, idx, obj):
     self.idx = idx
     self.obj = obj
 
+
 def is_list_or_dict(node):
+  """
+  Test a node to see if it is a list or dictionary.
+
+  Parameters:
+    node: The node to test
+
+  Returns:
+    True if the node is either a list or dictionary, False otherwise
+  """
   return any([isinstance(node, cls) for cls in [list, dict]])
 
+
 def pwd():
+  """
+  Prints the "current working directory" of your location in the object.  We do this by simply joining all the indices
+  in the stack (except for the root object).
+  """
   return '/' + ('/'.join([str(node.idx) for node in stack[1:]]))
 
+
 def curr_node():
+  """
+  Returns the current node - the top of the stack (most recently added).
+  """
   return stack[-1].obj
 
-def elems(node):
+
+def node_keys(node):
+  """
+  Returns the elements of a node - targets to which you can `cd` into or `cat`.
+
+  Parameters:
+    node: The node of which to list elements
+
+  Returns:
+    A list of elements:
+      If the node is a dictionary, it returns a list of keys of the dictionary.
+      If the node is a list, it returns a list of integers: 0 to (the length of the list)-1.  The number of elements
+      returned matches the number of elements in the list.
+      If the node is not a dictionary or list (we shouldn't be calling this function), a warning is printed and an empty
+      list is returned
+  """
   if isinstance(node, list):
     if not node:
       log.warning(f'No elements at {pwd()}')
@@ -37,28 +122,136 @@ def elems(node):
     log.warning(f'elems() does not understand node at {pwd()}')
     return []
 
+
 def display(node):
+  """
+  Prints the current object including its children.
+  """
+
   json.dump(node, sys.stdout, indent=2)
   print()
 
-def help():
-  print("""Navigate around a JSON file - it's not *exactly* a `shell` but it is what it is!
 
-Commands:
+class CmdProcessor(cmd.Cmd):
+  def __init__(self, stack):
+    super(CmdProcessor, self).__init__()
+    self.stack = stack
+    self.prompt = f'{pwd()}> '
 
-  ls                         # show keys of current element
+  def emptyline(self):
+    print('Confoozed?  Try `help`')
 
-  cd                         # make root element the current element
-  cd key                     # make `key` of the current element the current element - the key
-                             # must lead to a list or dictionary.  ints, strings, bools, etc don't
-                             # make sense!
+  def do_exit(self, args):
+    """Exit from json-shell"""
+    return True
 
-  cat                        # display current object
-  cat key                    # display `key` of current element
+  def do_quit(self, args):
+    """Exit from json-shell"""
+    return self.do_exit(args)
 
-  help
-  exit/quit                  # there are a few other simple obvious aliases
-""")
+  def do_ls(self, args):
+    """List keys in the current node"""
+    for node_key in node_keys(curr_node()):
+      print(node_key)
+
+  def complete_with_key(self, args, completer):
+    if isinstance(curr_node(), list):
+      key = None
+      try:
+        key = int(args)
+      except Exception as e:
+        print(f'{e!r}Not an integer: {e!s}')
+      if key is not None:
+        if key < 0 or key >= len(curr_node()):
+          print(f'{key!r} is out of range')
+        else:
+          completer(key)
+    elif isinstance(curr_node(), dict):
+      if args not in curr_node():
+        print(f'{args!r} is not a key')
+      else:
+        completer(args)
+    else:
+      print(f'Unexpected {curr_node().__class__.__name__} node')
+
+  def complete_cd(self, text, line, start_index, end_index):
+    possibles = node_keys(curr_node())
+    if text:
+      return [str(possible) for possible in possibles if str(possible).startswith(text)]
+    else:
+      return list(map(str, possibles))
+
+  def complete_cd_with_key(self, key):
+    if not is_list_or_dict(curr_node()[key]):
+      print(f'{key!r} is not a list or dictionary')
+    else:
+      self.stack.append(StackNode(key, curr_node()[key]))
+      self.prompt = f'{pwd()}> '
+
+  def do_cd(self, args):
+    """Change the current node
+  `cd` by itself goes to root node
+  `cd ..` go to parent node as long as you're not already at the root
+  `cd key` goes to a child node if the key exists and its node is a dictionary or list"""
+
+    args = args.strip()
+    if args == '':
+      # cd to the root node
+      if len(self.stack) == 1:
+        print('Already at the root node')
+      else:
+        self.stack = [self.stack[0]]
+        self.prompt = f'{pwd()}> '
+    elif args == '..':
+      if len(self.stack) == 1:
+        log.warning('Already at root')
+      else:
+        # cd to parent node
+        del self.stack[-1]
+        self.prompt = f'{pwd()}> '
+    else:
+      self.complete_with_key(args, self.complete_cd_with_key)
+
+  def complete_cat_with_key(self, key):
+    display(curr_node()[key])
+
+  def complete_cat(self, text, line, start_index, end_index):
+      return self.complete_cd(text, line, start_index, end_index)
+
+  def do_cat(self, args):
+    """Display the current node or a child
+  `cat` by itself displays the current node
+  `cat key` display child element `key` of the current node"""
+
+    args = args.strip()
+    if args == '':
+      display(curr_node())
+    else:
+      self.complete_with_key(args, self.complete_cat_with_key)
+
+  def do_help(self, args):
+    """Display help"""
+
+    if not args.strip():
+      print('Navigate around a JSON document, just like a shell, only different!')
+      print()
+      print('Commands:')
+      print()
+      count = 0
+      for (name, doc) in doers.items():
+        if count > 0:
+          print()
+        doc = doc.splitlines()
+        print(f'  {name:10}{doc[0]}')
+        for extra_doc in doc[1:]:
+          print(f'{" "*12}{extra_doc}')
+        count += 1
+    else:
+      doc = doers.get(args)
+      if doc:
+        print(doc)
+      else:
+        self.do_help('')
 
 parser = argparse.ArgumentParser(description='Interactive shell for dealing with a JSON object')
 parser.add_argument('filename', help='Name of JSON file')
@@ -69,103 +262,23 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger(sys.argv[0])
 log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
-signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
-
 if not os.path.exists(args.filename):
-  parser.error(f'Cannot find {filename!r}')
+  parser.error(f'Cannot find {args.filename!r}')
 
 if not os.path.isfile(args.filename):
-  parser.error(f'{filename!r} is not a regular file')
+  parser.error(f'{args.filename!r} is not a regular file')
 
 with open(args.filename) as stream:
+  # The stack starts out with the root and this element never goes away.  It's like being at / in a filesystem and not
+  # being able to do `cd ..`
   stack = [StackNode(None, json.load(stream))]
 
 if not is_list_or_dict(curr_node()):
   display(curr_node())
   exit()
 
+# make a dictionary of `do-er` methods and their docstring
+doers = {func[0][3:]: func[1].__doc__ for func in inspect.getmembers(CmdProcessor, predicate=inspect.isfunction) if func[0].startswith('do_')}
+
 print('Confoozed?  Try `help`')
-
-while True:
-  try:
-    # print the prompt with the current position and prompt for a command
-    command = input(pwd() + ' > ').strip()
-  except EOFError:
-    break
-
-  command_tokens = shlex.split(command)
-
-  if not command_tokens:
-    print('Confoozed?  Try `help`')
-
-  elif command_tokens == ['ls']:
-    for elem in elems(stack[-1].obj):
-      print(elem)
-
-  elif command_tokens[0] in ['cd', 'cat']:
-    if command_tokens == ['cd']:
-      # cd to root
-      stack = [stack[0]]
-    elif command_tokens == ['cat']:
-      display(curr_node())
-    elif command_tokens == ['cd', '..']:
-      if len(stack) == 1:
-        log.warning('Already at root')
-      else:
-        # cd to parent
-        del stack[-1]
-
-    elif isinstance(curr_node(), list):
-      if len(command_tokens) != 2:
-        log.warning(f'Too many arguments in {command_tokens}')
-      else:
-        idx = None
-        try:
-          idx = int(command_tokens[1])
-        except Exception as e:
-          log.warning(f'{command_tokens[1]!r} is not an integer')
-        if idx is not None:
-          if not (0 <= idx < len(curr_node())):
-            log.warning(f'{command_tokens[1]!r} is out of range')
-          else:
-            if command_tokens[0] == 'cd' and not is_list_or_dict(curr_node()[idx]):
-              log.warning(f'{idx!r} is not a list or dictionary')
-            else:
-              if command_tokens[0] == 'cd':
-                stack.append(StackNode(idx, curr_node()[idx]))
-              elif command_tokens[0] == 'cat':
-                display(curr_node()[idx])
-              else:
-                log.warning('unhandled else')
-
-    elif isinstance(curr_node(), dict):
-      if len(command_tokens) != 2:
-        log.warning(f'Too many arguments in {command_tokens}')
-      else:
-        idx = command_tokens[1]
-        if not idx in curr_node().keys():
-          log.warning(f'{command_tokens[1]!r} not found')
-        else:
-          if command_tokens[0] == 'cd' and not is_list_or_dict(curr_node()[idx]):
-            log.warning(f'{idx!r} is not a list or dictionary')
-          else:
-            if command_tokens[0] == 'cd':
-              stack.append(StackNode(idx, curr_node()[idx]))
-            elif command_tokens[0] == 'cat':
-              display(curr_node()[idx])
-            else:
-              log.warning('unhandled else')
-
-    else:
-      log.warning(f'{"cd"!r} does not understand {pwd()!r} - it\'s not a list or dictionary!')
-
-  elif command_tokens == ['help']:
-    help()
-
-  elif command in ['exit', 'exit()', 'quit', 'quit()', 'q', 'qq']:
-    break
-
-  else:
-    print(f'Unknown command {command!r}')
-
-print()
+CmdProcessor(stack).cmdloop()
