@@ -229,6 +229,29 @@ class CmdProcessor(cmd.Cmd):
     else:
       self.complete_with_key(args, self.complete_cat_with_key)
 
+  def complete_describe_with_key(self, key):
+    description = f'{pwd()!r}'
+    if key is not None:
+      description += f'/{key}'
+    description += ' is a '
+    target = curr_node() if key is None else curr_node()[key]
+    description += target.__class__.__name__
+    description += f' with {len(target)} elements'
+    print(description)
+
+  def complete_describe(self, text, line, start_index, end_index):
+      return self.complete_cd(text, line, start_index, end_index)
+
+  def do_describe(self, args):
+    """Describe a node
+  `describe` describes the current node
+  `describe key` describes the child element `key` of the current node"""
+    args = args.strip()
+    if args == '':
+      self.complete_describe_with_key(None)
+    else:
+      self.complete_with_key(args.strip(), self.complete_describe_with_key)
+
   def do_help(self, args):
     """Display help"""
 
