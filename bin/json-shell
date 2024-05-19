@@ -6,37 +6,11 @@ import os
 import cmd
 import sys
 import json
+import shutil
 import inspect
 import logging
 import argparse
 
-import bruno_tools
-
-"""
-
-class CmdProcessor(cmd.Cmd):
-  def __init__(self):
-    self.possibles = set()
-    super(CmdProcessor, self).__init__()
-
-  def do_exit(self, args):
-    return True
-
-  def do_add(self, args):
-    self.possibles.update(set(args.split()))
-    print(f'{self.possibles=}')
-
-  def do_op(self, args):
-    print(f'op {args}')
-
-  def complete_op(self, text, line, start_index, end_index):
-    if text:
-      return [possible for possible in self.possibles if possible.startswith(text)]
-    else:
-      return list(self.possibles)
-
-CmdProcessor().cmdloop()
-"""
 
 class StackNode(object):
   """
@@ -95,12 +69,13 @@ def curr_node():
   return stack[-1].obj
 
 
-def node_keys(node):
+def node_keys(node, stringify=False):
   """
   Returns the elements of a node - targets to which you can `cd` into or `cat`.
 
   Parameters:
     node: The node of which to list elements
+    stringify: Turn integer keys (list indices) into string when true, leave as integers otherwise
 
   Returns:
     A list of elements:
@@ -113,7 +88,7 @@ def node_keys(node):
   if isinstance(node, list):
     if not node:
       log.warning(f'No elements at {pwd()}')
-    return range(len(node))
+    return [str(elem) if stringify else elem for elem in range(len(node))]
   elif isinstance(node, dict):
     if not node:
       log.warning(f'No elements at {pwd()}')
@@ -141,47 +116,53 @@ class CmdProcessor(cmd.Cmd):
   def emptyline(self):
     print('Confoozed?  Try `help`')
 
-  def do_exit(self, args):
+  def do_exit(self, args, cmd='exit'):
     """Exit from json-shell"""
+    if args.strip() not in ['', '()']:
+      log.warning(f'`{cmd}` does not take an argument')
     return True
 
   def do_quit(self, args):
     """Exit from json-shell"""
-    return self.do_exit(args)
+    return self.do_exit(args, cmd='quit')
 
   def do_ls(self, args):
     """List keys in the current node"""
-    for node_key in node_keys(curr_node()):
-      print(node_key)
+    if args.strip():
+      log.warning('`ls` does not take an argument')
+    self.columnize(list(node_keys(curr_node(), stringify=True)), displaywidth=shutil.get_terminal_size().columns)
 
-  def complete_with_key(self, args, completer):
+  def _perform_with_key(self, args, performer):
     if isinstance(curr_node(), list):
       key = None
       try:
         key = int(args)
       except Exception as e:
-        print(f'{e!r}Not an integer: {e!s}')
+        print(f'{args!r} is not an integer: {e!s}')
       if key is not None:
         if key < 0 or key >= len(curr_node()):
           print(f'{key!r} is out of range')
         else:
-          completer(key)
+          performer(key)
     elif isinstance(curr_node(), dict):
       if args not in curr_node():
         print(f'{args!r} is not a key')
       else:
-        completer(args)
+        performer(args)
     else:
       print(f'Unexpected {curr_node().__class__.__name__} node')
 
-  def complete_cd(self, text, line, start_index, end_index):
+  def _complete_key_helper(self, text, line, start_index, end_index):
     possibles = node_keys(curr_node())
     if text:
       return [str(possible) for possible in possibles if str(possible).startswith(text)]
     else:
       return list(map(str, possibles))
 
-  def complete_cd_with_key(self, key):
+  def complete_cd(self, text, line, start_index, end_index):
+    return self._complete_key_helper(text, line, start_index, end_index)
+
+  def _perform_cd_with_key(self, key):
     if not is_list_or_dict(curr_node()[key]):
       print(f'{key!r} is not a list or dictionary')
     else:
@@ -200,7 +181,9 @@ class CmdProcessor(cmd.Cmd):
       if len(self.stack) == 1:
         print('Already at the root node')
       else:
-        self.stack = [self.stack[0]]
+        # I tried doing this with `stack = [stack[0]]` but created a NEW stack and the old global stack list still had all the elements
+        while len(self.stack) > 1:
+          del self.stack[-1]
         self.prompt = f'{pwd()}> '
     elif args == '..':
       if len(self.stack) == 1:
@@ -210,13 +193,13 @@ class CmdProcessor(cmd.Cmd):
         del self.stack[-1]
         self.prompt = f'{pwd()}> '
     else:
-      self.complete_with_key(args, self.complete_cd_with_key)
+      self._perform_with_key(args, self._perform_cd_with_key)
 
-  def complete_cat_with_key(self, key):
+  def _perform_cat_with_key(self, key):
     display(curr_node()[key])
 
   def complete_cat(self, text, line, start_index, end_index):
-      return self.complete_cd(text, line, start_index, end_index)
+      return self._complete_key_helper(text, line, start_index, end_index)
 
   def do_cat(self, args):
     """Display the current node or a child
@@ -227,12 +210,18 @@ class CmdProcessor(cmd.Cmd):
     if args == '':
       display(curr_node())
     else:
-      self.complete_with_key(args, self.complete_cat_with_key)
+      self._perform_with_key(args, self._perform_cat_with_key)
 
-  def complete_describe_with_key(self, key):
-    description = f'{pwd()!r}'
+  def do_pwd(self, args):
+    """Print the current node - note that this is included in each prompt"""
+    if args.strip():
+      log.warning('`pwd` does not take an argument')
+    print(pwd())
+
+  def _perform_describe_with_key(self, key):
+    description = pwd()
     if key is not None:
-      description += f'/{key}'
+      description += ('' if description == '/' else '/') + str(key)
     description += ' is a '
     target = curr_node() if key is None else curr_node()[key]
     description += target.__class__.__name__
@@ -240,7 +229,7 @@ class CmdProcessor(cmd.Cmd):
     print(description)
 
   def complete_describe(self, text, line, start_index, end_index):
-      return self.complete_cd(text, line, start_index, end_index)
+      return self._complete_key_helper(text, line, start_index, end_index)
 
   def do_describe(self, args):
     """Describe a node
@@ -248,9 +237,9 @@ class CmdProcessor(cmd.Cmd):
   `describe key` describes the child element `key` of the current node"""
     args = args.strip()
     if args == '':
-      self.complete_describe_with_key(None)
+      self._perform_describe_with_key(None)
     else:
-      self.complete_with_key(args.strip(), self.complete_describe_with_key)
+      self._perform_with_key(args.strip(), self._perform_describe_with_key)
 
   def do_help(self, args):
     """Display help"""
@@ -288,8 +277,8 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 if not os.path.exists(args.filename):
   parser.error(f'Cannot find {args.filename!r}')
 
-if not os.path.isfile(args.filename):
-  parser.error(f'{args.filename!r} is not a regular file')
+if os.path.isdir(args.filename):
+  parser.error(f'{args.filename!r} is directory')
 
 with open(args.filename) as stream:
   # The stack starts out with the root and this element never goes away.  It's like being at / in a filesystem and not
@@ -297,7 +286,7 @@ with open(args.filename) as stream:
   stack = [StackNode(None, json.load(stream))]
 
 if not is_list_or_dict(curr_node()):
-  display(curr_node())
+  parser.error(f'The root object of {args.filename!r} is not a list or directory')
   exit()
 
 # make a dictionary of `do-er` methods and their docstring
