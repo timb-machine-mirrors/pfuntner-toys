@@ -130,6 +130,7 @@ class CmdProcessor(cmd.Cmd):
     """List keys in the current node"""
     if args.strip():
       log.warning('`ls` does not take an argument')
+      return
     self.columnize(list(node_keys(curr_node(), stringify=True)), displaywidth=shutil.get_terminal_size().columns)
 
   def _perform_with_key(self, args, performer):
@@ -216,6 +217,7 @@ class CmdProcessor(cmd.Cmd):
     """Print the current node - note that this is included in each prompt"""
     if args.strip():
       log.warning('`pwd` does not take an argument')
+    return
     print(pwd())
 
   def _perform_describe_with_key(self, key):
