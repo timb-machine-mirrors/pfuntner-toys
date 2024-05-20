@@ -232,10 +232,9 @@ The `pwd` subcommand prompts the location of the current node - in a filesystem,
 ## Notes
 
 - The tool leans heavily on the Python [`cmd` module](https://docs.python.org/3/library/cmd.html) and does the following:
-  - Tab-completion for subcommand verbs and potential arguments
-  - Command history:
-    - History: Use the up and down arrows to go through subcommands previously issued
-    - Editing: use the left and right arrows to move around a subcommand to make changes
+  - Tab-completion for subcommand verbs and potential arguments (keys)
+  - Command history: Use the up and down arrows to go through subcommands previously issued
+  - Command editing: use the left and right arrows to move around a subcommand to make changes
 - I have ideas for more subcommands:
   - Changing the JSON object:
     - Adding elements
