@@ -286,9 +286,13 @@ if os.path.isdir(args.filename):
   parser.error(f'{args.filename!r} is directory')
 
 with open(args.filename) as stream:
+  try:
+    root = json.load(stream)
+  except Exception as e:
+    parser.error(f'Could not parse {args.filename} as JSON: {e!s}')
   # The stack starts out with the root and this element never goes away.  It's like being at / in a filesystem and not
   # being able to do `cd ..`
-  stack = [StackNode(None, json.load(stream))]
+  stack = [StackNode(None, root)]
 
 if not is_list_or_dict(curr_node()):
   parser.error(f'The root object of {args.filename!r} is not a list or directory')
