@@ -101,7 +101,7 @@ Change the current node
 The `exit` and `quit` subcommands terminate the tool and return you to the Unix shell.  The subcommands are synonymous.
 
 ### `cd`
-I'm taking great liberties with the name because we're not talking about a _current working directory_ but it's a similar concept.  You can `cd` into any child that's a list of dictionary itself:
+I'm taking great liberties with the name because we're not talking about a _current working directory_ but it's a similar concept.  You can `cd` into any child of the current node that's a list or dictionary:
 ```commandline
 /> cd bools
 /bools> cd ..
@@ -112,7 +112,9 @@ I'm taking great liberties with the name because we're not talking about a _curr
 ```
 The _keys_ you can `cd` into are based on the type of node you're currently in:
 - If the current node is a dictionary, the keys of the dictionary are the keys you can cd into.
-- If the current node is a list, the keys are integers from 0 to the length of the list minus one.  You don't have to treat the key differently just because it's an integer.
+- If the current node is a list, the keys are integers from 0 to the length of the list minus one.
+
+You don't have to treat the key differently based on whether you're in a list or dicitonary.  The tool knows what type of key is needed.
 
 There are invalid `cd`s based on the current node:
 ```commandline
@@ -125,6 +127,8 @@ There are invalid `cd`s based on the current node:
 -1 is out of range
 /floats> cd 0
 0 is not a list or dictionary
+/floats> cd foo
+'foo' is not an integer: invalid literal for int() with base 10: 'foo'
 /floats> 
 ```
 
