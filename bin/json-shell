@@ -225,7 +225,8 @@ class CmdProcessor(cmd.Cmd):
     description += ' is a '
     target = curr_node() if key is None else curr_node()[key]
     description += target.__class__.__name__
-    description += f' with {len(target)} elements'
+    if is_list_or_dict(target):
+      description += f' with {len(target)} elements'
     print(description)
 
   def complete_describe(self, text, line, start_index, end_index):
