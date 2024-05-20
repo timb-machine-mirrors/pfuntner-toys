@@ -3,7 +3,7 @@
 ## Purpose
 An interactive _shell-like_ tool to explore a JSON file.
 
-I am often frustrated by large complicated JSON objects and had this wild idea of treating an object like a Linux filesystem: there is a root, child nodes, and grandchildren, you can navigate with `cd` along with other familiar Linux commands. 
+I am often frustrated by large complicated JSON objects and had this wild idea of treating an object like a Unix filesystem: there is a root, child nodes, and grandchildren, you can navigate with `cd` along with other familiar Unix commands. 
 
 ## Syntax
 ```
