@@ -229,6 +229,8 @@ class CmdProcessor(cmd.Cmd):
     description += target.__class__.__name__
     if is_list_or_dict(target):
       description += f' with {len(target)} elements'
+    elif isinstance(target, str):
+      description += f' with {len(target)} characters'
     print(description)
 
   def complete_describe(self, text, line, start_index, end_index):
