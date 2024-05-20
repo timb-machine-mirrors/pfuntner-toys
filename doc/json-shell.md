@@ -21,17 +21,13 @@ Unlike a lot of my other tools, the examples are in the forms of interactive sub
 
 Since there are so many subcommands and some of the help information is a little long, I'll provide a table of contents:
 
-<table>
-<tr>
-<td><a href="#cat"></a>cat<a></td>
-<td><a href="#cd"></a>cd<a></td>
-<td><a href="#describe"></a>describe<a></td>
-<td><a href="#exit"></a>exit / quit<a></td>
-<td><a href="#help"></a>help<a></td>
-<td><a href="#ls"></a>ls<a></td>
-<td><a href="#pwd"></a>pwd<a></td>
-</tr>
-</table>
+- [cat](#cat)
+- [cd](#cd)
+- [describe](#describe)
+- [exit](#exit)
+- [help](#help)
+- [ls](#ls)
+- [pwd](#pwd)
 
 I'll also use the following JSON file in examples:
 ```json
@@ -57,8 +53,9 @@ Confoozed?  Try `help`
 ```
 The location is `/` since you always begin in the root node.  The `> ` is asking for a subcommand to be entered.
 
-<h3 id="help">`help`</h3>
+### `help`
 You can get general help of all subcommands:
+
 ```commandline
 /> help
 Navigate around a JSON document, just like a shell, only different!
@@ -100,10 +97,10 @@ Change the current node
 /> 
 ```
 
-<h3 id="exit">`exit` / `quit`</h3>
+### `exit`
 The `exit` and `quit` subcommands terminate the tool and return you to the Unix shell.  The subcommands are synonymous.
 
-<h3 id="cd">`cd`</h3>
+### `cd`
 I'm taking great liberties with the name because we're not talking about a _current working directory_ but it's a similar concept.  You can `cd` into any child that's a list of dictionary itself:
 ```commandline
 /> cd bools
@@ -131,7 +128,7 @@ There are invalid `cd`s based on the current node:
 /floats> 
 ```
 
-<h3 id="ls">`ls`</h3>
+### `ls`
 The `ls` subcommand displays the keys of the current node:
 ```commandline
 /> ls
@@ -145,7 +142,7 @@ bools  ints  floats  strs  none  dict
 /dict/1> 
 ```
 
-<h3 id="cat">`cat`</h3>
+### `cat`
 `cat` will display the current or target node and all of its children.
 
 ```commandline
@@ -214,7 +211,7 @@ bools  ints  floats  strs  none  dict
 /dict/1> 
 ```
 
-<h3 id="describe">`describe`</h3>
+### `describe`
 The `describe` subcommand _describes_ the current or target node:
 ```commandline
 /> describe
@@ -229,7 +226,7 @@ The `describe` subcommand _describes_ the current or target node:
 /ints> 
 ```
 
-<h3 id="pwd">`pwd`</h3>
+### `pwd`
 The `pwd` subcommand prompts the location of the current node - in a filesystem, you might think of this as the _current working directory_.  It's also part of each and every prompt but it's such a popular command and it was an easy thing to add so I added it. 
 
 ## Notes
