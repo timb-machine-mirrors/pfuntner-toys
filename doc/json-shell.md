@@ -238,16 +238,4 @@ The `pwd` subcommand prompts the location of the current node - in a filesystem,
   - Tab-completion for subcommand verbs and potential arguments (keys)
   - Command history: Use the up and down arrows to go through subcommands previously issued
   - Command editing: use the left and right arrows to move around a subcommand to make changes
-- I have ideas for more improvements:
-  - Expressing more complicated key targets:
-    - `cd /foo`
-    - `cd foo/bar`
-    - `cd ../foo`
-    - `cd ~-` or `cd -`?
-  - More subcommands:
-    - Changing the JSON object:
-      - Adding elements
-      - Deleting elements
-      - Changing element values
-    - Writing out the object (the entire object or just from the current node)
-    - Finding objects - I envision something like the Unix `find` command but geared toward `json-shell` and nodes
+- I have ideas for improvements.  I was starting to list them hear but I've created [individual issues](https://github.com/pfuntner/toys/issues?q=is%3Aissue+is%3Aopen+json-shell%3A) for them.
