@@ -204,15 +204,14 @@ bools  ints  floats  strs  none  dict
     "TWO"
   ]
 }
-/dict> cd 1
-/dict/1> cat
+/dict> cat 1
 [
   ".",
   "one",
   "One",
   "ONE"
 ]
-/dict/1> 
+/dict>
 ```
 
 ### `describe`
