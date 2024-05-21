@@ -200,7 +200,7 @@ class CmdProcessor(cmd.Cmd):
     display(curr_node()[key])
 
   def complete_cat(self, text, line, start_index, end_index):
-      return self._complete_key_helper(text, line, start_index, end_index)
+    return self._complete_key_helper(text, line, start_index, end_index)
 
   def do_cat(self, args):
     """Display the current node or a child
@@ -217,7 +217,7 @@ class CmdProcessor(cmd.Cmd):
     """Print the current node - note that this is included in each prompt"""
     if args.strip():
       log.warning('`pwd` does not take an argument')
-    return
+      return
     print(pwd())
 
   def _perform_describe_with_key(self, key):
@@ -234,7 +234,7 @@ class CmdProcessor(cmd.Cmd):
     print(description)
 
   def complete_describe(self, text, line, start_index, end_index):
-      return self._complete_key_helper(text, line, start_index, end_index)
+    return self._complete_key_helper(text, line, start_index, end_index)
 
   def do_describe(self, args):
     """Describe a node
