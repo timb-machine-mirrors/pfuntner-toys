@@ -278,7 +278,7 @@ class Instances(object):
     (rc, stdout, stderr) = self.run('aws ec2 describe-instances')
 
     if rc != 0:
-      log.warning(f'aws cli failed: {rc=}, {stdout=}, {stderr=}')
+      self.log.warning(f'aws cli failed: {rc=}, {stdout=}, {stderr=}')
 
     if rc == 0 and stdout:
       raw = json.loads(stdout)
