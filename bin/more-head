@@ -4,34 +4,8 @@ import sys
 import signal
 import logging
 import argparse
-import subprocess
 
-def run(cmd, stdin=None, capture=True, shell=False):
-  if shell:
-    if isinstance(cmd, list):
-      cmd = ' '.join(cmd)
-  elif isinstance(cmd, str):
-    cmd = cmd.split()
-
-  log.info('Executing {cmd}'.format(**locals()))
-
-  p = None
-  try:
-    p = subprocess.Popen(cmd, stdin=subprocess.PIPE if stdin else None, stdout=subprocess.PIPE if capture else None, stderr=subprocess.PIPE if capture else None, shell=shell)
-  except Exception as e:
-    (rc, stdout, stderr) = (-1, '', f'Caught {e!s} running {cmd!r}')
-
-  if p:
-    if stdin:
-      p.stdin.write(stdin.encode())
-    if capture:
-      (stdout, stderr) = tuple([s.decode('utf-8') for s in p.communicate()])
-    else:
-      (stdout, stderr) = ('', '')
-    rc = p.wait()
-
-  log.debug('Executed {cmd}: {rc}, {stdout!r}, {stderr!r}'.format(**locals()))
-  return (rc, stdout, stderr)
+from BrunoUtils import BrunoUtils
 
 def process(source):
   stream = None
@@ -62,13 +36,8 @@ signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 if not args.files and sys.stdin.isatty():
   parser.error('stdin must be redirected if no files are specified')
 
-lines = 0
-(rc, stdout, stderr) = run('tput lines')
-if rc == 0:
-  try:
-    lines = int(stdout.strip())
-  except:
-    pass
+lines = BrunoUtils.rows()
+log.info(f'{lines=}')
 
 if lines <= 1:
   log.error('Cannot determine screen size')
