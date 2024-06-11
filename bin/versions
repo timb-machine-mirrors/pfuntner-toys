@@ -76,7 +76,7 @@ def look_for(target, dir=None, true_name=None):
 
   path = os.path.expanduser(target if dir is None else os.path.join(dir, target))
   if not dir:
-    dir = os.path.dirname(target)
+    dir = os.path.expanduser(os.path.dirname(target))
   if os.path.isfile(path):
     (rc, stdout, stderr) = run([path, '--version'])
     stdout = (stdout + stderr).replace('\n', ' ').replace('\r', '').strip()
