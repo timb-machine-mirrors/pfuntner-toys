@@ -74,7 +74,7 @@ def get_hash(path):
 def look_for(target, dir=None, true_name=None):
   global table
 
-  path = target if dir is None else os.path.join(dir, target)
+  path = os.path.expanduser(target if dir is None else os.path.join(dir, target))
   if not dir:
     dir = os.path.dirname(target)
   if os.path.isfile(path):
