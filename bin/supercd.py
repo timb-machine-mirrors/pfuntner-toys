@@ -24,6 +24,6 @@ signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 files = bruno_tools.run(['find', os.path.expanduser('~'), '-name', args.pat], log=log)[1].splitlines()
 
 if args.bash:
-  print(f'({" ".join(files)})')
+  print(f'({" ".join([repr(file) for file in files])})')
 else:
   print('\n'.join(files))
