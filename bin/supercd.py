@@ -21,7 +21,12 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
-files = bruno_tools.run(['find', os.path.expanduser('~'), '-name', args.pat], log=log)[1].splitlines()
+files = bruno_tools.run([
+  'find',
+  os.path.expanduser('~'),
+  '!', '-path', '*/.*',
+  '-name', args.pat,
+], log=log)[1].splitlines()
 
 if args.bash:
   print(f'({" ".join([repr(file) for file in files])})')
