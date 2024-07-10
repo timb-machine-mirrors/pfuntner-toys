@@ -25,6 +25,7 @@ files = bruno_tools.run([
   'find',
   os.path.expanduser('~'),
   '!', '-path', '*/.*',
+  '-type', 'd',
   '-name', args.pat,
 ], log=log)[1].splitlines()
 
