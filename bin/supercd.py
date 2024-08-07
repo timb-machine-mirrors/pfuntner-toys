@@ -36,8 +36,8 @@ if args.cache:
     with open(cache_file_name) as stream:
        cache = json.load(stream)
     if args.pat in cache:
-      log.info(f'Found {pat!r} in {cache_file_name}')
-      if cache[args.pat]['timestamp'] >= now - cache_threshold:
+      log.info(f'Found {args.pat!r} in {cache_file_name}')
+      if datetime.datetime.fromtimestamp(cache[args.pat]['timestamp']) >= now - cache_threshold:
         log.info(f'Pattern was last used {datetime.datetime.fromtimestamp(cache[args.pat]["timestamp"])} and is elligible for reuse')
         files = [cache[args.pat]['file']]
         cache[args.pat]['timestamp'] = (now - epoch).total_seconds()
