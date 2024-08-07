@@ -5,7 +5,7 @@ then
   color.py red "Note: $0 is not sourced" >&2
   false
 else
-  eval files=$(supercd.py --bash "$@" 2>/dev/tty)
+  eval files=$(supercd.py --cache --bash "$@" 2>/dev/tty)
 
   if [ ${#files[@]} -eq 1 ]
   then
