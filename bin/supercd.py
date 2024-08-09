@@ -31,6 +31,8 @@ cache_threshold = datetime.timedelta(days=7)
 cache_file_name = os.path.expanduser('~/.supercd.json')
 
 cache = dict()
+cleanup = False
+
 if args.cache:
   if os.path.exists(cache_file_name):
     with open(cache_file_name) as stream:
@@ -40,10 +42,10 @@ if args.cache:
       if datetime.datetime.fromtimestamp(cache[args.pat]['timestamp']) >= now - cache_threshold:
         log.info(f'Pattern was last used {datetime.datetime.fromtimestamp(cache[args.pat]["timestamp"])} and is elligible for reuse')
         files = [cache[args.pat]['file']]
-        cache[args.pat]['timestamp'] = (now - epoch).total_seconds()
       else:
         log.info(f'Pattern was last used {datetime.datetime.fromtimestamp(cache[args.pat]["timestamp"])} and is inelligible for reuse')
         del cache[args.pat]
+        cleanup = True
   else:
     log.info(f'{cache_file_name} not found')
     with open(cache_file_name, 'w') as stream:
@@ -59,12 +61,14 @@ if not files:
     '-name', args.pat,
   ], log=log)[1].splitlines()
 
-if args.cache and len(files) == 1:
-  log.info(f'Equating {args.pat} with {files[0]} in {cache_file_name}')
-  cache[args.pat] = {
-    'file': files[0],
-    'timestamp': (now - epoch).total_seconds(),
-  }
+if args.cache and (len(files) == 1 or cleanup):
+  if len(files) == 1:
+    log.info(f'Equating {args.pat} with {files[0]} in {cache_file_name}')
+    cache[args.pat] = {
+      'file': files[0],
+      'timestamp': (now - epoch).total_seconds(),
+      'timestamp_human': str(now),
+    }
   with open(cache_file_name, 'w') as stream:
     json.dump(cache, stream)
   log.info(f'Rewrote {cache_file_name}')
