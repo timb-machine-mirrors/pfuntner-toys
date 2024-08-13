@@ -46,7 +46,7 @@ class JustifyRight(str):
   pass
 
 
-numeric_regexp = re.compile('^[+-]?[0-9,]*\.?\d[0-9,]*\.?%?$')
+numeric_regexp = re.compile(r'^[+-]?[0-9,]*\.?\d[0-9,]*\.?%?$')
 
 
 class Table(object):
