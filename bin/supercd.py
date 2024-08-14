@@ -40,10 +40,10 @@ if args.cache:
     if args.pat in cache:
       log.info(f'Found {args.pat!r} in {cache_file_name}')
       if datetime.datetime.fromtimestamp(cache[args.pat]['timestamp']) >= now - cache_threshold:
-        log.info(f'Pattern was last used {datetime.datetime.fromtimestamp(cache[args.pat]["timestamp"])} and is elligible for reuse')
+        log.info(f'Pattern was last used {datetime.datetime.fromtimestamp(cache[args.pat]["timestamp"])!s} and is elligible for reuse')
         files = [cache[args.pat]['file']]
       else:
-        log.info(f'Pattern was last used {datetime.datetime.fromtimestamp(cache[args.pat]["timestamp"])} and is inelligible for reuse')
+        log.info(f'Pattern was last used {datetime.datetime.fromtimestamp(cache[args.pat]["timestamp"])!s} and is inelligible for reuse')
         del cache[args.pat]
         cleanup = True
   else:
@@ -51,6 +51,14 @@ if args.cache:
     with open(cache_file_name, 'w') as stream:
       json.dump(cache, stream)
     log.info(f'Rewrote {cache_file_name}')
+
+  # do more thorough cleanup of old items
+  patterns = list(cache.keys())
+  for pattern in patterns:
+    if datetime.datetime.fromtimestamp(cache[pattern]['timestamp']) < now - cache_threshold:
+      log.info(f'Removing {pattern!r} since it was used {datetime.datetime.fromtimestamp(cache[pattern]["timestamp"])!s}')
+      del cache[pattern]
+      cleanup = True
 
 if not files:
   files = bruno_tools.run([
