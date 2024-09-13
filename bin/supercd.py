@@ -9,7 +9,8 @@ import logging
 import datetime
 import argparse
 
-import bruno_tools
+# Maximum age of cache entries in days
+CACHE_THRESHOLD = 30
 
 parser = argparse.ArgumentParser(description='`Super cd` Python code')
 parser.add_argument('pat', help='Glob pattern to search for')
@@ -27,7 +28,7 @@ signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 files = list()
 now = datetime.datetime.now()
 epoch = datetime.datetime.fromtimestamp(0)
-cache_threshold = datetime.timedelta(days=7)
+cache_threshold = datetime.timedelta(days=CACHE_THRESHOLD)
 cache_file_name = os.path.expanduser('~/.supercd.json')
 
 cache = dict()
