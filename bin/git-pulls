@@ -144,9 +144,9 @@ if args.dry_run:
   log.warning('Note: local repos are not being changed cause of --dry-run')
 
 sha1_regexp = re.compile('commit ([0-9a-f]{40})$')
-date_regexp = re.compile('^Date:\s*([a-z]{3} [a-z]{3} \d{1,2} \d{2}:\d{2}:\d{2} \d{4})', flags=re.IGNORECASE)
-text_regexp = re.compile('^\s+(\S?.*)$')
-up_to_date_regexp = re.compile('^Already up[- ]to[- ]date\.$')
+date_regexp = re.compile(r'^Date:\s*([a-z]{3} [a-z]{3} \d{1,2} \d{2}:\d{2}:\d{2} \d{4})', flags=re.IGNORECASE)
+text_regexp = re.compile(r'^\s+(\S?.*)$')
+up_to_date_regexp = re.compile(r'^Already up[- ]to[- ]date\.$')
 
 table = Table('Path', 'Branch', 'Old SHA1', 'Old Date', 'Old Text', 'New SHA1', 'New Date', 'New Text')
 
