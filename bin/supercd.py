@@ -9,6 +9,8 @@ import logging
 import datetime
 import argparse
 
+import bruno_tools
+
 # Maximum age of cache entries in days
 CACHE_THRESHOLD = 30
 
