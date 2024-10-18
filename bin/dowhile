@@ -67,10 +67,10 @@ while not done:
   log.info(args.cmd)
   p = subprocess.Popen(
     args.cmd,
-    stdout=subprocess.PIPE if args.include or args.exclude else None,
-    stderr=subprocess.PIPE if args.include or args.exclude else None,
+    stdout=subprocess.PIPE if args.include or args.exclude or args.brief else None,
+    stderr=subprocess.PIPE if args.include or args.exclude or args.brief else None,
   )
-  if args.include or args.exclude:
+  if args.include or args.exclude or args.brief:
     stdout = p.stdout.read().decode('utf-8')
     stderr = p.stderr.read().decode('utf-8')
   else:
