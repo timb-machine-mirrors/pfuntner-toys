@@ -11,6 +11,7 @@ import bruno_tools
 
 parser = argparse.ArgumentParser(description='Read or write a remote file as a filter')
 parser.add_argument('target', help='Remote system and path in scp-style - such as: foo:/tmp/bar')
+parser.add_argument('-q', '--quiet', action='store_true', help='Use ssh --quiet option')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -36,7 +37,7 @@ if not sys.stdout.isatty():
   sys.stdout.buffer.write(base64.b64decode(stdout))
 else:
   # Writing to remote
-  process = subprocess.Popen(['ssh', remote_system, 'base64', '-d', '>', remote_file], stdin=subprocess.PIPE)
+  process = subprocess.Popen(['ssh'] + (['-q'] if args.quiet else []) + [remote_system, 'base64', '-d', '>', remote_file], stdin=subprocess.PIPE)
   process.stdin.write(base64.b64encode(sys.stdin.buffer.read()))
   process.stdin.close()
   rc = process.wait()
