@@ -256,13 +256,14 @@ class CmdProcessor(cmd.Cmd):
       print()
       count = 0
       for (name, doc) in doers.items():
-        if count > 0:
-          print()
-        doc = doc.splitlines()
-        print(f'  {name:10}{doc[0]}')
-        for extra_doc in doc[1:]:
-          print(f'{" "*12}{extra_doc}')
-        count += 1
+        if doc:
+          if count > 0:
+            print()
+          doc = doc.splitlines()
+          print(f'  {name:10}{doc[0]}')
+          for extra_doc in doc[1:]:
+            print(f'{" "*12}{extra_doc}')
+          count += 1
     else:
       doc = doers.get(args)
       if doc:
