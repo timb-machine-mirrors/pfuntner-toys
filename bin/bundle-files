@@ -11,7 +11,7 @@ import logging
 import argparse
 
 parser = argparse.ArgumentParser(description='Bundle a tarball in a self-extracting script')
-parser.add_argument('cmd', nargs='+', help='Command and arguments')
+parser.add_argument('cmd', nargs='+', help='Command and arguments to drive the files in the tarball once they\'re deployed')
 parser.add_argument('-z', '--gzip', action='store_true', help='Treat tarball as gzipped')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
