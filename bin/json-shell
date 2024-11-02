@@ -3,6 +3,7 @@
 import pdb
 
 import os
+import re
 import cmd
 import sys
 import json
@@ -105,6 +106,30 @@ def display(node):
 
   json.dump(node, sys.stdout, indent=2)
   print()
+
+
+def grepper(path, node, args):
+  display = args.negate
+
+  if is_list_or_dict(node):
+    if path:
+      if args.regexp and args.regexp.search(path[-1]):
+        display = not args.negate
+      elif args.key_regexp and args.key_regexp.search(path[-1]) and args.value_regexp.search(''):
+        display = not args.negate
+  elif args.regexp:
+    if path and args.regexp.search(path[-1]):
+      display = not args.negate
+    elif args.regexp.search(str(node)):
+      display = not args.negate
+  elif path and args.key_regexp.search(path[-1]) and args.value_regexp.search(str(node)):
+      display = not args.negate
+
+  if display:
+    if is_list_or_dict(node):
+      print(f'/{"/".join(path)}/')
+    else:
+      print(f'/{"/".join(path)}: {node!r}')
 
 
 def finder(path, node, args):
@@ -267,9 +292,63 @@ class CmdProcessor(cmd.Cmd):
     else:
       self._perform_with_key(args.strip(), self._perform_describe_with_key)
 
+  def do_grep(self, args):
+    """Search structure for regular expressions
+   grep re        # search for the regular expression in key or value
+   grep re1=re2   # search for re1 in key and re2 in value
+
+Options:
+   -i     perform case-insensitive search
+   -v     show elements that do not match regular expression(s)
+
+Notes:
+   Non-string values are cast to strings and then searched"""
+    parser = argparse.ArgumentParser(description='json-shell grep command', add_help=False)
+    parser.add_argument('-i', '--ignore-case', action='store_true')
+    parser.add_argument('-v', '--negate', action='store_true')
+    parser.add_argument('pattern', nargs='?')
+    (grep_args, remain) = parser.parse_known_args(args.split())
+    if remain:
+      log.warning(f'Unrecognized arguments: {remain!r}')
+      return
+    if grep_args.pattern is None:
+      log.warning('A regular expression is required')
+      return
+
+    match = re.search(r'^([^=]*)(?:(=)(.*))?$', grep_args.pattern)
+    if not match:
+      log.warning(f'Malformed pattern: {grep_args.pattern!r}')
+      return
+
+    if match.group(2):
+      try:
+        setattr(grep_args, 'key_regexp', re.compile(match.group(1), flags=re.IGNORECASE if grep_args.ignore_case else 0))
+      except Exception as e:
+        log.warning(f'{match.group(1)!r} is not a valid regular expression: {e!s}')
+        return
+      try:
+        setattr(grep_args, 'value_regexp', re.compile(match.group(3), flags=re.IGNORECASE if grep_args.ignore_case else 0))
+      except Exception as e:
+        log.warning(f'{match.group(3)!r} is not a valid regular expression: {e!s}')
+        return
+      setattr(grep_args, 'regexp', None)
+    else:
+      try:
+        setattr(grep_args, 'regexp', re.compile(match.group(1), flags=re.IGNORECASE if grep_args.ignore_case else 0))
+      except Exception as e:
+        log.warning(f'{match.group(1)!r} is not a valid regular expression: {e!s}')
+        return
+      setattr(grep_args, 'key_regexp', None)
+      setattr(grep_args, 'value_regexp', None)
+
+    dive(grepper, [] if pwd() == '/' else pwd().split('/')[1:], curr_node(), grep_args)
+
   def do_find(self, args):
     """List structure with each element on a separate line without indentation:
    key/key/.../key/key: value"""
+    if args.strip():
+      log.warning('`find` does not take an argument')
+      return
     dive(finder, [] if pwd() == '/' else pwd().split('/')[1:], curr_node())
 
   def do_help(self, args):
