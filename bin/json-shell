@@ -127,7 +127,10 @@ def grepper(path, node, args):
 
   if display:
     if is_list_or_dict(node):
-      print(f'/{"/".join(path)}/')
+      if path:
+        print(f'/{"/".join(path)}/')
+      else:
+        print('/')
     else:
       print(f'/{"/".join(path)}: {node!r}')
 
@@ -138,7 +141,10 @@ def finder(path, node, args):
   assert args is None
 
   if is_list_or_dict(node):
-    print(f'/{"/".join(path)}/')
+    if path:
+      print(f'/{"/".join(path)}/')
+    else:
+      print('/')
   else:
     print(f'/{"/".join(path)}: {node!r}')
 
