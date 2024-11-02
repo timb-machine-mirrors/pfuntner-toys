@@ -107,6 +107,27 @@ def display(node):
   print()
 
 
+def finder(path, node, args):
+  # args is not used for finder() - I'll just do the assert
+  # to pacify PyCharm into thinking the the variable is used
+  assert args is None
+
+  if is_list_or_dict(node):
+    print(f'/{"/".join(path)}/')
+  else:
+    print(f'/{"/".join(path)}: {node!r}')
+
+
+def dive(action, path, node, args=None):
+  action(path, node, args)
+  if isinstance(node, list):
+    for idx in range(len(node)):
+      dive(action, path + [str(idx)], node[idx], args)
+  elif isinstance(node, dict):
+    for idx in node.keys():
+      dive(action, path + [idx], node[idx], args)
+
+
 class CmdProcessor(cmd.Cmd):
   def __init__(self, stack):
     super(CmdProcessor, self).__init__()
@@ -245,6 +266,11 @@ class CmdProcessor(cmd.Cmd):
       self._perform_describe_with_key(None)
     else:
       self._perform_with_key(args.strip(), self._perform_describe_with_key)
+
+  def do_find(self, args):
+    """List structure with each element on a separate line without indentation:
+   key/key/.../key/key: value"""
+    dive(finder, [] if pwd() == '/' else pwd().split('/')[1:], curr_node())
 
   def do_help(self, args):
     """Display help"""
