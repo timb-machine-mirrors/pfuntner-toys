@@ -11,9 +11,9 @@ Syntax: json-shell [-v] json-filename
 ```
 
 ### Options
-| Option | Description | Default |
-| ------ | ----------- | ------- |
-|  `-v`  | Enable verbose debugging | Debugging is not enabled |
+| Option | Description | Default                                |
+| ------ | ----------- |----------------------------------------|
+|  `-v`  | Enable verbose debugging | Debugging is not enabled  |
 
 ## Examples
 
@@ -25,6 +25,8 @@ Since there are so many subcommands and some of the help information is a little
 - [cd](#cd)
 - [describe](#describe)
 - [exit](#exit)
+- [find](#find)
+- [grep](#grep)
 - [help](#help)
 - [ls](#ls)
 - [pwd](#pwd)
@@ -52,99 +54,6 @@ Confoozed?  Try `help`
 /> 
 ```
 The location is `/` since you always begin in the root node.  The `> ` is asking for a subcommand to be entered.
-
-### `help`
-You can get general help of all subcommands:
-
-```commandline
-/> help
-Navigate around a JSON document, just like a shell, only different!
-
-Commands:
-
-  cat       Display the current node or a child
-              `cat` by itself displays the current node
-              `cat key` display child element `key` of the current node
-
-  cd        Change the current node
-              `cd` by itself goes to root node
-              `cd ..` go to parent node as long as you're not already at the root
-              `cd key` goes to a child node if the key exists and its node is a dictionary or list
-
-  describe  Describe a node
-              `describe` describes the current node
-              `describe key` describes the child element `key` of the current node
-
-  exit      Exit from json-shell
-
-  help      Display help
-
-  ls        List keys in the current node
-
-  pwd       Print the current node - note that this is included in each prompt
-
-  quit      Exit from json-shell
-/>
-```
-
-or you can get help on a specific subcommand:
-```commandline
-/> help cd
-Change the current node
-  `cd` by itself goes to root node
-  `cd ..` go to parent node as long as you're not already at the root
-  `cd key` goes to a child node if the key exists and its node is a dictionary or list
-/> 
-```
-
-### `exit`
-The `exit` and `quit` subcommands terminate the tool and return you to the Unix shell.  The subcommands are synonymous.
-
-### `cd`
-I'm taking great liberties with the name because we're not talking about a _current working directory_ but it's a similar concept.  You can `cd` into any child of the current node that's a list or dictionary:
-```commandline
-/> cd bools
-/bools> cd ..
-/> cd dict
-/dict> cd 1
-/dict/1> cd
-/> 
-```
-The _keys_ you can `cd` into are based on the type of node you're currently in:
-- If the current node is a dictionary, the keys of the dictionary are the keys you can cd into.
-- If the current node is a list, the keys are integers from 0 to the length of the list minus one.
-
-You don't have to treat the key differently based on whether you're in a list or dicitonary.  The tool knows what type of key is needed.
-
-There are invalid `cd`s based on the current node:
-```commandline
-/> cd foo
-'foo' is not a key
-/> cd floats
-/floats> cd 3
-3 is out of range
-/floats> cd -1
--1 is out of range
-/floats> cd 0
-0 is not a list or dictionary
-/floats> cd foo
-'foo' is not an integer: invalid literal for int() with base 10: 'foo'
-/floats> 
-```
-
-### `ls`
-The `ls` subcommand displays the keys of the current node:
-```commandline
-/> ls
-bools  ints  floats  strs  none  dict
-/> cd dict
-/dict> ls
-1  2
-/dict> cd 1
-/dict/1> ls
-0  1  2  3
-/dict/1> 
-```
 
 ### `cat`
 `cat` will display the current or target node and all of its children.
@@ -214,6 +123,38 @@ bools  ints  floats  strs  none  dict
 /dict>
 ```
 
+### `cd`
+I'm taking great liberties with the name because we're not talking about a _current working directory_ but it's a similar concept.  You can `cd` into any child of the current node that's a list or dictionary:
+```commandline
+/> cd bools
+/bools> cd ..
+/> cd dict
+/dict> cd 1
+/dict/1> cd
+/> 
+```
+The _keys_ you can `cd` into are based on the type of node you're currently in:
+- If the current node is a dictionary, the keys of the dictionary are the keys you can cd into.
+- If the current node is a list, the keys are integers from 0 to the length of the list minus one.
+
+You don't have to treat the key differently based on whether you're in a list or dicitonary.  The tool knows what type of key is needed.
+
+There are invalid `cd`s based on the current node:
+```commandline
+/> cd foo
+'foo' is not a key
+/> cd floats
+/floats> cd 3
+3 is out of range
+/floats> cd -1
+-1 is out of range
+/floats> cd 0
+0 is not a list or dictionary
+/floats> cd foo
+'foo' is not an integer: invalid literal for int() with base 10: 'foo'
+/floats> 
+```
+
 ### `describe`
 The `describe` subcommand _describes_ the current or target node:
 ```commandline
@@ -227,6 +168,195 @@ The `describe` subcommand _describes_ the current or target node:
 /ints> describe 0
 /ints/0 is a int
 /ints> 
+```
+
+### `exit`
+The `exit` and `quit` subcommands terminate the tool and return you to the Unix shell.  The subcommands are synonymous.
+
+### `find`
+The `find` command list elements starting at the current node, one node per line, with no indentation:
+
+```commandline
+/> find
+/
+/bools/
+/bools/0: True
+/bools/1: False
+/ints/
+/ints/0: 42
+/ints/1: 32768
+/ints/2: -1
+/floats/
+/floats/0: 3.141592654
+/floats/1: 2.7182818285
+/floats/2: -1e-06
+/strs/
+/strs/0: 'a'
+/strs/1: 'b'
+/strs/2: 'foo'
+/strs/3: 'bar'
+/none: None
+/dict/
+/dict/1/
+/dict/1/0: '.'
+/dict/1/1: 'one'
+/dict/1/2: 'One'
+/dict/1/3: 'ONE'
+/dict/2/
+/dict/2/0: '..'
+/dict/2/1: 'two'
+/dict/2/2: 'Two'
+/dict/2/3: 'TWO'
+/> 
+```
+
+I find this kind of display very useful when I'm writing code to navigate through a structure to find specific elements.
+
+### `grep`
+The `grep` command list elements starting at the current node, one node per line, that either match or do not match the regular expression(s):
+
+#### Simple search
+```commandline
+/> grep e
+/bools/0: True
+/bools/1: False
+/floats/2: -1e-06
+/none: None
+/dict/1/1: 'one'
+/dict/1/2: 'One'
+/> 
+```
+
+#### Key-only search
+```commandline
+/> grep e=
+/none: None
+/> 
+```
+
+#### Value-only search
+```commandline
+/> grep =o
+/strs/2: 'foo'
+/none: None
+/dict/1/1: 'one'
+/dict/2/1: 'two'
+/dict/2/2: 'Two'
+/> 
+
+```
+
+#### Case-insensitive search
+```commandline
+/> grep -i =o
+/strs/2: 'foo'
+/none: None
+/dict/1/1: 'one'
+/dict/1/2: 'One'
+/dict/1/3: 'ONE'
+/dict/2/1: 'two'
+/dict/2/2: 'Two'
+/dict/2/3: 'TWO'
+/> 
+```
+
+#### Negated search
+```commandline
+/> grep -vi =o
+/
+/bools/
+/bools/0: True
+/bools/1: False
+/ints/
+/ints/0: 42
+/ints/1: 32768
+/ints/2: -1
+/floats/
+/floats/0: 3.141592654
+/floats/1: 2.7182818285
+/floats/2: -1e-06
+/strs/
+/strs/0: 'a'
+/strs/1: 'b'
+/strs/3: 'bar'
+/dict/
+/dict/1/
+/dict/1/0: '.'
+/dict/2/
+/dict/2/0: '..'
+/> 
+```
+
+### `help`
+You can get general help of all subcommands:
+
+```commandline
+/> help
+Navigate around a JSON document, just like a shell, only different!
+
+Commands:
+
+  cat       Display the current node or a child
+              `cat` by itself displays the current node
+              `cat key` display child element `key` of the current node
+
+  cd        Change the current node
+              `cd` by itself goes to root node
+              `cd ..` go to parent node as long as you're not already at the root
+              `cd key` goes to a child node if the key exists and its node is a dictionary or list
+
+  describe  Describe a node
+              `describe` describes the current node
+              `describe key` describes the child element `key` of the current node
+
+  exit      Exit from json-shell
+
+  find      List structure with each element on a separate line without indentation:
+               key/key/.../key/key: value
+
+  grep      Search structure for regular expressions
+               grep re        # search for the regular expression in key or value
+               grep re1=re2   # search for re1 in key and re2 in value
+            
+            Options:
+               -i     perform case-insensitive search
+               -v     show elements that do not match regular expression(s)
+            
+            Notes:
+               Non-string values are cast to strings and then searched
+
+  help      Display help
+
+  ls        List keys in the current node
+
+  pwd       Print the current node - note that this is included in each prompt
+
+  quit      Exit from json-shell
+/>
+```
+
+or you can get help on a specific subcommand:
+```commandline
+/> help cd
+Change the current node
+  `cd` by itself goes to root node
+  `cd ..` go to parent node as long as you're not already at the root
+  `cd key` goes to a child node if the key exists and its node is a dictionary or list
+/> 
+```
+
+### `ls`
+The `ls` subcommand displays the keys of the current node:
+```commandline
+/> ls
+bools  ints  floats  strs  none  dict
+/> cd dict
+/dict> ls
+1  2
+/dict> cd 1
+/dict/1> ls
+0  1  2  3
+/dict/1> 
 ```
 
 ### `pwd`
