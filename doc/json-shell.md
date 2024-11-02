@@ -45,6 +45,7 @@ I'll also use the following JSON file in examples:
   }
 }
 ```
+This is also available [from a Gist](https://gist.githubusercontent.com/pfuntner/cdf1e734371cafe904f78b6b836347e4/raw/195b0f0fdcb402bc8182081cbe984ac336800cd2/help-example.json). 
 
 ### The prompt
 The tool prompts for subcommands includes the _current location_ much like the current working directory as in a filesystem.
