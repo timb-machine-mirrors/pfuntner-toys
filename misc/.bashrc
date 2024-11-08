@@ -161,3 +161,8 @@ then
 fi
 
 alias supercd='. supercd.sh'
+alias commit-branches="git branch | tr -d \  | grep -P '^[0-9a-f]{40}\$'"
+
+###############################################################################################
+# This is the end of the bash script of the fragment that I like to use in my $HOME/.bashrc   #
+###############################################################################################
