@@ -7,9 +7,15 @@ import signal
 import logging
 import argparse
 
+import bruno_tools
+
 parser = argparse.ArgumentParser(description='List hosts in ~/.ssh/config')
 parser.add_argument('regexps', metavar='regexp', nargs='*', help='Zero or more regular expressions to apply to hosts')
-parser.add_argument('-c', '--comma', action='store_true', help='Concatenate the nodes with a comma')
+
+group = parser.add_mutually_exclusive_group()
+group.add_argument('-l', '--list', action='store_true', help='List nodes one one per line')
+group.add_argument('-c', '--comma', action='store_true', help='Concatenate the nodes with a comma')
+
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -19,19 +25,48 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
+"""
+Host gcp-20241101-almalinux-9
+        Hostname 34.23.141.165
+        User jpfuntne
+        IdentityFile ~/.ssh/google_compute_engine
+        ProxyCommand nc -X connect -x proxy.esl.cisco.com:80 %h %p
+"""
+
 if any([regexp.startswith('!') for regexp in args.regexps]) and any([not regexp.startswith('!') for regexp in args.regexps]):
   parser.error('Cannot combine both positive and negative regular expressions')
 
+host_regexp = re.compile(r'^Host\s+(\S+)\s*$')
+attr_regexp = re.compile(r'^\s+(\S+)\s+(.+)\s*$')
+
+hosts = dict()
+host = None
+
 with open(os.path.expanduser('~/.ssh/config')) as stream:
-  hosts = re.findall(r'^Host\s+(\S+)', stream.read(), re.MULTILINE)
+  for line in stream.read().splitlines():
+    match = host_regexp.search(line)
+    if match:
+      hostname = match.group(1)
+      hosts[hostname] = dict()
+    elif hostname:
+      match = attr_regexp.search(line)
+      if match:
+        hosts[hostname][match.group(1)] = match.group(2)
 
-  if args.regexps:
-    # apply regular expressions
-    pos = 0
-    while pos < len(hosts):
-      if any([re.search(regexp[1:] if regexp.startswith('!') else regexp, hosts[pos]) for regexp in args.regexps]) == args.regexps[0].startswith('!'):
-        del hosts[pos]
-      else:
-        pos += 1
+if args.regexps:
+  # apply regular expressions
+  pos = 0
+  hostnames = list(hosts.keys())
+  while pos < len(hostnames):
+    if any([re.search(regexp[1:] if regexp.startswith('!') else regexp, hostnames[pos]) for regexp in args.regexps]) == args.regexps[0].startswith('!'):
+      del hosts[hostnames[pos]]
+    else:
+      pos += 1
 
+if args.list or args.comma:
   print((',' if args.comma else '\n').join(hosts))
+else:
+  table = bruno_tools.Table('Hostname', 'User', 'Target')
+  for hostname in sorted(list(hosts.keys())):
+    table.add(hostname, hosts[hostname].get('User'), hosts[hostname].get('Hostname'))
+  table.close()
