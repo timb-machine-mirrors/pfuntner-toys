@@ -53,15 +53,17 @@ with open(os.path.expanduser('~/.ssh/config')) as stream:
       if match:
         hosts[hostname][match.group(1)] = match.group(2)
 
+log.debug(f'{hosts=}')
+
 if args.regexps:
   # apply regular expressions
   pos = 0
   hostnames = list(hosts.keys())
   while pos < len(hostnames):
     if any([re.search(regexp[1:] if regexp.startswith('!') else regexp, hostnames[pos]) for regexp in args.regexps]) == args.regexps[0].startswith('!'):
+      log.info(f'Removing {hostnames[pos]!r}')
       del hosts[hostnames[pos]]
-    else:
-      pos += 1
+    pos += 1
 
 if args.list or args.comma:
   print((',' if args.comma else '\n').join(hosts))
