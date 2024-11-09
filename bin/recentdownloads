@@ -34,7 +34,7 @@ log.setLevel(logging.WARNING - 10*(args.verbose or 0))
 if not args.time:
   mtime = -1/24
 else:
-  match = re.search('^((\d+)?\.?(\d+)?)([smhd])?$', args.time)
+  match = re.search(r'^((\d+)?\.?(\d+)?)([smhd])?$', args.time)
   if match:
     log.debug('match groups: {groups}'.format(groups=match.groups()))
     mtime = match.group(2)
