@@ -41,8 +41,8 @@ class Color(object):
 
   @staticmethod
   def get_color_escape_code(color, background_color=None):
-    return ('\x1b[{}m'.format(Color.get_color_code(color) or color) if color else '') + \
-           ('\x1b[{}m'.format(Color.get_color_code(background_color) + 10) if background_color else '')
+    return (r'\x1b[{}m'.format(Color.get_color_code(color) or color) if color else '') + \
+           (r'\x1b[{}m'.format(Color.get_color_code(background_color) + 10) if background_color else '')
 
   @staticmethod
   def print_color(color, background_color=None):
