@@ -39,6 +39,7 @@ def process(source):
       pos = 0
       while pos < len(data):
         c = data[pos]
+        log.debug(f'{pos=} {c=} {quote=} {data[pos:][:5]=}')
         if quote:
           if c == quote:
             quote = None
@@ -48,11 +49,14 @@ def process(source):
             raw = False
           elif data[pos:pos+2] == '\\\\':
             pos += 1
-          elif c == '\\' and pos < len(data)-1 and data[pos+1] not in [quote, 'n', 't', 'r'] and not raw:
-            if args.list:
-              print(source)
-              return
-            show(source if isinstance(source, str) else None, pos, data, newlines)
+          else:
+            if c == '\\' and pos < len(data)-1:
+              if data[pos+1] not in [quote, 'n', 't', 'r'] and not raw:
+                if args.list:
+                  print(source)
+                  return
+                show(source if isinstance(source, str) else None, pos, data, newlines)
+              pos += 1
         elif c in ['"', "'"]:
           if data[pos:pos+3] == c*3:
             quote = c*3
