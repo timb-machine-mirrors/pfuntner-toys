@@ -51,7 +51,7 @@ def process(source):
             pos += 1
           else:
             if c == '\\' and pos < len(data)-1:
-              if data[pos+1] not in [quote, 'n', 'o', 'r', 't', 'x'] and not raw:
+              if data[pos+1] not in [quote, 'n', 'o', 'r', 't', 'u', 'x'] and not raw:
                 if args.list:
                   print(source)
                   return
