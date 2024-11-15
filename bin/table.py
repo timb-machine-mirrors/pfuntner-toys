@@ -551,7 +551,7 @@ class FixedMethod(MethodBase):
     else:
       if lines:
         maxlen = max([len(line) for line in lines])
-        delimiters = list(re.finditer('(\s{2,})', lines[0]))
+        delimiters = list(re.finditer(r'(\s{2,})', lines[0]))
         if delimiters:
           if delimiters[0].start(1) > 0:
             log.debug('First delimiter: {}:{} {!r}'.format(delimiters[0].start(1), delimiters[0].end(1), delimiters[0].group(1)))

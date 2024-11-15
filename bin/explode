@@ -84,7 +84,7 @@ def process(path):
       if (rc == 0) and (not stderr):
         files = 0
         # sample stdout: "      0  10-04-2018 08:30   toys-master/"
-        regexp = re.compile('^\s*\d+\s+\d{2}-\d{2}-\d{4}\s+\d{2}:\d{2}\s+\S')
+        regexp = re.compile(r'^\s*\d+\s+\d{2}-\d{2}-\d{4}\s+\d{2}:\d{2}\s+\S')
         for line in stdout.splitlines():
           if (cmd != ['unzip']) or regexp.search(line):
             files += 1
@@ -117,9 +117,9 @@ def process(path):
 absoluteRegexp = re.compile('^/')
 
 regexps = [
-  (['jar'], re.compile('^(.*)\.jar$')),
-  (['tar'], re.compile('^(.*)\.(tar|tar\.gz|tgz)$')),
-  (['unzip'], re.compile('^(.*)\.zip$')),
+  (['jar'], re.compile(r'^(.*)\.jar$')),
+  (['tar'], re.compile(r'^(.*)\.(tar|tar\.gz|tgz)$')),
+  (['unzip'], re.compile(r'^(.*)\.zip$')),
 ]
 
 parser = argparse.ArgumentParser(description='Perform operations on archive files')

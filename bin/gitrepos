@@ -39,7 +39,7 @@ def findfiles(root, name, isDir=False, isFile=True, assureNotLink=False):
         ret += findfiles(os.path.join(root, child), name, isDir=isDir, isFile=isFile, assureNotLink=assureNotLink)
   return ret
 
-regexp = re.compile('^\s+url\s*=\s*(.*)$')
+regexp = re.compile(r'^\s+url\s*=\s*(.*)$')
 
 table = Table(('root', 'url'), desiredSep=' ')
 

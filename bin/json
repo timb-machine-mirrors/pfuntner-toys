@@ -318,7 +318,7 @@ args = parser.parse_args()
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
-numeric_regexp = re.compile('^(\d+)')
+numeric_regexp = re.compile(r'^(\d+)')
 
 yaml = None
 if args.yaml:
