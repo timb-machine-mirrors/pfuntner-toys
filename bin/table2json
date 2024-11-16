@@ -99,7 +99,7 @@ else:
 headers = []
 data = []
 
-regexp = re.compile('\|([^|]*)(?=\|)')
+regexp = re.compile(r'\|([^|]*)(?=\|)')
 # find heading row
 while not headers:
   line = stream.readline()
