@@ -87,7 +87,7 @@ alias truepath=truepath.py
 
 # alias zip=unzip
 
-alias vact='. vact.py'
+alias vact='. $(vact.py)'
 
 alias fixed2json='table.py -i fixed --headings -o json'
 alias fixed2sep='table.py -i fixed --headings -o sep --sep \|'
