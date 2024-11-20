@@ -20,7 +20,7 @@ log.setLevel(logging.DEBUG if args.verbose else logging.WARNING)
 
 if args.branch is None:
   args.branch = 'HEAD'
-elif re.match('-\d+$', args.branch):
+elif re.match(r'-\d+$', args.branch):
   args.branch = 'HEAD~{}'.format(args.branch[1:])
 
 cmd = ['git', 'cat-file', '-p', '{args.branch}:{args.filename}'.format(**locals())]

@@ -75,7 +75,7 @@ signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 if sys.stdin.isatty():
   parser.error('stdin must be redirected')
 
-packer_prefix_regexp = re.compile('^\s*[^ :]+:\s*')
+packer_prefix_regexp = re.compile(r'^\s*[^ :]+:\s*')
 
 stack = []
 buf = ''

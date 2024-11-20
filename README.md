@@ -21,6 +21,7 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`ansible-distros`](doc/ansible-distros.md)                     |                   | Prints OS information about Ansible hosts                                                            |
 | [`ansible-host-data`](doc/ansible-host-data.md)                 |                   | Extracts specific information about a host in an ansible inventory                                   |
 | [`ansible-hosts`](doc/ansible-hosts.md)                         | Yes               | Lists host information from an Ansible inventory                                                     |
+| [`ansible-role`](doc/ansible-role.md)                           | Yes               | Builds a minimial ephemeral Ansible playbook for a role and runs ansible-playbook with it            |
 | [`aws-image`](doc/aws-image.md)                                 |                   | Displays details about an AWS EC2 AMI                                                                |
 | [`aws-images`](doc/aws-images.md)                               |                   | Search for AWS EC2 AMIs                                                                              |
 | [`banner`](doc/banner.md)                                       | Yes               | Prints text in a _banner_                                                                            |

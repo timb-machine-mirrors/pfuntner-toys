@@ -48,7 +48,7 @@ if args.level is not None:
   if any([getattr(args, level, False) for level in levels.keys()]) or getattr(args, 'message'):
     parser.error('--level requires no other option')
 
-  match = re.search('^\d+$', args.level)
+  match = re.search(r'^\d+$', args.level)
   if match:
     level = int(args.level)
   else:

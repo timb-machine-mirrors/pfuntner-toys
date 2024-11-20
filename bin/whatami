@@ -80,7 +80,7 @@ def run(cmd, silent=False, strip_whitespace=False):
 
 def parse_fixed_table(data):
   ret = {}
-  data = data.replace('\r', '').splitlines()
+  data = data.replace(r'\r', '').splitlines()
   log.debug('data: {data}'.format(**locals()))
   if len(data) > 1:
     headings = re.findall(r'\w+\s+', data[0])
@@ -165,7 +165,7 @@ def get_version():
           origin  https://github.com/pfuntner/gists.git (fetch)
           origin  git@github.com:pfuntner/toys.git (fetch)
         """
-        match = re.search('origin\s+[^:@]+[:@]/?/?([^/]+/.*)\.git\s+\(fetch\)', str(stdout))
+        match = re.search(r'origin\s+[^:@]+[:@]/?/?([^/]+/.*)\.git\s+\(fetch\)', str(stdout))
         log.debug('`git remote -v` groups: {groups}'.format(groups=match.groups() if match else None))
         if match:
           ret = '{timestamp!s}, {repo}, {branch}, {commit}'.format(repo=match.group(1), **locals())
@@ -272,7 +272,7 @@ if 'win' in sys.platform.lower():
       else:
         total += bytes
 
-    free = extract('wmic os get freephysicalmemory', '(\d+)', lambda match: float(match.group(1))*1024)
+    free = extract('wmic os get freephysicalmemory', r'(\d+)', lambda match: float(match.group(1))*1024)
 
     if total and free:
       print('Free RAM: {free}/{total} {pcent:.2f}%'.format(free=human(free), total=human(total), pcent=100*free/total))
@@ -317,7 +317,7 @@ else:
   # Linux
   out = run('/sbin/ifconfig', silent=True)
   if out:
-    adapter_regexp = re.compile('^(\w+):')
+    adapter_regexp = re.compile(r'^(\w+):')
     ignore_adapter_regexp = re.compile('(lo|docker)')
     attrs = {}
     for line in out.splitlines():
@@ -354,9 +354,9 @@ else:
 
   print('')
 
-  extract('free -b', '^Mem:\s+(\d+)\s+(\d+)\s+(\d+)', ram_usage, 'Free RAM')
+  extract('free -b', r'^Mem:\s+(\d+)\s+(\d+)\s+(\d+)', ram_usage, 'Free RAM')
 
-  extract('lscpu', '^Model name:\s+(.+)$', lambda match: match.group(1).strip(), 'CPU name')
+  extract('lscpu', r'^Model name:\s+(.+)$', lambda match: match.group(1).strip(), 'CPU name')
   run('uptime', strip_whitespace=True)
 
 pwd = os.getcwd()

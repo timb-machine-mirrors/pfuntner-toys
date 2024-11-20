@@ -31,10 +31,14 @@ def shorten(s):
 
 parser = argparse.ArgumentParser(description='Summary git log')
 parser.add_argument('targets', metavar='target', nargs='*', help='Zero or more targets (files, etc)')
-parser.add_argument('-l', '--long', action='store_true', help='Do not truncate commit text')
 parser.add_argument('-r', '--remote', action='store_true', help='Examine remote branch')
 parser.add_argument('-b', '--branch', help='Examine branch other than current')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
+
+group = parser.add_mutually_exclusive_group()
+group.add_argument('-l', '--long', action='store_true', help='Do not truncate commit text')
+group.add_argument('-s', '--shorten', action='store_true', help='Shorten commit SHAs')
+
 (args, unknown_args) = parser.parse_known_args()
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(msg)s')
@@ -58,6 +62,6 @@ else:
 table = Table('Commit', 'Author', 'Date (UTC)', 'Text')
 git_class = Git(log)
 for commit in git_class.parse_log(unknown_args + [('origin/' if args.remote else '') + branch] + args.targets):
-  table.add(commit['commit'], commit['author'], commit['utc_date'], shorten(repr('\n'.join(commit['messages']))[1:-1]))
+  table.add(commit['commit'][:7] if args.shorten else commit['commit'], commit['author'], commit['utc_date'], shorten(repr('\n'.join(commit['messages']))[1:-1]))
 
 print(str(table), end='')

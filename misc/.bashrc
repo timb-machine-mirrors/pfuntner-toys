@@ -87,7 +87,7 @@ alias truepath=truepath.py
 
 # alias zip=unzip
 
-alias vact='. venv/bin/activate'
+alias vact='. $(vact.py)'
 
 alias fixed2json='table.py -i fixed --headings -o json'
 alias fixed2sep='table.py -i fixed --headings -o sep --sep \|'
@@ -161,3 +161,8 @@ then
 fi
 
 alias supercd='. supercd.sh'
+alias commit-branches="git branch | tr -d \  | grep -P '^[0-9a-f]{40}\$'"
+
+###############################################################################################
+# This is the end of the bash script of the fragment that I like to use in my $HOME/.bashrc   #
+###############################################################################################

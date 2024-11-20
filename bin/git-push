@@ -30,7 +30,7 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
-branch_regexp = re.compile('^\*\s+(\S+)', re.MULTILINE)
+branch_regexp = re.compile(r'^\*\s+(\S+)', re.MULTILINE)
 (rc, stdout, stderr) = run('git branch')
 match = branch_regexp.search(stdout)
 if match:
