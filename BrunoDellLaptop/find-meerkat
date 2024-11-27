@@ -125,7 +125,7 @@ for my_ip in socket.gethostbyname_ex(socket.gethostname())[2]:
   log.info(f'my_ip: {my_ip}')
 
   nybbles = my_ip.split('.')
-  for nybble in range(1,17):
+  for nybble in range(1,255):
     ip = '.'.join(nybbles[:3] + [str(nybble)])
     if ip != my_ip:
       log.info(f'Testing {ip!r}...')
