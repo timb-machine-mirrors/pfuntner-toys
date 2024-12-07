@@ -66,7 +66,7 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`pycomment`](doc/pycomment.md)                                 | Yes               | vi command to toggle Python-style comments, similar to PyCharm `ctrl-/` command                      |
 | [`pythons`](doc/pythons.md)                                     |                   | Show versions of Python/Python2/Python3 interpreters                                                 |
 | [`recentdownloads`](doc/recentdownloads.md)                     |                   | Find recently downloaded files                                                                       |
-| [`remote-file`](doc/recentdownloads.md)                         |                   | Read or write a remote file in a filter                                                              |
+| [`remote-file`](doc/remote-file.md)                             |                   | Read or write a remote file in a filter                                                              |
 | [`SecureKeyValues`](doc/SecureKeyValues.md)                     |                   | Manage secure key value stores                                                                       |
 | [`side-diff`](doc/side-diff.md)                                 | Yes               | Perform side-by-side compare, utilizing all of the screen width                                      |
 | [`ssh-exec`](doc/ssh-exec.md)                                   |                   | Execute a script on a remote host                                                                    |
