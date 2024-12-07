@@ -78,6 +78,7 @@ else:
     table = bruno_tools.Table(*(['Hostname'] + headings))
     for hostname in sorted(list(hosts.keys())):
       row = [hostname]
+      host = hosts[hostname]
       for heading in headings:
         row.append(host.get(heading, ''))
       table.add(*(row))
