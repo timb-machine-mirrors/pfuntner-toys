@@ -9,10 +9,10 @@ import datetime
 
 def seconds_since_epoch(line):
   # 1733755665.835
-  match = re.search(r'(\d{10}(\.\d{3,6})?)', line)
+  match = re.search(r'(\d{10}(\.\d{3,})?)', line)
   if match:
     timestamp = datetime.datetime.fromtimestamp(float(match.group(1)))  
-    return (f'{line[:match.start(1)]}{timestamp.isoformat()}{line[match.end(1)+1:]}', True)
+    return (f'{line[:match.start(1)]}{timestamp.isoformat()}{line[match.end(1):]}', True)
   else:
     return (line, False)
 
