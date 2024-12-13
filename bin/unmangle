@@ -27,6 +27,6 @@ data = data.replace('\x1d', ' ')
 [0;32m2024-12-02T05:38:15Z:     amazon-ebs.cloud9: skipping: [AmazonLinux-2023-kairos/emr-analytics][0m
 '''
 
-data = re.sub(r'\x1b\[0(?:;\d{1,2})?m', '', data)
+data = re.sub(r'\x1b\[0(?:;\d{1,2})?m', '', data, flags=re.MULTILINE)
 
 print(data, end='')
