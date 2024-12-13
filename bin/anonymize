@@ -18,7 +18,9 @@ def sub(data, pattern, sub_chars):
   return ''.join(data)
 
 parser = argparse.ArgumentParser(description='Anonymize data')
-parser.add_argument('-e', '-k', '--keep-escapes', action='count', help='Do not anonymize escape sequences')
+parser.add_argument('-e', '-k', '--keep-escapes', action='store_true', help='Do not anonymize escape sequences')
+parser.add_argument('-t', '--timestamps', action='store_true', help='Anonymize timestamps')
+parser.add_argument('-n', '--numerics', action='store_true', help='Anonymize numerics')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -31,10 +33,19 @@ signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 if sys.stdin.isatty():
   parser.error('stdin must be redirected')
 
-letters = [letter for letter in string.ascii_letters]
-digits = [digit for digit in string.digits]
-
 data = sys.stdin.read()
-data = sub(data, r'^[a-zA-Z]$', letters)
-data = sub(data, r'^\d$', digits)
+
+if args.timestamps or args.numerics:
+  if args.numerics:
+    data = re.sub(r'\b\d{10,}(\.\d{3,})?\b', 'SECS_SINCE_EPOCH', data)
+  if args.numerics:
+    data = re.sub(r'\b\d+.\d*\b', 'FLOAT', data)
+    data = re.sub(r'\b\.\d+\b', 'FLOAT', data)
+    data = re.sub(r'\b\d+\b', 'INTEGER', data)
+else:
+  letters = [letter for letter in string.ascii_letters]
+  digits = [digit for digit in string.digits]
+  data = sub(data, r'^[a-zA-Z]$', letters)
+  data = sub(data, r'^\d$', digits)
+
 print(data, end='')
