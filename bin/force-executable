@@ -31,9 +31,11 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
+# I got this technique from https://superuser.com/a/1749811/998733
 is_wsl = os.path.exists('/proc/sys/fs/binfmt_misc/WSLInterop')
+
 if args.wsl_only and not is_wsl:
-  log.warning('--wsl-only prevents use in a non-WSL environment')
+  log.warning('--wsl-only prevents use of this script in a non-WSL environment')
   exit(0)
 
 initial_directory = os.curdir
