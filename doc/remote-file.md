@@ -24,7 +24,7 @@ Syntax: remote-file [-h] [-b] [-q] [-v] target
 
 ### Reading from a remote file
 ```
-$ remote-file vm1:/etc/os-release | table.py -i sep --reg = -o csv | tr , \\n | tr -d \" | table.py -i form -o json | jq .[0]
+$ remote-file vm1:/etc/os-release | tr = \\n | tr -d \" | table.py -i form -o json | jq .[0]
 {
   "PRETTY_NAME": "Ubuntu 22.04.3 LTS",
   "NAME": "Ubuntu",
