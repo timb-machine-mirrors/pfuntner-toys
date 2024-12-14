@@ -21,6 +21,7 @@ import bruno_tools
 
 parser = argparse.ArgumentParser(description='Force execute bit in git')
 parser.add_argument('paths', metavar='path', nargs='+', help='Path to one or more files')
+parser.add_argument('-w', '--wsl-only', action='store_true', help='Only make changes in WSL environment')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -30,8 +31,9 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
-if not os.path.exists('/proc/sys/fs/binfmt_misc/WSLInterop'):
-  log.warning('This does not appear to be a WSL environment so this command is useless here')
+is_wsl = os.path.exists('/proc/sys/fs/binfmt_misc/WSLInterop')
+if args.wsl_only and not is_wsl:
+  log.warning('--wsl-only prevents use in a non-WSL environment')
   exit(0)
 
 initial_directory = os.curdir
@@ -45,12 +47,17 @@ for path in args.paths:
     continue
 
   path_stat = os.stat(path)
-  if not (path_stat.st_mode & stat.S_IXUSR):
-    log.warning(f'Not executable: {path!r}')
-    continue
+  is_executable = bool(path_stat.st_mode & stat.S_IXUSR)
 
-  os.chdir(os.path.dirname(path))
-  
-  bruno_tools.run(f'git update-index --chmod=+x {os.path.basename(path)}', capture=False)
-
-  os.chdir(initial_directory)
+  if is_wsl:
+    if is_executable:
+      os.chdir(os.path.dirname(path))
+      bruno_tools.run(f'git update-index --chmod=+x {os.path.basename(path)}', capture=False)
+      os.chdir(initial_directory)
+    else:
+      log.warning(f'Not executable: {path}')
+  else:
+    if not is_executable:
+      bruno_tools.run(f'chmod -v +x {os.path.basename(path)}', capture=False)
+    else:
+      log.warning(f'Already executable: {path}')
