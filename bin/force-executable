@@ -12,6 +12,7 @@ This script will turn on the execute bit in git:
 
 import os
 import sys
+import stat
 import signal
 import logging
 import argparse
@@ -41,6 +42,11 @@ for path in args.paths:
 
   if os.path.isdir(path):
     log.warning(f'Not a file: {path!r}')
+    continue
+
+  path_stat = os.stat(path)
+  if not (path_stat.st_mode & stat.S_IXUSR):
+    log.warning(f'Not executable: {path!r}')
     continue
 
   os.chdir(os.path.dirname(path))
