@@ -13,6 +13,7 @@ import inspect
 import logging
 import argparse
 
+import xml.etree.ElementTree as ET
 
 class StackNode(object):
   """
@@ -387,21 +388,57 @@ Notes:
     exit()
 
 
+def reorg_xml(xml_node, sibling_nodes):
+  sibling_nodes.append({'tag': xml_node.tag})
+
+  if xml_node.attrib:
+    sibling_nodes[-1]['attrib'] = {key: value for (key, value) in xml_node.attrib.items()}
+
+  if xml_node.text:
+    sibling_nodes[-1]['text'] = xml_node.text
+
+  if xml_node.tail:
+    sibling_nodes[-1]['tail'] = xml_node.tail
+
+  if list(xml_node):
+    sibling_nodes[-1]['children'] = list()
+    for child in xml_node:
+      reorg_xml(child, sibling_nodes[-1]['children'])
+
+  return sibling_nodes
+
+
 def doc_load(stream):
   exceptions = list()
 
   data = stream.read()
 
+  doc = None
   try:
-    log.debug('Attempting to read as JSON')
-    return json.loads(data)
+    log.info('Attempting to read as XML')
+    doc = ET.fromstring(data)
   except Exception as e:
+    log.debug(str(e))
     exceptions.append(str(e))
+  if doc is not None:
+    root = reorg_xml(doc, list())
+    if len(root) > 1:
+      parser.error(f'More than one XML root object')
+    return root
 
   try:
-    log.debug('Attempting to read as YAML')
+    log.info('Attempting to read as YAML')
     return yaml.load(data, Loader=yaml.BaseLoader)
   except Exception as e:
+    log.debug(str(e))
+    exceptions.append(str(e))
+
+  # json is the most forgiving so we'll parse it last
+  try:
+    log.info('Attempting to read as JSON')
+    return json.loads(data)
+  except Exception as e:
+    log.debug(str(e))
     exceptions.append(str(e))
 
   raise Exception(' '.join(exceptions))

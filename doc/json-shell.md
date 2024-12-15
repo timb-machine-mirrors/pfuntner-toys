@@ -1,13 +1,13 @@
 # `json-shell`
 
 ## Purpose
-An interactive _shell-like_ tool to explore a JSON or YAML file.
+An interactive _shell-like_ tool to explore a JSON, YAML, or XML file.
 
-I am often frustrated by large complicated JSON or YAML objects and had this wild idea of treating an object like a Unix filesystem: there is a root, child nodes, and grandchildren, you can navigate with `cd` along with other familiar Unix commands. 
+I am often frustrated by large complicated structured objects and had this wild idea of treating an object like a Unix filesystem: there is a root, child nodes, and grandchildren, you can navigate with `cd` along with other familiar Unix commands. 
 
 ## Syntax
 ```
-Syntax: json-shell [-v] json-filename
+Syntax: json-shell [-v] filename
 ```
 
 ### Options
@@ -31,7 +31,10 @@ Since there are so many subcommands and some of the help information is a little
 - [ls](#ls)
 - [pwd](#pwd)
 
-I'll also use the following JSON file in examples:
+There's also [an example using an XML file](#XML-example).
+
+### JSON file used in examples
+I'll also use the following JSON file in most of the examples:
 ```json
 {
   "bools": [true, false],
@@ -45,7 +48,19 @@ I'll also use the following JSON file in examples:
   }
 }
 ```
-This is also available [from a Gist](https://gist.githubusercontent.com/pfuntner/cdf1e734371cafe904f78b6b836347e4/raw/195b0f0fdcb402bc8182081cbe984ac336800cd2/help-example.json). 
+This is also available [from a Gist](https://gist.githubusercontent.com/pfuntner/cdf1e734371cafe904f78b6b836347e4/raw/195b0f0fdcb402bc8182081cbe984ac336800cd2/help-example.json).
+
+Here's an example of loading the sample downloading it on the fly:
+```commandline
+$ json-shell <(curl https://gist.githubusercontent.com/pfuntner/cdf1e734371cafe904f78b6b836347e4/raw/195b0f0fdcb402bc8182081cbe984ac336800cd2/help-example.json 2>/dev/null)
+Confoozed?  Try `help`
+/> describe
+/ is a dict with 6 elements
+/> quit
+$ 
+```
+
+I didn't do an example using YAML but there aren't really any surprises. 
 
 ### The prompt
 The tool prompts for subcommands includes the _current location_ much like the current working directory as in a filesystem.
@@ -54,7 +69,7 @@ $ json-shell sample.json
 Confoozed?  Try `help`
 /> 
 ```
-The location is `/` since you always begin in the root node.  The `> ` is asking for a subcommand to be entered.
+The initial current location is `/` since you always begin in the root node.  The `> ` is asking for a subcommand to be entered.
 
 ### `cat`
 `cat` will display the current or target node and all of its children.
@@ -363,11 +378,98 @@ bools  ints  floats  strs  none  dict
 ### `pwd`
 The `pwd` subcommand prompts the location of the current node - in a filesystem, you might think of this as the _current working directory_.  It's also part of each and every prompt but it's such a popular command and it was an easy thing to add so I added it. 
 
+### XML example
+I've extended the command to handle XML files but I had to reimagine the nodes since they are structured differently than simple lists and dictionaries.  I hope the restructuring makes sense.  The file is available at [example.xml](https://gist.githubusercontent.com/pfuntner/7f36b9d4b9f91b674945bd6bf6b32f3a/raw/2f6ddfd40b35ef77c7b4bc4a2658f771e061acb3/example.xml).
+
+```commandline
+$ cat foo.html
+<html>
+<title>Hello, world</title>
+<body>
+<h1>Table time</h1>
+<table border='1'>
+<tr>
+<th>Cell</th>
+<th>Value></th>
+</tr>
+<tr>
+<td>One</td>
+<td>1</td>
+</tr>
+</table>
+<br/>
+<p>Good bye</p>
+</body>
+</html>
+$ json-shell foo.html
+Confoozed?  Try `help`
+/> find
+/
+/0/
+/0/tag: 'html'
+/0/text: '\n'
+/0/children/
+/0/children/0/
+/0/children/0/tag: 'title'
+/0/children/0/text: 'Hello, world'
+/0/children/0/tail: '\n'
+/0/children/1/
+/0/children/1/tag: 'body'
+/0/children/1/text: '\n'
+/0/children/1/tail: '\n'
+/0/children/1/children/
+/0/children/1/children/0/
+/0/children/1/children/0/tag: 'h1'
+/0/children/1/children/0/text: 'Table time'
+/0/children/1/children/0/tail: '\n'
+/0/children/1/children/1/
+/0/children/1/children/1/tag: 'table'
+/0/children/1/children/1/attrib/
+/0/children/1/children/1/attrib/border: '1'
+/0/children/1/children/1/text: '\n'
+/0/children/1/children/1/tail: '\n'
+/0/children/1/children/1/children/
+/0/children/1/children/1/children/0/
+/0/children/1/children/1/children/0/tag: 'tr'
+/0/children/1/children/1/children/0/text: '\n'
+/0/children/1/children/1/children/0/tail: '\n'
+/0/children/1/children/1/children/0/children/
+/0/children/1/children/1/children/0/children/0/
+/0/children/1/children/1/children/0/children/0/tag: 'th'
+/0/children/1/children/1/children/0/children/0/text: 'Cell'
+/0/children/1/children/1/children/0/children/0/tail: '\n'
+/0/children/1/children/1/children/0/children/1/
+/0/children/1/children/1/children/0/children/1/tag: 'th'
+/0/children/1/children/1/children/0/children/1/text: 'Value>'
+/0/children/1/children/1/children/0/children/1/tail: '\n'
+/0/children/1/children/1/children/1/
+/0/children/1/children/1/children/1/tag: 'tr'
+/0/children/1/children/1/children/1/text: '\n'
+/0/children/1/children/1/children/1/tail: '\n'
+/0/children/1/children/1/children/1/children/
+/0/children/1/children/1/children/1/children/0/
+/0/children/1/children/1/children/1/children/0/tag: 'td'
+/0/children/1/children/1/children/1/children/0/text: 'One'
+/0/children/1/children/1/children/1/children/0/tail: '\n'
+/0/children/1/children/1/children/1/children/1/
+/0/children/1/children/1/children/1/children/1/tag: 'td'
+/0/children/1/children/1/children/1/children/1/text: '1>'
+/0/children/1/children/1/children/1/children/1/tail: '\n'
+/0/children/1/children/2/
+/0/children/1/children/2/tag: 'br'
+/0/children/1/children/2/tail: '\n'
+/0/children/1/children/3/
+/0/children/1/children/3/tag: 'p'
+/0/children/1/children/3/text: 'Good bye'
+/0/children/1/children/3/tail: '\n'
+/> 
+```
+
 ## Notes
 
-- The tool leans heavily on the Python [`cmd` module](https://docs.python.org/3/library/cmd.html) and does the following:
+- The tool leans heavily on the Python [`cmd` module](https://docs.python.org/3/library/cmd.html) which does the following:
   - Tab-completion for subcommand verbs and potential arguments (keys)
   - Command history: Use the up and down arrows to go through subcommands previously issued
   - Command editing: use the left and right arrows to move around a subcommand to make changes
-- Initially, the script only worked for JSON files and all the examples are using a JSON file.  I changed it to also handle YAML files which was a very easy extension but I didn't redo much of the doc.
+- Initially, the script only worked for JSON files and all the examples are using a JSON file.  I changed it to also handle YAML files which was a very easy extension but I didn't redo much of the doc. I added XML support next which was substantially more challenging than adding YAML but I like the results.
 - I have ideas for improvements.  I was starting to list them hear but I've created [individual issues](https://github.com/pfuntner/toys/issues?q=is%3Aissue+is%3Aopen+json-shell%3A) for them.
