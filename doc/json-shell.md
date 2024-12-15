@@ -1,9 +1,9 @@
 # `json-shell`
 
 ## Purpose
-An interactive _shell-like_ tool to explore a JSON file.
+An interactive _shell-like_ tool to explore a JSON or YAML file.
 
-I am often frustrated by large complicated JSON objects and had this wild idea of treating an object like a Unix filesystem: there is a root, child nodes, and grandchildren, you can navigate with `cd` along with other familiar Unix commands. 
+I am often frustrated by large complicated JSON or YAML objects and had this wild idea of treating an object like a Unix filesystem: there is a root, child nodes, and grandchildren, you can navigate with `cd` along with other familiar Unix commands. 
 
 ## Syntax
 ```
@@ -369,4 +369,5 @@ The `pwd` subcommand prompts the location of the current node - in a filesystem,
   - Tab-completion for subcommand verbs and potential arguments (keys)
   - Command history: Use the up and down arrows to go through subcommands previously issued
   - Command editing: use the left and right arrows to move around a subcommand to make changes
+- Initially, the script only worked for JSON files and all the examples are using a JSON file.  I changed it to also handle YAML files which was a very easy extension but I didn't redo much of the doc.
 - I have ideas for improvements.  I was starting to list them hear but I've created [individual issues](https://github.com/pfuntner/toys/issues?q=is%3Aissue+is%3Aopen+json-shell%3A) for them.

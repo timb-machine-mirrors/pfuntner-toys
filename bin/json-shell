@@ -434,7 +434,6 @@ with open(args.filename) as stream:
 
 if not is_list_or_dict(curr_node()):
   parser.error(f'The root object of {args.filename!r} is a {root.__class__.__name__!r}, not a list or directory')
-  exit()
 
 # make a dictionary of `do-er` methods and their docstring
 doers = {func[0][3:]: func[1].__doc__ for func in inspect.getmembers(CmdProcessor, predicate=inspect.isfunction) if func[0].startswith('do_')}
