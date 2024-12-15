@@ -7,6 +7,7 @@ import re
 import cmd
 import sys
 import json
+import yaml
 import shutil
 import inspect
 import logging
@@ -385,6 +386,27 @@ Notes:
   def do_EOF(self, args):
     exit()
 
+
+def doc_load(stream):
+  exceptions = list()
+
+  data = stream.read()
+
+  try:
+    log.debug('Attempting to read as JSON')
+    return json.loads(data)
+  except Exception as e:
+    exceptions.append(str(e))
+
+  try:
+    log.debug('Attempting to read as YAML')
+    return yaml.load(data, Loader=yaml.BaseLoader)
+  except Exception as e:
+    exceptions.append(str(e))
+
+  raise Exception(' '.join(exceptions))
+
+
 parser = argparse.ArgumentParser(description='Interactive shell for dealing with a JSON object')
 parser.add_argument('filename', help='Name of JSON file')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
@@ -402,15 +424,16 @@ if os.path.isdir(args.filename):
 
 with open(args.filename) as stream:
   try:
-    root = json.load(stream)
+    root = doc_load(stream)
   except Exception as e:
-    parser.error(f'Could not parse {args.filename} as JSON: {e!s}')
+    parser.error(f'Could not parse {args.filename}: {e!s}')
+
   # The stack starts out with the root and this element never goes away.  It's like being at / in a filesystem and not
   # being able to do `cd ..`
   stack = [StackNode(None, root)]
 
 if not is_list_or_dict(curr_node()):
-  parser.error(f'The root object of {args.filename!r} is not a list or directory')
+  parser.error(f'The root object of {args.filename!r} is a {root.__class__.__name__!r}, not a list or directory')
   exit()
 
 # make a dictionary of `do-er` methods and their docstring
