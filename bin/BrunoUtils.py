@@ -2,7 +2,7 @@
 
 import logging
 import datetime
-import shutil
+import subprocess
 
 """
   A trick for bootstrapping this module when it's not in the same directory
@@ -37,8 +37,19 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(pathname)s:%(lineno)d %(
 log = logging.getLogger()
 # log.setLevel(logging.DEBUG)
 
+
 class BrunoUtils:
 
+  @classmethod
+  def tty_geometry(cls):
+    p = subprocess.Popen('stty size < /dev/tty', stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    (stdout, stderr) = [bytes.decode() for bytes in p.communicate()]
+    rc = p.wait()
+    tokens = stdout.strip().split()
+    if len(tokens) >= 2:
+      return [int(token) for token in tokens]
+    else:
+      return [0, 0]
 
   @classmethod
   def cols(cls):
@@ -47,7 +58,7 @@ class BrunoUtils:
 
       Return value: The number of columns as an integer.
     """
-    return shutil.get_terminal_size().columns
+    return cls.tty_geometry()[1] or 80
 
   @classmethod
   def rows(cls):
@@ -56,7 +67,7 @@ class BrunoUtils:
 
       Return value: The number of rows as an integer.
     """
-    return shutil.get_terminal_size().lines
+    return cls.tty_geometry()[0] or 24
 
   @staticmethod
   def divmod(a, b):
