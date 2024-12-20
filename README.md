@@ -35,6 +35,7 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`columns`](doc/columns.md)                                     | Yes               | Prints _columns_ of stdin where columns are separated by a character or regular expression           |
 | [`comm2`](doc/comm2.md)                                         |                   | Alternate version of `comm` that does not expect the data to be sorted                               |
 | [`cores`](doc/cores.md)                                         |                   | Prints CPU core information in a simple way                                                          |
+| [`data-shell`](doc/data-shell.md)                               | Yes, maybe        | A shell-like interactive tool for navigating around JSON, YAML, and XML objects                      |
 | [`datemath`](doc/datemath.md)                                   |                   | Perform arithmetic on date(s)                                                                        |
 | [`dowhile`](doc/dowhile.md)                                     |                   | Perform a command repeatedly until output is seen in the output                                      |
 | [`extensions`](doc/extensions.md)                               |                   | Show extensions used by files                                                                        |
@@ -52,7 +53,6 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`hex`](doc/hex.md)                                             |                   | Print out data or a file in hex and character form                                                   |
 | [`indent`](doc/indent.md)                                       | Yes               | Indent stdin by a specified number of columns                                                        |
 | [`json`](doc/json.md)                                           | Yes               | JSON magic - it's a disservice to try to summarize this tool in a single string.  Check out its page |
-| [`data-shell`](doc/data-shell.md)                               | Yes, maybe        | A shell-like interactive tool for navigating around JSON, YAML, and XML objects                      |                                   |
 | [`jsoncompare`](doc/jsoncompare.md)                             |                   | Compares JSON and/or YAML files, element by element                                                  |
 | [`lexec`](doc/lexec.md)                                         | Yes               | Locate executable files by pattern                                                                   |
 | [`megadiff`](doc/megadiff.md)                                   |                   | Compare two directories trees                                                                        |
