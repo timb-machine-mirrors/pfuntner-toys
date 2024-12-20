@@ -52,7 +52,7 @@ Select a tool below to learn more about it.  The _Bruno's Favorite_ column is us
 | [`hex`](doc/hex.md)                                             |                   | Print out data or a file in hex and character form                                                   |
 | [`indent`](doc/indent.md)                                       | Yes               | Indent stdin by a specified number of columns                                                        |
 | [`json`](doc/json.md)                                           | Yes               | JSON magic - it's a disservice to try to summarize this tool in a single string.  Check out its page |
-| [`json-shell`](doc/json-shell.md)                               | Yes, maybe        | A shell-like interactive tool for navigating around JSON, YAML, and XML objects                      |                                   |
+| [`data-shell`](doc/data-shell.md)                               | Yes, maybe        | A shell-like interactive tool for navigating around JSON, YAML, and XML objects                      |                                   |
 | [`jsoncompare`](doc/jsoncompare.md)                             |                   | Compares JSON and/or YAML files, element by element                                                  |
 | [`lexec`](doc/lexec.md)                                         | Yes               | Locate executable files by pattern                                                                   |
 | [`megadiff`](doc/megadiff.md)                                   |                   | Compare two directories trees                                                                        |

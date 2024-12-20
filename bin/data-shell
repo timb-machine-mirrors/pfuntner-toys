@@ -171,13 +171,13 @@ class CmdProcessor(cmd.Cmd):
     print('Confoozed?  Try `help`')
 
   def do_exit(self, args, cmd='exit'):
-    """Exit from json-shell"""
+    """Exit from data-shell"""
     if args.strip() not in ['', '()']:
       log.warning(f'`{cmd}` does not take an argument')
     return True
 
   def do_quit(self, args):
-    """Exit from json-shell"""
+    """Exit from data-shell"""
     return self.do_exit(args, cmd='quit')
 
   def do_ls(self, args):
@@ -311,7 +311,7 @@ Options:
 
 Notes:
    Non-string values are cast to strings and then searched"""
-    parser = argparse.ArgumentParser(description='json-shell grep command', add_help=False)
+    parser = argparse.ArgumentParser(description='data-shell grep command', add_help=False)
     parser.add_argument('-i', '--ignore-case', action='store_true')
     parser.add_argument('-v', '--negate', action='store_true')
     parser.add_argument('pattern', nargs='?')
