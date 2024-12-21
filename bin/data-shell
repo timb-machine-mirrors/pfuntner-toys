@@ -363,7 +363,7 @@ Notes:
     """Display help"""
 
     if not args.strip():
-      print('Navigate around a JSON document, just like a shell, only different!')
+      print('Navigate around a data file (json, yaml, xml), just like a shell... only different!')
       print()
       print('Commands:')
       print()
