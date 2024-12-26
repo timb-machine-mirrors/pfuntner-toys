@@ -26,7 +26,7 @@ seconds = 0
 arg = sys.argv[1]
 while arg and allowedSuffixes:
   # print "allowedSuffixes: %s" % allowedSuffixes
-  regexp = re.compile("((\d+\.?\d*|\d*\.?\d+)([%s]))" % ''.join(list(allowedSuffixes)))
+  regexp = re.compile(r"((\d+\.?\d*|\d*\.?\d+)([%s]))" % ''.join(list(allowedSuffixes)))
   match = regexp.search(str(arg))
   if match:
     token = match.group(1)
