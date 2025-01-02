@@ -8,6 +8,7 @@ import cmd
 import sys
 import json
 import yaml
+import shlex
 import shutil
 import inspect
 import logging
@@ -315,7 +316,7 @@ Notes:
     parser.add_argument('-i', '--ignore-case', action='store_true')
     parser.add_argument('-v', '--negate', action='store_true')
     parser.add_argument('pattern', nargs='?')
-    (grep_args, remain) = parser.parse_known_args(args.split())
+    (grep_args, remain) = parser.parse_known_args(shlex.split(args))
     if remain:
       log.warning(f'Unrecognized arguments: {remain!r}')
       return
