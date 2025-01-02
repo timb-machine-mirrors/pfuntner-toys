@@ -36,15 +36,15 @@ lines = sys.stdin.read().splitlines()
 newlines = copy.deepcopy(lines)
 
 # is the block completely commented out at the same column?
-regexp = re.compile('^(\s*)' + args.token + '( |$)')
+regexp = re.compile(r'^(\s*)' + args.token + r'( |$)')
 if all_commented_out([len_of_group1(regexp.search(line)) for line in lines]):
-  regexp = re.compile('^\s*(' + args.token + '( |$))')
+  regexp = re.compile(r'^\s*(' + args.token + r'( |$))')
   for (pos, newline) in enumerate(newlines):
     match = regexp.search(newline)
     newlines[pos] = newline[:match.start(1)] + newline[match.end(1):]
 else:
   # find least indented line
-  regexp = re.compile('(^\s*)\S')
+  regexp = re.compile(r'(^\s*)\S')
   indents = []
   for newline in newlines:
     match = regexp.search(newline)
@@ -52,7 +52,7 @@ else:
       indents.append(len(match.group(1)))
   if indents:
     least_indent = min(indents)
-    regexp = re.compile('(^\s{{{least_indent}}})'.format(**locals()))
+    regexp = re.compile(r'(^\s{{{least_indent}}})'.format(**locals()))
     for (pos, newline) in enumerate(newlines):
       if regexp.search(newline):
         newlines[pos] = regexp.sub(r'\1' + args.token + ' ', newline)
