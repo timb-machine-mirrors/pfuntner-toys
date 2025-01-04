@@ -6,6 +6,47 @@ import signal
 import logging
 import argparse
 import datetime
+import zoneinfo
+
+
+def human_elapsed(differ: datetime.timedelta):
+  secs = differ.total_seconds()
+  (days, secs) = divmod(secs, 24*60*60)
+  (hours, secs) = divmod(secs, 60*60)
+  (mins, secs) = divmod(secs, 60)
+  return f'{int(days)}-{int(hours):02d}:{int(mins):02d}:{int(secs):02d}'
+
+
+def is_tz_aware(timestamp: datetime.datetime):
+  """
+  Determine if a datetime.datetime is timezone-aware or not
+  """
+  return bool(timestamp.tzinfo)
+
+
+def styler_iso(timestamp: datetime.datetime):
+  """
+  Return ISO format for a datetime.datetime: "2025-01-02T08:57:49.794993-05:00"
+  """
+  return timestamp.isoformat()
+
+
+def styler_age(timestamp: datetime.datetime):
+  """
+  Return the age of a datetime.datetime compared to the current time: "D-HH:MM:SS" or "+D-HH:MM:SS" in the future
+  """
+  if tz_aware_now if is_tz_aware(timestamp) else tz_unaware_now > timestamp:
+    return human_elapsed((tz_aware_now if is_tz_aware(timestamp) else tz_unaware_now) - timestamp)
+  else:
+    return '+' + human_elapsed(timestamp - (tz_aware_now if is_tz_aware(timestamp) else tz_unaware_now))
+
+
+def replace(timestamp: datetime.datetime):
+  replacements = list()
+  for style_key in chosen_styles:
+    replacements.append(styles[style_key](timestamp))
+  return ' '.join(replacements)
+
 
 def date_time_zone(line):
   # 2025-01-02 08:48:28.369984272 -0500
@@ -13,21 +54,30 @@ def date_time_zone(line):
   if match:
     log.info(f'{line=} {match.groups()=}')
     timestamp = datetime.datetime.strptime(' '.join(match.groups()), '%Y-%m-%d %H:%M:%S.%f %z')
-    return (f'{line[:match.start(0)]}{timestamp.isoformat()}{line[match.end(0):]}', True)
+    return (f'{line[:match.start(0)]}{replace(timestamp)}{line[match.end(0):]}', True)
   else:
     log.info(f'date_time_zone() regexp does not match {line=}')
     return (line, False)
+
 
 def seconds_since_epoch(line):
   # 1733755665.835
   match = re.search(r'\b(\d{10}(\.\d{3,})?)\b', line)
   if match:
     timestamp = datetime.datetime.fromtimestamp(float(match.group(1)))
-    return (f'{line[:match.start(1)]}{timestamp.isoformat()}{line[match.end(1):]}', True)
+    return (f'{line[:match.start(1)]}{replace(timestamp)}{line[match.end(1):]}', True)
   else:
     return (line, False)
 
-parser = argparse.ArgumentParser(description='Replace timestamps with a standard ISO timestamp')
+
+styles = {
+  'iso': styler_iso,
+  'age': styler_age,
+}
+style_keys = list(styles.keys())
+
+parser = argparse.ArgumentParser(description='Replace timestamps with a standard ISO timestamp and/or age')
+parser.add_argument('-s', '--styles', help=f'Choose comma-delimited output styles: {", ".join(styles.keys())} - default: {style_keys[0]}')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -41,6 +91,20 @@ parsers = [
   date_time_zone,
   seconds_since_epoch,
 ]
+
+chosen_styles = list()
+for chosen_style in (args.styles or style_keys[0]).split(','):
+  matches = [int(style_key.startswith(chosen_style)) for style_key in style_keys]
+  if sum(matches) == 0:
+    parser.error(f'Unknown style {chosen_style!r}')
+  if sum(matches) > 1:
+    parser.error(f'Ambiguous style {chosen_style!r}')
+  for [style_key_pos, match] in enumerate(matches):
+    if match:
+      chosen_styles.append(style_keys[style_key_pos])
+
+tz_unaware_now = datetime.datetime.now()
+tz_aware_now = datetime.datetime.now(zoneinfo.ZoneInfo('UTC'))
 
 if sys.stdin.isatty():
   parser.error('stdin must be redirected')
