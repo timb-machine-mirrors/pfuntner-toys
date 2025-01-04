@@ -7,11 +7,22 @@ import logging
 import argparse
 import datetime
 
+def date_time_zone(line):
+  # 2025-01-02 08:48:28.369984272 -0500
+  match = re.search(r'\b(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{,6})\d*( [-+]\d{4})\b', line)
+  if match:
+    log.info(f'{line=} {match.groups()=}')
+    timestamp = datetime.datetime.strptime(' '.join(match.groups()), '%Y-%m-%d %H:%M:%S.%f %z')
+    return (f'{line[:match.start(0)]}{timestamp.isoformat()}{line[match.end(0):]}', True)
+  else:
+    log.info(f'date_time_zone() regexp does not match {line=}')
+    return (line, False)
+
 def seconds_since_epoch(line):
   # 1733755665.835
-  match = re.search(r'(\d{10}(\.\d{3,})?)', line)
+  match = re.search(r'\b(\d{10}(\.\d{3,})?)\b', line)
   if match:
-    timestamp = datetime.datetime.fromtimestamp(float(match.group(1)))  
+    timestamp = datetime.datetime.fromtimestamp(float(match.group(1)))
     return (f'{line[:match.start(1)]}{timestamp.isoformat()}{line[match.end(1):]}', True)
   else:
     return (line, False)
@@ -26,7 +37,10 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
-parsers = [seconds_since_epoch]
+parsers = [
+  date_time_zone,
+  seconds_since_epoch,
+]
 
 if sys.stdin.isatty():
   parser.error('stdin must be redirected')
