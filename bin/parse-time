@@ -62,6 +62,20 @@ def date_time_zone(line):
   return (line, False)
 
 
+def date_time(line):
+  # 2025-01-02 08:48:28
+  match = re.search(r'\b(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\b)', line)
+  if match:
+    log.info(f'{line=} {match.groups()=}')
+    try:
+      timestamp = datetime.datetime.strptime(match.group(1), '%Y-%m-%d %H:%M:%S')
+      return (f'{line[:match.start(0)]}{replace(timestamp)}{line[match.end(0):]}', True)
+    except:
+      pass
+  log.info(f'date_time() does not match {line=}')
+  return (line, False)
+
+
 def seconds_since_epoch(line):
   # 1733755665.835
   match = re.search(r'\b(\d{7,}(\.\d{3,})?)\b', line)
@@ -94,6 +108,7 @@ signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
 parsers = [
   date_time_zone, # this parser is pretty specific and should be done very early, first if possible
+  date_time,
   seconds_since_epoch,
 ]
 
