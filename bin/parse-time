@@ -53,25 +53,30 @@ def date_time_zone(line):
   match = re.search(r'\b(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{,6})\d*( [-+]\d{4})\b', line)
   if match:
     log.info(f'{line=} {match.groups()=}')
-    timestamp = datetime.datetime.strptime(' '.join(match.groups()), '%Y-%m-%d %H:%M:%S.%f %z')
-    return (f'{line[:match.start(0)]}{replace(timestamp)}{line[match.end(0):]}', True)
-  else:
-    log.info(f'date_time_zone() regexp does not match {line=}')
-    return (line, False)
+    try:
+      timestamp = datetime.datetime.strptime(' '.join(match.groups()), '%Y-%m-%d %H:%M:%S.%f %z')
+      return (f'{line[:match.start(0)]}{replace(timestamp)}{line[match.end(0):]}', True)
+    except:
+      pass
+  log.info(f'date_time_zone() does not match {line=}')
+  return (line, False)
 
 
 def seconds_since_epoch(line):
   # 1733755665.835
-  match = re.search(r'\b(\d{10}(\.\d{3,})?)\b', line)
+  match = re.search(r'\b(\d{7,}(\.\d{3,})?)\b', line)
   if match:
-    timestamp = datetime.datetime.fromtimestamp(float(match.group(1)))
-    return (f'{line[:match.start(1)]}{replace(timestamp)}{line[match.end(1):]}', True)
-  else:
-    return (line, False)
+    try:
+      timestamp = datetime.datetime.fromtimestamp(float(match.group(1)))
+      return (f'{line[:match.start(1)]}{replace(timestamp)}{line[match.end(1):]}', True)
+    except:
+      pass
+  log.info(f'seconds_since_epoch() does not match {line=}')
+  return (line, False)
 
 
 styles = {
-  'iso': styler_iso,
+  'iso': styler_iso, # this is the default styler and must be first
   'age': styler_age,
 }
 style_keys = list(styles.keys())
@@ -88,7 +93,7 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
 parsers = [
-  date_time_zone,
+  date_time_zone, # this parser is pretty specific and should be done very early, first if possible
   seconds_since_epoch,
 ]
 
