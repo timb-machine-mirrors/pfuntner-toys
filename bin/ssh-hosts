@@ -41,9 +41,9 @@ host_regexp = re.compile(r'^Host\s+(\S+)\s*$')
 attr_regexp = re.compile(r'^\s+(\S+)\s+(.+)\s*$')
 
 hosts = dict()
-host = None
 
 with open(os.path.expanduser('~/.ssh/config')) as stream:
+  hostname = None
   for line in stream.read().splitlines():
     match = host_regexp.search(line)
     if match:
@@ -55,6 +55,10 @@ with open(os.path.expanduser('~/.ssh/config')) as stream:
         hosts[hostname][match.group(1)] = match.group(2)
 
 log.debug(f'{hosts=}')
+
+if not hosts:
+  log.warning('No hosts')
+  exit(1)
 
 if args.regexps:
   # apply regular expressions
