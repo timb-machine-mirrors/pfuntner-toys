@@ -11,6 +11,7 @@ import getpass
 import logging
 import argparse
 import datetime
+import cryptography.fernet
 
 def berate(s):
   global output
@@ -89,11 +90,7 @@ class SecureKeyValues:
         hash.update(self.simpleKey.encode())
         self.key = base64.b64encode(hash.hexdigest().encode())
 
-        try:
-          fernet = __import__('fernet')
-          self.fernet = fernet.Fernet(self.key)
-        except Exception as e:
-          raise Exception(f'Caught `{e!s}` trying to load cryptography.fernet')
+        self.fernet = cryptography.fernet.Fernet(self.key)
 
         if os.path.isfile(self.filename) and os.path.getsize(self.filename):
           with open(self.filename, 'rb') as f:
