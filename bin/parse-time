@@ -48,46 +48,68 @@ def replace(timestamp: datetime.datetime):
   return ' '.join(replacements)
 
 
-def date_time_zone(line):
-  # 2025-01-02 08:48:28.369984272 -0500
-  match = re.search(r'\b(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{,6})\d*( [-+]\d{4})\b', line)
-  if match:
-    log.info(f'{line=} {match.groups()=}')
-    try:
-      timestamp = datetime.datetime.strptime(' '.join(match.groups()), '%Y-%m-%d %H:%M:%S.%f %z')
-      return (f'{line[:match.start(0)]}{replace(timestamp)}{line[match.end(0):]}', True)
-    except:
-      pass
-  log.info(f'date_time_zone() does not match {line=}')
-  return (line, False)
+class DateTimeZone:
+  @staticmethod
+  def example():
+    # 2025-01-02 08:48:28.369984272 -0500
+    return tz_aware_now.strftime('%Y-%m-%d %H:%M:%S.%f00000 %z')
+
+  @staticmethod
+  def process(line):
+    match = re.search(r'\b(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{,6})\d*( [-+]\d{4})\b', line)
+    if match:
+      log.info(f'{line=} {match.groups()=}')
+      try:
+        timestamp = datetime.datetime.strptime(' '.join(match.groups()), '%Y-%m-%d %H:%M:%S.%f %z')
+        return (f'{line[:match.start(0)]}{replace(timestamp)}{line[match.end(0):]}', True)
+      except:
+        pass
+    log.info(f'date_time_zone() does not match {line=}')
+    return (line, False)
 
 
-def date_time(line):
-  # 2025-01-02 08:48:28
-  match = re.search(r'\b(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\b)', line)
-  if match:
-    log.info(f'{line=} {match.groups()=}')
-    try:
-      timestamp = datetime.datetime.strptime(match.group(1), '%Y-%m-%d %H:%M:%S')
-      return (f'{line[:match.start(0)]}{replace(timestamp)}{line[match.end(0):]}', True)
-    except:
-      pass
-  log.info(f'date_time() does not match {line=}')
-  return (line, False)
+class DateTime:
+  @staticmethod
+  def example():
+    # 2025-01-02 08:48:28
+    return tz_unaware_now.strftime('%Y-%m-%d %H:%M:%S')
+
+  @staticmethod
+  def process(line):
+    match = re.search(r'\b(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\b)', line)
+    if match:
+      log.info(f'{line=} {match.groups()=}')
+      try:
+        timestamp = datetime.datetime.strptime(match.group(1), '%Y-%m-%d %H:%M:%S')
+        return (f'{line[:match.start(0)]}{replace(timestamp)}{line[match.end(0):]}', True)
+      except:
+        pass
+    log.info(f'date_time() does not match {line=}')
+    return (line, False)
 
 
-def seconds_since_epoch(line):
-  # 1733755665.835
-  match = re.search(r'\b(\d{7,}(\.\d{3,})?)\b', line)
-  if match:
-    try:
-      timestamp = datetime.datetime.fromtimestamp(float(match.group(1)))
-      return (f'{line[:match.start(1)]}{replace(timestamp)}{line[match.end(1):]}', True)
-    except:
-      pass
-  log.info(f'seconds_since_epoch() does not match {line=}')
-  return (line, False)
+class SecondsSinceEpoch:
+  @staticmethod
+  def example():
+    # 1733755665.835
+    return (tz_aware_now - tz_aware_epoch).total_seconds()
 
+  @staticmethod
+  def process(line):
+    match = re.search(r'\b(\d{7,}(\.\d{3,})?)\b', line)
+    if match:
+      try:
+        timestamp = datetime.datetime.fromtimestamp(float(match.group(1)))
+        return (f'{line[:match.start(1)]}{replace(timestamp)}{line[match.end(1):]}', True)
+      except:
+        pass
+    log.info(f'seconds_since_epoch() does not match {line=}')
+    return (line, False)
+
+
+tz_unaware_now = datetime.datetime.now()
+tz_aware_now = datetime.datetime.now(zoneinfo.ZoneInfo('UTC'))
+tz_aware_epoch = datetime.datetime.fromtimestamp(0, zoneinfo.ZoneInfo('UTC'))
 
 styles = {
   'iso': styler_iso, # this is the default styler and must be first
@@ -95,7 +117,21 @@ styles = {
 }
 style_keys = list(styles.keys())
 
-parser = argparse.ArgumentParser(description='Replace timestamps with a standard ISO timestamp and/or age')
+parsers = [
+  DateTimeZone, # this parser is pretty specific and should be done very early, first if possible
+  DateTime,
+  SecondsSinceEpoch,
+]
+
+epilog = '\nInput timestamp styles:\n\n'
+for parser in parsers:
+  epilog += f'  - {parser.example()}\n'
+
+parser = argparse.ArgumentParser(
+  description='Replace timestamps with a standard ISO timestamp and/or age',
+  formatter_class=argparse.RawTextHelpFormatter,
+  epilog=epilog,
+)
 parser.add_argument('-s', '--styles', help=f'Choose comma-delimited output styles: {", ".join(styles.keys())} - default: {style_keys[0]}')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
@@ -105,12 +141,6 @@ log = logging.getLogger(sys.argv[0])
 log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
-
-parsers = [
-  date_time_zone, # this parser is pretty specific and should be done very early, first if possible
-  date_time,
-  seconds_since_epoch,
-]
 
 chosen_styles = list()
 for chosen_style in (args.styles or style_keys[0]).split(','):
@@ -123,15 +153,12 @@ for chosen_style in (args.styles or style_keys[0]).split(','):
     if match:
       chosen_styles.append(style_keys[style_key_pos])
 
-tz_unaware_now = datetime.datetime.now()
-tz_aware_now = datetime.datetime.now(zoneinfo.ZoneInfo('UTC'))
-
 if sys.stdin.isatty():
   parser.error('stdin must be redirected')
 
 for line in sys.stdin.read().splitlines():
   for parser in parsers:
-    (line, changed) = parser(line)
+    (line, changed) = parser.process(line)
     if changed:
       break
   print(line)
