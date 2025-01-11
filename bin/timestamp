@@ -6,23 +6,8 @@ import re
 import datetime
 import logging
 import argparse
-import subprocess
 
-def get_offset():
-  """
-    Get time difference of current location from GMT in seconds.
-
-    For example, when used in EST, the method returns -(5*60)
-  """
-  curr = datetime.datetime.now()
-  utc = datetime.datetime.utcnow()
-
-  diff = round((utc - curr if curr < utc else curr - utc).total_seconds())
-  diff = (-1 if curr < utc else 1) * diff
-
-  log.debug('diff: {diff}'.format(**locals()))
-
-  return diff
+import bruno_tools
 
 def get_seconds_since_epoch(timestamp):
   return (timestamp-datetime.datetime.fromtimestamp(0)).total_seconds()
@@ -100,8 +85,6 @@ if not args.styles:
 
 log.debug(args)
 
-offset = get_offset()
-
 captured_zone = None
 
 if args.time:
@@ -118,12 +101,7 @@ secs = (now-epoch).total_seconds()
 if captured_zone is None:
   # Python has poor timezone support - we'll ask the `date` utility for the timezone!
   cmd = ['date', '-d', '@' + str(secs), '+%Z']
-  log.debug('cmd: {cmd}'.format(**locals()))
-  p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  (stdout, stderr) = p.communicate()
-  stdout = stdout.decode('utf-8')
-  stderr = stderr.decode('utf-8')
-  rc = p.wait()
+  (rc, stdout, stderr) = bruno_tools.run(cmd)
   log.debug('rc: {rc}, stdout:{stdout!r}, stderr:{stderr!r}'.format(**locals()))
   captured_zone = stdout.split()[0] if stdout else '?'
 
