@@ -37,7 +37,7 @@ assert (rc == 0) and (not stderr), "`lscpu` failed: %d, %s, %s" % (rc, repr(stdo
 
 config = {}
 for line in stdout.strip('\n').split('\n'):
-  match = re.match("([^:]+):\s+(\S.*)$", str(line))
+  match = re.match(r"([^:]+):\s+(\S.*)$", str(line))
   if match:
     config[match.group(1)] = match.group(2)
 
