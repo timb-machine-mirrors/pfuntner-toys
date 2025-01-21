@@ -634,6 +634,9 @@ if __name__ == '__main__':
         for instance in instances:
           if instance.active:
             p.stdin.write(f'''{instance.name} ansible_host={instance.ip} ansible_user={instance.user} ansible_ssh_private_key_file={instance.key_filename} ansible_ssh_common_args='-o "ProxyCommand=nc -X connect -x  proxy.esl.cisco.com:80 %h %p"'\n'''.encode())
+        if os.path.exists(args.out + '.keep'):
+          with open(args.out + '.keep') as stream:
+            p.stdin.write(stream.read().encode())
         p.stdin.close()
         rc = p.wait()
 
