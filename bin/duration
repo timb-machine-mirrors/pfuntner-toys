@@ -24,6 +24,7 @@ def process(source):
     for pattern in patterns:
       match = pattern['regex'].search(line)
       if match:
+        log.info(f'''{pattern['regex']!r} matches {line!r}: {match.groups()}''')
         timestamp = datetime.datetime.strptime(''.join(match.groups()), pattern['date-format'])
         if not first:
           first = timestamp
@@ -50,7 +51,8 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
 patterns = [
- { 'date-format': '%Y-%m-%dT%H:%M:%S.%f', 'regex': re.compile(r'(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3,6})Z') }, # 2025-01-31T11:37:03.468Z
+  { 'regex': re.compile(r'(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3,6})Z'), 'date-format': '%Y-%m-%dT%H:%M:%S.%f' }, # 2025-01-31T11:37:03.468Z
+  { 'regex': re.compile(r'(\S+\s+\d{2}\s+\S+\s+\d{4}\s{2}\d{2}:\d{2}:\d{2} (?:\+|-)\d{4})'), 'date-format': '%A %d %B %Y  %H:%M:%S %z' }, #  Monday 03 February 2025  17:32:59 +0000
 ]
 
 table = bruno_tools.Table(*((['File'] if args.paths else []) + ['Start', 'Stop', 'Duration']))
