@@ -29,6 +29,8 @@ class OutputThread(threading.Thread):
     self.start()
 
   def run(self):
+    global output_file
+
     label = f' {self.label} ' if args.label else ' '
     buf = ''
     start_time = None
@@ -44,17 +46,25 @@ class OutputThread(threading.Thread):
           start_time = datetime.datetime.now()
         buf += c
         if c == '\n':
-          print(f'{human(start_time)} {human(start_time-(last_time or start_time))} {human(start_time-command_start_time)}{label}{buf}', file=self.output_stream, end='')
+          line = f'{human(start_time)} {human(start_time-(last_time or start_time))} {human(start_time-command_start_time)}{label}{buf}'
+          print(line, file=self.output_stream, end='')
+          if output_file:
+            print(line, file=output_file, end='')
           buf = ''
           last_time = start_time
           start_time = None
     log.info(f'{self.label}: EOF')
     if buf:
-      print(f'{human(start_time)} {human(start_time-(last_time or start_time))} {human(start_time-command_start_time)}{label}{buf}', file=self.output_stream)
+      line = f'{human(start_time)} {human(start_time-(last_time or start_time))} {human(start_time-command_start_time)}{label}{buf}'
+      print(line, file=self.output_stream)
+      if output_file:
+        print(line, file=output_file, end='')
 
 parser = argparse.ArgumentParser(description='Capture stdout/stderr of a command')
 parser.add_argument('command', nargs='+', help='Command and arguments')
+parser.add_argument('-o', '--output-file', help='File to write output')
 parser.add_argument('-l', '--label', action='store_true', help='Label output lines with `stdout` or `stderr`')
+parser.add_argument('-k', '--keep-alive', action='store_true', help='Keep the output alive by printing a message periodically')
 parser.add_argument('-v', '--verbose', action='count', help='Enable debugging')
 args = parser.parse_args()
 
@@ -64,7 +74,10 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
+output_file = open(args.output_file, 'w') if args.output_file else None
+
 command_start_time = datetime.datetime.now()
+keeper = command_start_time
 try:
   # command = shlex.join(args.command)
   command = ' '.join(args.command)
@@ -76,15 +89,25 @@ try:
     'shell': True,
   }
   #  text: True,
-  p = subprocess.Popen(command, **options)
+  process = subprocess.Popen(command, **options)
 except Exception as e:
   log.fatal(f'{command} failed: {e!s}')
   exit(1)
 
-stdout = OutputThread('stdout', p.stdout, sys.stdout)
-stderr = OutputThread('stderr', p.stderr, sys.stderr)
+print(f'Started process {process.pid}')
+
+stdout = OutputThread('stdout', process.stdout, sys.stdout)
+stderr = OutputThread('stderr', process.stderr, sys.stderr)
 
 while stdout.is_alive() or stdout.is_alive():
+  if args.keep_alive:
+    now = datetime.datetime.now()
+    if now - keeper > datetime.timedelta(seconds=15):
+      print(f'Waiting for process {process.pid}')
+      keeper = now
   time.sleep(.05)
 
-print(f'rc={p.wait()}, total elapsed time: {datetime.datetime.now()-command_start_time!s}')
+print(f'rc={process.wait()}, total elapsed time: {datetime.datetime.now()-command_start_time!s}')
+
+if output_file:
+  output_file.close()
