@@ -42,6 +42,17 @@ class Yum(object):
     (rc, stdout, stderr) = run(self.host, f'yum install -y {package}', read_only=False)
     return rc == 0
 
+class Dnf(object):
+  def __init__(self, host):
+    self.host = host
+    (rc, stdout, stderr) = run(self.host, 'test -f /usr/bin/dnf')
+    self.package_manager = 'dnf' if rc == 0 else 'microdnf'
+
+  def install(self, package):
+    log.info(f'{self.host}: installing {package}')
+    (rc, stdout, stderr) = run(self.host, f'{self.package_manager} install -y {package}', read_only=False)
+    return rc == 0
+
 def run(target, cmd, capture=True, read_only=True):
   if isinstance(cmd, list):
     cmd = shlex.join(cmd)
@@ -159,12 +170,12 @@ log.setLevel(logging.WARNING - (args.verbose or 0)*10)
 signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 
 package_managers = {
-  'almalinux': Yum,
+  'almalinux': Dnf,
   'alpine': Apk,
   'centos': Yum,
   'debian': Apt,
-  'redhat': Yum,
-  'rhel': Yum,
+  'redhat': Dnf,
+  'rhel': Dnf,
   'ubuntu': Apt,
 }
 
