@@ -11,6 +11,12 @@ import argparse
 
 import bruno_tools
 
+def diff(date1:datetime.datetime, date2:datetime.datetime):
+  if date1 < date2:
+    return str(date2 - date1)
+  else:
+    return '-' + str(date2 - date1)
+
 # Maximum age of cache entries in days
 CACHE_THRESHOLD = 30
 
@@ -48,9 +54,10 @@ if os.path.exists(cache_file_name):
     cache = json.load(stream)
 
 if args.list:
-  table = bruno_tools.Table('Pattern', 'Path', 'Date')
-  for curr in sorted([{'pattern': pattern, 'path': curr['file'], 'date': curr['timestamp_human']} for (pattern, curr) in cache.items()], key=lambda curr: curr['date'], reverse=True):
-    table.add(curr['pattern'], curr['path'], curr['date'])
+  now = datetime.datetime.now()
+  table = bruno_tools.Table('Pattern', 'Path', 'Date', 'Expires')
+  for curr in sorted([{'pattern': pattern, 'path': curr['file'], 'timestamp_human': curr['timestamp_human'], 'timestamp': curr['timestamp']} for (pattern, curr) in cache.items()], key=lambda curr: curr['timestamp_human'], reverse=True):
+    table.add(curr['pattern'], curr['path'], curr['timestamp_human'], diff(now, (datetime.datetime.fromtimestamp(curr['timestamp']) + datetime.timedelta(days=CACHE_THRESHOLD))))
   table.close()
 
 else:
