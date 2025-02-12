@@ -25,5 +25,5 @@ signal.signal(signal.SIGPIPE, lambda signum, stack_frame: exit(0))
 if stdout:
   table = bruno_tools.Table('Package', 'Version')
   for package in json.loads(stdout)['components']:
-    table.add(package['name'], package['version'])
+    table.add(package['name'], bruno_tools.JustifyLeft(package['version']))
   table.close()
